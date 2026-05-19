@@ -1,0 +1,4 @@
+interface:
+  display_name: "UTK Init"
+  short_description: "Initialize UTK schemas for registered tools"
+  default_prompt: "Use $utk-init to initialize this project for UTK by discovering registered tools, generating output schemas, and writing project-local .utk schema artifacts. If I provide tool ids or descriptions, use them as generation scope and schema hints."

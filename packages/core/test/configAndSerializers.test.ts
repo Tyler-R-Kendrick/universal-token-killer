@@ -110,6 +110,85 @@ describe('UTK TOML config', () => {
     expect(config.serialization.default).toBe('toon');
     expect(config.routing.deterministic_confidence_threshold).toBe(0.95);
     expect(config.persistence.storage_root).toBe('.utk');
+    expect(config.detok.enabled).toBe(true);
+    expect(config.detok.copilot_pre_tool_use.enabled).toBe(true);
+    expect(config.detok.copilot_pre_tool_use.rewrite_fields).toContain('prompt');
+    expect(config.detok.copilot_pre_tool_use.protected_fields).toContain('command');
+  });
+
+  it('supports detok preToolUse configuration and per-tool overrides', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-detok-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[detok]',
+        'enabled = false',
+        '',
+        '[detok.copilot_pre_tool_use]',
+        'enabled = true',
+        'rate = 0.25',
+        'min_chars = 42',
+        'deny_tools = ["bash"]',
+        'rewrite_fields = ["task"]',
+        'protected_fields = ["command"]',
+        '',
+        '[[detok.copilot_pre_tool_use.overrides]]',
+        'tool = "agent.special"',
+        'enabled = true',
+        'rewrite_fields = ["customPrompt"]',
+        'protected_fields = ["path"]',
+        '',
+        '[[detok.copilot_pre_tool_use.overrides]]',
+        'tool = "agent.default"',
+        'rewrite_fields = ["message"]',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(config.detok.enabled).toBe(false);
+    expect(config.detok.copilot_pre_tool_use.rate).toBe(0.25);
+    expect(config.detok.copilot_pre_tool_use.min_chars).toBe(42);
+    expect(config.detok.copilot_pre_tool_use.deny_tools).toEqual(['bash']);
+    expect(config.detok.copilot_pre_tool_use.rewrite_fields).toEqual(['task']);
+    expect(config.detok.copilot_pre_tool_use.overrides).toEqual([
+      {
+        tool: 'agent.special',
+        enabled: true,
+        rewrite_fields: ['customPrompt'],
+        protected_fields: ['path']
+      },
+      {
+        tool: 'agent.default',
+        rewrite_fields: ['message']
+      }
+    ]);
+  });
+
+  it('fails explicitly for malformed detok tables and arrays', async () => {
+    const badDetok = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-detok-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badDetok, '.utk'), { recursive: true }));
+    await writeFile(path.join(badDetok, '.utk', 'config.toml'), 'detok = "bad"\n[serialization]\n', 'utf8');
+
+    await expect(loadUtkConfig(badDetok)).rejects.toThrow('detok must be a TOML table');
+
+    const badFields = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-fields-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badFields, '.utk'), { recursive: true }));
+    await writeFile(path.join(badFields, '.utk', 'config.toml'), '[serialization]\n[detok.copilot_pre_tool_use]\nrewrite_fields = "prompt"\n', 'utf8');
+
+    await expect(loadUtkConfig(badFields)).rejects.toThrow('detok.copilot_pre_tool_use.rewrite_fields must be an array of strings');
+
+    const badOverrides = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-detok-overrides-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badOverrides, '.utk'), { recursive: true }));
+    await writeFile(path.join(badOverrides, '.utk', 'config.toml'), '[serialization]\n[detok.copilot_pre_tool_use]\noverrides = "bad"\n', 'utf8');
+
+    await expect(loadUtkConfig(badOverrides)).rejects.toThrow('detok.copilot_pre_tool_use.overrides must be an array');
   });
 });
 

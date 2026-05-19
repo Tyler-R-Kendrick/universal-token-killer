@@ -11,6 +11,7 @@ The `@utk/evals` package contains deterministic tests for safety, compactness, a
 - fixture-backed RTK parity metrics;
 - strict CLI wins over RTK baselines;
 - generalized non-shell tool-output savings.
+- bash-like invocation accuracy and token savings against RTK-style rewrite baselines.
 
 ## Fixture Source
 
@@ -28,6 +29,8 @@ RTK parity fixtures live in `packages/evals/fixtures/rtkParityFixtures.ts`. Each
 Metric helpers live in `packages/evals/metrics/rtkParityMetrics.ts` and are exported from `@utk/evals`.
 
 Use those helpers for both tests and optional benchmark tooling so the numbers stay consistent.
+
+Bash rewrite helpers live in `packages/evals/metrics/bashRewriteMetrics.ts` and use fixtures from `packages/evals/fixtures/bashRewriteFixtures.ts`.
 
 ## Running Evals
 
@@ -48,6 +51,12 @@ Run only RTK parity metrics:
 
 ```bash
 npm test --workspace @utk/evals -- --run evals/rtk-parity-metrics.test.ts
+```
+
+Run bash-like tool rewrite metrics:
+
+```bash
+npm test --workspace @utk/evals -- --run evals/bash-rewrite-metrics.test.ts
 ```
 
 Run the optional benchmark helper tests:

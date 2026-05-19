@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { DEFAULT_CONFIG_TOML } from '../config/config.js';
 
@@ -55,11 +55,17 @@ const STORE_GITIGNORE = `/tools/*/observations/\n/routing-telemetry/\n/evals/res
 export type WorkspaceInitResult = {
   storageRoot: string;
   configPath: string;
+  sessionAgentsRoot: string;
+  githubAgentsPath: string;
+  sessionSkillsRoot: string;
+  agentsSkillsPath: string;
 };
 
 const DIRECTORIES = [
   'routes',
   'grammars',
+  'session-agents',
+  'session-skills',
   'tools',
   'routing-telemetry',
   'evals/fixtures',
@@ -71,8 +77,14 @@ const DIRECTORIES = [
 
 export async function initializeWorkspaceStore(workspaceRoot: string): Promise<WorkspaceInitResult> {
   const storageRoot = path.join(workspaceRoot, '.utk');
+  const sessionAgentsRoot = path.join(storageRoot, 'session-agents');
+  const githubAgentsPath = path.join(workspaceRoot, '.github', 'agents');
+  const sessionSkillsRoot = path.join(storageRoot, 'session-skills');
+  const agentsSkillsPath = path.join(workspaceRoot, '.agents', 'skills');
   await mkdir(storageRoot, { recursive: true });
   await Promise.all(DIRECTORIES.map((segment) => mkdir(path.join(storageRoot, segment), { recursive: true })));
+  await ensureDirectoryLink(sessionAgentsRoot, githubAgentsPath);
+  await ensureDirectoryLink(sessionSkillsRoot, agentsSkillsPath);
 
   const gitignorePath = path.join(storageRoot, '.gitignore');
   await ensureFile(gitignorePath, STORE_GITIGNORE);
@@ -81,7 +93,19 @@ export async function initializeWorkspaceStore(workspaceRoot: string): Promise<W
   await ensureFile(configPath, `${JSON.stringify(DEFAULT_CONFIG, null, 2)}\n`);
   await ensureFile(path.join(storageRoot, 'config.toml'), DEFAULT_CONFIG_TOML);
 
-  return { storageRoot, configPath };
+  return { storageRoot, configPath, sessionAgentsRoot, githubAgentsPath, sessionSkillsRoot, agentsSkillsPath };
+}
+
+async function ensureDirectoryLink(targetRoot: string, linkPath: string): Promise<void> {
+  await mkdir(path.dirname(linkPath), { recursive: true });
+  try {
+    const info = await lstat(linkPath);
+    if (info.isSymbolicLink()) return;
+    return;
+  } catch {
+    /* v8 ignore next -- non-Windows symlink type is covered on POSIX CI */
+    await symlink(targetRoot, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+  }
 }
 
 async function ensureFile(filePath: string, contents: string): Promise<void> {

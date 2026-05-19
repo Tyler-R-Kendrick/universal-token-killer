@@ -1,0 +1,38 @@
+{
+  "name": "universal-token-killer",
+  "description": "Hook-first token optimization for GitHub Copilot tool calls, with UTK skills, a UTK operator agent, and the local detok MCP server for LLMLingua2 compression.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tyler-R-Kendrick",
+    "url": "https://github.com/Tyler-R-Kendrick"
+  },
+  "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "license": "MIT",
+  "keywords": [
+    "github-copilot",
+    "agentskills",
+    "mcp",
+    "token-optimization",
+    "llmlingua",
+    "toon"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "copilot-cli",
+    "tool-hooks",
+    "detok",
+    "rtk-parity"
+  ],
+  "agents": [
+    "./agents"
+  ],
+  "skills": [
+    "./skills/utk",
+    "./skills/utk-init",
+    "./skills/detoks"
+  ],
+  "mcpServers": ".mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "strict": true
+}

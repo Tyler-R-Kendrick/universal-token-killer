@@ -1,0 +1,4 @@
+interface:
+  display_name: "UTK"
+  short_description: "Operate UTK Copilot tool hooks"
+  default_prompt: "Use $utk to mediate observable Copilot tool calls, preserve raw .utk artifacts, choose serializers, recover compact outputs, and inspect schema routing without adding a public CLI or VS Code extension."
