@@ -101,12 +101,14 @@ export async function readTemplateDescriptorCache(cachePath: string, options: { 
     const text = await readFile(cachePath, 'utf8');
     return JSON.parse(text) as TemplateDescriptor;
   } catch (error) {
-    recordFailure(options.tracer, {
-      name: 'template.load',
-      runType: 'parser',
-      error: error as Error,
-      extra: { cachePath }
-    });
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      recordFailure(options.tracer, {
+        name: 'template.load',
+        runType: 'parser',
+        error: error as Error,
+        extra: { cachePath }
+      });
+    }
     return undefined;
   }
 }

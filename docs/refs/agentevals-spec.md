@@ -28,6 +28,11 @@ Canonical wire shapes UTK emits and consumes, sourced from [github.com/agenteval
 | `references` | `JaegerReference[]` | `{ refType: 'CHILD_OF' \| 'FOLLOWS_FROM', traceID, spanID }`. |
 | `processID` | string | Joins back to `processes[processID]`. |
 
+Notes:
+
+- `traceID === runId`. The Jaeger document is keyed per `runId`; `flushTrace` overwrites the file when called repeatedly on the same `RunContext`.
+- Durations come from successive `tracer.now()` calls. Tests that inject a constant `now()` therefore produce `duration: 0` spans — this is expected and does not indicate a bug.
+
 ### Tag Vocabulary
 
 UTK uses OpenTelemetry GenAI semantic conventions plus a small `utk.*` namespace.

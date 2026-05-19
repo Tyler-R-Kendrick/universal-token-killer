@@ -61,7 +61,7 @@ The result includes:
 
 - `invocation.command`: the planned command string;
 - `invocation.argv`: shell-safe argument array;
-- `templatePath`: compact template path under `.utk/tools/<tool-id>/templates/`;
+- `templatePath`: compact template path under `.utk/tools/<normalized-tool-id>/templates/` (tool id passes through `normalizeToolId`, so dots and other punctuation become dashes on disk);
 - `missingRequired`: required parameters that could not be completed;
 - `guidance.serializedGrammar`: deterministic grammar sidecar;
 - `guidance.available`: currently `false` when no guidance session is wired.
@@ -74,13 +74,14 @@ guided completion success.
 ## Artifact Layout
 
 ```text
-.utk/tools/<tool-id>/templates/cli-template.compact.toon
-.utk/tools/<tool-id>/templates/cli-template.compact.json
-.utk/tools/<tool-id>/templates/cli-template.guidance.json
+.utk/tools/<normalized-tool-id>/templates/cli-template.compact.toon
+.utk/tools/<normalized-tool-id>/templates/cli-template.compact.json
+.utk/tools/<normalized-tool-id>/templates/cli-template.guidance.json
 ```
 
-Only one compact template is written, based on `.utk/config.toml` serializer
-selection.
+`<normalized-tool-id>` is `normalizeToolId(toolId)` — dots and other punctuation
+become dashes on disk. Only one compact template is written, based on
+`.utk/config.toml` serializer selection.
 
 ## Metrics
 

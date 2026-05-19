@@ -8,8 +8,9 @@ function fakeChild(opts: {
   code?: number | null;
   errorOnStart?: NodeJS.ErrnoException;
   errorOnSpawn?: Error;
-}): { spawn: SpawnLike; calls: Array<{ command: string; args: readonly string[] }> } {
+}): { spawn: SpawnLike; calls: Array<{ command: string; args: readonly string[] }>; killCalls: string[] } {
   const calls: Array<{ command: string; args: readonly string[] }> = [];
+  const killCalls: string[] = [];
   const spawn: SpawnLike = ((command, args) => {
     calls.push({ command, args });
     if (opts.errorOnSpawn) throw opts.errorOnSpawn;
@@ -25,9 +26,16 @@ function fakeChild(opts: {
       if (opts.stderr) stderr.emit('data', Buffer.from(opts.stderr));
       child.emit('close', opts.code ?? 0);
     });
-    return Object.assign(child, { stdout, stderr }) as never;
+    return Object.assign(child, {
+      stdout,
+      stderr,
+      kill: (signal?: NodeJS.Signals | number) => {
+        killCalls.push(typeof signal === 'string' ? signal : String(signal ?? ''));
+        return true;
+      }
+    }) as never;
   }) as SpawnLike;
-  return { spawn, calls };
+  return { spawn, calls, killCalls };
 }
 
 describe('runAgentEvalsCli', () => {
@@ -106,5 +114,24 @@ describe('runAgentEvalsCli', () => {
     const { spawn, calls } = fakeChild({ stdout: JSON.stringify({ score: 1, status: 'PASSED', per_invocation_scores: [1], details: { reason: 'ok' } }) });
     await runAgentEvalsCli({ tracePath: 't', evalSetPath: 's', metric: 'm', spawnFn: spawn, binary: '/opt/bin/agentevals' });
     expect(calls[0]?.command).toBe('/opt/bin/agentevals');
+  });
+
+  it('forwards --threshold when provided and omits it otherwise', async () => {
+    const ok = JSON.stringify({ score: 1, status: 'PASSED', per_invocation_scores: [1], details: { reason: 'ok' } });
+    const withThreshold = fakeChild({ stdout: ok });
+    await runAgentEvalsCli({ tracePath: 't', evalSetPath: 's', metric: 'm', threshold: 0.75, spawnFn: withThreshold.spawn });
+    expect(withThreshold.calls[0]?.args).toEqual(['run', 't', '--eval-set', 's', '-m', 'm', '--threshold', '0.75']);
+
+    const without = fakeChild({ stdout: ok });
+    await runAgentEvalsCli({ tracePath: 't', evalSetPath: 's', metric: 'm', spawnFn: without.spawn });
+    expect(without.calls[0]?.args).toEqual(['run', 't', '--eval-set', 's', '-m', 'm']);
+  });
+
+  it('kills the child on error so the process does not leak', async () => {
+    const error = Object.assign(new Error('weird'), { code: 'EACCES' });
+    const { spawn, killCalls } = fakeChild({ errorOnStart: error });
+    const result = await runAgentEvalsCli({ tracePath: 't', evalSetPath: 's', metric: 'm', spawnFn: spawn });
+    expect(result.available).toBe(false);
+    expect(killCalls).toContain('SIGTERM');
   });
 });

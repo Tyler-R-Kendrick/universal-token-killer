@@ -44,12 +44,18 @@ export async function mediateToolExecution(params: {
     ? startSpan(tracer, {
         operationName: 'utk.mediate',
         runType: 'chain',
-        tags: [TAGS.system('utk'), TAGS.spanKind('internal'), TAGS.utkInputs(input)]
+        tags: [
+          TAGS.system('utk'),
+          TAGS.spanKind('internal'),
+          ...(tracer.captureInputs ? [TAGS.utkInputs(input)] : [])
+        ]
       })
     : undefined;
   try {
     const result = await mediateToolExecutionInner(workspaceRoot, toolId, normalizedToolId, runId, input, execute, tracer, rootSpan);
-    if (tracer && rootSpan) endSpan(tracer, rootSpan, { tags: [TAGS.utkOutputs(result.response)] });
+    if (tracer && rootSpan) {
+      endSpan(tracer, rootSpan, { tags: tracer.captureOutputs ? [TAGS.utkOutputs(result.response)] : [] });
+    }
     return result;
   } catch (error) {
     if (tracer && rootSpan) endSpan(tracer, rootSpan, { error: error as Error });
@@ -89,7 +95,12 @@ async function mediateToolExecutionInner(
   }
 
   const toolSpan = tracer && rootSpan
-    ? startSpan(tracer, { operationName: `tool.${normalizedToolId}`, runType: 'tool', parent: rootSpan, tags: [TAGS.utkInputs(input)] })
+    ? startSpan(tracer, {
+        operationName: `tool.${normalizedToolId}`,
+        runType: 'tool',
+        parent: rootSpan,
+        tags: tracer.captureInputs ? [TAGS.utkInputs(input)] : []
+      })
     : undefined;
   let output: unknown;
   try {
@@ -98,7 +109,9 @@ async function mediateToolExecutionInner(
     if (tracer && toolSpan) endSpan(tracer, toolSpan, { error: error as Error });
     throw error;
   }
-  if (tracer && toolSpan) endSpan(tracer, toolSpan, { tags: [TAGS.utkOutputs(output)] });
+  if (tracer && toolSpan) {
+    endSpan(tracer, toolSpan, { tags: tracer.captureOutputs ? [TAGS.utkOutputs(output)] : [] });
+  }
   const { rawPath, schemaInput, rawBytes, hash } = await persistRawOutput(observationDir, output);
   const compactValue = compactSerializableValue(schemaInput);
   const serialized = serializer.serialize(compactValue, { toolId: normalizedToolId });

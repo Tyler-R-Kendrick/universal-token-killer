@@ -277,7 +277,7 @@ describe('structured tooling', () => {
     expect(tracerResult.missingRequired).toContain('q');
     const codes = tracer.spans.flatMap((span) => span.tags.filter((tag) => tag.key === 'utk.failure.code').map((tag) => tag.value));
     expect(codes).toContain('planner.missing-required');
-    expect(codes).toContain('guidance.unavailable');
+    expect(codes).not.toContain('guidance.unavailable');
   });
 
   it('cache write failures must not break the tool call', async () => {

@@ -147,12 +147,14 @@ async function tryReadSeed(seedPath: string, options: LoadPackOptions = {}): Pro
     const text = await readFile(seedPath, 'utf8');
     return JSON.parse(text) as FieldGrammar;
   } catch (error) {
-    recordFailure(options.tracer, {
-      name: 'pack.seed.parse',
-      runType: 'parser',
-      error: error as Error,
-      extra: { seedPath }
-    });
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      recordFailure(options.tracer, {
+        name: 'pack.seed.parse',
+        runType: 'parser',
+        error: error as Error,
+        extra: { seedPath }
+      });
+    }
     return undefined;
   }
 }

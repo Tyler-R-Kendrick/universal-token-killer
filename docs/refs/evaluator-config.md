@@ -18,7 +18,7 @@ config: {
 }
 ```
 
-- Argument matching is **subset**: every key in `args` must equal the observed value; observed args may contain additional keys.
+- Argument matching is **subset** AND **shallow**: every key in expected `args` must equal the observed value via `!==`. Nested objects compare by reference, so prefer flat shapes (e.g. `{ subcommand: 'status' }`) over nested ones (`{ filters: { open: true } }`) for keys you want to assert on.
 - Order is checked with a moving cursor — once an expected call matches at position N, the next expected call can only match at position > N.
 - An empty `expected[invocation_id]` (or missing entry) scores 1 for that invocation (vacuously true).
 - Malformed `config.expected` (non-object) is treated as no expectations.
@@ -38,6 +38,7 @@ config: {
 - A flat `string[]` is treated as "apply to every invocation".
 - Empty expectations score 1.
 - Non-string entries in arrays are skipped silently.
+- **Malformed regex patterns count as misses.** `new RegExp(pattern)` is wrapped in `try/catch`; a `SyntaxError` does not crash the evaluator — the pattern simply contributes 0 to `hits`.
 
 ## `no_parse_failures`
 

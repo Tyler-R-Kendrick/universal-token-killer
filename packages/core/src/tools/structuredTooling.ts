@@ -139,12 +139,6 @@ export async function completeStructuredToolInvocation(params: {
       extra: { toolId: selectedTool.toolId, fields: planned.value.missingRequired }
     });
   }
-  recordFailure(params.tracer, {
-    name: 'guidance.unavailable',
-    runType: 'llm',
-    error: { message: 'guidance session is not configured' },
-    extra: { toolId: selectedTool.toolId }
-  });
   const template = buildTemplate(selectedTool, planned.value, serializedGrammar);
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');

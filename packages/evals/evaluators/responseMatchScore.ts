@@ -34,7 +34,13 @@ function scoreInvocation(config: Record<string, unknown>, invocation: Invocation
     if (text.includes(substring)) hits += 1;
   }
   for (const pattern of patterns) {
-    if (new RegExp(pattern).test(text)) hits += 1;
+    let regex: RegExp;
+    try {
+      regex = new RegExp(pattern);
+    } catch {
+      continue;
+    }
+    if (regex.test(text)) hits += 1;
   }
   return hits / total;
 }

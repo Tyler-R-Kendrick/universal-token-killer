@@ -517,6 +517,13 @@ describe('lintPack tracer wiring', () => {
     expect(codes).toContain('pack/manifest/missing-description');
     expect(codes).toContain('pack/manifest/missing-license');
     expect(tracer.spans.length).toBeGreaterThan(0);
+    // Each finding's log entry must remain well-formed even when file/hint are absent.
+    const extras = tracer.spans
+      .flatMap((span) => span.logs)
+      .flatMap((log) => log.fields)
+      .filter((field) => field.key === 'utk.failure.extra')
+      .map((field) => JSON.parse(field.value as string) as Record<string, unknown>);
+    expect(extras.every((extra) => 'severity' in extra && 'packDir' in extra)).toBe(true);
   });
 });
 

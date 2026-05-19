@@ -1,7 +1,14 @@
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+let savedBaselineUpdate: string | undefined;
+afterEach(() => {
+  if (savedBaselineUpdate === undefined) delete process.env.UTK_BASELINE_UPDATE;
+  else process.env.UTK_BASELINE_UPDATE = savedBaselineUpdate;
+  savedBaselineUpdate = undefined;
+});
 import {
   ALL_EVALUATORS,
   diffScorecards,
@@ -238,6 +245,19 @@ describe('responseMatchScore', () => {
       invocations: [buildInvocation()]
     });
     expect(result.score).toBe(1);
+  });
+
+  it('treats malformed regex patterns as misses instead of throwing', async () => {
+    const result = await responseMatchScore.evaluate({
+      protocol_version: '1.0',
+      metric_name: 'response_match_score',
+      threshold: 0.9,
+      config: { expected_patterns: { 'inv-1': ['([unterminated', 'status:\\s+OK'] } },
+      invocations: [buildInvocation()]
+    });
+    // 1 of 2 patterns matched; the malformed pattern silently counts as a miss
+    expect(result.score).toBe(0.5);
+    expect(result.status).toBe('FAILED');
   });
 });
 
@@ -486,7 +506,7 @@ describe('baselineStore', () => {
 
   it('writes baselines only when force or UTK_BASELINE_UPDATE is set', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-baseline-write-'));
-    const previous = process.env.UTK_BASELINE_UPDATE;
+    savedBaselineUpdate = process.env.UTK_BASELINE_UPDATE;
     delete process.env.UTK_BASELINE_UPDATE;
     await expect(writeBaseline(workspace, 'demo', scorecard, { baselineDir: path.join(workspace, 'baselines') })).rejects.toThrow(/Refusing/);
 
@@ -497,7 +517,6 @@ describe('baselineStore', () => {
     expect(text).toContain('"eval_set_id"');
 
     delete process.env.UTK_BASELINE_UPDATE;
-    if (previous !== undefined) process.env.UTK_BASELINE_UPDATE = previous;
 
     const fromForce = await writeBaseline(workspace, 'demo', scorecard, { baselineDir: path.join(workspace, 'baselines-force'), force: true });
     expect(fromForce).toContain('baselines-force');

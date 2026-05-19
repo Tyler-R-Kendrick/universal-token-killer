@@ -48,6 +48,12 @@ The mediator emits a root `utk.mediate` span and a child `tool.<id>` span around
 
 Full vocabulary, extras, and the source-of-truth file/line each code is emitted from: [refs/tracing-failure-codes.md](refs/tracing-failure-codes.md).
 
+## Lifecycle
+
+One `RunContext` represents **one trace**: its `runId` is the Jaeger `traceID`, and `flushTrace` writes `<runId>.jaeger.json` (overwriting any previous flush for the same id). Reusing a single tracer across multiple `mediateToolExecution` calls produces a single trace whose `spans` array keeps growing, and the on-disk file is repeatedly overwritten with the cumulative state. Create a **fresh tracer per request** when the traces should not be joined.
+
+`capture_inputs` and `capture_outputs` gate the `utk.inputs` / `utk.outputs` tags on both the root and child tool span. Disable them when inputs/outputs may contain credentials or PII that should never reach the on-disk trace.
+
 ## See Also
 
 - [Evals-Driven Iteration](evals-driven-iteration.md) — turn traces into TDD baselines.

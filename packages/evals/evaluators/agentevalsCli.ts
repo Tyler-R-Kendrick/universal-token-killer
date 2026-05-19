@@ -7,6 +7,7 @@ export type RunAgentEvalsCliArgs = {
   tracePath: string;
   evalSetPath: string;
   metric: string;
+  threshold?: number;
   binary?: string;
   spawnFn?: SpawnLike;
 };
@@ -18,9 +19,13 @@ export type RunAgentEvalsCliResult =
 export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunAgentEvalsCliResult> {
   const binary = args.binary ?? 'agentevals';
   const spawn = args.spawnFn ?? (defaultSpawn as unknown as SpawnLike);
+  const argv = ['run', args.tracePath, '--eval-set', args.evalSetPath, '-m', args.metric];
+  if (args.threshold !== undefined) {
+    argv.push('--threshold', String(args.threshold));
+  }
   let child: ChildProcessWithoutNullStreams;
   try {
-    child = spawn(binary, ['run', args.tracePath, '--eval-set', args.evalSetPath, '-m', args.metric]);
+    child = spawn(binary, argv);
   } catch (error) {
     return { available: false, reason: 'spawn-error', detail: (error as Error).message };
   }
@@ -33,6 +38,11 @@ export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunA
     child.on('close', (code) => resolve({ code }));
   });
   if (exit.error) {
+    try {
+      child.kill('SIGTERM');
+    } catch {
+      /* child may already be dead; nothing to clean up */
+    }
     const nodeError = exit.error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') return { available: false, reason: 'binary-missing', detail: nodeError.message };
     return { available: false, reason: 'spawn-error', detail: nodeError.message };
