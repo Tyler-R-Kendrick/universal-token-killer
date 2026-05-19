@@ -118,6 +118,28 @@ const result = await completeBashLikeToolInvocation({
 console.log(result.invocation.command); // git status --short
 ```
 
+### Complete A Structured LLM Tool Invocation
+
+UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<id>/fields/<name>.grammar.json`). The tool definition just names the fields and any canonical example completions:
+
+```ts
+import { completeStructuredToolInvocation, recordFieldObservation } from '@utk/core';
+
+// Seed observations as real tool runs happen (typically from a hook).
+await recordFieldObservation(process.cwd(), 'tool.search', 'query', 'is:issue is:open label:bug');
+
+const result = await completeStructuredToolInvocation({
+  workspaceRoot: process.cwd(),
+  request: 'search open issue bugs',
+  tools: [{
+    toolId: 'tool.search',
+    outputCache: true,
+    bypassOnCache: true,
+    parameters: [{ name: 'query', completions: ['is:issue is:open label:bug'], required: true }]
+  }]
+});
+```
+
 ### Mediate A Tool Call
 
 ```ts
@@ -196,6 +218,9 @@ min_chars = 8000
 deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
 rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
 protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+
+[tools]
+registry = []
 ```
 
 ## Packages

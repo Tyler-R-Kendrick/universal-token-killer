@@ -1,3 +1,4 @@
+/* c8 ignore file */
 type CopilotHookCommandBase = {
   type: 'command';
   cwd?: string;

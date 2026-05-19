@@ -1,4 +1,19 @@
-import { compressTextWithLlmlingua2, loadUtkConfig, mediateToolExecution, type UtkConfig } from '@utk/core';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import {
+  canonicalJson,
+  compressTextWithLlmlingua2,
+  contentHash,
+  type FieldGrammar,
+  loadFieldGrammar,
+  loadUtkConfig,
+  mediateToolExecution,
+  normalizeToolId,
+  optimizeStructuredToolArgs,
+  recordFieldObservation,
+  resolveRegisteredTool,
+  safeJoin,
+  type UtkConfig
+} from '@utk/core';
 import type { CopilotPreToolUseOutput } from './copilotHookTypes.js';
 
 export type CopilotHookOptions = {
@@ -26,13 +41,30 @@ export async function processCopilotToolHookPayload(payloadText: string, options
   const output = observableOutput(payload);
   if (output === undefined) return undefined;
 
-  const input = payload.tool_input ?? payload.toolInput ?? {};
+  const input = payload.tool_input ?? payload.toolInput ?? payload.toolArgs ?? {};
   const result = await mediateToolExecution({
     workspaceRoot: options.workspaceRoot,
     toolId,
     input,
     execute: async () => output
   });
+  try {
+    const config = await loadUtkConfig(options.workspaceRoot);
+    const registeredTool = resolveRegisteredTool(config, toolId);
+    if (registeredTool && isPlainObject(input)) {
+      await recordStructuredFieldObservations(options.workspaceRoot, toolId, input, registeredTool);
+    }
+    if (registeredTool?.output_cache) {
+      let cacheKeyArgs: unknown = input;
+      if (isPlainObject(input)) {
+        const learnedGrammars = await loadLearnedGrammars(options.workspaceRoot, toolId, registeredTool);
+        cacheKeyArgs = optimizeForRegisteredTool(input, registeredTool, learnedGrammars);
+      }
+      await writeCachedToolOutput(options.workspaceRoot, toolId, cacheKeyArgs, output);
+    }
+  } catch {
+    // fail-open cache writes
+  }
 
   return JSON.stringify({
     hookSpecificOutput: {
@@ -53,12 +85,39 @@ export async function processCopilotPreToolUsePayload(payloadText: string, optio
 
   try {
     const config = await loadUtkConfig(options.workspaceRoot);
-    const policy = effectiveDetokPolicy(config, toolId);
-    if (!policy) return undefined;
+    const registeredTool = resolveRegisteredTool(config, toolId);
+    const learnedGrammars = registeredTool
+      ? await loadLearnedGrammars(options.workspaceRoot, toolId, registeredTool)
+      : {};
+    const optimized = registeredTool
+      ? optimizeStructuredArgsForRegisteredTool(args, registeredTool, learnedGrammars)
+      : { value: args, applied: false };
 
-    const rewritten = await rewriteToolArgs(args, policy);
-    if (rewritten.error) return '{}';
-    if (!rewritten.applied) return undefined;
+    if (registeredTool?.output_cache && registeredTool.bypass_on_cache) {
+      const cached = await readCachedToolOutput(options.workspaceRoot, toolId, optimized.value);
+      if (cached.found) {
+        const output: CopilotPreToolUseOutput = {
+          permissionDecision: 'deny',
+          permissionDecisionReason: 'UTK cache hit for tool input; bypassed tool execution.'
+        };
+        return JSON.stringify(output);
+      }
+    }
+
+    const policy = effectiveDetokPolicy(config, toolId);
+    if (!policy) {
+      if (!optimized.applied) return undefined;
+      const output: CopilotPreToolUseOutput = { modifiedArgs: optimized.value };
+      return JSON.stringify(output);
+    }
+
+    const rewritten = await rewriteToolArgs(optimized.value, policy);
+    if (rewritten.error) {
+      if (!optimized.applied) return '{}';
+      const fallback: CopilotPreToolUseOutput = { modifiedArgs: optimized.value };
+      return JSON.stringify(fallback);
+    }
+    if (!rewritten.applied && !optimized.applied) return undefined;
 
     const output: CopilotPreToolUseOutput = { modifiedArgs: rewritten.value };
     return JSON.stringify(output);
@@ -173,4 +232,86 @@ function toolMatches(pattern: string, toolId: string): boolean {
   if (pattern === toolId) return true;
   if (pattern.endsWith('*')) return toolId.startsWith(pattern.slice(0, -1));
   return false;
+}
+
+type RegisteredTool = NonNullable<ReturnType<typeof resolveRegisteredTool>>;
+
+async function loadLearnedGrammars(
+  workspaceRoot: string,
+  toolId: string,
+  registeredTool: RegisteredTool
+): Promise<Record<string, FieldGrammar | undefined>> {
+  const entries = await Promise.all(
+    registeredTool.structured_fields.map(async (field) => [field.name, await loadFieldGrammar(workspaceRoot, toolId, field.name)] as const)
+  );
+  return Object.fromEntries(entries);
+}
+
+function optimizeStructuredArgsForRegisteredTool(
+  args: Record<string, unknown>,
+  registeredTool: RegisteredTool,
+  learnedGrammars: Record<string, FieldGrammar | undefined>
+): { value: Record<string, unknown>; applied: boolean } {
+  return optimizeStructuredToolArgs(
+    args,
+    {
+      parameters: registeredTool.structured_fields.map((field) => ({
+        name: field.name,
+        completions: field.completions,
+        required: field.required,
+        description: field.description
+      }))
+    },
+    learnedGrammars
+  );
+}
+
+function optimizeForRegisteredTool(
+  args: Record<string, unknown>,
+  registeredTool: RegisteredTool,
+  learnedGrammars: Record<string, FieldGrammar | undefined>
+): Record<string, unknown> {
+  return optimizeStructuredArgsForRegisteredTool(args, registeredTool, learnedGrammars).value;
+}
+
+async function recordStructuredFieldObservations(
+  workspaceRoot: string,
+  toolId: string,
+  args: Record<string, unknown>,
+  registeredTool: RegisteredTool
+): Promise<void> {
+  const fieldNames = new Set(registeredTool.structured_fields.map((field) => field.name));
+  await Promise.all(
+    Object.entries(args)
+      .filter(([key, value]) => fieldNames.has(key) && typeof value === 'string')
+      .map(([key, value]) => recordFieldObservation(workspaceRoot, toolId, key, value as string))
+  );
+}
+
+function cachePath(workspaceRoot: string, toolId: string, input: unknown): string {
+  const normalizedToolId = normalizeToolId(toolId);
+  const key = contentHash(canonicalJson(input));
+  return safeJoin(workspaceRoot, '.utk', 'cache', 'tool-output', normalizedToolId, `${key}.json`);
+}
+
+async function writeCachedToolOutput(workspaceRoot: string, toolId: string, input: unknown, output: unknown): Promise<void> {
+  const filePath = cachePath(workspaceRoot, toolId, input);
+  await mkdir(safeJoin(workspaceRoot, '.utk', 'cache', 'tool-output', normalizeToolId(toolId)), { recursive: true });
+  await writeFile(filePath, canonicalJson({ output }), 'utf8');
+}
+
+async function readCachedToolOutput(
+  workspaceRoot: string,
+  toolId: string,
+  input: unknown
+): Promise<{ found: true; output: unknown } | { found: false }> {
+  try {
+    const filePath = cachePath(workspaceRoot, toolId, input);
+    const text = await readFile(filePath, 'utf8');
+    const parsed = JSON.parse(text) as { output?: unknown };
+    if (parsed && 'output' in parsed) return { found: true, output: parsed.output };
+    return { found: false };
+  } catch {
+    return { found: false };
+  }
 }

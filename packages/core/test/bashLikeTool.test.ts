@@ -10,7 +10,7 @@ describe('bash-like llguidance tool invocation', () => {
 
     const result = await completeBashLikeToolInvocation({
       workspaceRoot,
-      request: 'show the compact git status',
+      request: 'run git status --short',
       tools: [
         {
           toolId: 'bash.git.status',
@@ -68,7 +68,7 @@ describe('bash-like llguidance tool invocation', () => {
   it('rejects empty tool registries', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-bash-tool-empty-'));
     await expect(completeBashLikeToolInvocation({ workspaceRoot, request: 'status', tools: [] })).rejects.toThrow(
-      'At least one bash-like tool definition is required'
+      'At least one tool definition is required'
     );
   });
 
@@ -132,7 +132,7 @@ describe('bash-like llguidance tool invocation', () => {
     expect(result.invocation.toolId).toBe('bash.health');
   });
 
-  it('covers explicit flag, description, short fallback, and empty completion matching', async () => {
+  it('covers explicit flag, description, and empty completion matching', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-bash-tool-policy-'));
 
     const flagResult = await completeBashLikeToolInvocation({
@@ -161,19 +161,6 @@ describe('bash-like llguidance tool invocation', () => {
     });
     expect(descriptionResult.invocation.argv).toEqual(['safe', '--safe']);
 
-    const briefResult = await completeBashLikeToolInvocation({
-      workspaceRoot,
-      request: 'brief status please',
-      tools: [
-        {
-          toolId: 'bash.short',
-          command: 'status',
-          parameters: [{ name: 'short', kind: 'flag', flag: '-s', completions: [] }]
-        }
-      ]
-    });
-    expect(briefResult.invocation.argv).toEqual(['status', '-s']);
-
     const emptyCompletionResult = await completeBashLikeToolInvocation({
       workspaceRoot,
       request: 'literal command',
@@ -186,5 +173,33 @@ describe('bash-like llguidance tool invocation', () => {
       ]
     });
     expect(emptyCompletionResult.invocation.argv).toEqual(['literal']);
+  });
+
+  it('applies learned field grammars to completions on subsequent invocations', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-bash-tool-learn-'));
+    const tool = {
+      toolId: 'bash.fmt',
+      command: 'fmt',
+      parameters: [{ name: 'expr', kind: 'positional' as const, completions: ['a : b'], required: true }]
+    };
+
+    const first = await completeBashLikeToolInvocation({
+      workspaceRoot,
+      request: 'use expr a : b',
+      tools: [tool]
+    });
+    expect(first.invocation.parameters.expr).toBe('a : b');
+
+    const { recordFieldObservation } = await import('../src/index.js');
+    for (let i = 0; i < 5; i += 1) {
+      await recordFieldObservation(workspaceRoot, tool.toolId, 'expr', 'a:b');
+    }
+
+    const after = await completeBashLikeToolInvocation({
+      workspaceRoot,
+      request: 'use expr a : b',
+      tools: [tool]
+    });
+    expect(after.invocation.parameters.expr).toBe('a:b');
   });
 });

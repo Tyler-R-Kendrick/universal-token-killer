@@ -32,6 +32,9 @@ min_chars = 8000
 deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
 rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
 protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+
+[tools]
+registry = []
 ```
 
 Current note: `.utk/config.toml` itself and core mediation artifacts are project-local under `.utk/`. `persistence.storage_root` is also used by auxiliary template helpers; keep it at `.utk` unless you are deliberately testing alternate storage behavior.
@@ -89,6 +92,29 @@ protected_fields = ["path", "file", "content", "patch", "diff", "id"]
 ```
 
 The hook only returns `modifiedArgs` when compression actually changes an allowlisted field. Errors, unavailable LLMLingua, short text, denied tools, and protected fields fail open.
+
+## Registered Structured Tools And Cache Policy
+
+Opt fields into UTK's normalization and caching by naming them in the tool registry. UTK does not ship any hand-written grammar definitions — the per-field grammar (separator style, whitespace conventions, length range) is **discovered from observations** of past tool runs and refined over time. The `structured_fields` entry just tells UTK which fields are subject to learning.
+
+```toml
+[[tools.registry]]
+tool = "github.search.issues"
+description = "Issue index search"
+output_cache = true
+bypass_on_cache = true
+curry_fields = ["query"]
+
+[[tools.registry.structured_fields]]
+name = "query"
+completions = ["is:issue is:open label:bug"]
+required = true
+```
+
+- Structured fields are normalized before tool execution using a learned grammar persisted at `.utk/tools/<normalized-tool-id>/fields/<field>.grammar.json`.
+- `output_cache = true` enables local cache writes keyed by tool input.
+- `bypass_on_cache = true` allows pre-tool hook denial on cache hits to skip repeat calls.
+- Optional `completions` provide canonical example values; UTK matches them against the normalized input but does not require them.
 
 ## Defaults And Precedence
 

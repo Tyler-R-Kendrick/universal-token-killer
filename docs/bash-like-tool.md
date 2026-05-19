@@ -4,6 +4,13 @@ UTK includes an internal helper for bash-like tool invocation planning. It is
 not a public CLI. It is a library surface for hook hosts, generated agents, and
 tests that need compact command invocation templates.
 
+For non-CLI structured parameters, use the companion
+`completeStructuredToolInvocation` helper from `@utk/core`. Both helpers normalize
+parameter values using **learned field grammars** persisted under
+`.utk/tools/<tool-id>/fields/<name>.grammar.json` — UTK does not ship hand-written
+grammar definitions; separator/whitespace style is inferred from observations and
+refined over tool runs.
+
 ## Purpose
 
 CLI commands have stable structure: commands, subcommands, flags, options, and

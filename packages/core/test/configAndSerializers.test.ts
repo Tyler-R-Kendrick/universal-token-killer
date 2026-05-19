@@ -2,7 +2,7 @@ import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { loadUtkConfig, resolveSerializerProviderId } from '../src/config/config.js';
+import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../src/config/config.js';
 import { getSerializationProvider, serializedExtension } from '../src/serialization/providers.js';
 
 describe('UTK TOML config', () => {
@@ -114,6 +114,64 @@ describe('UTK TOML config', () => {
     expect(config.detok.copilot_pre_tool_use.enabled).toBe(true);
     expect(config.detok.copilot_pre_tool_use.rewrite_fields).toContain('prompt');
     expect(config.detok.copilot_pre_tool_use.protected_fields).toContain('command');
+    expect(config.tools.registry).toEqual([]);
+  });
+
+  it('supports registered tool field and cache annotations with wildcard fallback', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-tools-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[[tools.registry]]',
+        'tool = "tool.alpha"',
+        'description = "alpha tool"',
+        'output_cache = true',
+        'bypass_on_cache = true',
+        'curry_fields = ["query"]',
+        '',
+        '[[tools.registry.structured_fields]]',
+        'name = "query"',
+        'completions = ["alpha:one alpha:two"]',
+        'required = true',
+        'description = "alpha query"',
+        '',
+        '[[tools.registry]]',
+        'tool = "tool.beta.*"',
+        'output_cache = false',
+        '[[tools.registry.structured_fields]]',
+        'name = "expr"',
+        'completions = ["beta one two"]',
+        '',
+        '[[tools.registry]]',
+        'tool = "tool.gamma"',
+        'output_cache = false',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(config.tools.registry).toHaveLength(3);
+    expect(config.tools.registry[0]).toMatchObject({
+      tool: 'tool.alpha',
+      output_cache: true,
+      bypass_on_cache: true,
+      curry_fields: ['query']
+    });
+    expect(config.tools.registry[0]?.structured_fields[0]).toMatchObject({
+      name: 'query',
+      completions: ['alpha:one alpha:two'],
+      required: true
+    });
+    expect(resolveRegisteredTool(config, 'tool.alpha')?.tool).toBe('tool.alpha');
+    expect(resolveRegisteredTool(config, 'tool.beta.analytics')?.tool).toBe('tool.beta.*');
+    expect(resolveRegisteredTool(config, 'tool.gamma')?.structured_fields).toEqual([]);
+    expect(resolveRegisteredTool(config, 'tool.unknown')).toBeUndefined();
   });
 
   it('supports detok preToolUse configuration and per-tool overrides', async () => {
@@ -189,6 +247,22 @@ describe('UTK TOML config', () => {
     await writeFile(path.join(badOverrides, '.utk', 'config.toml'), '[serialization]\n[detok.copilot_pre_tool_use]\noverrides = "bad"\n', 'utf8');
 
     await expect(loadUtkConfig(badOverrides)).rejects.toThrow('detok.copilot_pre_tool_use.overrides must be an array');
+  });
+
+  it('fails explicitly for malformed tool registry shapes', async () => {
+    const badRegistry = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-tools-registry-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badRegistry, '.utk'), { recursive: true }));
+    await writeFile(path.join(badRegistry, '.utk', 'config.toml'), '[serialization]\n[tools]\nregistry = "bad"\n', 'utf8');
+    await expect(loadUtkConfig(badRegistry)).rejects.toThrow('tools.registry must be an array');
+
+    const badFields = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-tools-fields-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badFields, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(badFields, '.utk', 'config.toml'),
+      '[serialization]\n[[tools.registry]]\ntool = "x"\nstructured_fields = "bad"\n',
+      'utf8'
+    );
+    await expect(loadUtkConfig(badFields)).rejects.toThrow('tools.registry[].structured_fields must be an array');
   });
 });
 
