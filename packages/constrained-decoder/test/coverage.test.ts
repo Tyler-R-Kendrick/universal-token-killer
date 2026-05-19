@@ -3,7 +3,7 @@ import { validateAndRetry, validateWithLlguidance } from '../src/index.js';
 
 describe('llguidance fallback coverage', () => {
   it('uses declared llguidance dependency and fallback validation for direct checks', async () => {
-    await expect(import('llguidance.ts')).resolves.toHaveProperty('GuidanceParser');
+    await expect(import('transformers-llguidance')).resolves.toHaveProperty('GuidanceParser');
     await expect(validateWithLlguidance('start: "a"', 'a')).resolves.toEqual({ valid: true, errors: [] });
   });
 

@@ -1,4 +1,4 @@
-import * as llguidance from 'llguidance.ts';
+import * as llguidance from 'transformers-llguidance';
 
 export type ValidationResult = { valid: boolean; errors: string[] };
 

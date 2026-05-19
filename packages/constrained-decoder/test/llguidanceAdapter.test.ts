@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validateAndRetry, validateWithLlguidance } from '../src/index.js';
 
 describe('llguidance adapter', () => {
-  it('uses fallback validation when llguidance.ts is unavailable', async () => {
+  it('uses the declared llguidance package with fallback validation', async () => {
     const result = await validateWithLlguidance('start: "a"', 'a');
     expect(result.valid).toBe(true);
   });

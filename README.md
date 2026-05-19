@@ -5,7 +5,7 @@ UTK (Universal Token Killer) is a GitHub Copilot-focused mediation system that s
 ## Packages
 
 - `@utk/core`: store initialization, mediation pipeline, schema/rule/router artifacts.
-- `@utk/constrained-decoder`: `llguidance.ts` validation and validate-retry fallback.
+- `@utk/constrained-decoder`: `transformers-llguidance` validation and validate-retry fallback.
 - `utk-vscode`: VS Code extension registration for `utk.*` commands.
 - `@utk/evals`: AgentV eval definitions and assertions.
 

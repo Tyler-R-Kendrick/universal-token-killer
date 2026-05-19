@@ -7,7 +7,7 @@ export const DEFAULT_CONFIG = {
   storageRoot: '.utk',
   structuredOutput: {
     canonical: ['json-schema', 'toon'],
-    decoder: 'llguidance.ts',
+    decoder: 'transformers-llguidance',
     fallback: 'validate-and-retry',
     maxRetries: 2
   },
