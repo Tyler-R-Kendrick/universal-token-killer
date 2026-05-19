@@ -88,7 +88,11 @@ export async function processCopilotPreToolUsePayload(payloadText: string, optio
     }
 
     const rewritten = await rewriteToolArgs(optimized.value, policy);
-    if (rewritten.error) return '{}';
+    if (rewritten.error) {
+      if (!optimized.applied) return '{}';
+      const fallback: CopilotPreToolUseOutput = { modifiedArgs: optimized.value };
+      return JSON.stringify(fallback);
+    }
     if (!rewritten.applied && !optimized.applied) return undefined;
 
     const output: CopilotPreToolUseOutput = { modifiedArgs: rewritten.value };

@@ -314,6 +314,63 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
     ).resolves.toBeUndefined();
   });
 
+  it('preserves structured optimization when detok rewrite fails open', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-detok-error-preserves-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspaceRoot, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[detok]',
+          'enabled = true',
+          '',
+          '[detok.copilot_pre_tool_use]',
+          'enabled = true',
+          'min_chars = 10',
+          'deny_tools = []',
+          'rewrite_fields = ["prompt"]',
+          'protected_fields = []',
+          '',
+          '[[tools.registry]]',
+          'tool = "agent.plan"',
+          '',
+          '[[tools.registry.structured_fields]]',
+          'name = "query"',
+          'grammar = "lucene"',
+          'completions = ["is:issue is:open"]',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+
+    const previousPython = process.env.UTK_DETOK_PYTHON;
+    process.env.UTK_DETOK_PYTHON = 'definitely-missing-python';
+
+    try {
+      const longPrompt = Array.from({ length: 1000 }, () => 'compress me').join(' ');
+      const output = await processCopilotPreToolUsePayload(
+        JSON.stringify({
+          toolName: 'agent.plan',
+          toolArgs: {
+            prompt: longPrompt,
+            query: '  is:issue   is:open  '
+          }
+        }),
+        { workspaceRoot }
+      );
+      const parsed = JSON.parse(output ?? '{}') as { modifiedArgs?: { prompt?: string; query?: string } };
+      expect(parsed.modifiedArgs?.query).toBe('is:issue is:open');
+      expect(parsed.modifiedArgs?.prompt).toBe(longPrompt);
+    } finally {
+      if (previousPython === undefined) delete process.env.UTK_DETOK_PYTHON;
+      else process.env.UTK_DETOK_PYTHON = previousPython;
+    }
+  });
+
   it('writes cache even when post-tool input is not a plain object', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-nonobj-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
