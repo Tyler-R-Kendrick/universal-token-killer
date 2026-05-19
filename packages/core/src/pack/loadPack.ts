@@ -5,6 +5,7 @@ import type { FieldGrammar } from '../grammar/fieldGrammar.js';
 import { compileLark } from '../grammar/compileLark.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { contentHash } from '../artifact/canonical.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
 import type {
   LoadedPack,
   PackGrammarEntry,
@@ -16,17 +17,29 @@ import type {
   UtkPackManifest
 } from './types.js';
 
-export async function loadPackManifest(packDir: string): Promise<UtkPackManifest> {
+export type LoadPackOptions = { tracer?: RunContext };
+
+export async function loadPackManifest(packDir: string, options: LoadPackOptions = {}): Promise<UtkPackManifest> {
   const manifestPath = safeJoin(packDir, 'utk.pack.toml');
-  const text = await readFile(manifestPath, 'utf8');
-  const raw = parse(text) as Record<string, unknown>;
-  return normalizeManifest(raw);
+  try {
+    const text = await readFile(manifestPath, 'utf8');
+    const raw = parse(text) as Record<string, unknown>;
+    return normalizeManifest(raw);
+  } catch (error) {
+    recordFailure(options.tracer, {
+      name: 'pack.manifest.parse',
+      runType: 'parser',
+      error: error as Error,
+      extra: { manifestPath }
+    });
+    throw error;
+  }
 }
 
-export async function loadPack(packDir: string): Promise<LoadedPack> {
-  const manifest = await loadPackManifest(packDir);
+export async function loadPack(packDir: string, options: LoadPackOptions = {}): Promise<LoadedPack> {
+  const manifest = await loadPackManifest(packDir, options);
   const tools = await loadPackTools(packDir, manifest.tools ?? []);
-  const grammars = await loadPackGrammars(packDir, manifest.grammars ?? []);
+  const grammars = await loadPackGrammars(packDir, manifest.grammars ?? [], options);
   const templates = await loadPackTemplates(packDir, manifest.templates ?? []);
   return { manifest, rootDir: packDir, tools, grammars, templates };
 }
@@ -90,7 +103,7 @@ function parseToolFile(filePath: string, text: string): Record<string, unknown> 
   return parse(text) as Record<string, unknown>;
 }
 
-async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): Promise<PackGrammarRecord[]> {
+async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[], options: LoadPackOptions = {}): Promise<PackGrammarRecord[]> {
   const results: PackGrammarRecord[] = [];
   for (const entry of entries) {
     const larkPath = safeJoin(packDir, entry.lark ?? `grammars/${entry.tool}/${entry.field}.lark`);
@@ -103,7 +116,7 @@ async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): P
       seedHash = contentHash(seed, 16);
     } else {
       const defaultSeedPath = safeJoin(packDir, `grammars/${entry.tool}/${entry.field}.grammar.json`);
-      seed = await tryReadSeed(defaultSeedPath);
+      seed = await tryReadSeed(defaultSeedPath, options);
       if (seed) seedHash = contentHash(seed, 16);
     }
     let lark: string;
@@ -129,11 +142,17 @@ async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): P
   return results;
 }
 
-async function tryReadSeed(seedPath: string): Promise<FieldGrammar | undefined> {
+async function tryReadSeed(seedPath: string, options: LoadPackOptions = {}): Promise<FieldGrammar | undefined> {
   try {
     const text = await readFile(seedPath, 'utf8');
     return JSON.parse(text) as FieldGrammar;
-  } catch {
+  } catch (error) {
+    recordFailure(options.tracer, {
+      name: 'pack.seed.parse',
+      runType: 'parser',
+      error: error as Error,
+      extra: { seedPath }
+    });
     return undefined;
   }
 }

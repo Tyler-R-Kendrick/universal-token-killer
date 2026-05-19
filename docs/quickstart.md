@@ -75,6 +75,21 @@ Use `skills/utk-init` when onboarding a repo. It seeds schema artifacts and prep
 
 The links are created only when the destination path does not already contain a concrete directory.
 
+## Enable Tracing (Optional)
+
+To make failures and soft fail-open paths visible as agentevals.io-compatible artifacts, set `[tracing] enabled = true` in `.utk/config.toml` and pass a `tracer` into the mediation call:
+
+```ts
+import { createRunContext, loadUtkConfig, mediateToolExecution } from '@utk/core';
+
+const config = await loadUtkConfig(process.cwd());
+const tracer = createRunContext(config, process.cwd());
+await mediateToolExecution({ workspaceRoot: process.cwd(), toolId, input, execute, tracer });
+// .utk/events/<runId>.jaeger.json + .utk/events/<runId>.eval_set.json written automatically
+```
+
+The traces feed the agentevals-driven TDD harness in `@utk/evals` — see [Evals-Driven Iteration](evals-driven-iteration.md).
+
 ## Next References
 
 - [Copilot Hook Integration](copilot-hook.md)
@@ -82,3 +97,5 @@ The links are created only when the destination path does not already contain a 
 - [Artifacts And Recovery](artifacts.md)
 - [Bash-Like Tool Templates](bash-like-tool.md)
 - [Session Agents And Skills](session-artifacts.md)
+- [Tracing](tracing.md)
+- [Evals-Driven Iteration](evals-driven-iteration.md)

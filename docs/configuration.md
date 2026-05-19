@@ -35,6 +35,14 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 
 [tools]
 registry = []
+
+[tracing]
+enabled = false
+capture_inputs = true
+capture_outputs = true
+emit_eval_set = true
+storage_root = ".utk/events"
+process_id = "utk"
 ```
 
 Current note: `.utk/config.toml` itself and core mediation artifacts are project-local under `.utk/`. `persistence.storage_root` is also used by auxiliary template helpers; keep it at `.utk` unless you are deliberately testing alternate storage behavior.
@@ -115,6 +123,22 @@ required = true
 - `output_cache = true` enables local cache writes keyed by tool input.
 - `bypass_on_cache = true` allows pre-tool hook denial on cache hits to skip repeat calls.
 - Optional `completions` provide canonical example values; UTK matches them against the normalized input but does not require them.
+
+## Tracing
+
+UTK can emit per-run traces in the [agentevals.io](https://agentevals.io) open standard. Tracing is **off by default**; turn it on per-workspace:
+
+```toml
+[tracing]
+enabled = true              # default: false
+capture_inputs = true       # include utk.inputs tags on spans
+capture_outputs = true      # include utk.outputs tags on spans
+emit_eval_set = true        # also write <run>.eval_set.json next to the jaeger.json
+storage_root = ".utk/events"
+process_id = "utk"          # process key in the Jaeger document
+```
+
+When enabled, every traced mediation writes Jaeger JSON + (optionally) a Google-ADK EvalSet derived from the spans. See [Tracing](tracing.md) for the wiring overview and [refs/agentevals-spec.md](refs/agentevals-spec.md) for canonical wire shapes.
 
 ## Defaults And Precedence
 

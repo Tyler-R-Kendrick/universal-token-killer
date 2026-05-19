@@ -3,6 +3,7 @@ export { toolTrajectoryAvgScore, scoreOne, type ExpectedToolCall } from './toolT
 export { responseMatchScore } from './responseMatchScore.js';
 export { noParseFailures, type JaegerTraceLike } from './noParseFailures.js';
 export { noSoftFailures } from './noSoftFailures.js';
+export { runAgentEvalsCli, type RunAgentEvalsCliArgs, type RunAgentEvalsCliResult, type SpawnLike } from './agentevalsCli.js';
 
 import { toolTrajectoryAvgScore } from './toolTrajectoryAvgScore.js';
 import { responseMatchScore } from './responseMatchScore.js';

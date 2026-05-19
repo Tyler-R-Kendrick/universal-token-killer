@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
 import { extractSlotReferences, type GrammarRef, type Slot, type TemplateDescriptor } from './defineTemplate.js';
 
 export type GrammarCompletion = (params: { prompt: string; lark: string; slotName: string; maxTokens?: number }) => Promise<string>;
@@ -95,11 +96,17 @@ export async function cacheTemplateDescriptor(workspaceRoot: string, descriptor:
   return cachePath;
 }
 
-export async function readTemplateDescriptorCache(cachePath: string): Promise<TemplateDescriptor | undefined> {
+export async function readTemplateDescriptorCache(cachePath: string, options: { tracer?: RunContext } = {}): Promise<TemplateDescriptor | undefined> {
   try {
     const text = await readFile(cachePath, 'utf8');
     return JSON.parse(text) as TemplateDescriptor;
-  } catch {
+  } catch (error) {
+    recordFailure(options.tracer, {
+      name: 'template.load',
+      runType: 'parser',
+      error: error as Error,
+      extra: { cachePath }
+    });
     return undefined;
   }
 }

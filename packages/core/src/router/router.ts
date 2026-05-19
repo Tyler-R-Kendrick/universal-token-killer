@@ -1,6 +1,9 @@
 import { contentHash } from '../artifact/canonical.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
 
 export type RouteReason = 'shape_match' | 'input_match' | 'tool_match' | 'prior_match' | 'fallback' | 'unknown';
+
+export type RouteOptions = { tracer?: RunContext };
 
 export type RouteDecision = {
   schema: string;
@@ -36,7 +39,7 @@ export function deterministicRoute(schemaIds: string[], inputHash: string): Rout
   };
 }
 
-export function routeFromCandidates(toolId: string, input: unknown, shape: unknown, candidates: RouteCandidate[]): RouteDecision {
+export function routeFromCandidates(toolId: string, input: unknown, shape: unknown, candidates: RouteCandidate[], options: RouteOptions = {}): RouteDecision {
   const inputFingerprint = contentHash(input, 8);
   const shapeFingerprint = contentHash(shape, 8);
   const exactInput = candidates.find((candidate) => candidate.toolId === toolId && candidate.inputFingerprint === inputFingerprint);
@@ -49,7 +52,13 @@ export function routeFromCandidates(toolId: string, input: unknown, shape: unkno
   if (sameTool) return { schema: sameTool.schema, confidence: 0.95, reason: 'tool_match' };
 
   const prior = [...candidates].sort((a, b) => (b.priorCount ?? 0) - (a.priorCount ?? 0))[0];
-  return prior ? { schema: prior.schema, confidence: 0.5, reason: 'prior_match' } : { schema: 'unknown', confidence: 0, reason: 'unknown' };
+  if (prior) return { schema: prior.schema, confidence: 0.5, reason: 'prior_match' };
+  recordFailure(options.tracer, {
+    name: 'router.fallback',
+    runType: 'parser',
+    extra: { toolId, candidateCount: candidates.length }
+  });
+  return { schema: 'unknown', confidence: 0, reason: 'unknown' };
 }
 
 export function buildRouterPrompt(toolId: string, inputKeys: string[], shapeFingerprint: string, fieldFingerprint: string, candidates: RouteCandidate[], maxCandidates = 8): RoutePrompt {

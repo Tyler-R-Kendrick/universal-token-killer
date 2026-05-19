@@ -32,6 +32,24 @@ Use those helpers for both tests and optional benchmark tooling so the numbers s
 
 Bash rewrite helpers live in `packages/evals/metrics/bashRewriteMetrics.ts` and use fixtures from `packages/evals/fixtures/bashRewriteFixtures.ts`.
 
+## AgentEvals-Driven TDD
+
+The package also implements the [agentevals.io](https://agentevals.io) evaluator JSON protocol natively (no Python dependency required). Built-in evaluators:
+
+- `tool_trajectory_avg_score` — observed tool calls match the expected sequence and args.
+- `response_match_score` — expected substrings / regex patterns appear in the model response.
+- `no_parse_failures` — no `pack/*` / `template/*` / `router/*` failure codes in the linked Jaeger trace.
+- `no_soft_failures` — no `cache.write` / `guidance.unavailable` / `detok.unavailable` / `router.fallback`.
+
+These evaluators consume the Jaeger + EvalSet artifacts emitted by UTK tracing (see [Tracing](tracing.md)) and drive a baseline-gated TDD loop. Walkthrough: [Evals-Driven Iteration](evals-driven-iteration.md).
+
+Detail references:
+
+- [refs/agentevals-spec.md](refs/agentevals-spec.md) — Jaeger / EvalSet / evaluator / scorecard wire shapes.
+- [refs/evaluator-config.md](refs/evaluator-config.md) — `config` keys per evaluator.
+- [refs/baseline-store.md](refs/baseline-store.md) — `readBaseline` / `writeBaseline` / `diffScorecards` semantics.
+- [refs/tracing-failure-codes.md](refs/tracing-failure-codes.md) — failure-code vocabulary the trace-aware evaluators look for.
+
 ## Running Evals
 
 ```bash

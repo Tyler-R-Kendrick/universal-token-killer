@@ -280,6 +280,12 @@ my-pack/
 - [Constrained Decoding](docs/constrained-decoding.md)
 - [RTK Parity](docs/rtk-parity.md)
 - [Evals](docs/evals.md)
+- [Tracing](docs/tracing.md)
+- [Evals-Driven Iteration](docs/evals-driven-iteration.md)
+- [Spec Reference: agentevals.io](docs/refs/agentevals-spec.md)
+- [Reference: Tracing Failure Codes](docs/refs/tracing-failure-codes.md)
+- [Reference: Evaluator Config Keys](docs/refs/evaluator-config.md)
+- [Reference: Baseline Store](docs/refs/baseline-store.md)
 - [Implementation Guide](docs/implementation-guide.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
