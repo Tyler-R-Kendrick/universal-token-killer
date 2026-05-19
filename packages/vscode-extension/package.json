@@ -7,7 +7,13 @@
     "vscode": "^1.95.0"
   },
   "activationEvents": [
-    "*"
+    "onCommand:utk.status",
+    "onCommand:utk.cleanupObservations",
+    "onCommand:utk.compactSchemaHistory",
+    "onCommand:utk.rebuildRoutes",
+    "onCommand:utk.validateArtifacts",
+    "onCommand:utk.quarantineInvalidArtifacts",
+    "onCommand:utk.openStorageFolder"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -23,10 +29,6 @@
       {
         "command": "utk.compactSchemaHistory",
         "title": "UTK: Compact Schema History"
-      },
-      {
-        "command": "utk.rebuildSchemas",
-        "title": "UTK: Rebuild Schemas"
       },
       {
         "command": "utk.rebuildRoutes",

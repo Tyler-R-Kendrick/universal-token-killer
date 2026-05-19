@@ -14,7 +14,7 @@ export function normalizeToolId(toolId: string): string {
   let normalized = '';
   let previousDash = false;
   for (const char of toolId.toLowerCase()) {
-    const allowed = (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char === '.' || char === '_' || char === '-';
+    const allowed = (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char === '_' || char === '-';
     if (allowed) {
       normalized += char;
       previousDash = char === '-';

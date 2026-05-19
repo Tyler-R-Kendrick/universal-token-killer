@@ -59,7 +59,6 @@ describe('VS Code extension command wiring', () => {
     await extension.runCommand('utk.cleanupObservations', root, storageRoot);
     await extension.runCommand('utk.compactSchemaHistory', root, storageRoot);
     await extension.runCommand('utk.rebuildRoutes', root, storageRoot);
-    await extension.runCommand('utk.rebuildSchemas', root, storageRoot);
     await extension.runCommand('utk.validateArtifacts', root, storageRoot);
     await extension.runCommand('utk.quarantineInvalidArtifacts', root, storageRoot);
     await extension.runCommand('utk.status', root, storageRoot);

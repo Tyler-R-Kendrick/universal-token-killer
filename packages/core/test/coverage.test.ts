@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
@@ -53,7 +53,8 @@ describe('coverage for artifact primitives', () => {
     expect(contentHash({ a: 1 }, 8)).toHaveLength(8);
     expect(normalizeToolId('---My Tool!!!')).toBe('my-tool');
     expect(normalizeToolId('!!!')).toBe('tool');
-    expect(normalizeToolId('a_b.c-1')).toBe('a_b.c-1');
+    expect(normalizeToolId('a_b.c-1')).toBe('a_b-c-1');
+    expect(normalizeToolId('..')).toBe('tool');
     expect(schemaIdFor('tool', 3, { type: 'object' }, [])).toMatch(/^tool\.v3\./);
 
     const manifest = await writeManifest(root, 'My Tool!!!');
@@ -242,7 +243,9 @@ describe('coverage for mediation and artifact stores', () => {
     const oneHistory = path.join(storageRoot, 'tools', 'one', 'history');
     await import('node:fs/promises').then((fs) => fs.mkdir(oneHistory, { recursive: true }));
     await writeFile(path.join(oneHistory, 'one.v1.current.schema.json'), '{}', 'utf8');
-    expect(await rebuildRouteIndex(storageRoot)).toHaveLength(2);
+    const routes = await rebuildRouteIndex(storageRoot);
+    expect(routes).toHaveLength(2);
+    expect(routes.every((route) => route.reason === 'tool_match')).toBe(true);
     expect(await compactSchemaHistory(storageRoot)).toBe(0);
   });
 
@@ -252,6 +255,11 @@ describe('coverage for mediation and artifact stores', () => {
     const persisted = await persistStream(Readable.from(['a', Buffer.from('bc')]), out);
     expect(persisted.byteCount).toBe(3);
     expect(await readFile(out, 'utf8')).toBe('abc');
+    await expect(persistStream(Readable.from(async function* () {
+      yield 'partial';
+      throw new Error('stream failed');
+    }()), path.join(root, 'failed.bin'))).rejects.toThrow('stream failed');
+    await expect(access(path.join(root, 'failed.bin'))).rejects.toThrow();
     expect(() => assertNoRawLeakage('secret', 'secret')).toThrow('Raw output leakage detected');
     expect(() => assertNoRawLeakage('safe', Buffer.from('secret'))).not.toThrow();
     expect(containsForbiddenSpecialCase('plain schema')).toBe(false);

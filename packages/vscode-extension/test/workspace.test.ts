@@ -9,6 +9,9 @@ describe('VS Code workspace store operations', () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-vscode-store-'));
     const storageRoot = await initializeWorkspaceStore(root);
     expect(await readFile(path.join(storageRoot, '.gitignore'), 'utf8')).toContain('/tools/*/observations/');
+    await writeFile(path.join(storageRoot, '.gitignore'), 'custom\n', 'utf8');
+    await initializeWorkspaceStore(root);
+    expect(await readFile(path.join(storageRoot, '.gitignore'), 'utf8')).toBe('custom\n');
 
     await writeFile(path.join(storageRoot, 'routes', 'bad.json'), '{', 'utf8');
     expect(await validateArtifacts(storageRoot)).toHaveLength(1);

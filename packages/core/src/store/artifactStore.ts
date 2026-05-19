@@ -3,7 +3,7 @@ import path from 'node:path';
 import { safeJoin } from '../security/pathSafety.js';
 import { canonicalJson } from '../artifact/canonical.js';
 import { routeToToon } from '../toon/toon.js';
-import { deterministicRoute, type RouteDecision } from '../router/router.js';
+import type { RouteDecision } from '../router/router.js';
 
 export type ArtifactIssue = {
   path: string;
@@ -45,7 +45,7 @@ export async function rebuildRouteIndex(storageRoot: string): Promise<RouteDecis
     const history = safeJoin(toolsRoot, tool, 'history');
     const schemaIds = (await safeReadDir(history)).filter((file) => file.endsWith('.schema.json')).map((file) => file.replace(/\.schema\.json$/, ''));
     if (schemaIds.length === 0) continue;
-    routes.push(deterministicRoute(schemaIds, tool));
+    routes.push({ schema: schemaIds[0]!, confidence: 0.95, reason: 'tool_match' });
   }
 
   await writeFile(safeJoin(routesRoot, 'index.json'), canonicalJson({ routes }), 'utf8');

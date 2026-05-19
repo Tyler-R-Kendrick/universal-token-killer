@@ -5,7 +5,6 @@ export const COMMANDS = [
   'utk.status',
   'utk.cleanupObservations',
   'utk.compactSchemaHistory',
-  'utk.rebuildSchemas',
   'utk.rebuildRoutes',
   'utk.validateArtifacts',
   'utk.quarantineInvalidArtifacts',
@@ -44,7 +43,7 @@ export async function runCommand(command: (typeof COMMANDS)[number], workspaceFo
     return;
   }
 
-  if (command === 'utk.rebuildRoutes' || command === 'utk.rebuildSchemas') {
+  if (command === 'utk.rebuildRoutes') {
     await rebuildRoutes(storageRoot);
     await vscode.window.showInformationMessage('UTK rebuilt route artifacts.');
     return;

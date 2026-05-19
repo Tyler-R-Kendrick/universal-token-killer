@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { finished } from 'node:stream/promises';
+import { rm } from 'node:fs/promises';
+import { Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import type { Readable } from 'node:stream';
 
 export type PersistedStream = {
@@ -16,15 +18,22 @@ export async function persistStream(stream: Readable, outputPath: string): Promi
   let index = 0;
   let byteCount = 0;
 
-  stream.on('data', (chunk: Buffer | string) => {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-    chunks.push({ index, byteCount: buffer.byteLength });
-    index += 1;
-    byteCount += buffer.byteLength;
-    hash.update(buffer);
+  const tracker = new Transform({
+    transform(chunk: Buffer | string, _encoding, callback) {
+      const buffer = Buffer.from(chunk);
+      chunks.push({ index, byteCount: buffer.byteLength });
+      index += 1;
+      byteCount += buffer.byteLength;
+      hash.update(buffer);
+      callback(null, chunk);
+    }
   });
 
-  stream.pipe(writer);
-  await finished(writer);
+  try {
+    await pipeline(stream, tracker, writer);
+  } catch (error) {
+    await rm(outputPath, { force: true });
+    throw error;
+  }
   return { byteCount, contentHash: hash.digest('hex').slice(0, 10), chunks };
 }

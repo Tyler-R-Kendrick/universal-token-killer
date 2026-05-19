@@ -7,7 +7,7 @@ export async function initializeWorkspaceStore(workspaceRoot: string): Promise<s
   const storageRoot = path.join(workspaceRoot, '.utk');
   await mkdir(storageRoot, { recursive: true });
   await Promise.all(['tools', 'routes', 'grammars', 'quarantine', 'routing-telemetry', 'evals/fixtures', 'evals/results', 'traces'].map((part) => mkdir(path.join(storageRoot, part), { recursive: true })));
-  await writeFile(path.join(storageRoot, '.gitignore'), STORE_GITIGNORE, 'utf8');
+  await ensureFile(path.join(storageRoot, '.gitignore'), STORE_GITIGNORE);
   return storageRoot;
 }
 
@@ -89,5 +89,13 @@ async function safeReadDir(dir: string): Promise<string[]> {
     return await readdir(dir);
   } catch {
     return [];
+  }
+}
+
+async function ensureFile(filePath: string, contents: string): Promise<void> {
+  try {
+    await readFile(filePath, 'utf8');
+  } catch {
+    await writeFile(filePath, contents, 'utf8');
   }
 }
