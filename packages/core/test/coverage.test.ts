@@ -1,4 +1,4 @@
-import { access, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
@@ -37,6 +37,7 @@ import {
   schemaToToon,
   sortValue,
   stableStringify,
+  upsertRouteIndex,
   validateArtifacts,
   validateCanonicalToonPair,
   validateRules,
@@ -70,6 +71,10 @@ describe('coverage for artifact primitives', () => {
     expect(safeJoin(root)).toBe(path.resolve(root));
     expect(safeJoin(root, 'child')).toBe(path.join(root, 'child'));
     expect(() => safeJoin(root, '..', 'escape')).toThrow('Path traversal blocked');
+    await symlink(root, path.join(root, 'link'));
+    expect(() => safeJoin(root, 'link', 'child')).toThrow('Symlink traversal blocked');
+    await writeFile(path.join(root, 'file'), 'x', 'utf8');
+    expect(safeJoin(root, 'file', 'child')).toBe(path.join(root, 'file', 'child'));
   });
 });
 
@@ -216,6 +221,8 @@ describe('coverage for mediation and artifact stores', () => {
     const { storageRoot } = await initializeWorkspaceStore(root);
     expect(await rebuildRouteIndex(storageRoot)).toEqual([]);
     expect(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8')).toBe('routes[]\n');
+    await writeFile(path.join(storageRoot, 'routes', 'index.json'), '{}', 'utf8');
+    expect(await upsertRouteIndex(storageRoot, { schema: 'tool.v1.schema', confidence: 0.95, reason: 'tool_match' }, 'tool')).toHaveLength(1);
     expect(await validateArtifacts(path.join(storageRoot, 'missing'))).toEqual([]);
     expect(await quarantineInvalidArtifacts(path.join(storageRoot, 'missing'))).toEqual([]);
     expect(await cleanupObservations(storageRoot, ['missing'])).toBe(0);
@@ -229,6 +236,7 @@ describe('coverage for mediation and artifact stores', () => {
     const obs = path.join(storageRoot, 'tools', 'keep', 'observations', 'run');
     await import('node:fs/promises').then((fs) => fs.mkdir(obs, { recursive: true }));
     await writeFile(path.join(obs, 'output.raw.txt'), 'x', 'utf8');
+    await writeFile(path.join(obs, 'output.raw.json'), '{', 'utf8');
     await writeFile(path.join(storageRoot, 'routes', 'ok.json'), '{}', 'utf8');
     await writeFile(path.join(storageRoot, 'routes', 'note.txt'), 'not json', 'utf8');
     expect(await validateArtifacts(storageRoot)).toEqual([]);

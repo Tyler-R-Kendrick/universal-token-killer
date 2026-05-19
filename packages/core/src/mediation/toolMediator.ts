@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -13,7 +14,7 @@ import { normalizeToolId, writeInputSchema, writeManifest } from '../artifact/ma
 import { mergeSchema, type VersionedSchema } from '../schema/mergeSchema.js';
 import { assertNoRawLeakage } from '../validation/leakage.js';
 import { persistStream } from '../stream/persistStream.js';
-import { rebuildRouteIndex } from '../store/artifactStore.js';
+import { upsertRouteIndex } from '../store/artifactStore.js';
 
 export type ToolExecutor = (input: unknown) => Promise<unknown>;
 
@@ -78,7 +79,7 @@ export async function mediateToolExecution(params: {
   const route = deterministicRoute([schemaId], contentHash(input));
   await writeFile(safeJoin(toolBase, 'route.json'), canonicalJson(route), 'utf8');
   await writeFile(safeJoin(toolBase, 'route.toon'), `${routeToToon(route.schema, route.confidence, route.reason)}\n`, 'utf8');
-  await rebuildRouteIndex(safeJoin(workspaceRoot, '.utk'));
+  await upsertRouteIndex(safeJoin(workspaceRoot, '.utk'), { schema: schemaId, confidence: 0.95, reason: 'tool_match' }, normalizedToolId);
 
   const response = buildCompactResponse(path.relative(workspaceRoot, rawPath), route.schema, route.confidence);
   if (typeof output === 'string') {
@@ -116,10 +117,26 @@ async function persistRawOutput(observationDir: string, output: unknown): Promis
     return { rawPath, schemaInput: output, rawBytes: Buffer.byteLength(output), hash: contentHash(output) };
   }
 
-  const jsonText = `${JSON.stringify(output, null, 2)}\n`;
+  const jsonText = trySerializeJson(output);
+  if (!jsonText) {
+    const text = `${inspect(output, { depth: 4, breakLength: 120 })}\n`;
+    const rawPath = safeJoin(observationDir, 'output.raw.txt');
+    await writeFile(rawPath, text, 'utf8');
+    return { rawPath, schemaInput: text, rawBytes: Buffer.byteLength(text), hash: contentHash(text) };
+  }
+
   const rawPath = safeJoin(observationDir, 'output.raw.json');
   await writeFile(rawPath, jsonText, 'utf8');
   return { rawPath, schemaInput: output, rawBytes: Buffer.byteLength(jsonText), hash: contentHash(jsonText) };
+}
+
+function trySerializeJson(output: unknown): string | undefined {
+  try {
+    const json = JSON.stringify(output, null, 2);
+    return json === undefined ? undefined : `${json}\n`;
+  } catch {
+    return undefined;
+  }
 }
 
 function summaryOf(value: unknown): Record<string, unknown> {

@@ -107,6 +107,21 @@ describe('tool mediation', () => {
     expect(envelope.detectedType).toBe('stream');
     expect(envelope.chunkMetadata).toHaveLength(2);
   });
+
+  it('falls back to text persistence for non-JSON outputs', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-non-json-'));
+    await initializeWorkspaceStore(root);
+    const circular: { self?: unknown; value: bigint } = { value: 1n };
+    circular.self = circular;
+
+    const circularResult = await mediateToolExecution({ workspaceRoot: root, toolId: 'tool.circular', input: {}, execute: async () => circular });
+    const undefinedResult = await mediateToolExecution({ workspaceRoot: root, toolId: 'tool.undefined', input: {}, execute: async () => undefined });
+
+    expect(circularResult.rawPath.endsWith('.raw.txt')).toBe(true);
+    expect(await readFile(circularResult.rawPath, 'utf8')).toContain('Circular');
+    expect(undefinedResult.rawPath.endsWith('.raw.txt')).toBe(true);
+    expect(await readFile(undefinedResult.rawPath, 'utf8')).toBe('undefined\n');
+  });
 });
 
 describe('rules and routing', () => {
@@ -153,9 +168,13 @@ describe('artifact operations', () => {
     const { storageRoot } = await initializeWorkspaceStore(root);
     const invalid = path.join(storageRoot, 'routes', 'bad.json');
     await writeFile(invalid, '{', 'utf8');
+    const raw = path.join(storageRoot, 'tools', 'tool', 'observations', 'run');
+    await import('node:fs/promises').then((fs) => fs.mkdir(raw, { recursive: true }));
+    await writeFile(path.join(raw, 'output.raw.json'), '{', 'utf8');
 
     expect(await validateArtifacts(storageRoot)).toHaveLength(1);
     expect(await quarantineInvalidArtifacts(storageRoot)).toHaveLength(1);
+    expect(await readFile(path.join(raw, 'output.raw.json'), 'utf8')).toBe('{');
   });
 
   it('compacts schema history and validates TOON pairs', async () => {

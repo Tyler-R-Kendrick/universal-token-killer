@@ -14,7 +14,7 @@ export type ArtifactIssue = {
 export async function validateArtifacts(storageRoot: string): Promise<ArtifactIssue[]> {
   const issues: ArtifactIssue[] = [];
   for (const file of await walk(storageRoot)) {
-    if (!file.endsWith('.json')) continue;
+    if (!isValidatableArtifact(storageRoot, file)) continue;
     try {
       JSON.parse(await readFile(file, 'utf8'));
     } catch {
@@ -35,6 +35,16 @@ export async function quarantineInvalidArtifacts(storageRoot: string): Promise<A
   return issues;
 }
 
+export async function upsertRouteIndex(storageRoot: string, route: RouteDecision, toolId: string): Promise<RouteDecision[]> {
+  const routesRoot = safeJoin(storageRoot, 'routes');
+  await mkdir(routesRoot, { recursive: true });
+  const previous = await readRouteIndex(routesRoot);
+  const toolPrefix = `${toolId}.v`;
+  const routes = [...previous.filter((item) => item.schema !== route.schema && !item.schema.startsWith(toolPrefix)), route];
+  await writeRouteIndexes(routesRoot, routes);
+  return routes;
+}
+
 export async function rebuildRouteIndex(storageRoot: string): Promise<RouteDecision[]> {
   const toolsRoot = safeJoin(storageRoot, 'tools');
   const routesRoot = safeJoin(storageRoot, 'routes');
@@ -50,9 +60,7 @@ export async function rebuildRouteIndex(storageRoot: string): Promise<RouteDecis
     routes.push({ schema, confidence: 0.95, reason: 'tool_match' });
   }
 
-  await writeFile(safeJoin(routesRoot, 'index.json'), canonicalJson({ routes }), 'utf8');
-  await writeFile(safeJoin(routesRoot, 'index.toon'), routesToToon(routes), 'utf8');
-  await writeFile(safeJoin(routesRoot, 'index.min.toon'), `${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n`, 'utf8');
+  await writeRouteIndexes(routesRoot, routes);
   return routes;
 }
 
@@ -103,10 +111,31 @@ function routesToToon(routes: RouteDecision[]): string {
   return `routes[\n${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n]\n`;
 }
 
+async function writeRouteIndexes(routesRoot: string, routes: RouteDecision[]): Promise<void> {
+  await writeFile(safeJoin(routesRoot, 'index.json'), canonicalJson({ routes }), 'utf8');
+  await writeFile(safeJoin(routesRoot, 'index.toon'), routesToToon(routes), 'utf8');
+  await writeFile(safeJoin(routesRoot, 'index.min.toon'), `${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n`, 'utf8');
+}
+
+async function readRouteIndex(routesRoot: string): Promise<RouteDecision[]> {
+  try {
+    const parsed = JSON.parse(await readFile(safeJoin(routesRoot, 'index.json'), 'utf8')) as { routes?: RouteDecision[] };
+    return Array.isArray(parsed.routes) ? parsed.routes : [];
+  } catch {
+    return [];
+  }
+}
+
+function isValidatableArtifact(storageRoot: string, file: string): boolean {
+  if (!file.endsWith('.json') || path.basename(file).includes('.raw.')) return false;
+  return !path.relative(storageRoot, file).split(path.sep).includes('observations');
+}
+
 async function walk(root: string): Promise<string[]> {
   const entries = await safeReadDir(root);
   const files: string[] = [];
   for (const entry of entries) {
+    if (entry === 'observations') continue;
     const full = safeJoin(root, entry);
     const children = await safeReadDir(full);
     if (children.length > 0) {

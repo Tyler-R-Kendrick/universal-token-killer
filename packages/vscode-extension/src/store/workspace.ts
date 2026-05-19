@@ -28,7 +28,7 @@ export async function cleanupObservations(storageRoot: string, toolIds?: string[
 export async function validateArtifacts(storageRoot: string): Promise<string[]> {
   const invalid: string[] = [];
   for (const file of await walk(storageRoot)) {
-    if (!file.endsWith('.json')) continue;
+    if (!isValidatableArtifact(storageRoot, file)) continue;
     try {
       JSON.parse(await readFile(file, 'utf8'));
     } catch {
@@ -76,12 +76,18 @@ async function walk(root: string): Promise<string[]> {
   const entries = await safeReadDir(root);
   const files: string[] = [];
   for (const entry of entries) {
+    if (entry === 'observations') continue;
     const full = path.join(root, entry);
     const children = await safeReadDir(full);
     if (children.length === 0) files.push(full);
     else files.push(...(await walk(full)));
   }
   return files;
+}
+
+function isValidatableArtifact(storageRoot: string, file: string): boolean {
+  if (!file.endsWith('.json') || path.basename(file).includes('.raw.')) return false;
+  return !path.relative(storageRoot, file).split(path.sep).includes('observations');
 }
 
 async function safeReadDir(dir: string): Promise<string[]> {
