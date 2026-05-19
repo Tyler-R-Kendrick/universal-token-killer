@@ -225,11 +225,39 @@ registry = []
 
 ## Packages
 
-- `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, and session artifact helpers.
+- `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls.
-- `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers.
+- `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
+- `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
 - `@utk/evals`: RTK parity fixtures, metrics, assertions, and AgentV-style eval definitions.
+
+## Sharing Optimizations As Packs
+
+Tool definitions, Lark grammars (for llguidance constrained decoding), FieldGrammar seed observations, and prompt-template DSL files travel together as a versioned **pack**. Install one with the `utk` CLI:
+
+```bash
+utk pack add ./my-git-pack            # local directory
+utk pack add ./git-cli-1.2.0.tgz      # tarball
+utk pack add github:alice/utk-pack-git#v1.2.0
+utk pack add @utk/git-cli@^1.0.0      # npm registry
+
+utk pack list
+utk pack remove git-cli
+```
+
+The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<id>/fields/`, merges `FieldGrammar` seeds with any already-observed locally, caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
+
+Authoring a pack:
+
+```
+my-pack/
+├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
+├── tools/<id>.toml           # bash-like or structured tool definitions
+├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
+├── grammars/<tool>/<field>.grammar.json # optional FieldGrammar seed
+└── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+```
 
 ## Reference Docs
 
