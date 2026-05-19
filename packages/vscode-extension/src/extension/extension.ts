@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { cleanupObservations, compactSchemaHistory, initializeWorkspaceStore, quarantineInvalidArtifacts, rebuildRoutes, validateArtifacts } from '../store/workspace.js';
 
-const COMMANDS = [
+export const COMMANDS = [
   'utk.status',
   'utk.cleanupObservations',
   'utk.compactSchemaHistory',
@@ -26,7 +26,7 @@ export function deactivate(): void {
   // no-op
 }
 
-async function runCommand(command: (typeof COMMANDS)[number], workspaceFolder: string, storageRoot: string): Promise<void> {
+export async function runCommand(command: (typeof COMMANDS)[number], workspaceFolder: string, storageRoot: string): Promise<void> {
   if (command === 'utk.openStorageFolder') {
     await vscode.commands.executeCommand('revealFileInOS', vscode.Uri.joinPath(vscode.Uri.file(workspaceFolder), '.utk'));
     return;

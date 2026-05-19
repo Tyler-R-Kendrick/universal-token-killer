@@ -37,15 +37,16 @@ export function inferSchema(value: unknown): JsonSchema {
 
 export function inferTextPseudoSchema(text: string): JsonSchema {
   const lines = text.split(/\r?\n/);
-  const prefix = lines.length > 0 ? longestCommonPrefix(lines.filter(Boolean)) : '';
-  const suffix = lines.length > 0 ? longestCommonSuffix(lines.filter(Boolean)) : '';
+  const nonEmptyLines = lines.filter(Boolean);
+  const prefix = longestCommonPrefix(nonEmptyLines);
+  const suffix = longestCommonSuffix(nonEmptyLines);
 
   return {
     type: 'text-pseudo-schema-envelope',
     lineCount: lines.length,
     stablePrefix: prefix,
     stableSuffix: suffix,
-    avgLineLength: lines.length === 0 ? 0 : Math.round(lines.reduce((sum, line) => sum + line.length, 0) / lines.length),
+    avgLineLength: Math.round(lines.reduce((sum, line) => sum + line.length, 0) / lines.length),
     opaque: lines.length <= 1 && !prefix && !suffix
   };
 }
@@ -94,7 +95,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function longestCommonPrefix(values: string[]): string {
   if (values.length === 0) return '';
-  let prefix = values[0] ?? '';
+  let prefix = values[0] as string;
   for (const value of values.slice(1)) {
     while (!value.startsWith(prefix) && prefix) {
       prefix = prefix.slice(0, -1);
@@ -105,7 +106,7 @@ function longestCommonPrefix(values: string[]): string {
 
 function longestCommonSuffix(values: string[]): string {
   if (values.length === 0) return '';
-  let suffix = values[0] ?? '';
+  let suffix = values[0] as string;
   for (const value of values.slice(1)) {
     while (!value.endsWith(suffix) && suffix) {
       suffix = suffix.slice(1);

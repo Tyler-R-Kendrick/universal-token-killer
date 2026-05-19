@@ -17,8 +17,8 @@ export async function validateArtifacts(storageRoot: string): Promise<ArtifactIs
     if (!file.endsWith('.json')) continue;
     try {
       JSON.parse(await readFile(file, 'utf8'));
-    } catch (error) {
-      issues.push({ path: file, kind: 'invalid-json', message: error instanceof Error ? error.message : 'invalid json' });
+    } catch {
+      issues.push({ path: file, kind: 'invalid-json', message: 'invalid json' });
     }
   }
   return issues;
