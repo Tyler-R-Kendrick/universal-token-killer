@@ -244,7 +244,11 @@ utk pack add @utk/git-cli@^1.0.0      # npm registry
 
 utk pack list
 utk pack remove git-cli
+utk pack lint ./my-git-pack           # validate pack format (exits 1 on errors)
+utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
 ```
+
+`utk pack add` runs the linter and refuses to install packs with errors. Pass `--force` after re-checking the report if you need to override.
 
 The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<id>/fields/`, merges `FieldGrammar` seeds with any already-observed locally, caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
 

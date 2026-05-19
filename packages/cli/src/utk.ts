@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import {
+  formatLintReport,
   installPack,
+  lintPack,
   listInstalledPacks,
-  loadPackManifest,
   parsePackSource,
   uninstallPack
 } from '@utk/core';
@@ -18,6 +19,15 @@ export type CliHandlerContext = {
 export type CliResult = { exitCode: number };
 
 export async function runUtkCli(argv: string[], context: CliHandlerContext): Promise<CliResult> {
+  try {
+    return await dispatch(argv, context);
+  } catch (error) {
+    context.stderr(`${(error as Error).message}\n`);
+    return { exitCode: 1 };
+  }
+}
+
+async function dispatch(argv: string[], context: CliHandlerContext): Promise<CliResult> {
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
     printUsage(context.stdout);
     return { exitCode: 0 };
@@ -37,8 +47,9 @@ export async function runUtkCli(argv: string[], context: CliHandlerContext): Pro
     case 'list':
     case 'ls':
       return await handleList(context);
+    case 'lint':
     case 'validate':
-      return await handleValidate(rest, context);
+      return await handleLint(rest, context);
     default:
       context.stderr(`Unknown pack subcommand: ${subcommand ?? '(none)'}\n`);
       printUsage(context.stderr);
@@ -103,10 +114,26 @@ async function handleList(context: CliHandlerContext): Promise<CliResult> {
   return { exitCode: 0 };
 }
 
-async function handleValidate(args: string[], context: CliHandlerContext): Promise<CliResult> {
-  const target = args[0] ?? context.cwd;
-  const manifest = await loadPackManifest(target);
-  context.stdout(`Pack ${manifest.pack.name}@${manifest.pack.version} validated\n`);
+async function handleLint(args: string[], context: CliHandlerContext): Promise<CliResult> {
+  let strict = false;
+  let target: string | undefined;
+  for (const arg of args) {
+    if (arg === '--strict') {
+      strict = true;
+      continue;
+    }
+    if (target === undefined) {
+      target = arg;
+      continue;
+    }
+    context.stderr(`Unexpected argument: ${arg}\n`);
+    return { exitCode: 1 };
+  }
+  const resolved = target ?? context.cwd;
+  const report = await lintPack(resolved);
+  context.stdout(formatLintReport(report, resolved));
+  if (report.errorCount > 0) return { exitCode: 1 };
+  if (strict && report.warningCount > 0) return { exitCode: 1 };
   return { exitCode: 0 };
 }
 
@@ -117,7 +144,8 @@ function printUsage(write: CliWriter): void {
   write('  pack add <source> [--force]   Install a pack (local dir, tarball, git URL, npm spec)\n');
   write('  pack remove <name>            Uninstall a pack by name\n');
   write('  pack list                     List installed packs\n');
-  write('  pack validate [<path>]        Validate a pack manifest at <path> (defaults to cwd)\n');
+  write('  pack lint [<path>] [--strict] Lint a pack at <path> (default: cwd). --strict treats warnings as errors\n');
+  write('  pack validate [<path>]        Alias for `pack lint`\n');
 }
 
 /* v8 ignore start -- direct CLI entrypoint exercised only when invoked as a binary */

@@ -786,6 +786,31 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     expect(cached.templates[0]?.id).toBe('git.checkout');
   });
 
+  it('skips lint when skipLint is set', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-skiplint-src-'));
+    await mkdir(source, { recursive: true });
+    await mkdir(path.join(source, 'tools'), { recursive: true });
+    await writeFile(
+      path.join(source, 'utk.pack.toml'),
+      [
+        '[pack]',
+        'name = "broken"',
+        'version = "1.0.0"',
+        '',
+        '[[tools]]',
+        'id = "git"',
+        'kind = "bash-like"',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+    await writeFile(path.join(source, 'tools', 'git.toml'), '[tool]\nid = "git"\n', 'utf8');
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-install-skiplint-ws-'));
+    await expect(installPack(workspace, { type: 'local', path: source })).rejects.toThrow(/lint/i);
+    const installed = await installPack(workspace, { type: 'local', path: source }, { skipLint: true });
+    expect(installed.name).toBe('broken');
+  });
+
   it('accepts an injected fetcher to install from non-local sources', async () => {
     const stage = await mkdtemp(path.join(os.tmpdir(), 'utk-fake-fetcher-src-'));
     await writeFixturePack(stage);

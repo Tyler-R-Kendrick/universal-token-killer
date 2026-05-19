@@ -7,6 +7,7 @@ import { fieldGrammarPath, loadFieldGrammar } from '../grammar/grammarStore.js';
 import { subtractFieldGrammar } from '../grammar/subtractFieldGrammar.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { fetchPackToTempDir, type PackFetcher } from './fetcher.js';
+import { lintPack, type LintOptions, type LintReport, formatLintReport } from './lintPack.js';
 import { loadPack } from './loadPack.js';
 import { readLockfile, writeLockfile } from './lockfile.js';
 import { addPackRegistryBlocks, removePackRegistryBlocks } from './registryRewrite.js';
@@ -17,11 +18,28 @@ export type InstallPackOptions = {
   fetcher?: PackFetcher;
   force?: boolean;
   now?: () => Date;
+  skipLint?: boolean;
+  lintOptions?: LintOptions;
 };
+
+export class PackLintError extends Error {
+  public readonly report: LintReport;
+  constructor(report: LintReport, packLabel: string) {
+    super(`Pack failed linting (${report.errorCount} error(s)):\n${formatLintReport(report, packLabel)}`);
+    this.name = 'PackLintError';
+    this.report = report;
+  }
+}
 
 export async function installPack(workspaceRoot: string, source: PackSource, options: InstallPackOptions = {}): Promise<InstalledPack> {
   const fetcher = options.fetcher ?? fetchPackToTempDir;
   const fetched = await fetcher(source, workspaceRoot);
+  if (!options.skipLint) {
+    const report = await lintPack(fetched.dir, options.lintOptions);
+    if (!report.ok) {
+      throw new PackLintError(report, describePackSource(source));
+    }
+  }
   const pack = await loadPack(fetched.dir);
 
   const existing = await readLockfile(workspaceRoot);

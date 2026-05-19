@@ -172,21 +172,69 @@ describe('utk cli', () => {
     expect(missing.getStderr()).toContain('Usage');
   });
 
-  it('validate: prints the pack manifest summary', async () => {
-    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-validate-'));
+  it('lint: prints findings and exits 0 when no errors', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-lint-'));
     await writeFixturePack(source);
     const writers = captureWriters();
-    const result = await runUtkCli(['pack', 'validate', source], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });
+    const result = await runUtkCli(['pack', 'lint', source], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });
     expect(result.exitCode).toBe(0);
-    expect(writers.getStdout()).toContain('validated');
+    expect(writers.getStdout()).toContain('0 error');
   });
 
-  it('validate: defaults to current working directory', async () => {
-    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-validate-cwd-'));
+  it('lint: defaults to current working directory', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-lint-cwd-'));
     await writeFixturePack(source);
     const writers = captureWriters();
     const result = await runUtkCli(['pack', 'validate'], { cwd: source, stdout: writers.stdout, stderr: writers.stderr });
     expect(result.exitCode).toBe(0);
-    expect(writers.getStdout()).toContain('validated');
+    expect(writers.getStdout()).toContain('0 error');
+  });
+
+  it('lint: exits 1 when errors are present', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-lint-bad-'));
+    await mkdir(source, { recursive: true });
+    await writeFile(path.join(source, 'utk.pack.toml'), '[pack]\nname = "broken!!!"\nversion = "1.0.0"\n', 'utf8');
+    const writers = captureWriters();
+    const result = await runUtkCli(['pack', 'lint', source], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });
+    expect(result.exitCode).toBe(1);
+    expect(writers.getStdout()).toContain('pack/manifest/schema');
+  });
+
+  it('lint: --strict promotes warnings to failure', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-lint-strict-'));
+    await writeFixturePack(source);
+    const writers = captureWriters();
+    const result = await runUtkCli(['pack', 'lint', source, '--strict'], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });
+    expect(result.exitCode).toBe(1);
+  });
+
+  it('lint: rejects unexpected arguments', async () => {
+    const writers = captureWriters();
+    const result = await runUtkCli(['pack', 'lint', './a', './b'], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });
+    expect(result.exitCode).toBe(1);
+    expect(writers.getStderr()).toContain('Unexpected argument');
+  });
+
+  it('add: refuses to install packs with lint errors', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-bad-install-'));
+    await mkdir(source, { recursive: true });
+    await writeFile(
+      path.join(source, 'utk.pack.toml'),
+      [
+        '[pack]',
+        'name = "broken"',
+        'version = "1.0.0"',
+        '',
+        '[[tools]]',
+        'id = "git"',
+        'kind = "bash-like"',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-bad-install-ws-'));
+    const writers = captureWriters();
+    const result = await runUtkCli(['pack', 'add', source], { cwd: workspace, stdout: writers.stdout, stderr: writers.stderr });
+    expect(result.exitCode).not.toBe(0);
   });
 });

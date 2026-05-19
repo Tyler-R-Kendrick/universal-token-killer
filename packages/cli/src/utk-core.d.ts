@@ -48,4 +48,27 @@ declare module '@utk/core' {
   export function uninstallPack(workspaceRoot: string, name: string): Promise<void>;
   export function listInstalledPacks(workspaceRoot: string): Promise<InstalledPack[]>;
   export function loadPackManifest(packDir: string): Promise<UtkPackManifest>;
+
+  export type LintSeverity = 'error' | 'warning' | 'info';
+  export type LintFinding = {
+    severity: LintSeverity;
+    code: string;
+    message: string;
+    file?: string;
+    hint?: string;
+  };
+  export type LintReport = {
+    ok: boolean;
+    findings: LintFinding[];
+    errorCount: number;
+    warningCount: number;
+    infoCount: number;
+  };
+  export type LintOptions = {
+    importTemplate?: (filePath: string) => Promise<unknown>;
+    recommendedFields?: boolean;
+  };
+
+  export function lintPack(packDir: string, options?: LintOptions): Promise<LintReport>;
+  export function formatLintReport(report: LintReport, packLabel: string): string;
 }
