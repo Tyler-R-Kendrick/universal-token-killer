@@ -1,3 +1,5 @@
+import { decode } from '@toon-format/toon';
+
 const ALLOWED_RULE_KINDS = new Set([
   'constant',
   'homogeneous-array',
@@ -16,7 +18,19 @@ export function assertAllowedRuleKindsOnly(rules: Array<{ kind: string }>): bool
 }
 
 export function assertRouteGrammarMatch(route: string): boolean {
-  return /^route\{schema:"[^"]+",confidence:(0(\.\d+)?|1(\.0+)?),reason:(shape_match|input_match|tool_match|prior_match|fallback|unknown)\}$/.test(route.trim());
+  try {
+    const decoded = decode(route) as { route?: { schema?: unknown; confidence?: unknown; reason?: unknown } };
+    return (
+      typeof decoded.route?.schema === 'string' &&
+      typeof decoded.route.confidence === 'number' &&
+      decoded.route.confidence >= 0 &&
+      decoded.route.confidence <= 1 &&
+      typeof decoded.route.reason === 'string' &&
+      ['shape_match', 'input_match', 'tool_match', 'prior_match', 'fallback', 'unknown'].includes(decoded.route.reason)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function assertNoForbiddenSpecialCaseStrings(text: string): boolean {

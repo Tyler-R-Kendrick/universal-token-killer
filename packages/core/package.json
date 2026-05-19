@@ -9,5 +9,9 @@
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@toon-format/toon": "^2.2.0",
+    "smol-toml": "^1.6.1"
   }
 }

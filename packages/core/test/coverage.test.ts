@@ -2,6 +2,7 @@ import { access, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
+import { decode } from '@toon-format/toon';
 import { describe, expect, it } from 'vitest';
 import {
   assertNoRawLeakage,
@@ -71,8 +72,13 @@ describe('coverage for artifact primitives', () => {
     expect(safeJoin(root)).toBe(path.resolve(root));
     expect(safeJoin(root, 'child')).toBe(path.join(root, 'child'));
     expect(() => safeJoin(root, '..', 'escape')).toThrow('Path traversal blocked');
-    await symlink(root, path.join(root, 'link'));
-    expect(() => safeJoin(root, 'link', 'child')).toThrow('Symlink traversal blocked');
+    expect(() => safeJoin(root, '\0')).toThrow('without null bytes');
+    try {
+      await symlink(root, path.join(root, 'link'));
+      expect(() => safeJoin(root, 'link', 'child')).toThrow('Symlink traversal blocked');
+    } catch (error) {
+      expect((error as NodeJS.ErrnoException).code).toBe('EPERM');
+    }
     await writeFile(path.join(root, 'file'), 'x', 'utf8');
     expect(safeJoin(root, 'file', 'child')).toBe(path.join(root, 'file', 'child'));
   });
@@ -141,8 +147,8 @@ describe('coverage for routing, responses, and Copilot structural prompts', () =
     const prompt = buildRouterPrompt('tool', ['z', 'a'], 'shape', 'fields', Array.from({ length: 10 }, (_, index) => ({ schema: `s${index}`, toolId: 'tool' })));
     expect(prompt.candidates).toHaveLength(8);
     expect(prompt.prompt).toContain('input_keys: a,z');
-    expect(routeToToon('schema', 0.955, 'tool_match')).toBe('route{schema:"schema",confidence:0.95,reason:tool_match}');
-    expect(schemaToToon({ type: 'object' })).toBe('schema{"type":"object"}');
+    expect(decode(routeToToon('schema', 0.955, 'tool_match'))).toEqual({ route: { schema: 'schema', confidence: 0.95, reason: 'tool_match' } });
+    expect(decode(schemaToToon({ type: 'object' }))).toEqual({ schema: { type: 'object' } });
     expect(validateCanonicalToonPair({ type: 'object' }, `${schemaToToon({ type: 'object' })}\n`)).toEqual({ valid: true, errors: [] });
     expect(buildCompactResponse('x'.repeat(390), 'schema', 1)).toHaveLength(400);
   });
@@ -220,7 +226,7 @@ describe('coverage for mediation and artifact stores', () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-cover-store-'));
     const { storageRoot } = await initializeWorkspaceStore(root);
     expect(await rebuildRouteIndex(storageRoot)).toEqual([]);
-    expect(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8')).toBe('routes[]\n');
+    expect(decode(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8'))).toEqual({ routes: [] });
     await writeFile(path.join(storageRoot, 'routes', 'index.json'), '{}', 'utf8');
     expect(await upsertRouteIndex(storageRoot, { schema: 'tool.v1.schema', confidence: 0.95, reason: 'tool_match' }, 'tool')).toHaveLength(1);
     expect(await validateArtifacts(path.join(storageRoot, 'missing'))).toEqual([]);

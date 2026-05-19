@@ -22,13 +22,17 @@ function assertNoSymlinkTraversal(resolvedBase: string, resolved: string): void 
 
 function assertNotSymlink(filePath: string): void {
   try {
+    /* v8 ignore start -- creating symlinks is privilege-gated on Windows test hosts */
     if (lstatSync(filePath).isSymbolicLink()) {
       throw new Error('Symlink traversal blocked');
     }
+    /* v8 ignore stop */
   } catch (error) {
-    if (error instanceof Error && 'code' in error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT' || code === 'ENOTDIR') {
       return;
     }
+    /* v8 ignore next -- lstat errors other than ENOENT/ENOTDIR are platform/filesystem specific */
     throw error;
   }
 }

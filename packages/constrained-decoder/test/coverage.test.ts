@@ -1,24 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { validateAndRetry, validateWithLlguidance } from '../src/index.js';
+import { buildRouteGrammar, generateConstrainedRoute, serializeRouteGrammar, validateAndRetry, validateWithGuidance } from '../src/index.js';
 
-describe('llguidance fallback coverage', () => {
-  it('uses declared llguidance dependency and fallback validation for direct checks', async () => {
-    await expect(import('transformers-llguidance')).resolves.toHaveProperty('GuidanceParser');
-    await expect(validateWithLlguidance('start: "a"', 'a')).resolves.toEqual({ valid: true, errors: [] });
+describe('guidance-ts adapter coverage', () => {
+  it('serializes deterministic route grammars for direct checks', () => {
+    const grammar = buildRouteGrammar([{ schema: 'schema.a', confidence: 0.95, reason: 'tool_match' }]);
+    expect(serializeRouteGrammar(grammar)).toEqual(serializeRouteGrammar(grammar));
   });
 
-  it('rejects empty grammar and empty candidates through fallback validation', async () => {
-    await expect(validateWithLlguidance('', 'candidate')).resolves.toEqual({ valid: false, errors: ['empty grammar'] });
-    await expect(validateWithLlguidance('start: "a"', '')).resolves.toEqual({ valid: false, errors: ['empty candidate'] });
+  it('rejects invalid candidates through explicit validators', async () => {
+    await expect(validateWithGuidance('', () => ['empty candidate'])).resolves.toEqual({ valid: false, errors: ['empty candidate'] });
+    await expect(validateWithGuidance('route', () => [])).resolves.toEqual({ valid: true, errors: [] });
   });
 
   it('returns retry failure after exhausting attempts', async () => {
     let attempts = 0;
-    const result = await validateAndRetry('start: "a"', async () => {
+    const result = await validateAndRetry(async () => {
       attempts += 1;
       return '';
-    }, 1);
+    }, () => ['empty candidate'], 1);
     expect(attempts).toBe(2);
     expect(result).toEqual({ valid: false, errors: ['validation failed after retries'] });
+  });
+
+  it('does not fake constrained generation when no session is configured', async () => {
+    await expect(generateConstrainedRoute({ grammar: buildRouteGrammar([]), prompt: 'route' })).resolves.toEqual({
+      available: false,
+      errors: ['guidance session is not configured'],
+      route: undefined
+    });
   });
 });

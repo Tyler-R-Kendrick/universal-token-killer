@@ -1,3 +1,7 @@
+import { spawnSync } from 'node:child_process';
+import { RTK_PARITY_FIXTURES, type RtkParityFixture } from '../packages/evals/fixtures/rtkParityFixtures.js';
+import { estimateTokens } from '../packages/evals/assertions/tokenBudgets.js';
+
 export type BenchmarkCase = {
   name: string;
   rawSize: number;
@@ -14,6 +18,12 @@ export type BenchmarkSummary = {
   utkMatchesOrBeatsRtk: boolean;
   rawLeakageCount: number;
 };
+
+export type OptionalRtkBenchmarkResult =
+  | { status: 'skipped'; message: string; cases: [] }
+  | { status: 'ran'; command: string; cases: Array<{ name: string; rtkBytes: number; rtkTokens: number; goldenRtkTokens: number }> };
+
+export type RtkRunner = (command: string, fixture: RtkParityFixture) => string;
 
 export function compareBaseline(raw: number, rtk: number, utk: number): Record<string, number> {
   return {
@@ -32,13 +42,41 @@ export function summarizeBenchmarks(cases: BenchmarkCase[]): BenchmarkSummary {
   };
 }
 
-export const DEFAULT_BENCHMARK_CASES = [
-  'large-json-object',
-  'large-json-array-of-objects',
-  'deeply-nested-api-style-response',
-  'repeated-text-logs',
-  'tabular-text',
-  'markdown-report',
-  'synthetic-vscode-copilot-tool-output',
-  'rtk-supported-command-output-fixtures'
-];
+export function runOptionalRtkBenchmark(
+  env: NodeJS.ProcessEnv = process.env,
+  fixtures: RtkParityFixture[] = RTK_PARITY_FIXTURES,
+  runner: RtkRunner = runRtkCommand
+): OptionalRtkBenchmarkResult {
+  const command = env.UTK_RTK_COMMAND ?? env.UTK_RTK_BIN;
+  if (!command) {
+    return { status: 'skipped', message: 'Set UTK_RTK_COMMAND or UTK_RTK_BIN to run live RTK comparisons.', cases: [] };
+  }
+
+  return {
+    status: 'ran',
+    command,
+    cases: fixtures.filter((fixture) => fixture.rtkSupported).map((fixture) => {
+      const output = runner(command, fixture);
+      return {
+        name: fixture.name,
+        rtkBytes: Buffer.byteLength(output),
+        rtkTokens: estimateTokens(output),
+        goldenRtkTokens: fixture.rtkBaselineTokens
+      };
+    })
+  };
+}
+
+export const DEFAULT_BENCHMARK_CASES = RTK_PARITY_FIXTURES.map((fixture) => fixture.name);
+
+function runRtkCommand(command: string, fixture: RtkParityFixture): string {
+  const child = spawnSync(command, {
+    input: typeof fixture.rawOutput === 'string' ? fixture.rawOutput : JSON.stringify(fixture.rawOutput),
+    shell: true,
+    encoding: 'utf8'
+  });
+  if (child.status !== 0) {
+    throw new Error(child.stderr || `RTK command failed for ${fixture.name}`);
+  }
+  return child.stdout;
+}

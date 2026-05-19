@@ -15,13 +15,17 @@ import { mergeSchema, type VersionedSchema } from '../schema/mergeSchema.js';
 import { assertNoRawLeakage } from '../validation/leakage.js';
 import { persistStream } from '../stream/persistStream.js';
 import { upsertRouteIndex } from '../store/artifactStore.js';
+import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
+import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 
 export type ToolExecutor = (input: unknown) => Promise<unknown>;
 
 export type MediatedResult = {
   response: string;
   schemaId: string;
+  serializerId: string;
   rawPath: string;
+  serializedPath: string;
 };
 
 export async function mediateToolExecution(params: {
@@ -33,6 +37,9 @@ export async function mediateToolExecution(params: {
   const { workspaceRoot, toolId, input, execute } = params;
   const normalizedToolId = normalizeToolId(toolId);
   const runId = randomUUID();
+  const config = await loadUtkConfig(workspaceRoot);
+  const serializerId = resolveSerializerProviderId(config, normalizedToolId);
+  const serializer = getSerializationProvider(serializerId);
 
   const toolBase = safeJoin(workspaceRoot, '.utk', 'tools', normalizedToolId);
   const observationDir = safeJoin(toolBase, 'observations', runId);
@@ -47,6 +54,12 @@ export async function mediateToolExecution(params: {
 
   const output = await execute(input);
   const { rawPath, schemaInput, rawBytes, hash } = await persistRawOutput(observationDir, output);
+  const compactValue = compactSerializableValue(schemaInput);
+  const serialized = serializer.serialize(compactValue, { toolId: normalizedToolId });
+  const serializedPath = safeJoin(observationDir, `output.compact.${serializedExtension(serializerId)}`);
+  await writeFile(serializedPath, `${serialized}\n`, 'utf8');
+  const serializedValidation = serializer.validate(compactValue, serialized, { toolId: normalizedToolId });
+  await writeFile(safeJoin(observationDir, 'output.compact.validation.json'), canonicalJson(serializedValidation), 'utf8');
 
   const schema = typeof schemaInput === 'string' ? inferTextPseudoSchema(schemaInput) : inferSchema(schemaInput);
   const rules = extractRules(schema);
@@ -81,7 +94,7 @@ export async function mediateToolExecution(params: {
   await writeFile(safeJoin(toolBase, 'route.toon'), `${routeToToon(route.schema, route.confidence, route.reason)}\n`, 'utf8');
   await upsertRouteIndex(safeJoin(workspaceRoot, '.utk'), { schema: schemaId, confidence: 0.95, reason: 'tool_match' }, normalizedToolId);
 
-  const response = buildCompactResponse(path.relative(workspaceRoot, rawPath), route.schema, route.confidence);
+  const response = buildCompactResponse(path.relative(workspaceRoot, rawPath), route.schema, route.confidence, serializerId, path.relative(workspaceRoot, serializedPath));
   if (typeof output === 'string') {
     assertNoRawLeakage(response, output);
   }
@@ -89,8 +102,30 @@ export async function mediateToolExecution(params: {
   return {
     response,
     schemaId,
-    rawPath
+    serializerId,
+    rawPath,
+    serializedPath
   };
+}
+
+function compactSerializableValue(value: unknown): unknown {
+  return compactSummaryOf(value);
+}
+
+function compactSummaryOf(value: unknown): Record<string, unknown> {
+  if (typeof value === 'string') {
+    return { k: 'text', l: value.split(/\r?\n/).length, c: value.length };
+  }
+
+  if (Array.isArray(value)) {
+    return { k: 'array', n: value.length };
+  }
+
+  if (value && typeof value === 'object') {
+    return { k: 'object', keys: Object.keys(value as Record<string, unknown>).sort() };
+  }
+
+  return { k: typeof value };
 }
 
 async function persistRawOutput(observationDir: string, output: unknown): Promise<{ rawPath: string; schemaInput: unknown; rawBytes: number; hash: string }> {
