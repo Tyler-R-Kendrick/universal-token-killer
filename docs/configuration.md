@@ -95,7 +95,7 @@ The hook only returns `modifiedArgs` when compression actually changes an allowl
 
 ## Registered Structured Tools And Cache Policy
 
-Opt fields into UTK's normalization and caching by naming them in the tool registry. UTK does not ship any hand-written grammar definitions — the per-field grammar (separator style, whitespace conventions, length range) is **discovered from observations** of past tool runs and refined over time. The `structured_fields` entry just tells UTK which fields are subject to learning.
+Opt fields into UTK's normalization and caching by naming them in the tool registry. UTK does not ship any hand-written grammar definitions, and the config schema does not (today) accept a per-field `grammar = "lucene"|"sql"|...` selector — the per-field grammar (separator style, whitespace conventions, length range) is **discovered from observations** of past tool runs and refined over time. The `structured_fields` entry just tells UTK which fields are subject to learning. Tool definitions may also set `curry_fields` to a subset of field names; planner-missed curry fields are auto-filled from the first completion before the invocation is returned.
 
 ```toml
 [[tools.registry]]
@@ -111,7 +111,7 @@ completions = ["is:issue is:open label:bug"]
 required = true
 ```
 
-- Structured fields are normalized before tool execution using a learned grammar persisted at `.utk/tools/<normalized-tool-id>/fields/<field>.grammar.json`.
+- Structured fields are normalized before tool execution using a learned grammar persisted at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.grammar.json` — both the tool id and the field name pass through `normalizeToolId`, so dots and other punctuation are flattened to dashes on disk.
 - `output_cache = true` enables local cache writes keyed by tool input.
 - `bypass_on_cache = true` allows pre-tool hook denial on cache hits to skip repeat calls.
 - Optional `completions` provide canonical example values; UTK matches them against the normalized input but does not require them.

@@ -7,9 +7,12 @@ tests that need compact command invocation templates.
 For non-CLI structured parameters, use the companion
 `completeStructuredToolInvocation` helper from `@utk/core`. Both helpers normalize
 parameter values using **learned field grammars** persisted under
-`.utk/tools/<tool-id>/fields/<name>.grammar.json` — UTK does not ship hand-written
-grammar definitions; separator/whitespace style is inferred from observations and
-refined over tool runs.
+`.utk/tools/<normalized-tool-id>/fields/<normalized-field>.grammar.json` — both the
+tool id and the field name are passed through `normalizeToolId` (lowercased; dots,
+spaces, and other punctuation collapse to dashes), so the on-disk layout for
+`tool.search` field `query.text` is `.utk/tools/tool-search/fields/query-text.grammar.json`.
+UTK does not ship hand-written grammar definitions; separator/whitespace style is
+inferred from observations and refined over tool runs.
 
 ## Purpose
 

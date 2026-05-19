@@ -202,6 +202,65 @@ describe('structured tooling', () => {
     expect(result.value.untouched).toBe(7);
   });
 
+  it('auto-fills curry_fields from the first completion when planning misses them', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-curry-'));
+    const result = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'no relevant terms',
+      tools: [
+        {
+          toolId: 'tool.curry',
+          curryFields: ['scope', 'mode', 'orphan', 'unknown'],
+          parameters: [
+            { name: 'scope', completions: ['repo', 'org'], required: true },
+            { name: 'mode', completions: ['safe', 'unsafe'] },
+            { name: 'orphan', completions: [undefined as unknown as string, ''] }
+          ]
+        }
+      ]
+    });
+    expect(result.invocation.args.scope).toBe('repo');
+    expect(result.invocation.args.mode).toBe('safe');
+    expect(result.invocation.args.orphan).toBeUndefined();
+    expect(result.invocation.args.unknown).toBeUndefined();
+    expect(result.missingRequired).toEqual([]);
+  });
+
+  it('leaves curry_fields alone when planning already provided a value', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-curry-noop-'));
+    const result = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'pick org',
+      tools: [
+        {
+          toolId: 'tool.curry-noop',
+          curryFields: ['scope'],
+          parameters: [{ name: 'scope', completions: ['repo', 'org'] }]
+        }
+      ]
+    });
+    expect(result.invocation.args.scope).toBe('org');
+  });
+
+  it('cache write failures must not break the tool call', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-cache-failopen-'));
+    const namespace = 'cache-failopen';
+    const tool = async (_input: { value: string }) => 'ok';
+    const fragilePath = path.join(workspaceRoot, '.utk', 'cache', namespace);
+    await mkdir(path.dirname(fragilePath), { recursive: true });
+    await writeFile(fragilePath, 'blocker', 'utf8');
+    const memoized = memoizeTool({
+      workspaceRoot,
+      cacheNamespace: namespace,
+      cacheKeyPrefix: 'pair',
+      enabled: true,
+      tool
+    });
+    const result = await memoized({ value: 'a' });
+    expect(result.value).toBe('ok');
+    expect(result.cacheHit).toBe(false);
+  });
+
   it('exposes curry and memoize functors as composable wrappers', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-functor-'));
     const base = async (input: { left: string; right: string }) => `${input.left}:${input.right}`;

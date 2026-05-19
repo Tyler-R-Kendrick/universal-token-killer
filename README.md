@@ -110,7 +110,7 @@ const result = await completeBashLikeToolInvocation({
     command: 'git',
     parameters: [
       { name: 'subcommand', kind: 'positional', completions: ['status'], required: true },
-      { name: 'short', kind: 'flag', flag: '--short', completions: ['--short'] }
+      { name: 'short', kind: 'flag', flag: '--short', completions: ['--short', 'compact'], description: 'compact' }
     ]
   }]
 });
@@ -120,7 +120,7 @@ console.log(result.invocation.command); // git status --short
 
 ### Complete A Structured LLM Tool Invocation
 
-UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<id>/fields/<name>.grammar.json`). The tool definition just names the fields and any canonical example completions:
+UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.grammar.json` — both ids pass through `normalizeToolId`, so dots and other punctuation become dashes on disk). The tool definition just names the fields and any canonical example completions:
 
 ```ts
 import { completeStructuredToolInvocation, recordFieldObservation } from '@utk/core';

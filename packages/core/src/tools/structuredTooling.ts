@@ -81,7 +81,13 @@ export function memoizeTool<I extends Record<string, unknown>, O>(params: {
       if (cached.found) return { value: cached.value, cacheHit: true, cachePath };
     }
     const value = await tool(input);
-    if (enabled) await writeCachedValue(cachePath, value);
+    if (enabled) {
+      try {
+        await writeCachedValue(cachePath, value);
+      } catch {
+        // cache writes are best-effort; failures must not break the underlying tool call
+      }
+    }
     return { value, cacheHit: false, cachePath };
   };
 }
@@ -96,12 +102,12 @@ export async function completeStructuredToolInvocation(params: {
   }
 
   const config = await loadUtkConfig(params.workspaceRoot);
-  const selected = selectTool(params.request, params.tools);
-  const selectedTool = withConfigDefaults(selected, resolveRegisteredTool(config, selected.toolId));
+  const mergedTools = params.tools.map((tool) => withConfigDefaults(tool, resolveRegisteredTool(config, tool.toolId)));
+  const selectedTool = selectTool(params.request, mergedTools);
   const normalizedToolId = normalizeToolId(selectedTool.toolId);
   const serializerId = resolveSerializerProviderId(config, normalizedToolId);
   const serializer = getSerializationProvider(serializerId);
-  const grammar = buildStructuredInvocationGrammar(params.tools);
+  const grammar = buildStructuredInvocationGrammar(mergedTools);
   const serializedGrammar = grammar.serialize();
   const learnedGrammars = await loadLearnedGrammars(params.workspaceRoot, selectedTool);
   const planner = curryTool(
@@ -214,6 +220,19 @@ function planInvocation(
       continue;
     }
     args[parameter.name] = completion;
+  }
+
+  if (tool.curryFields) {
+    for (const fieldName of tool.curryFields) {
+      if (args[fieldName] !== undefined) continue;
+      const parameter = tool.parameters.find((item) => item.name === fieldName);
+      const completions = parameter?.completions ?? [];
+      const firstCompletion = completions.find((value): value is string => typeof value === 'string' && value.length > 0);
+      if (!firstCompletion) continue;
+      args[fieldName] = optimizeStructuredField(firstCompletion, parameter!, learnedGrammars[fieldName]);
+      const missingIndex = missingRequired.indexOf(fieldName);
+      if (missingIndex >= 0) missingRequired.splice(missingIndex, 1);
+    }
   }
 
   return {
