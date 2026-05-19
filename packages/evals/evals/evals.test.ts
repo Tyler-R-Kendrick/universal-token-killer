@@ -11,7 +11,9 @@ describe('AgentV assertion helpers', () => {
   });
 
   it('enforces safety and artifact constraints', () => {
+    expect(assertNoRawLeakage('compact reference only')).toBe(true);
     expect(assertNoRawLeakage('Tool result stored at: .utk/tools/t/observations/r/output.raw.json')).toBe(true);
+    expect(assertNoRawLeakage('Tool result stored at: .utk/tools/t/observations/r/output.raw.json leaked')).toBe(false);
     expect(assertAllowedRuleKindsOnly([{ kind: 'required-field' }, { kind: 'opaque' }])).toBe(true);
     expect(assertRouteGrammarMatch('route{schema:"tool.v1.abc",confidence:1,reason:shape_match}')).toBe(true);
     expect(assertNoForbiddenSpecialCaseStrings('generic structural rules only')).toBe(true);

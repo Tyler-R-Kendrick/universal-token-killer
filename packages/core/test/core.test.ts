@@ -144,6 +144,7 @@ describe('artifact operations', () => {
 
     const routes = await rebuildRouteIndex(storageRoot);
     expect(routes).toHaveLength(1);
+    expect(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8')).toContain('routes[\nroute{');
     expect(await cleanupObservations(storageRoot)).toBe(1);
   });
 
@@ -164,6 +165,8 @@ describe('artifact operations', () => {
     await mediateToolExecution({ workspaceRoot: root, toolId: 'tool.history', input: {}, execute: async () => ({ a: true, b: 1 }) });
 
     expect(await compactSchemaHistory(storageRoot)).toBeGreaterThanOrEqual(1);
+    const summary = JSON.parse(await readFile(path.join(storageRoot, 'tools', 'tool-history', 'history', 'compacted-summary.json'), 'utf8'));
+    expect(summary.removed).toBe(1);
     expect(validateCanonicalToonPair({ type: 'object' }, 'drift').valid).toBe(false);
   });
 });

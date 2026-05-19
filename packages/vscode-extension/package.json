@@ -3,6 +3,7 @@
   "displayName": "UTK",
   "version": "0.1.0",
   "publisher": "utk",
+  "type": "module",
   "engines": {
     "vscode": "^1.95.0"
   },

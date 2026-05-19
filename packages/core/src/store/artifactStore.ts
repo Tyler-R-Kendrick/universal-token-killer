@@ -42,14 +42,16 @@ export async function rebuildRouteIndex(storageRoot: string): Promise<RouteDecis
   const routes: RouteDecision[] = [];
 
   for (const tool of await safeReadDir(toolsRoot)) {
-    const history = safeJoin(toolsRoot, tool, 'history');
+    const toolRoot = safeJoin(toolsRoot, tool);
+    const history = safeJoin(toolRoot, 'history');
     const schemaIds = (await safeReadDir(history)).filter((file) => file.endsWith('.schema.json')).map((file) => file.replace(/\.schema\.json$/, ''));
-    if (schemaIds.length === 0) continue;
-    routes.push({ schema: schemaIds[0]!, confidence: 0.95, reason: 'tool_match' });
+    const schema = await selectRouteSchema(toolRoot, schemaIds);
+    if (!schema) continue;
+    routes.push({ schema, confidence: 0.95, reason: 'tool_match' });
   }
 
   await writeFile(safeJoin(routesRoot, 'index.json'), canonicalJson({ routes }), 'utf8');
-  await writeFile(safeJoin(routesRoot, 'index.toon'), `${JSON.stringify({ routes })}\n`, 'utf8');
+  await writeFile(safeJoin(routesRoot, 'index.toon'), routesToToon(routes), 'utf8');
   await writeFile(safeJoin(routesRoot, 'index.min.toon'), `${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n`, 'utf8');
   return routes;
 }
@@ -75,16 +77,30 @@ export async function compactSchemaHistory(storageRoot: string): Promise<number>
     const history = safeJoin(toolsRoot, tool, 'history');
     const schemas = (await safeReadDir(history)).filter((file) => file.endsWith('.schema.json')).sort();
     const keep = schemas.at(-1);
+    let removedForTool = 0;
     for (const schema of schemas) {
       if (schema === keep || schema.includes('.validated.')) continue;
       await rm(safeJoin(history, schema), { force: true });
       removed += 1;
+      removedForTool += 1;
     }
     if (schemas.length > 1) {
-      await writeFile(safeJoin(history, 'compacted-summary.json'), canonicalJson({ kept: keep, removed }), 'utf8');
+      await writeFile(safeJoin(history, 'compacted-summary.json'), canonicalJson({ kept: keep, removed: removedForTool }), 'utf8');
     }
   }
   return removed;
+}
+
+async function selectRouteSchema(toolRoot: string, schemaIds: string[]): Promise<string | undefined> {
+  if (schemaIds.length === 0) return undefined;
+  const current = (await safeReadFile(safeJoin(toolRoot, 'schema.id'))).trim();
+  if (schemaIds.includes(current)) return current;
+  return schemaIds.sort().at(-1);
+}
+
+function routesToToon(routes: RouteDecision[]): string {
+  if (routes.length === 0) return 'routes[]\n';
+  return `routes[\n${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n]\n`;
 }
 
 async function walk(root: string): Promise<string[]> {
@@ -107,5 +123,13 @@ async function safeReadDir(dir: string): Promise<string[]> {
     return await readdir(dir);
   } catch {
     return [];
+  }
+}
+
+async function safeReadFile(file: string): Promise<string> {
+  try {
+    return await readFile(file, 'utf8');
+  } catch {
+    return '';
   }
 }

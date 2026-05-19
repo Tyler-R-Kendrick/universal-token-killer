@@ -215,6 +215,7 @@ describe('coverage for mediation and artifact stores', () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-cover-store-'));
     const { storageRoot } = await initializeWorkspaceStore(root);
     expect(await rebuildRouteIndex(storageRoot)).toEqual([]);
+    expect(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8')).toBe('routes[]\n');
     expect(await validateArtifacts(path.join(storageRoot, 'missing'))).toEqual([]);
     expect(await quarantineInvalidArtifacts(path.join(storageRoot, 'missing'))).toEqual([]);
     expect(await cleanupObservations(storageRoot, ['missing'])).toBe(0);
@@ -243,10 +244,17 @@ describe('coverage for mediation and artifact stores', () => {
     const oneHistory = path.join(storageRoot, 'tools', 'one', 'history');
     await import('node:fs/promises').then((fs) => fs.mkdir(oneHistory, { recursive: true }));
     await writeFile(path.join(oneHistory, 'one.v1.current.schema.json'), '{}', 'utf8');
+    const currentHistory = path.join(storageRoot, 'tools', 'current', 'history');
+    await import('node:fs/promises').then((fs) => fs.mkdir(currentHistory, { recursive: true }));
+    await writeFile(path.join(storageRoot, 'tools', 'current', 'schema.id'), 'current.v1.current', 'utf8');
+    await writeFile(path.join(currentHistory, 'current.v1.current.schema.json'), '{}', 'utf8');
+    await writeFile(path.join(currentHistory, 'current.v9.old.schema.json'), '{}', 'utf8');
     const routes = await rebuildRouteIndex(storageRoot);
-    expect(routes).toHaveLength(2);
+    expect(routes).toHaveLength(3);
     expect(routes.every((route) => route.reason === 'tool_match')).toBe(true);
-    expect(await compactSchemaHistory(storageRoot)).toBe(0);
+    expect(routes.map((route) => route.schema)).toContain('current.v1.current');
+    expect(await compactSchemaHistory(storageRoot)).toBe(1);
+    expect(JSON.parse(await readFile(path.join(currentHistory, 'compacted-summary.json'), 'utf8')).removed).toBe(1);
   });
 
   it('persists streams directly and detects leakage', async () => {
