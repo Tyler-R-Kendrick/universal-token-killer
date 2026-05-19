@@ -1,0 +1,4 @@
+start: "route" "{" "schema" ":\"" /[^"]+/ "\"" "," "confidence" ":" NUMBER "," "reason" ":" REASON "}"
+NUMBER: /0(\.\d+)?|1(\.0+)?/
+REASON: "shape_match"|"input_match"|"tool_match"|"prior_match"|"fallback"|"unknown"
+%ignore /\s+/

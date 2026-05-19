@@ -1,0 +1,24 @@
+{
+  "name": "utk",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "UTK — Universal Token Killer",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run -ws build",
+    "test": "npm run -ws test",
+    "lint": "npm run -ws lint",
+    "typecheck": "npm run -ws typecheck",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@vitest/coverage-v8": "^4.1.6",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.6"
+  }
+}
