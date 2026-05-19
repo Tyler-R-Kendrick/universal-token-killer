@@ -54,8 +54,26 @@ function inferStringSchema(value: string): JsonSchema {
   if (/^https?:\/\//.test(value)) return { type: 'string', format: 'uri' };
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return { type: 'string', format: 'date' };
   if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return { type: 'string', format: 'date-time' };
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return { type: 'string', format: 'email' };
+  if (looksLikeEmail(value)) return { type: 'string', format: 'email' };
   return { type: 'string', minLength: value.length, maxLength: value.length };
+}
+
+function looksLikeEmail(value: string): boolean {
+  if (value.includes(' ') || !value.includes('@')) {
+    return false;
+  }
+
+  const parts = value.split('@');
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [local, domain] = parts;
+  if (!local || !domain || domain.startsWith('.') || domain.endsWith('.')) {
+    return false;
+  }
+
+  return domain.includes('.');
 }
 
 function dedupe(items: JsonSchema[]): JsonSchema[] {
