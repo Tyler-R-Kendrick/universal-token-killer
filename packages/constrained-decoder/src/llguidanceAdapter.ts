@@ -1,21 +1,11 @@
+import * as llguidance from 'llguidance.ts';
+
 export type ValidationResult = { valid: boolean; errors: string[] };
 
 export async function validateWithLlguidance(grammar: string, candidate: string): Promise<ValidationResult> {
-  try {
-    const moduleName = 'llguidance.ts';
-    const llguidance = await import(moduleName);
-    const result = await llguidance.validate?.(grammar, candidate);
-    if (!result) {
-      return { valid: false, errors: ['llguidance.ts returned no result'] };
-    }
-
-    return {
-      valid: Boolean(result.valid),
-      errors: Array.isArray(result.errors) ? result.errors.map(String) : []
-    };
-  } catch {
-    return fallbackValidate(grammar, candidate);
-  }
+  const validate = (llguidance as { validate?: (grammar: string, candidate: string) => ValidationResult | Promise<ValidationResult> }).validate ?? fallbackValidate;
+  const result = await validate(grammar, candidate);
+  return normalizeValidationResult(result);
 }
 
 export async function validateAndRetry(grammar: string, candidateFactory: () => Promise<string>, maxRetries = 2): Promise<ValidationResult> {
@@ -38,4 +28,11 @@ function fallbackValidate(grammar: string, candidate: string): ValidationResult 
   }
 
   return { valid: candidate.trim().length > 0, errors: candidate.trim().length > 0 ? [] : ['empty candidate'] };
+}
+
+function normalizeValidationResult(result: ValidationResult): ValidationResult {
+  return {
+    valid: Boolean(result.valid),
+    errors: result.errors.map(String)
+  };
 }

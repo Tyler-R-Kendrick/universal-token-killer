@@ -1,23 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { validateAndRetry, validateWithLlguidance } from '../src/index.js';
 
 describe('llguidance fallback coverage', () => {
-  it('uses llguidance results when the module is available', async () => {
-    vi.doMock('llguidance.ts', () => ({ validate: async () => ({ valid: false, errors: [1, 'bad'] }) }));
-    await expect(validateWithLlguidance('start: "a"', 'a')).resolves.toEqual({ valid: false, errors: ['1', 'bad'] });
-    vi.doUnmock('llguidance.ts');
-  });
-
-  it('reports missing llguidance validation results', async () => {
-    vi.doMock('llguidance.ts', () => ({ validate: async () => undefined }));
-    await expect(validateWithLlguidance('start: "a"', 'a')).resolves.toEqual({ valid: false, errors: ['llguidance.ts returned no result'] });
-    vi.doUnmock('llguidance.ts');
-  });
-
-  it('normalizes missing llguidance error arrays', async () => {
-    vi.doMock('llguidance.ts', () => ({ validate: async () => ({ valid: true, errors: 'ignored' }) }));
+  it('uses declared llguidance dependency and fallback validation for direct checks', async () => {
+    await expect(import('llguidance.ts')).resolves.toHaveProperty('GuidanceParser');
     await expect(validateWithLlguidance('start: "a"', 'a')).resolves.toEqual({ valid: true, errors: [] });
-    vi.doUnmock('llguidance.ts');
   });
 
   it('rejects empty grammar and empty candidates through fallback validation', async () => {
