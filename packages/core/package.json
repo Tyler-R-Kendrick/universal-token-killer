@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@toon-format/toon": "^2.2.0",
+    "guidance-ts": "github:guidance-ai/guidance-ts#4b7838dcaa1e0563f632f2ec4a27c7c8c41e6552",
     "smol-toml": "^1.6.1"
   }
 }

@@ -11,6 +11,7 @@ import {
   canonicalJson,
   cleanupObservations,
   compactSchemaHistory,
+  compressTextWithLlmlingua2,
   containsForbiddenSpecialCase,
   contentHash,
   deterministicRoute,
@@ -26,10 +27,12 @@ import {
   normalizeToolId,
   persistStream,
   quarantineInvalidArtifacts,
+  readOutputFileForLlm,
   readSchemaHistory,
   registerUtkCopilotToolHook,
   rebuildRouteIndex,
   refineSchemaWithCopilot,
+  rewriteInputForLlm,
   routeFromCandidates,
   routeToToon,
   routeWithCopilot,
@@ -302,6 +305,78 @@ describe('coverage for mediation and artifact stores', () => {
     expect(isCompatible({ type: 'object' }, { type: 'object' })).toBe(true);
     expect(mergeSchema('tool', { ...object.schema, schema: { type: 'object', properties: { a: {} } } }, { type: 'object', properties: { a: {}, b: {} } }, []).schema.schema).toMatchObject({ required: [] });
     expect(mergeSchema('tool', { id: 'x', version: 1, state: 'current', schema: { type: 'object' }, rules: [] }, { type: 'object' }, []).schema.schema).toMatchObject({ properties: {}, required: [] });
+  });
+
+  it('rewrites LLM-bound input and output text through LLMLingua2', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    const previousMinimal = process.env.UTK_DETOK_FAKE_MINIMAL;
+    process.env.UTK_DETOK_FAKE = '1';
+    try {
+      const longText = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon '.repeat(120);
+      const compressed = await compressTextWithLlmlingua2(longText, { force: true, rate: 0.25 });
+      expect(compressed.usedLlmlingua2).toBe(true);
+      expect(compressed.applied).toBe(true);
+      expect(compressed.compressedText.split(/\s+/).length).toBeLessThan(longText.split(/\s+/).length);
+
+      const rewritten = await rewriteInputForLlm({ prompt: longText, nested: [longText], count: 2 }, { force: true, rate: 0.2 });
+      expect(rewritten.applied).toBe(true);
+      expect(JSON.stringify(rewritten.value)).toContain('alpha');
+      expect(rewritten.results).toHaveLength(2);
+
+      const root = await mkdtemp(path.join(os.tmpdir(), 'utk-cover-detok-'));
+      const file = path.join(root, 'output.txt');
+      await writeFile(file, longText, 'utf8');
+      const fromFile = await readOutputFileForLlm(file, { rate: 0.3 });
+      expect(fromFile.applied).toBe(true);
+
+      process.env.UTK_DETOK_FAKE_MINIMAL = '1';
+      const minimal = await compressTextWithLlmlingua2(longText, { force: true });
+      expect(minimal.model).toBe('llmlingua2');
+      expect(minimal.usedLlmlingua2).toBe(true);
+      delete process.env.UTK_DETOK_FAKE_MINIMAL;
+
+      const mediated = await mediateToolExecution({
+        workspaceRoot: root,
+        toolId: 'tool.detok',
+        input: { prompt: longText },
+        execute: async () => longText
+      });
+      const observationDir = path.dirname(mediated.rawPath);
+      expect(await readFile(path.join(observationDir, 'input.detok.json'), 'utf8')).toContain('compression');
+      expect(await readFile(path.join(observationDir, 'output.detok.txt'), 'utf8')).toContain('alpha');
+    } finally {
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+      if (previousMinimal === undefined) {
+        delete process.env.UTK_DETOK_FAKE_MINIMAL;
+      } else {
+        process.env.UTK_DETOK_FAKE_MINIMAL = previousMinimal;
+      }
+    }
+  });
+
+  it('skips short detok input and reports unavailable compressors without breaking callers', async () => {
+    const previousPython = process.env.UTK_DETOK_PYTHON;
+    delete process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_PYTHON = 'definitely-not-python';
+    try {
+      const short = await compressTextWithLlmlingua2('short text');
+      expect(short.applied).toBe(false);
+      expect(short.model).toBe('not-run');
+
+      const unavailable = await compressTextWithLlmlingua2('x'.repeat(300), { force: true });
+      expect(unavailable.applied).toBe(false);
+      expect(unavailable.error).toBeTruthy();
+    } finally {
+      if (previousPython === undefined) {
+        delete process.env.UTK_DETOK_PYTHON;
+      } else {
+        process.env.UTK_DETOK_PYTHON = previousPython;
+      }
+    }
   });
 
   it('preserves existing workspace files on reinitialization', async () => {

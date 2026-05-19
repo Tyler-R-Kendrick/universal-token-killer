@@ -1,0 +1,22 @@
+{
+  "name": "@utk/detok-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "bin": {
+    "detok-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@utk/core": "0.1.0",
+    "zod": "^3.25.76"
+  }
+}

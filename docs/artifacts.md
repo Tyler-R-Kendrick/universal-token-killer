@@ -8,18 +8,23 @@ Each mediated run writes:
 
 ```text
 .utk/tools/<tool-id>/observations/<run-id>/input.json
+.utk/tools/<tool-id>/observations/<run-id>/input.detok.json
 .utk/tools/<tool-id>/observations/<run-id>/output.raw.json
 .utk/tools/<tool-id>/observations/<run-id>/output.raw.txt
 .utk/tools/<tool-id>/observations/<run-id>/output.raw.bin
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.toon
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.json
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.validation.json
+.utk/tools/<tool-id>/observations/<run-id>/output.detok.txt
+.utk/tools/<tool-id>/observations/<run-id>/output.detok.json
+.utk/tools/<tool-id>/observations/<run-id>/output.envelope.json
 .utk/tools/<tool-id>/observations/<run-id>/output.summary.json
 .utk/tools/<tool-id>/observations/<run-id>/output.schema.json
+.utk/tools/<tool-id>/observations/<run-id>/output.schema.toon
 .utk/tools/<tool-id>/observations/<run-id>/metadata.json
 ```
 
-Only one raw extension and one compact extension are written per run, based on the observed output and configured serializer.
+Only one raw extension and one compact extension are written per run, based on the observed output and configured serializer. Detok files are written only when LLMLingua-2 compression applies.
 
 ## Tool Artifacts
 
@@ -47,12 +52,39 @@ Global route indexes live at:
 .utk/routes/index.min.toon
 ```
 
+## Template Artifacts
+
+Bash-like invocation helpers write compact templates and serialized guidance grammar sidecars:
+
+```text
+.utk/tools/<tool-id>/templates/cli-template.compact.toon
+.utk/tools/<tool-id>/templates/cli-template.compact.json
+.utk/tools/<tool-id>/templates/cli-template.guidance.json
+```
+
+Only one compact template extension is written per tool based on serializer configuration.
+
+## Session Reuse Artifacts
+
+`utk-init` and the session generation helpers prepare:
+
+```text
+.utk/session-agents/
+.utk/session-agents/grammars/
+.utk/session-agents/tools/
+.utk/session-skills/<skill-name>/SKILL.md
+.utk/session-skills/<skill-name>/references/
+```
+
+When the destination paths are not already concrete directories, `.github/agents` links to `.utk/session-agents` and `.agents/skills` links to `.utk/session-skills`.
+
 ## Recovery Workflow
 
 1. Read the compact response in chat.
 2. Open `output.compact.*` for the model-safe summary.
 3. Open `output.raw.*` only when full fidelity is needed.
 4. Use `metadata.json`, `output.schema.json`, and route artifacts to diagnose routing behavior.
+5. Use `output.envelope.json` for binary or stream metadata when no textual raw output exists.
 
 ## Example Compact Response To Artifact Map
 

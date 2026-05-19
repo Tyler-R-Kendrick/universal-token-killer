@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "detok": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/packages/detok-mcp/dist/server.js"
+      ],
+      "env": {
+        "UTK_WORKSPACE_ROOT": "${workspaceFolder}",
+        "UTK_LLMLINGUA_MODEL": "microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank"
+      }
+    }
+  }
+}

@@ -27,6 +27,11 @@ Tool outputs are compacted before serialization:
 
 The exact raw output remains recoverable from the raw artifact path in the response.
 
+This current compact shape is intentionally structural. It keeps model-visible
+responses very small and pushes full-fidelity recovery to `.utk/` artifacts.
+Fact-retention tests therefore check both compact metadata and recoverability
+from raw artifacts instead of requiring every fact to appear inline.
+
 ## Example Compact Artifacts
 
 Text output:

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "command": "node packages/copilot-hook/dist/detokPreToolUseHook.js",
+        "cwd": ".",
+        "env": {
+          "UTK_WORKSPACE_ROOT": "${workspaceFolder}"
+        },
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

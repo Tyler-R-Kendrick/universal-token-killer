@@ -21,7 +21,20 @@ constrained_routing_enabled = true
 [persistence]
 raw_outputs = true
 storage_root = ".utk"
+
+[detok]
+enabled = true
+
+[detok.copilot_pre_tool_use]
+enabled = true
+rate = 0.33
+min_chars = 8000
+deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
+rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
+protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
 ```
+
+Current note: `.utk/config.toml` itself and core mediation artifacts are project-local under `.utk/`. `persistence.storage_root` is also used by auxiliary template helpers; keep it at `.utk` unless you are deliberately testing alternate storage behavior.
 
 ## Serializer Overrides
 
@@ -45,6 +58,37 @@ provider = "toon"
 ```
 
 Supported providers are `toon` and `compressed-json`. Unsupported or disabled providers fail with explicit configuration errors.
+
+## Detok Hook Policy
+
+Disable all LLMLingua-2 rewriting:
+
+```toml
+[detok]
+enabled = false
+```
+
+Disable only the automatic Copilot `preToolUse` hook path:
+
+```toml
+[detok]
+enabled = true
+
+[detok.copilot_pre_tool_use]
+enabled = false
+```
+
+Allow one normally denied tool when a specific prose field is safe to rewrite:
+
+```toml
+[[detok.copilot_pre_tool_use.overrides]]
+tool = "workspace.ask"
+enabled = true
+rewrite_fields = ["prompt", "instructions"]
+protected_fields = ["path", "file", "content", "patch", "diff", "id"]
+```
+
+The hook only returns `modifiedArgs` when compression actually changes an allowlisted field. Errors, unavailable LLMLingua, short text, denied tools, and protected fields fail open.
 
 ## Defaults And Precedence
 

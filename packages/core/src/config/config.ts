@@ -18,6 +18,23 @@ export type UtkConfig = {
     raw_outputs: boolean;
     storage_root: string;
   };
+  detok: {
+    enabled: boolean;
+    copilot_pre_tool_use: {
+      enabled: boolean;
+      rate: number;
+      min_chars: number;
+      deny_tools: string[];
+      rewrite_fields: string[];
+      protected_fields: string[];
+      overrides: Array<{
+        tool: string;
+        enabled?: boolean;
+        rewrite_fields?: string[];
+        protected_fields?: string[];
+      }>;
+    };
+  };
 };
 
 export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json'] as const;
@@ -38,6 +55,17 @@ constrained_routing_enabled = true
 [persistence]
 raw_outputs = true
 storage_root = ".utk"
+
+[detok]
+enabled = true
+
+[detok.copilot_pre_tool_use]
+enabled = true
+rate = 0.33
+min_chars = 8000
+deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
+rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
+protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
 `;
 
 export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
@@ -70,6 +98,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const serialization = readObject(raw.serialization, 'serialization');
   const routing = readOptionalObject(raw.routing);
   const persistence = readOptionalObject(raw.persistence);
+  const detok = readNamedOptionalObject(raw.detok, 'detok');
   const providers = readOptionalObject(serialization.providers);
 
   const defaultProvider = readProvider(serialization.default ?? 'toon');
@@ -93,8 +122,46 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     persistence: {
       raw_outputs: readBoolean(persistence.raw_outputs, true),
       storage_root: readString(persistence.storage_root, '.utk')
+    },
+    detok: {
+      enabled: readBoolean(detok.enabled, true),
+      copilot_pre_tool_use: normalizeCopilotPreToolUse(detok.copilot_pre_tool_use)
     }
   };
+}
+
+function normalizeCopilotPreToolUse(value: unknown): UtkConfig['detok']['copilot_pre_tool_use'] {
+  const hook = readNamedOptionalObject(value, 'detok.copilot_pre_tool_use');
+  return {
+    enabled: readBoolean(hook.enabled, true),
+    rate: readNumber(hook.rate, 0.33),
+    min_chars: readNumber(hook.min_chars, 8000),
+    deny_tools: readStringArray(hook.deny_tools, DEFAULT_DENY_TOOLS, 'detok.copilot_pre_tool_use.deny_tools'),
+    rewrite_fields: readStringArray(hook.rewrite_fields, DEFAULT_REWRITE_FIELDS, 'detok.copilot_pre_tool_use.rewrite_fields'),
+    protected_fields: readStringArray(hook.protected_fields, DEFAULT_PROTECTED_FIELDS, 'detok.copilot_pre_tool_use.protected_fields'),
+    overrides: normalizeDetokOverrides(hook.overrides)
+  };
+}
+
+function normalizeDetokOverrides(value: unknown): UtkConfig['detok']['copilot_pre_tool_use']['overrides'] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error('detok.copilot_pre_tool_use.overrides must be an array');
+  }
+  return value.map((item) => {
+    const object = readObject(item, 'detok.copilot_pre_tool_use.overrides[]');
+    const override: UtkConfig['detok']['copilot_pre_tool_use']['overrides'][number] = {
+      tool: readString(object.tool, '')
+    };
+    if (object.enabled !== undefined) override.enabled = readBoolean(object.enabled, true);
+    if (object.rewrite_fields !== undefined) {
+      override.rewrite_fields = readStringArray(object.rewrite_fields, [], 'detok.copilot_pre_tool_use.overrides[].rewrite_fields');
+    }
+    if (object.protected_fields !== undefined) {
+      override.protected_fields = readStringArray(object.protected_fields, [], 'detok.copilot_pre_tool_use.overrides[].protected_fields');
+    }
+    return override;
+  });
 }
 
 function normalizeProvider(value: unknown): { enabled: boolean } {
@@ -139,6 +206,11 @@ function readOptionalObject(value: unknown): Record<string, unknown> {
   return readObject(value, 'configuration value');
 }
 
+function readNamedOptionalObject(value: unknown, name: string): Record<string, unknown> {
+  if (value === undefined) return {};
+  return readObject(value, name);
+}
+
 function readString(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback;
 }
@@ -150,3 +222,15 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
 function readNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' ? value : fallback;
 }
+
+function readStringArray(value: unknown, fallback: string[], name: string): string[] {
+  if (value === undefined) return [...fallback];
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+    throw new Error(`${name} must be an array of strings`);
+  }
+  return [...value];
+}
+
+const DEFAULT_DENY_TOOLS = ['bash', 'powershell', 'create', 'edit', 'view', 'grep', 'glob'];
+const DEFAULT_REWRITE_FIELDS = ['prompt', 'instructions', 'description', 'question', 'message', 'summary', 'notes', 'body'];
+const DEFAULT_PROTECTED_FIELDS = ['command', 'cmd', 'path', 'file', 'files', 'cwd', 'url', 'pattern', 'regex', 'glob', 'patch', 'diff', 'content', 'old_string', 'new_string', 'id'];

@@ -17,6 +17,7 @@ import { persistStream } from '../stream/persistStream.js';
 import { upsertRouteIndex } from '../store/artifactStore.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
+import { compressTextWithLlmlingua2, rewriteInputForLlm } from '../detok/llmlingua2.js';
 
 export type ToolExecutor = (input: unknown) => Promise<unknown>;
 
@@ -51,6 +52,10 @@ export async function mediateToolExecution(params: {
 
   const inputPath = safeJoin(observationDir, 'input.json');
   await writeFile(inputPath, canonicalJson(input), 'utf8');
+  const detokInput = await rewriteInputForLlm(input);
+  if (detokInput.applied) {
+    await writeFile(safeJoin(observationDir, 'input.detok.json'), canonicalJson({ input: detokInput.value, compression: detokInput.results }), 'utf8');
+  }
 
   const output = await execute(input);
   const { rawPath, schemaInput, rawBytes, hash } = await persistRawOutput(observationDir, output);
@@ -63,6 +68,7 @@ export async function mediateToolExecution(params: {
 
   const schema = typeof schemaInput === 'string' ? inferTextPseudoSchema(schemaInput) : inferSchema(schemaInput);
   const rules = extractRules(schema);
+  const detokOutput = typeof schemaInput === 'string' ? await compressTextWithLlmlingua2(schemaInput) : undefined;
   const current = await readCurrentSchema(toolBase);
   const merge = mergeSchema(normalizedToolId, current, schema, rules);
   const schemaId = merge.schema.id;
@@ -85,6 +91,10 @@ export async function mediateToolExecution(params: {
 
   await writeFile(safeJoin(observationDir, 'output.envelope.json'), canonicalJson(envelope), 'utf8');
   await writeFile(safeJoin(observationDir, 'output.summary.json'), canonicalJson(summaryOf(schemaInput)), 'utf8');
+  if (detokOutput?.applied) {
+    await writeFile(safeJoin(observationDir, 'output.detok.txt'), detokOutput.compressedText, 'utf8');
+    await writeFile(safeJoin(observationDir, 'output.detok.json'), canonicalJson(detokOutput), 'utf8');
+  }
   await writeFile(safeJoin(observationDir, 'output.schema.json'), canonicalJson(merge.schema.schema), 'utf8');
   await writeFile(safeJoin(observationDir, 'output.schema.toon'), `${schemaToToon(merge.schema.schema)}\n`, 'utf8');
   await writeFile(safeJoin(observationDir, 'metadata.json'), canonicalJson({ runId, schemaId, schemaMerge: merge.reason }), 'utf8');
