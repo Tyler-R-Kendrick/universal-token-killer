@@ -11,7 +11,22 @@ export type ToolManifest = {
 };
 
 export function normalizeToolId(toolId: string): string {
-  return toolId.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'tool';
+  let normalized = '';
+  let previousDash = false;
+  for (const char of toolId.toLowerCase()) {
+    const allowed = (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char === '.' || char === '_' || char === '-';
+    if (allowed) {
+      normalized += char;
+      previousDash = char === '-';
+    } else if (!previousDash) {
+      normalized += '-';
+      previousDash = true;
+    }
+  }
+
+  while (normalized.startsWith('-')) normalized = normalized.slice(1);
+  while (normalized.endsWith('-')) normalized = normalized.slice(0, -1);
+  return normalized || 'tool';
 }
 
 export function schemaIdFor(normalizedToolId: string, version: number, schema: unknown, rules: unknown): string {
