@@ -4,15 +4,14 @@ import { grm, select } from 'guidance-ts';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
 import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../config/config.js';
+import { type FieldGrammar, normalizeWithFieldGrammar } from '../grammar/fieldGrammar.js';
+import { loadFieldGrammar } from '../grammar/grammarStore.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '../security/pathSafety.js';
 
-export type StructuredInputGrammar = 'bash-like' | 'sql' | 'lucene' | 'regex';
-
 export type StructuredToolParameter = {
   name: string;
-  grammar: StructuredInputGrammar;
-  completions: string[];
+  completions?: string[];
   required?: boolean;
   description?: string;
 };
@@ -104,7 +103,12 @@ export async function completeStructuredToolInvocation(params: {
   const serializer = getSerializationProvider(serializerId);
   const grammar = buildStructuredInvocationGrammar(params.tools);
   const serializedGrammar = grammar.serialize();
-  const planner = curryTool(async (input: { request: string; tool: StructuredToolDefinition }) => planInvocation(input.request, input.tool), { tool: selectedTool });
+  const learnedGrammars = await loadLearnedGrammars(params.workspaceRoot, selectedTool);
+  const planner = curryTool(
+    async (input: { request: string; tool: StructuredToolDefinition; learnedGrammars: Record<string, FieldGrammar | undefined> }) =>
+      planInvocation(input.request, input.tool, input.learnedGrammars),
+    { tool: selectedTool, learnedGrammars }
+  );
   const memoizedPlanner = memoizeTool({
     workspaceRoot: params.workspaceRoot,
     cacheNamespace: normalizedToolId,
@@ -112,7 +116,7 @@ export async function completeStructuredToolInvocation(params: {
     enabled: selectedTool.outputCache === true,
     tool: planner
   });
-  const planned = await memoizedPlanner({ request: params.request, tool: selectedTool });
+  const planned = await memoizedPlanner({ request: params.request, tool: selectedTool, learnedGrammars });
   const template = buildTemplate(selectedTool, planned.value, serializedGrammar);
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');
@@ -144,51 +148,50 @@ export async function completeStructuredToolInvocation(params: {
 
 export function buildStructuredInvocationGrammar(tools: StructuredToolDefinition[]): StructuredGuidanceGrammarNode {
   const toolChoices = nonEmptyChoices(tools.map((tool) => tool.toolId));
-  const completionChoices = nonEmptyChoices(tools.flatMap((tool) => tool.parameters.flatMap((parameter) => parameter.completions)));
+  const completionChoices = nonEmptyChoices(
+    tools.flatMap((tool) => tool.parameters.flatMap((parameter) => parameter.completions ?? []))
+  );
   return grm`invoke{tool:"${select(...toolChoices)}",value:"${select(...completionChoices)}"}`;
 }
 
 export function optimizeStructuredToolArgs(
   args: Record<string, unknown>,
-  tool: Pick<StructuredToolDefinition, 'parameters'>
+  tool: Pick<StructuredToolDefinition, 'parameters'>,
+  learnedGrammars: Record<string, FieldGrammar | undefined> = {}
 ): { value: Record<string, unknown>; applied: boolean } {
   let applied = false;
   const entries = Object.entries(args).map(([key, value]) => {
     const parameter = tool.parameters.find((item) => item.name === key);
     if (!parameter) return [key, value] as const;
     if (typeof value !== 'string') return [key, value] as const;
-    const optimized = optimizeStructuredField(value, parameter);
+    const optimized = optimizeStructuredField(value, parameter, learnedGrammars[parameter.name]);
     if (optimized !== value) applied = true;
     return [key, optimized] as const;
   });
   return { value: Object.fromEntries(entries), applied };
 }
 
-function optimizeStructuredField(value: string, parameter: StructuredToolParameter): string {
-  const normalized = normalizeStructuredValue(parameter.grammar, value);
-  const completion = parameter.completions.find((candidate) => normalizeStructuredValue(parameter.grammar, candidate) === normalized);
-  return completion ?? normalized;
+function optimizeStructuredField(
+  value: string,
+  parameter: StructuredToolParameter,
+  learnedGrammar: FieldGrammar | undefined
+): string {
+  const normalized = normalizeWithFieldGrammar(value, learnedGrammar);
+  const completions = parameter.completions ?? [];
+  const match = completions.find(
+    (candidate) => typeof candidate === 'string' && normalizeWithFieldGrammar(candidate, learnedGrammar) === normalized
+  );
+  return match ?? normalized;
 }
 
-function normalizeStructuredValue(grammar: StructuredInputGrammar, value: string): string {
-  if (grammar === 'regex') return value.trim();
-  if (grammar === 'sql') {
-    return value
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/\s*,\s*/g, ',')
-      .replace(/\(\s+/g, '(')
-      .replace(/\s+\)/g, ')');
-  }
-  if (grammar === 'lucene') {
-    return value
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/\s*:\s*/g, ':')
-      .replace(/\(\s+/g, '(')
-      .replace(/\s+\)/g, ')');
-  }
-  return value.trim().replace(/\s+/g, ' ');
+async function loadLearnedGrammars(
+  workspaceRoot: string,
+  tool: StructuredToolDefinition
+): Promise<Record<string, FieldGrammar | undefined>> {
+  const entries = await Promise.all(
+    tool.parameters.map(async (parameter) => [parameter.name, await loadFieldGrammar(workspaceRoot, tool.toolId, parameter.name)] as const)
+  );
+  return Object.fromEntries(entries);
 }
 
 type PlannedInvocation = {
@@ -196,12 +199,16 @@ type PlannedInvocation = {
   missingRequired: string[];
 };
 
-function planInvocation(request: string, tool: StructuredToolDefinition): PlannedInvocation {
+function planInvocation(
+  request: string,
+  tool: StructuredToolDefinition,
+  learnedGrammars: Record<string, FieldGrammar | undefined>
+): PlannedInvocation {
   const args: Record<string, string> = {};
   const missingRequired: string[] = [];
 
   for (const parameter of tool.parameters) {
-    const completion = chooseCompletion(request, parameter);
+    const completion = chooseCompletion(request, parameter, learnedGrammars[parameter.name]);
     if (!completion) {
       if (parameter.required) missingRequired.push(parameter.name);
       continue;
@@ -218,16 +225,21 @@ function planInvocation(request: string, tool: StructuredToolDefinition): Planne
   };
 }
 
-function chooseCompletion(request: string, parameter: StructuredToolParameter): string | undefined {
+function chooseCompletion(
+  request: string,
+  parameter: StructuredToolParameter,
+  learnedGrammar: FieldGrammar | undefined
+): string | undefined {
   const haystack = normalizeText(request);
-  const direct = parameter.completions.find((completion) => termMatches(haystack, completion));
-  if (direct) return optimizeStructuredField(direct, parameter);
+  const completions = parameter.completions ?? [];
+  const direct = completions.find((completion) => termMatches(haystack, completion));
+  if (direct) return optimizeStructuredField(direct, parameter, learnedGrammar);
   if (parameter.description && termMatches(haystack, parameter.description)) {
-    return parameter.completions[0] ? optimizeStructuredField(parameter.completions[0], parameter) : undefined;
+    return completions[0] ? optimizeStructuredField(completions[0], parameter, learnedGrammar) : undefined;
   }
-  if (parameter.completions.length === 1 && parameter.required) {
-    const first = parameter.completions[0];
-    return first ? optimizeStructuredField(first, parameter) : undefined;
+  if (completions.length === 1 && parameter.required) {
+    const first = completions[0];
+    return first ? optimizeStructuredField(first, parameter, learnedGrammar) : undefined;
   }
   return undefined;
 }
@@ -238,7 +250,11 @@ function selectTool(request: string, tools: StructuredToolDefinition[]): Structu
 
 function scoreTool(request: string, tool: StructuredToolDefinition): number {
   const haystack = normalizeText(request);
-  const terms = [tool.toolId, tool.description ?? '', ...tool.parameters.flatMap((parameter) => [parameter.name, parameter.description ?? '', ...parameter.completions])];
+  const terms = [
+    tool.toolId,
+    tool.description ?? '',
+    ...tool.parameters.flatMap((parameter) => [parameter.name, parameter.description ?? '', ...(parameter.completions ?? [])])
+  ];
   return terms.reduce((score, term) => score + (termMatches(haystack, term) ? 1 : 0), 0);
 }
 
@@ -294,7 +310,6 @@ function withConfigDefaults(tool: StructuredToolDefinition, configTool: ReturnTy
       .filter((item) => !byName.has(item.name))
       .map((item) => ({
         name: item.name,
-        grammar: item.grammar,
         completions: item.completions,
         required: item.required,
         description: item.description

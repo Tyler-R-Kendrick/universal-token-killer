@@ -44,7 +44,6 @@ export type UtkConfig = {
       curry_fields: string[];
       structured_fields: Array<{
         name: string;
-        grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
         completions: string[];
         required?: boolean;
         description?: string;
@@ -219,17 +218,11 @@ function normalizeStructuredFields(value: unknown): UtkConfig['tools']['registry
     const object = readObject(item, 'tools.registry[].structured_fields[]');
     return {
       name: readString(object.name, ''),
-      grammar: readStructuredGrammar(object.grammar),
       completions: readStringArray(object.completions, [], 'tools.registry[].structured_fields[].completions'),
       required: object.required === undefined ? undefined : readBoolean(object.required, false),
       description: object.description === undefined ? undefined : readString(object.description, '')
     };
   });
-}
-
-function readStructuredGrammar(value: unknown): 'bash-like' | 'sql' | 'lucene' | 'regex' {
-  if (value === 'bash-like' || value === 'sql' || value === 'lucene' || value === 'regex') return value;
-  throw new Error(`Unsupported structured grammar: ${String(value)}`);
 }
 
 function normalizeOverrides(value: unknown): Array<{ tool: string; provider: SerializerProviderId }> {

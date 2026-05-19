@@ -55,8 +55,7 @@ declare module '@utk/core' {
 
   export type StructuredToolParameter = {
     name: string;
-    grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
-    completions: string[];
+    completions?: string[];
     required?: boolean;
     description?: string;
   };

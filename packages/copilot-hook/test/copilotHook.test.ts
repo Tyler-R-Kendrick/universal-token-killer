@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, contentHash, normalizeToolId } from '@utk/core';
+import { canonicalJson, contentHash, normalizeToolId, recordFieldObservation } from '@utk/core';
 import { processCopilotPreToolUsePayload, processCopilotToolHookPayload } from '../src/copilotHook.js';
 
 describe('GitHub Copilot tool hook', () => {
@@ -252,7 +252,6 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
           '',
           '[[tools.registry.structured_fields]]',
           'name = "query"',
-          'grammar = "lucene"',
           'completions = ["is:issue is:open label:bug"]',
           'required = true',
           ''
@@ -260,6 +259,9 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
         'utf8'
       )
     );
+
+    await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:issue is:open label:bug');
+    await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:pr is:open label:fix');
 
     const normalized = await processCopilotPreToolUsePayload(
       JSON.stringify({
@@ -339,13 +341,15 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
           '',
           '[[tools.registry.structured_fields]]',
           'name = "query"',
-          'grammar = "lucene"',
           'completions = ["is:issue is:open"]',
           ''
         ].join('\n'),
         'utf8'
       )
     );
+
+    await recordFieldObservation(workspaceRoot, 'agent.plan', 'query', 'is:issue is:open');
+    await recordFieldObservation(workspaceRoot, 'agent.plan', 'query', 'is:pr is:closed');
 
     const previousPython = process.env.UTK_DETOK_PYTHON;
     process.env.UTK_DETOK_PYTHON = 'definitely-missing-python';
@@ -425,7 +429,6 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
           '',
           '[[tools.registry.structured_fields]]',
           'name = "query"',
-          'grammar = "lucene"',
           'completions = ["is:issue is:open label:bug"]',
           'required = true',
           ''
@@ -433,6 +436,10 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
         'utf8'
       )
     );
+
+    for (let i = 0; i < 5; i += 1) {
+      await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:issue is:open label:bug');
+    }
 
     await processCopilotToolHookPayload(
       JSON.stringify({

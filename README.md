@@ -120,19 +120,22 @@ console.log(result.invocation.command); // git status --short
 
 ### Complete A Structured LLM Tool Invocation
 
-UTK also supports structured non-CLI tool grammars (for example Lucene, SQL, and regex parameters) with cache-aware invocation planning:
+UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<id>/fields/<name>.grammar.json`). The tool definition just names the fields and any canonical example completions:
 
 ```ts
-import { completeStructuredToolInvocation } from '@utk/core';
+import { completeStructuredToolInvocation, recordFieldObservation } from '@utk/core';
+
+// Seed observations as real tool runs happen (typically from a hook).
+await recordFieldObservation(process.cwd(), 'tool.search', 'query', 'is:issue is:open label:bug');
 
 const result = await completeStructuredToolInvocation({
   workspaceRoot: process.cwd(),
   request: 'search open issue bugs',
   tools: [{
-    toolId: 'github.search.issues',
+    toolId: 'tool.search',
     outputCache: true,
     bypassOnCache: true,
-    parameters: [{ name: 'query', grammar: 'lucene', completions: ['is:issue is:open label:bug'], required: true }]
+    parameters: [{ name: 'query', completions: ['is:issue is:open label:bug'], required: true }]
   }]
 });
 ```

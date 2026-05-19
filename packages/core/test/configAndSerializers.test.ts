@@ -117,7 +117,7 @@ describe('UTK TOML config', () => {
     expect(config.tools.registry).toEqual([]);
   });
 
-  it('supports registered tool grammar and cache annotations with wildcard fallback', async () => {
+  it('supports registered tool field and cache annotations with wildcard fallback', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-tools-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
     await writeFile(
@@ -127,29 +127,27 @@ describe('UTK TOML config', () => {
         'default = "toon"',
         '',
         '[[tools.registry]]',
-        'tool = "github.search.issues"',
-        'description = "Search issue index"',
+        'tool = "tool.alpha"',
+        'description = "alpha tool"',
         'output_cache = true',
         'bypass_on_cache = true',
         'curry_fields = ["query"]',
         '',
         '[[tools.registry.structured_fields]]',
         'name = "query"',
-        'grammar = "lucene"',
-        'completions = ["is:issue is:open"]',
+        'completions = ["alpha:one alpha:two"]',
         'required = true',
-        'description = "lucene issue query"',
+        'description = "alpha query"',
         '',
         '[[tools.registry]]',
-        'tool = "db.query.*"',
+        'tool = "tool.beta.*"',
         'output_cache = false',
         '[[tools.registry.structured_fields]]',
-        'name = "sql"',
-        'grammar = "sql"',
-        'completions = ["select * from issues"]',
+        'name = "expr"',
+        'completions = ["beta one two"]',
         '',
         '[[tools.registry]]',
-        'tool = "regex.find"',
+        'tool = "tool.gamma"',
         'output_cache = false',
         ''
       ].join('\n'),
@@ -160,21 +158,20 @@ describe('UTK TOML config', () => {
 
     expect(config.tools.registry).toHaveLength(3);
     expect(config.tools.registry[0]).toMatchObject({
-      tool: 'github.search.issues',
+      tool: 'tool.alpha',
       output_cache: true,
       bypass_on_cache: true,
       curry_fields: ['query']
     });
     expect(config.tools.registry[0]?.structured_fields[0]).toMatchObject({
       name: 'query',
-      grammar: 'lucene',
-      completions: ['is:issue is:open'],
+      completions: ['alpha:one alpha:two'],
       required: true
     });
-    expect(resolveRegisteredTool(config, 'github.search.issues')?.tool).toBe('github.search.issues');
-    expect(resolveRegisteredTool(config, 'db.query.analytics')?.tool).toBe('db.query.*');
-    expect(resolveRegisteredTool(config, 'regex.find')?.structured_fields).toEqual([]);
-    expect(resolveRegisteredTool(config, 'db.other')).toBeUndefined();
+    expect(resolveRegisteredTool(config, 'tool.alpha')?.tool).toBe('tool.alpha');
+    expect(resolveRegisteredTool(config, 'tool.beta.analytics')?.tool).toBe('tool.beta.*');
+    expect(resolveRegisteredTool(config, 'tool.gamma')?.structured_fields).toEqual([]);
+    expect(resolveRegisteredTool(config, 'tool.unknown')).toBeUndefined();
   });
 
   it('supports detok preToolUse configuration and per-tool overrides', async () => {
@@ -252,7 +249,7 @@ describe('UTK TOML config', () => {
     await expect(loadUtkConfig(badOverrides)).rejects.toThrow('detok.copilot_pre_tool_use.overrides must be an array');
   });
 
-  it('fails explicitly for malformed tool registry and unsupported grammars', async () => {
+  it('fails explicitly for malformed tool registry shapes', async () => {
     const badRegistry = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-tools-registry-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badRegistry, '.utk'), { recursive: true }));
     await writeFile(path.join(badRegistry, '.utk', 'config.toml'), '[serialization]\n[tools]\nregistry = "bad"\n', 'utf8');
@@ -266,24 +263,6 @@ describe('UTK TOML config', () => {
       'utf8'
     );
     await expect(loadUtkConfig(badFields)).rejects.toThrow('tools.registry[].structured_fields must be an array');
-
-    const badGrammar = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-tools-grammar-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badGrammar, '.utk'), { recursive: true }));
-    await writeFile(
-      path.join(badGrammar, '.utk', 'config.toml'),
-      [
-        '[serialization]',
-        '[[tools.registry]]',
-        'tool = "x"',
-        '',
-        '[[tools.registry.structured_fields]]',
-        'name = "query"',
-        'grammar = "jsonpath"',
-        ''
-      ].join('\n'),
-      'utf8'
-    );
-    await expect(loadUtkConfig(badGrammar)).rejects.toThrow('Unsupported structured grammar: jsonpath');
   });
 });
 

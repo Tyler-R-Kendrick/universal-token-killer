@@ -7,6 +7,29 @@ declare module '@utk/core' {
     serializedPath: string;
   };
 
+  export type FieldGrammarSeparator = {
+    tight: number;
+    loose: number;
+  };
+
+  export type FieldGrammar = {
+    version: number;
+    observations: number;
+    separators: Record<string, FieldGrammarSeparator>;
+    lengthRange: { min: number; max: number };
+  };
+
+  export function inferFieldGrammar(value: string): FieldGrammar;
+  export function mergeFieldGrammar(current: FieldGrammar | undefined, candidate: FieldGrammar): FieldGrammar;
+  export function normalizeWithFieldGrammar(value: string, grammar: FieldGrammar | undefined): string;
+  export function loadFieldGrammar(workspaceRoot: string, toolId: string, fieldName: string): Promise<FieldGrammar | undefined>;
+  export function recordFieldObservation(
+    workspaceRoot: string,
+    toolId: string,
+    fieldName: string,
+    value: string
+  ): Promise<FieldGrammar>;
+
   export type UtkConfig = {
     tools: {
       registry: Array<{
@@ -17,7 +40,6 @@ declare module '@utk/core' {
         curry_fields: string[];
         structured_fields: Array<{
           name: string;
-          grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
           completions: string[];
           required?: boolean;
           description?: string;
@@ -64,12 +86,12 @@ declare module '@utk/core' {
     tool: {
       parameters: Array<{
         name: string;
-        grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
-        completions: string[];
+        completions?: string[];
         required?: boolean;
         description?: string;
       }>;
-    }
+    },
+    learnedGrammars?: Record<string, FieldGrammar | undefined>
   ): { value: Record<string, unknown>; applied: boolean };
 
   export function compressTextWithLlmlingua2(

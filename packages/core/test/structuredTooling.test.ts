@@ -8,34 +8,39 @@ import {
   completeStructuredToolInvocation,
   contentHash,
   curryTool,
+  inferFieldGrammar,
+  loadFieldGrammar,
   memoizeTool,
-  optimizeStructuredToolArgs
+  mergeFieldGrammar,
+  normalizeWithFieldGrammar,
+  optimizeStructuredToolArgs,
+  recordFieldObservation
 } from '../src/index.js';
 
 describe('structured tooling', () => {
-  it('completes registered non-cli tools with grammar templates and cache metadata', async () => {
+  it('completes registered tools with grammar templates and cache metadata', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-tool-'));
     const result = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'search open issues by label',
       tools: [
         {
-          toolId: 'github.search.issues',
+          toolId: 'tool.search',
           description: 'search open issues',
           outputCache: true,
           bypassOnCache: true,
-          parameters: [{ name: 'query', grammar: 'lucene', required: true, completions: ['is:issue is:open label:bug'] }]
+          parameters: [{ name: 'query', required: true, completions: ['alpha:open alpha:label'] }]
         },
         {
-          toolId: 'db.query',
-          description: 'query issues with sql',
-          parameters: [{ name: 'sql', grammar: 'sql', required: true, completions: ['select * from issues'] }]
+          toolId: 'tool.query',
+          description: 'query issues',
+          parameters: [{ name: 'expr', required: true, completions: ['select alpha beta'] }]
         }
       ]
     });
 
-    expect(result.invocation.toolId).toBe('github.search.issues');
-    expect(result.invocation.args.query).toBe('is:issue is:open label:bug');
+    expect(result.invocation.toolId).toBe('tool.search');
+    expect(result.invocation.args.query).toBe('alpha:open alpha:label');
     expect(result.cache.eligible).toBe(true);
     expect(result.cache.hit).toBe(false);
     expect(result.cache.bypass).toBe(false);
@@ -43,28 +48,28 @@ describe('structured tooling', () => {
     expect(result.guidance.used).toBe(true);
     expect(result.guidance.available).toBe(false);
     expect(result.templatePath.endsWith('structured-template.compact.toon')).toBe(true);
-    expect(await readFile(result.templatePath, 'utf8')).toContain('github.search.issues');
+    expect(await readFile(result.templatePath, 'utf8')).toContain('tool.search');
   });
 
   it('returns cache hits and bypass flags for memoized curried invocation planning', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-cache-'));
     const tools = [
       {
-        toolId: 'db.query',
+        toolId: 'tool.cache',
         outputCache: true,
         bypassOnCache: true,
-        parameters: [{ name: 'sql', grammar: 'sql' as const, required: true, completions: ['select * from issues where state = open'] }]
+        parameters: [{ name: 'expr', required: true, completions: ['select alpha where state = open'] }]
       }
     ];
 
     const first = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'run sql for open issues',
+      request: 'run expr for open alpha',
       tools
     });
     const second = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'run sql for open issues',
+      request: 'run expr for open alpha',
       tools
     });
 
@@ -76,7 +81,7 @@ describe('structured tooling', () => {
 
   it('supports tool registry defaults loaded from config', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-config-defaults-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await mkdir(path.join(workspaceRoot, '.utk'), { recursive: true });
     await writeFile(
       path.join(workspaceRoot, '.utk', 'config.toml'),
       [
@@ -84,15 +89,14 @@ describe('structured tooling', () => {
         'default = "toon"',
         '',
         '[[tools.registry]]',
-        'tool = "search.regex"',
-          'description = "regex lookup"',
-          'output_cache = true',
-          'bypass_on_cache = true',
+        'tool = "tool.regfield"',
+        'description = "registered field lookup"',
+        'output_cache = true',
+        'bypass_on_cache = true',
         '',
         '[[tools.registry.structured_fields]]',
         'name = "pattern"',
-        'grammar = "regex"',
-        'completions = ["foo\\\\s+bar"]',
+        'completions = ["alpha beta"]',
         'required = true',
         ''
       ].join('\n'),
@@ -101,11 +105,11 @@ describe('structured tooling', () => {
 
     const result = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'use regex lookup',
-      tools: [{ toolId: 'search.regex', parameters: [{ name: 'scope', grammar: 'bash-like', completions: ['repo'], required: true }] }]
+      request: 'use registered field lookup',
+      tools: [{ toolId: 'tool.regfield', parameters: [{ name: 'scope', completions: ['repo'], required: true }] }]
     });
 
-    expect(result.invocation.args.pattern).toBe('foo\\s+bar');
+    expect(result.invocation.args.pattern).toBe('alpha beta');
     expect(result.invocation.args.scope).toBe('repo');
     expect(result.cache.eligible).toBe(true);
     expect(result.missingRequired).toEqual([]);
@@ -116,38 +120,32 @@ describe('structured tooling', () => {
     const missing = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'unknown prompt',
-      tools: [{ toolId: 'db.query', parameters: [{ name: 'sql', grammar: 'sql', required: true, completions: [] }] }]
+      tools: [{ toolId: 'tool.query', parameters: [{ name: 'expr', required: true, completions: [] }] }]
     });
-    expect(missing.missingRequired).toEqual(['sql']);
+    expect(missing.missingRequired).toEqual(['expr']);
     expect(missing.confidence).toBeLessThan(1);
-    const descriptionFallback = await completeStructuredToolInvocation({
-      workspaceRoot,
-      request: 'safe mode please',
-      tools: [{ toolId: 'tool.desc', parameters: [{ name: 'mode', grammar: 'bash-like', required: true, completions: ['safe'], description: 'safe mode' }] }]
-    });
-    expect(descriptionFallback.invocation.args.mode).toBe('safe');
     const sparse = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'unknown sparse',
-      tools: [{ toolId: 'tool.sparse', parameters: [{ name: 'hole', grammar: 'bash-like', required: true, completions: [undefined as unknown as string] }] }]
+      tools: [{ toolId: 'tool.sparse', parameters: [{ name: 'hole', required: true, completions: [undefined as unknown as string] }] }]
     });
     expect(sparse.missingRequired).toEqual(['hole']);
     const punctuation = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'literal',
-      tools: [{ toolId: 'tool.punctuation', parameters: [{ name: 'value', grammar: 'bash-like', completions: ['!!!'] }] }]
+      tools: [{ toolId: 'tool.punctuation', parameters: [{ name: 'value', completions: ['!!!'] }] }]
     });
     expect(punctuation.invocation.args).toEqual({});
     const descriptionEmpty = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'mystery mode',
-      tools: [{ toolId: 'tool.description-empty', parameters: [{ name: 'mode', grammar: 'bash-like', completions: [undefined as unknown as string], description: 'mystery mode' }] }]
+      tools: [{ toolId: 'tool.description-empty', parameters: [{ name: 'mode', completions: [undefined as unknown as string], description: 'mystery mode' }] }]
     });
     expect(descriptionEmpty.invocation.args).toEqual({});
     const descriptionOnly = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'configure foo bar baz',
-      tools: [{ toolId: 'tool.description-only', parameters: [{ name: 'mode', grammar: 'bash-like', completions: ['quick brown'], description: 'foo bar' }] }]
+      tools: [{ toolId: 'tool.description-only', parameters: [{ name: 'mode', completions: ['quick brown'], description: 'foo bar' }] }]
     });
     expect(descriptionOnly.invocation.args.mode).toBe('quick brown');
     await expect(completeStructuredToolInvocation({ workspaceRoot, request: 'x', tools: [] })).rejects.toThrow(
@@ -164,8 +162,8 @@ describe('structured tooling', () => {
       workspaceRoot,
       request: 'pick described option',
       tools: [
-        { toolId: 'tool.raw', parameters: [{ name: 'value', grammar: 'bash-like', completions: ['raw'] }] },
-        { toolId: 'tool.described', description: 'pick described option', parameters: [{ name: 'value', grammar: 'bash-like', completions: ['described'] }] }
+        { toolId: 'tool.raw', parameters: [{ name: 'value', completions: ['raw'] }] },
+        { toolId: 'tool.described', description: 'pick described option', parameters: [{ name: 'value', completions: ['described'] }] }
       ]
     });
     expect(selected.invocation.toolId).toBe('tool.described');
@@ -173,7 +171,7 @@ describe('structured tooling', () => {
     const unmatchedDescription = await completeStructuredToolInvocation({
       workspaceRoot,
       request: 'no related terms',
-      tools: [{ toolId: 'tool.no-match', parameters: [{ name: 'mode', grammar: 'bash-like', completions: ['safe'], description: 'safe mode' }] }]
+      tools: [{ toolId: 'tool.no-match', parameters: [{ name: 'mode', completions: ['safe'], description: 'safe mode' }] }]
     });
     expect(unmatchedDescription.invocation.args).toEqual({});
   });
@@ -181,28 +179,25 @@ describe('structured tooling', () => {
   it('optimizes structured field values without mutating unknown or non-string fields', () => {
     const result = optimizeStructuredToolArgs(
       {
-        sql: '  select  *   from issues  where state = open  ',
-        query: '  is:issue   is:open   label : bug  ',
-        pattern: '   foo\\s+bar   ',
-        words: '  keep this short  ',
+        first: '  alpha,beta   gamma  ',
+        second: '   keep   short  ',
+        third: '  many   spaces  ',
         count: 7,
         untouched: 7
       },
       {
         parameters: [
-          { name: 'sql', grammar: 'sql', completions: ['select * from issues where state = open'] },
-          { name: 'query', grammar: 'lucene', completions: ['is:issue is:open label:bug'] },
-          { name: 'pattern', grammar: 'regex', completions: [] },
-          { name: 'words', grammar: 'bash-like', completions: ['keep this short'] },
-          { name: 'count', grammar: 'bash-like', completions: ['7'] }
+          { name: 'first', completions: ['alpha,beta gamma'] },
+          { name: 'second', completions: ['keep short'] },
+          { name: 'third', completions: [] },
+          { name: 'count', completions: ['7'] }
         ]
       }
     );
     expect(result.applied).toBe(true);
-    expect(result.value.sql).toBe('select * from issues where state = open');
-    expect(result.value.query).toBe('is:issue is:open label:bug');
-    expect(result.value.pattern).toBe('foo\\s+bar');
-    expect(result.value.words).toBe('keep this short');
+    expect(result.value.first).toBe('alpha,beta gamma');
+    expect(result.value.second).toBe('keep short');
+    expect(result.value.third).toBe('many spaces');
     expect(result.value.count).toBe(7);
     expect(result.value.untouched).toBe(7);
   });
@@ -251,5 +246,87 @@ describe('structured tooling', () => {
     });
     const invalidCache = await invalidMemo(invalidInput);
     expect(invalidCache.cacheHit).toBe(false);
+  });
+
+  it('learns field grammars from observations and applies them on subsequent invocations', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-learn-'));
+    const toolId = 'tool.learner';
+
+    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'alpha:one alpha:two');
+    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'beta:three beta:four');
+    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'gamma:five gamma:six');
+
+    const learned = await loadFieldGrammar(workspaceRoot, toolId, 'expr');
+    expect(learned).toBeDefined();
+    expect(learned?.observations).toBe(3);
+    expect(learned?.separators[':']?.tight).toBeGreaterThan(0);
+
+    const optimized = optimizeStructuredToolArgs(
+      { expr: '  delta : seven   delta : eight  ' },
+      { parameters: [{ name: 'expr' }] },
+      { expr: learned }
+    );
+    expect(optimized.applied).toBe(true);
+    expect(optimized.value.expr).toBe('delta:seven delta:eight');
+  });
+
+  it('infers and merges field grammars deterministically', () => {
+    const first = inferFieldGrammar('a:b c:d');
+    expect(first.observations).toBe(1);
+    expect(first.separators[':']?.tight).toBe(2);
+    expect(first.separators[':']?.loose).toBe(0);
+
+    const second = inferFieldGrammar('a : b c : d');
+    expect(second.separators[':']?.tight).toBe(0);
+    expect(second.separators[':']?.loose).toBe(2);
+
+    const merged = mergeFieldGrammar(first, second);
+    expect(merged.observations).toBe(2);
+    expect(merged.separators[':']?.tight).toBe(2);
+    expect(merged.separators[':']?.loose).toBe(2);
+
+    const fromEmpty = mergeFieldGrammar(undefined, first);
+    expect(fromEmpty.version).toBe(1);
+    expect(fromEmpty.observations).toBe(1);
+
+    const leading = inferFieldGrammar(':abc');
+    expect(leading.separators[':']?.loose).toBe(1);
+    const trailing = inferFieldGrammar('abc?');
+    expect(trailing.separators['?']?.loose).toBe(1);
+
+    const distinct = mergeFieldGrammar(first, inferFieldGrammar('a=b'));
+    expect(distinct.separators['=']?.tight).toBe(1);
+
+    expect(normalizeWithFieldGrammar('  x   y  ', undefined)).toBe('x y');
+    expect(normalizeWithFieldGrammar('a : b', merged)).toBe('a : b');
+    const tightOnly = mergeFieldGrammar(first, first);
+    expect(normalizeWithFieldGrammar('a : b', tightOnly)).toBe('a:b');
+  });
+
+  it('treats parameters without a completions array as optional and ignores malformed grammar files', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-edges-'));
+
+    const noCompletions = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'no completions provided',
+      tools: [
+        { toolId: 'tool.no-completions', parameters: [{ name: 'value' }] },
+        { toolId: 'tool.no-completions.peer', parameters: [{ name: 'other' }] }
+      ]
+    });
+    expect(noCompletions.invocation.args).toEqual({});
+
+    const grammarDir = path.join(workspaceRoot, '.utk', 'tools', 'tool-malformed', 'fields');
+    await mkdir(grammarDir, { recursive: true });
+    await writeFile(path.join(grammarDir, 'value.grammar.json'), '{"junk":true}', 'utf8');
+    const reloaded = await loadFieldGrammar(workspaceRoot, 'tool.malformed', 'value');
+    expect(reloaded).toBeUndefined();
+
+    const result = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'use literal value',
+      tools: [{ toolId: 'tool.malformed', parameters: [{ name: 'value', required: true, completions: ['literal'] }] }]
+    });
+    expect(result.invocation.args.value).toBe('literal');
   });
 });

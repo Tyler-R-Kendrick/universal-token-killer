@@ -95,7 +95,7 @@ The hook only returns `modifiedArgs` when compression actually changes an allowl
 
 ## Registered Structured Tools And Cache Policy
 
-Annotate tool definitions when UTK can safely optimize structured inputs or cache outputs:
+Opt fields into UTK's normalization and caching by naming them in the tool registry. UTK does not ship any hand-written grammar definitions — the per-field grammar (separator style, whitespace conventions, length range) is **discovered from observations** of past tool runs and refined over time. The `structured_fields` entry just tells UTK which fields are subject to learning.
 
 ```toml
 [[tools.registry]]
@@ -107,16 +107,14 @@ curry_fields = ["query"]
 
 [[tools.registry.structured_fields]]
 name = "query"
-grammar = "lucene"
 completions = ["is:issue is:open label:bug"]
 required = true
 ```
 
-Supported `grammar` values are `bash-like`, `sql`, `lucene`, and `regex`.
-
-- Structured fields are normalized before tool execution in the pre-tool hook.
+- Structured fields are normalized before tool execution using a learned grammar persisted at `.utk/tools/<normalized-tool-id>/fields/<field>.grammar.json`.
 - `output_cache = true` enables local cache writes keyed by tool input.
 - `bypass_on_cache = true` allows pre-tool hook denial on cache hits to skip repeat calls.
+- Optional `completions` provide canonical example values; UTK matches them against the normalized input but does not require them.
 
 ## Defaults And Precedence
 

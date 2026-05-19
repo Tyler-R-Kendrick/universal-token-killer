@@ -5,6 +5,8 @@ export * from './cli/bashLikeTool.js';
 export * from './copilot/refinement.js';
 export * from './config/config.js';
 export * from './detok/llmlingua2.js';
+export * from './grammar/fieldGrammar.js';
+export * from './grammar/grammarStore.js';
 export * from './history/schemaHistory.js';
 export * from './mediation/toolMediator.js';
 export * from './response/compactResponse.js';

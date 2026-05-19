@@ -5,47 +5,47 @@ import { describe, expect, it } from 'vitest';
 import { completeStructuredToolInvocation } from '@utk/core';
 
 describe('structured tooling comparative coverage', () => {
-  it('handles varied registered LLM tool grammars with deterministic completions', async () => {
+  it('handles varied registered tool inputs with deterministic completions', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-evals-'));
     const tools = [
       {
-        toolId: 'github.search.issues',
-        description: 'lucene issue search',
-        parameters: [{ name: 'query', grammar: 'lucene' as const, required: true, completions: ['is:issue is:open label:bug'] }]
+        toolId: 'tool.index.search',
+        description: 'index search',
+        parameters: [{ name: 'query', required: true, completions: ['alpha:open alpha:label'] }]
       },
       {
-        toolId: 'db.query',
-        description: 'sql database query',
-        parameters: [{ name: 'sql', grammar: 'sql' as const, required: true, completions: ['select id,title from issues where state = open'] }]
+        toolId: 'tool.table.query',
+        description: 'table query',
+        parameters: [{ name: 'expr', required: true, completions: ['select id,title from rows where state = open'] }]
       },
       {
-        toolId: 'code.regex.find',
-        description: 'regex scanner',
-        parameters: [{ name: 'pattern', grammar: 'regex' as const, required: true, completions: ['(?:TODO|FIXME):\\s+.+'] }]
+        toolId: 'tool.scan.markers',
+        description: 'marker scanner',
+        parameters: [{ name: 'pattern', required: true, completions: ['(?:TODO|FIXME):\\s+.+'] }]
       }
     ];
 
-    const lucene = await completeStructuredToolInvocation({
+    const index = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'search issue index for open bugs',
+      request: 'use index search with alpha:open alpha:label',
       tools
     });
-    const sql = await completeStructuredToolInvocation({
+    const table = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'run sql database query over issues',
+      request: 'use table query select id,title from rows where state = open',
       tools
     });
-    const regex = await completeStructuredToolInvocation({
+    const markers = await completeStructuredToolInvocation({
       workspaceRoot,
-      request: 'scan with regex scanner for todo markers',
+      request: 'use marker scanner pattern (?:TODO|FIXME)',
       tools
     });
 
-    expect(lucene.invocation.toolId).toBe('github.search.issues');
-    expect(lucene.invocation.args.query).toContain('is:issue');
-    expect(sql.invocation.toolId).toBe('db.query');
-    expect(sql.invocation.args.sql).toContain('select');
-    expect(regex.invocation.toolId).toBe('code.regex.find');
-    expect(regex.invocation.args.pattern).toContain('TODO');
+    expect(index.invocation.toolId).toBe('tool.index.search');
+    expect(index.invocation.args.query).toContain('alpha');
+    expect(table.invocation.toolId).toBe('tool.table.query');
+    expect(table.invocation.args.expr).toContain('select');
+    expect(markers.invocation.toolId).toBe('tool.scan.markers');
+    expect(markers.invocation.args.pattern).toContain('TODO');
   });
 });
