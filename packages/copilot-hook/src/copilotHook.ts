@@ -1,6 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import { compressTextWithLlmlingua2, contentHash, loadUtkConfig, mediateToolExecution, normalizeToolId, optimizeStructuredToolArgs, resolveRegisteredTool, type UtkConfig } from '@utk/core';
+import { canonicalJson, compressTextWithLlmlingua2, contentHash, loadUtkConfig, mediateToolExecution, normalizeToolId, optimizeStructuredToolArgs, resolveRegisteredTool, safeJoin, type UtkConfig } from '@utk/core';
 import type { CopilotPreToolUseOutput } from './copilotHookTypes.js';
 
 export type CopilotHookOptions = {
@@ -216,14 +215,14 @@ function toolMatches(pattern: string, toolId: string): boolean {
 
 function cachePath(workspaceRoot: string, toolId: string, input: unknown): string {
   const normalizedToolId = normalizeToolId(toolId);
-  const key = contentHash(JSON.stringify(input));
-  return path.join(workspaceRoot, '.utk', 'cache', 'tool-output', normalizedToolId, `${key}.json`);
+  const key = contentHash(canonicalJson(input));
+  return safeJoin(workspaceRoot, '.utk', 'cache', 'tool-output', normalizedToolId, `${key}.json`);
 }
 
 async function writeCachedToolOutput(workspaceRoot: string, toolId: string, input: unknown, output: unknown): Promise<void> {
   const filePath = cachePath(workspaceRoot, toolId, input);
-  await mkdir(path.dirname(filePath), { recursive: true });
-  await writeFile(filePath, JSON.stringify({ output }), 'utf8');
+  await mkdir(safeJoin(workspaceRoot, '.utk', 'cache', 'tool-output', normalizeToolId(toolId)), { recursive: true });
+  await writeFile(filePath, canonicalJson({ output }), 'utf8');
 }
 
 async function readCachedToolOutput(

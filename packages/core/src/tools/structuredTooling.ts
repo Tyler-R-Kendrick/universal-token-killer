@@ -223,7 +223,6 @@ function chooseCompletion(request: string, parameter: StructuredToolParameter): 
   const direct = parameter.completions.find((completion) => termMatches(haystack, completion));
   if (direct) return optimizeStructuredField(direct, parameter);
   if (parameter.description && termMatches(haystack, parameter.description)) {
-    /* c8 ignore next */
     return parameter.completions[0] ? optimizeStructuredField(parameter.completions[0], parameter) : undefined;
   }
   if (parameter.completions.length === 1 && parameter.required) {

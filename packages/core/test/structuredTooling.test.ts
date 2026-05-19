@@ -144,6 +144,12 @@ describe('structured tooling', () => {
       tools: [{ toolId: 'tool.description-empty', parameters: [{ name: 'mode', grammar: 'bash-like', completions: [undefined as unknown as string], description: 'mystery mode' }] }]
     });
     expect(descriptionEmpty.invocation.args).toEqual({});
+    const descriptionOnly = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'configure foo bar baz',
+      tools: [{ toolId: 'tool.description-only', parameters: [{ name: 'mode', grammar: 'bash-like', completions: ['quick brown'], description: 'foo bar' }] }]
+    });
+    expect(descriptionOnly.invocation.args.mode).toBe('quick brown');
     await expect(completeStructuredToolInvocation({ workspaceRoot, request: 'x', tools: [] })).rejects.toThrow(
       'At least one structured tool definition is required'
     );

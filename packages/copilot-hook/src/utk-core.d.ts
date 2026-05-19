@@ -53,6 +53,8 @@ declare module '@utk/core' {
   export function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig>;
   export function normalizeToolId(value: string): string;
   export function contentHash(value: unknown, shortLength?: number): string;
+  export function canonicalJson(value: unknown): string;
+  export function safeJoin(base: string, ...parts: string[]): string;
   export function resolveRegisteredTool(
     config: UtkConfig,
     toolId: string

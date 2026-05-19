@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { contentHash, normalizeToolId } from '@utk/core';
+import { canonicalJson, contentHash, normalizeToolId } from '@utk/core';
 import { processCopilotPreToolUsePayload, processCopilotToolHookPayload } from '../src/copilotHook.js';
 
 describe('GitHub Copilot tool hook', () => {
@@ -292,7 +292,7 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
     expect(bypassedParsed.permissionDecisionReason).toContain('cache hit');
 
     const malformedInput = { query: 'is:issue is:open label:enhancement' };
-    const malformedHash = contentHash(JSON.stringify(malformedInput));
+    const malformedHash = contentHash(canonicalJson(malformedInput));
     const malformedPath = path.join(
       workspaceRoot,
       '.utk',
@@ -312,5 +312,48 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
         { workspaceRoot }
       )
     ).resolves.toBeUndefined();
+  });
+
+  it('hashes cache keys canonically so arg key order does not cause cache misses', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-order-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspaceRoot, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[detok]',
+          'enabled = false',
+          '',
+          '[[tools.registry]]',
+          'tool = "tool.cache.order"',
+          'output_cache = true',
+          'bypass_on_cache = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+
+    await processCopilotToolHookPayload(
+      JSON.stringify({
+        toolName: 'tool.cache.order',
+        toolArgs: { alpha: 1, beta: 2 },
+        toolOutput: { ok: true }
+      }),
+      { workspaceRoot }
+    );
+
+    const swapped = await processCopilotPreToolUsePayload(
+      JSON.stringify({
+        tool_name: 'tool.cache.order',
+        tool_input: { beta: 2, alpha: 1 }
+      }),
+      { workspaceRoot }
+    );
+    const swappedParsed = JSON.parse(swapped ?? '{}') as { permissionDecision?: string };
+    expect(swappedParsed.permissionDecision).toBe('deny');
   });
 });
