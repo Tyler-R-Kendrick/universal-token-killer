@@ -1,6 +1,7 @@
 export * from './artifact/canonical.js';
 export * from './artifact/manifest.js';
 export * from './copilot/refinement.js';
+export * from './config/config.js';
 export * from './history/schemaHistory.js';
 export * from './mediation/toolMediator.js';
 export * from './response/compactResponse.js';
@@ -9,6 +10,7 @@ export * from './rules/ruleEngine.js';
 export * from './schema/inferSchema.js';
 export * from './schema/mergeSchema.js';
 export * from './security/pathSafety.js';
+export * from './serialization/providers.js';
 export * from './store/artifactStore.js';
 export * from './store/workspaceStore.js';
 export * from './stream/persistStream.js';

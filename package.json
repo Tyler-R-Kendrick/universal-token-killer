@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "npm run -ws build",
+    "postinstall": "node scripts/build-guidance-ts.mjs",
     "test": "npm run -ws test",
     "lint": "npm run -ws lint",
     "typecheck": "npm run -ws typecheck",

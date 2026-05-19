@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { encode } from '@toon-format/toon';
 import { safeJoin } from '../security/pathSafety.js';
 import { canonicalJson } from '../artifact/canonical.js';
 import { routeToToon } from '../toon/toon.js';
@@ -107,8 +108,7 @@ async function selectRouteSchema(toolRoot: string, schemaIds: string[]): Promise
 }
 
 function routesToToon(routes: RouteDecision[]): string {
-  if (routes.length === 0) return 'routes[]\n';
-  return `routes[\n${routes.map((route) => routeToToon(route.schema, route.confidence, route.reason)).join('\n')}\n]\n`;
+  return `${encode({ routes: routes.map((route) => ({ schema: route.schema, confidence: Number(route.confidence.toFixed(2)), reason: route.reason })) })}\n`;
 }
 
 async function writeRouteIndexes(routesRoot: string, routes: RouteDecision[]): Promise<void> {

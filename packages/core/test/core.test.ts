@@ -2,6 +2,7 @@ import { mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
+import { decode } from '@toon-format/toon';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_CONFIG,
@@ -159,7 +160,7 @@ describe('artifact operations', () => {
 
     const routes = await rebuildRouteIndex(storageRoot);
     expect(routes).toHaveLength(1);
-    expect(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8')).toContain('routes[\nroute{');
+    expect(decode(await readFile(path.join(storageRoot, 'routes', 'index.toon'), 'utf8'))).toEqual({ routes });
     expect(await cleanupObservations(storageRoot)).toBe(1);
   });
 
@@ -186,7 +187,8 @@ describe('artifact operations', () => {
     expect(await compactSchemaHistory(storageRoot)).toBeGreaterThanOrEqual(1);
     const summary = JSON.parse(await readFile(path.join(storageRoot, 'tools', 'tool-history', 'history', 'compacted-summary.json'), 'utf8'));
     expect(summary.removed).toBe(1);
-    expect(validateCanonicalToonPair({ type: 'object' }, 'drift').valid).toBe(false);
+    expect(validateCanonicalToonPair({ type: 'object' }, 'route:\n  [').valid).toBe(false);
+    expect(validateCanonicalToonPair({ type: 'object' }, 'schema:\n  type: string\n').errors).toContain('TOON artifact drifted from canonical schema');
   });
 });
 

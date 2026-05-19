@@ -1,6 +1,12 @@
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts')
+    }
+  },
   test: {
     include: ['packages/**/*.test.ts', 'scripts/**/*.test.ts', 'test/**/*.test.ts', 'evals/**/*.test.ts'],
     coverage: {
@@ -13,9 +19,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.test.ts',
         '**/node_modules/**',
-        'packages/*/src/index.ts',
-        'packages/vscode-extension/src/extension.ts',
-        'packages/vscode-extension/src/extension/index.ts'
+        'packages/*/src/index.ts'
       ],
       thresholds: {
         statements: 100,

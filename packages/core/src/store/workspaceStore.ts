@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { DEFAULT_CONFIG_TOML } from '../config/config.js';
 
 export const DEFAULT_CONFIG = {
   version: 1,
@@ -7,7 +8,7 @@ export const DEFAULT_CONFIG = {
   storageRoot: '.utk',
   structuredOutput: {
     canonical: ['json-schema', 'toon'],
-    decoder: 'transformers-llguidance',
+    decoder: 'guidance-ts',
     fallback: 'validate-and-retry',
     maxRetries: 2
   },
@@ -78,6 +79,7 @@ export async function initializeWorkspaceStore(workspaceRoot: string): Promise<W
 
   const configPath = path.join(storageRoot, 'config.json');
   await ensureFile(configPath, `${JSON.stringify(DEFAULT_CONFIG, null, 2)}\n`);
+  await ensureFile(path.join(storageRoot, 'config.toml'), DEFAULT_CONFIG_TOML);
 
   return { storageRoot, configPath };
 }
