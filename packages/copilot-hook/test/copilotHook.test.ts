@@ -314,6 +314,89 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
     ).resolves.toBeUndefined();
   });
 
+  it('writes cache even when post-tool input is not a plain object', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-nonobj-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspaceRoot, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[detok]',
+          'enabled = false',
+          '',
+          '[[tools.registry]]',
+          'tool = "tool.cache.nonobj"',
+          'output_cache = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+
+    await expect(
+      processCopilotToolHookPayload(
+        JSON.stringify({
+          toolName: 'tool.cache.nonobj',
+          toolArgs: ['raw', 'positional'],
+          toolOutput: { ok: true }
+        }),
+        { workspaceRoot }
+      )
+    ).resolves.toContain('updatedOutput');
+  });
+
+  it('normalizes args in the post-tool path so pre-tool bypass hits regardless of caller arg shape', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-post-normalize-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspaceRoot, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[detok]',
+          'enabled = false',
+          '',
+          '[[tools.registry]]',
+          'tool = "github.search.issues"',
+          'output_cache = true',
+          'bypass_on_cache = true',
+          '',
+          '[[tools.registry.structured_fields]]',
+          'name = "query"',
+          'grammar = "lucene"',
+          'completions = ["is:issue is:open label:bug"]',
+          'required = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+
+    await processCopilotToolHookPayload(
+      JSON.stringify({
+        toolName: 'github.search.issues',
+        toolArgs: { query: '  is:issue   is:open   label : bug  ' },
+        toolOutput: { items: [{ id: 1 }] }
+      }),
+      { workspaceRoot }
+    );
+
+    const bypassed = await processCopilotPreToolUsePayload(
+      JSON.stringify({
+        tool_name: 'github.search.issues',
+        tool_input: { query: 'is:issue is:open label:bug' }
+      }),
+      { workspaceRoot }
+    );
+    const bypassedParsed = JSON.parse(bypassed ?? '{}') as { permissionDecision?: string };
+    expect(bypassedParsed.permissionDecision).toBe('deny');
+  });
+
   it('hashes cache keys canonically so arg key order does not cause cache misses', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-order-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));

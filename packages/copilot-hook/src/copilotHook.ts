@@ -38,7 +38,8 @@ export async function processCopilotToolHookPayload(payloadText: string, options
     const config = await loadUtkConfig(options.workspaceRoot);
     const registeredTool = resolveRegisteredTool(config, toolId);
     if (registeredTool?.output_cache) {
-      await writeCachedToolOutput(options.workspaceRoot, toolId, input, output);
+      const cacheKeyArgs = isPlainObject(input) ? optimizeForRegisteredTool(input, registeredTool) : input;
+      await writeCachedToolOutput(options.workspaceRoot, toolId, cacheKeyArgs, output);
     }
   } catch {
     // fail-open cache writes
@@ -65,15 +66,7 @@ export async function processCopilotPreToolUsePayload(payloadText: string, optio
     const config = await loadUtkConfig(options.workspaceRoot);
     const registeredTool = resolveRegisteredTool(config, toolId);
     const optimized = registeredTool
-      ? optimizeStructuredToolArgs(args, {
-          parameters: registeredTool.structured_fields.map((field) => ({
-            name: field.name,
-            grammar: field.grammar,
-            completions: field.completions,
-            required: field.required,
-            description: field.description
-          }))
-        })
+      ? optimizeStructuredArgsForRegisteredTool(args, registeredTool)
       : { value: args, applied: false };
 
     if (registeredTool?.output_cache && registeredTool.bypass_on_cache) {
@@ -211,6 +204,27 @@ function toolMatches(pattern: string, toolId: string): boolean {
   if (pattern === toolId) return true;
   if (pattern.endsWith('*')) return toolId.startsWith(pattern.slice(0, -1));
   return false;
+}
+
+type RegisteredTool = NonNullable<ReturnType<typeof resolveRegisteredTool>>;
+
+function optimizeStructuredArgsForRegisteredTool(
+  args: Record<string, unknown>,
+  registeredTool: RegisteredTool
+): { value: Record<string, unknown>; applied: boolean } {
+  return optimizeStructuredToolArgs(args, {
+    parameters: registeredTool.structured_fields.map((field) => ({
+      name: field.name,
+      grammar: field.grammar,
+      completions: field.completions,
+      required: field.required,
+      description: field.description
+    }))
+  });
+}
+
+function optimizeForRegisteredTool(args: Record<string, unknown>, registeredTool: RegisteredTool): Record<string, unknown> {
+  return optimizeStructuredArgsForRegisteredTool(args, registeredTool).value;
 }
 
 function cachePath(workspaceRoot: string, toolId: string, input: unknown): string {
