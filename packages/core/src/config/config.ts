@@ -35,6 +35,22 @@ export type UtkConfig = {
       }>;
     };
   };
+  tools: {
+    registry: Array<{
+      tool: string;
+      description?: string;
+      output_cache: boolean;
+      bypass_on_cache: boolean;
+      curry_fields: string[];
+      structured_fields: Array<{
+        name: string;
+        grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
+        completions: string[];
+        required?: boolean;
+        description?: string;
+      }>;
+    }>;
+  };
 };
 
 export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json'] as const;
@@ -66,6 +82,9 @@ min_chars = 8000
 deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
 rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
 protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+
+[tools]
+registry = []
 `;
 
 export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
@@ -100,6 +119,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const persistence = readOptionalObject(raw.persistence);
   const detok = readNamedOptionalObject(raw.detok, 'detok');
   const providers = readOptionalObject(serialization.providers);
+  const tools = readOptionalObject(raw.tools);
 
   const defaultProvider = readProvider(serialization.default ?? 'toon');
   const toonProvider = normalizeProvider(providers.toon);
@@ -126,6 +146,9 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     detok: {
       enabled: readBoolean(detok.enabled, true),
       copilot_pre_tool_use: normalizeCopilotPreToolUse(detok.copilot_pre_tool_use)
+    },
+    tools: {
+      registry: normalizeRegisteredTools(tools.registry)
     }
   };
 }
@@ -169,6 +192,46 @@ function normalizeProvider(value: unknown): { enabled: boolean } {
   return { enabled: readBoolean(provider.enabled, true) };
 }
 
+function normalizeRegisteredTools(value: unknown): UtkConfig['tools']['registry'] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error('tools.registry must be an array');
+  }
+  return value.map((item) => {
+    const object = readObject(item, 'tools.registry[]');
+    return {
+      tool: readString(object.tool, ''),
+      description: object.description === undefined ? undefined : readString(object.description, ''),
+      output_cache: readBoolean(object.output_cache, false),
+      bypass_on_cache: readBoolean(object.bypass_on_cache, false),
+      curry_fields: readStringArray(object.curry_fields, [], 'tools.registry[].curry_fields'),
+      structured_fields: normalizeStructuredFields(object.structured_fields)
+    };
+  });
+}
+
+function normalizeStructuredFields(value: unknown): UtkConfig['tools']['registry'][number]['structured_fields'] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error('tools.registry[].structured_fields must be an array');
+  }
+  return value.map((item) => {
+    const object = readObject(item, 'tools.registry[].structured_fields[]');
+    return {
+      name: readString(object.name, ''),
+      grammar: readStructuredGrammar(object.grammar),
+      completions: readStringArray(object.completions, [], 'tools.registry[].structured_fields[].completions'),
+      required: object.required === undefined ? undefined : readBoolean(object.required, false),
+      description: object.description === undefined ? undefined : readString(object.description, '')
+    };
+  });
+}
+
+function readStructuredGrammar(value: unknown): 'bash-like' | 'sql' | 'lucene' | 'regex' {
+  if (value === 'bash-like' || value === 'sql' || value === 'lucene' || value === 'regex') return value;
+  throw new Error(`Unsupported structured grammar: ${String(value)}`);
+}
+
 function normalizeOverrides(value: unknown): Array<{ tool: string; provider: SerializerProviderId }> {
   if (value === undefined) return [];
   if (!Array.isArray(value)) {
@@ -192,6 +255,12 @@ function toolMatches(pattern: string, toolId: string): boolean {
   if (pattern === toolId) return true;
   if (pattern.endsWith('*')) return toolId.startsWith(pattern.slice(0, -1));
   return false;
+}
+
+export function resolveRegisteredTool(config: UtkConfig, toolId: string): UtkConfig['tools']['registry'][number] | undefined {
+  const exact = config.tools.registry.find((item) => item.tool === toolId);
+  if (exact) return exact;
+  return config.tools.registry.find((item) => item.tool.endsWith('*') && toolMatches(item.tool, toolId));
 }
 
 function readObject(value: unknown, name: string): Record<string, unknown> {

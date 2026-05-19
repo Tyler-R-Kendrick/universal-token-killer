@@ -52,4 +52,48 @@ declare module '@utk/core' {
       errors: string[];
     };
   }>;
+
+  export type StructuredToolParameter = {
+    name: string;
+    grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
+    completions: string[];
+    required?: boolean;
+    description?: string;
+  };
+
+  export type StructuredToolDefinition = {
+    toolId: string;
+    description?: string;
+    outputCache?: boolean;
+    bypassOnCache?: boolean;
+    curryFields?: string[];
+    parameters: StructuredToolParameter[];
+  };
+
+  export function completeStructuredToolInvocation(params: {
+    workspaceRoot: string;
+    request: string;
+    tools: StructuredToolDefinition[];
+  }): Promise<{
+    invocation: {
+      toolId: string;
+      args: Record<string, string>;
+    };
+    templatePath: string;
+    serializerId: 'toon' | 'compressed-json';
+    confidence: number;
+    missingRequired: string[];
+    guidance: {
+      used: boolean;
+      available: boolean;
+      serializedGrammar: unknown;
+      errors: string[];
+    };
+    cache: {
+      eligible: boolean;
+      hit: boolean;
+      bypass: boolean;
+      path: string;
+    };
+  }>;
 }

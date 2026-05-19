@@ -8,6 +8,22 @@ declare module '@utk/core' {
   };
 
   export type UtkConfig = {
+    tools: {
+      registry: Array<{
+        tool: string;
+        description?: string;
+        output_cache: boolean;
+        bypass_on_cache: boolean;
+        curry_fields: string[];
+        structured_fields: Array<{
+          name: string;
+          grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
+          completions: string[];
+          required?: boolean;
+          description?: string;
+        }>;
+      }>;
+    };
     detok: {
       enabled: boolean;
       copilot_pre_tool_use: {
@@ -35,6 +51,24 @@ declare module '@utk/core' {
   }): Promise<MediatedResult>;
 
   export function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig>;
+  export function normalizeToolId(value: string): string;
+  export function contentHash(value: unknown, shortLength?: number): string;
+  export function resolveRegisteredTool(
+    config: UtkConfig,
+    toolId: string
+  ): UtkConfig['tools']['registry'][number] | undefined;
+  export function optimizeStructuredToolArgs(
+    args: Record<string, unknown>,
+    tool: {
+      parameters: Array<{
+        name: string;
+        grammar: 'bash-like' | 'sql' | 'lucene' | 'regex';
+        completions: string[];
+        required?: boolean;
+        description?: string;
+      }>;
+    }
+  ): { value: Record<string, unknown>; applied: boolean };
 
   export function compressTextWithLlmlingua2(
     text: string,

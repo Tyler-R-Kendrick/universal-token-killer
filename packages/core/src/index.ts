@@ -19,6 +19,7 @@ export * from './store/artifactStore.js';
 export * from './store/workspaceStore.js';
 export * from './stream/persistStream.js';
 export * from './tools/copilotToolHook.js';
+export * from './tools/structuredTooling.js';
 export * from './toon/toon.js';
 export * from './toon/validate.js';
 export * from './validation/leakage.js';

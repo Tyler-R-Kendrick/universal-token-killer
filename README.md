@@ -118,6 +118,25 @@ const result = await completeBashLikeToolInvocation({
 console.log(result.invocation.command); // git status --short
 ```
 
+### Complete A Structured LLM Tool Invocation
+
+UTK also supports structured non-CLI tool grammars (for example Lucene, SQL, and regex parameters) with cache-aware invocation planning:
+
+```ts
+import { completeStructuredToolInvocation } from '@utk/core';
+
+const result = await completeStructuredToolInvocation({
+  workspaceRoot: process.cwd(),
+  request: 'search open issue bugs',
+  tools: [{
+    toolId: 'github.search.issues',
+    outputCache: true,
+    bypassOnCache: true,
+    parameters: [{ name: 'query', grammar: 'lucene', completions: ['is:issue is:open label:bug'], required: true }]
+  }]
+});
+```
+
 ### Mediate A Tool Call
 
 ```ts
@@ -196,6 +215,9 @@ min_chars = 8000
 deny_tools = ["bash", "powershell", "create", "edit", "view", "grep", "glob"]
 rewrite_fields = ["prompt", "instructions", "description", "question", "message", "summary", "notes", "body"]
 protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+
+[tools]
+registry = []
 ```
 
 ## Packages

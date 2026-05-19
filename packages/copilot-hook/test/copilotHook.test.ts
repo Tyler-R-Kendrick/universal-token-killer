@@ -2,6 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { contentHash, normalizeToolId } from '@utk/core';
 import { processCopilotPreToolUsePayload, processCopilotToolHookPayload } from '../src/copilotHook.js';
 
 describe('GitHub Copilot tool hook', () => {
@@ -36,6 +37,7 @@ describe('GitHub Copilot tool hook', () => {
 
     await expect(processCopilotToolHookPayload(JSON.stringify({ toolName: 'tool.alt', toolInput: { id: 1 }, toolOutput: { ok: true } }), { workspaceRoot })).resolves.toContain('updatedOutput');
     await expect(processCopilotToolHookPayload(JSON.stringify({ toolName: 'tool.result', result: { ok: true } }), { workspaceRoot })).resolves.toContain('updatedOutput');
+    await expect(processCopilotToolHookPayload(JSON.stringify({ toolName: 'tool.args', toolArgs: { query: 'is:open' }, toolOutput: { ok: true } }), { workspaceRoot })).resolves.toContain('updatedOutput');
   });
 });
 
@@ -228,5 +230,87 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
       if (previousFake === undefined) delete process.env.UTK_DETOK_FAKE;
       else process.env.UTK_DETOK_FAKE = previousFake;
     }
+  });
+
+  it('applies structured input normalization and cache bypass for registered tools', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-structured-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspaceRoot, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[detok]',
+          'enabled = false',
+          '',
+          '[[tools.registry]]',
+          'tool = "github.search.issues"',
+          'output_cache = true',
+          'bypass_on_cache = true',
+          '',
+          '[[tools.registry.structured_fields]]',
+          'name = "query"',
+          'grammar = "lucene"',
+          'completions = ["is:issue is:open label:bug"]',
+          'required = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+
+    const normalized = await processCopilotPreToolUsePayload(
+      JSON.stringify({
+        toolName: 'github.search.issues',
+        toolArgs: { query: '  is:issue  is:open  label : bug  ' }
+      }),
+      { workspaceRoot }
+    );
+    const normalizedParsed = JSON.parse(normalized ?? '{}') as { modifiedArgs?: { query?: string } };
+    expect(normalizedParsed.modifiedArgs?.query).toBe('is:issue is:open label:bug');
+
+    await processCopilotToolHookPayload(
+      JSON.stringify({
+        toolName: 'github.search.issues',
+        toolArgs: { query: 'is:issue is:open label:bug' },
+        toolOutput: { items: [{ id: 1 }] }
+      }),
+      { workspaceRoot }
+    );
+
+    const bypassed = await processCopilotPreToolUsePayload(
+      JSON.stringify({
+        tool_name: 'github.search.issues',
+        tool_input: { query: 'is:issue is:open label:bug' }
+      }),
+      { workspaceRoot }
+    );
+    const bypassedParsed = JSON.parse(bypassed ?? '{}') as { permissionDecision?: string; permissionDecisionReason?: string };
+    expect(bypassedParsed.permissionDecision).toBe('deny');
+    expect(bypassedParsed.permissionDecisionReason).toContain('cache hit');
+
+    const malformedInput = { query: 'is:issue is:open label:enhancement' };
+    const malformedHash = contentHash(JSON.stringify(malformedInput));
+    const malformedPath = path.join(
+      workspaceRoot,
+      '.utk',
+      'cache',
+      'tool-output',
+      normalizeToolId('github.search.issues'),
+      `${malformedHash}.json`
+    );
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.dirname(malformedPath), { recursive: true }));
+    await import('node:fs/promises').then((fs) => fs.writeFile(malformedPath, '{}', 'utf8'));
+    await expect(
+      processCopilotPreToolUsePayload(
+        JSON.stringify({
+          tool_name: 'github.search.issues',
+          tool_input: malformedInput
+        }),
+        { workspaceRoot }
+      )
+    ).resolves.toBeUndefined();
   });
 });
