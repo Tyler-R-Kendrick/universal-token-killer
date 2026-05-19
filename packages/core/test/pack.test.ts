@@ -697,6 +697,15 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     expect(list[0]?.name).toBe('git-cli');
   });
 
+  it('refuses to install a pack whose name contains path-traversal segments', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-traversal-src-'));
+    await writeFixturePack(source, {
+      manifest: '[pack]\nname = "../escapee"\nversion = "1.0.0"\n'
+    });
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-install-traversal-ws-'));
+    await expect(installPack(workspace, { type: 'local', path: source }, { skipLint: true })).rejects.toThrow(/Path traversal/);
+  });
+
   it('reinstalls with force and removes prior artifacts', async () => {
     const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-force-src-'));
     await writeFixturePack(source);

@@ -326,6 +326,16 @@ describe('flushTrace', () => {
     const ctx = createRunContext(config, root);
     expect(await flushTrace(ctx)).toBeUndefined();
   });
+
+  it('refuses to write a Jaeger file whose runId would escape the events directory', async () => {
+    const { ctx } = await workspaceWithTracingEnabled();
+    const malicious = createRunContext(
+      { tracing: { enabled: true, capture_inputs: true, capture_outputs: true, emit_eval_set: true, storage_root: '.utk/events', process_id: 'utk' } } as unknown as Parameters<typeof createRunContext>[0],
+      ctx.workspaceRoot,
+      { runId: '../escapee', now: () => new Date('2026-05-19T22:00:00Z') }
+    );
+    await expect(flushTrace(malicious)).rejects.toThrow(/Path traversal/);
+  });
 });
 
 function child_id(): string {

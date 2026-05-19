@@ -56,25 +56,44 @@ export function diffScorecards(baseline: Scorecard | null, current: Scorecard, t
     return { ok: false, changes };
   }
   const baselineByEval = new Map(baseline.results.map((entry) => [entry.eval_id, entry]));
+  const currentByEval = new Map(current.results.map((entry) => [entry.eval_id, entry]));
+  const evalIds = new Set([...baselineByEval.keys(), ...currentByEval.keys()]);
   let ok = true;
-  for (const result of current.results) {
-    const previous = baselineByEval.get(result.eval_id);
-    for (const [metric, value] of Object.entries(result.metrics)) {
+  for (const evalId of evalIds) {
+    const previous = baselineByEval.get(evalId);
+    const result = currentByEval.get(evalId);
+    const metrics = new Set([
+      ...Object.keys(previous?.metrics ?? {}),
+      ...Object.keys(result?.metrics ?? {})
+    ]);
+    for (const metric of metrics) {
       const baselineValue = previous?.metrics[metric];
-      const delta = baselineValue === undefined ? value : value - baselineValue;
+      const currentValue = result?.metrics[metric];
       let severity: BaselineDiff['changes'][number]['severity'];
-      if (baselineValue === undefined) {
+      let delta: number;
+      if (baselineValue === undefined && currentValue !== undefined) {
         severity = 'missing';
+        delta = currentValue;
         ok = false;
-      } else if (delta < -tolerance) {
+      } else if (baselineValue !== undefined && currentValue === undefined) {
+        // Metric or eval case present in baseline but dropped from current — treat as a regression.
         severity = 'regression';
+        delta = -baselineValue;
         ok = false;
-      } else if (delta > tolerance) {
-        severity = 'improvement';
+      } else if (baselineValue !== undefined && currentValue !== undefined) {
+        delta = currentValue - baselineValue;
+        if (delta < -tolerance) {
+          severity = 'regression';
+          ok = false;
+        } else if (delta > tolerance) {
+          severity = 'improvement';
+        } else {
+          severity = 'unchanged';
+        }
       } else {
-        severity = 'unchanged';
+        continue;
       }
-      changes.push({ evalId: result.eval_id, metric, baseline: baselineValue, current: value, delta, severity });
+      changes.push({ evalId, metric, baseline: baselineValue, current: currentValue, delta, severity });
     }
   }
   return { ok, changes };

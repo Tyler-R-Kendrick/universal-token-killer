@@ -44,7 +44,26 @@ describe('completeWithGrammar', () => {
     });
     expect(result.available).toBe(false);
     expect(captured[0]?.name).toBe('guidance.unavailable');
-    expect(captured[0]?.extra).toEqual({ slot: 'slot' });
+    expect(captured[0]?.extra).toEqual({ slot: 'slot', missing: 'sessionConfig' });
+  });
+
+  it('reports unavailability when sessionConfig is present but no runtime is provided', async () => {
+    const captured: Array<{ name: string; extra?: Record<string, unknown> }> = [];
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      tracer: {
+        recordFailure: (params) => {
+          captured.push({ name: params.name, extra: params.extra });
+        }
+      }
+    });
+    expect(result.available).toBe(false);
+    expect(result.errors[0]).toContain('runtime with lark-capable buildGrammar is not configured');
+    expect(captured[0]?.name).toBe('guidance.unavailable');
+    expect(captured[0]?.extra).toEqual({ slot: 'slot', missing: 'runtime' });
   });
 
   it('returns the captured completion when guidance succeeds', async () => {

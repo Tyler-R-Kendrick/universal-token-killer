@@ -13,14 +13,14 @@ export const noParseFailures: Evaluator = {
   metricName: 'no_parse_failures',
   description: 'Returns 1.0 when the linked Jaeger trace contains no parse-class utk.failure.code entries.',
   rubric: [
-    'No span carries a utk.failure.code starting with "pack/", "template/", or "router/".',
+    'No span carries a utk.failure.code matching a parse-class prefix (defaults: "pack/", "pack.", "template/", "template.", "router/", "router.").',
     'Configurable allowlist via config.allow (string prefixes).'
   ],
   async evaluate(input: EvaluatorInput): Promise<EvaluatorOutput> {
     const trace = input.config.trace as JaegerTraceLike | undefined;
     const allow = Array.isArray(input.config.allow)
       ? (input.config.allow as string[])
-      : ['pack/', 'template/', 'router/'];
+      : ['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.'];
     if (!trace) {
       return {
         score: 1,

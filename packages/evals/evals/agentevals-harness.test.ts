@@ -287,6 +287,20 @@ describe('noParseFailures', () => {
     expect(result.details.offending).toContain('pack/manifest/parse');
   });
 
+  it('fails on dot-namespaced parse codes emitted by core (pack.manifest.parse, pack.seed.parse, template.load)', async () => {
+    for (const code of ['pack.manifest.parse', 'pack.seed.parse', 'template.load']) {
+      const result = await noParseFailures.evaluate({
+        protocol_version: '1.0',
+        metric_name: 'no_parse_failures',
+        threshold: 1,
+        config: { trace: buildTrace([code]) },
+        invocations: [buildInvocation()]
+      });
+      expect(result.score, `${code} should fail`).toBe(0);
+      expect(result.details.offending).toContain(code);
+    }
+  });
+
   it('detects failure codes nested inside log fields', async () => {
     const trace: JaegerTraceLike = {
       data: [
@@ -386,6 +400,30 @@ describe('noSoftFailures', () => {
       invocations: [buildInvocation()]
     });
     expect(result.score).toBe(1);
+  });
+
+  it('detects soft-failure codes recorded as log fields on existing spans (not just span tags)', async () => {
+    const trace: JaegerTraceLike = {
+      data: [
+        {
+          spans: [
+            {
+              tags: [],
+              logs: [{ fields: [{ key: 'utk.failure.code', value: 'detok.unavailable' }] }]
+            }
+          ]
+        }
+      ]
+    };
+    const result = await noSoftFailures.evaluate({
+      protocol_version: '1.0',
+      metric_name: 'no_soft_failures',
+      threshold: 1,
+      config: { trace },
+      invocations: [buildInvocation()]
+    });
+    expect(result.score).toBe(0);
+    expect(result.details.offending).toContain('detok.unavailable');
   });
 
   it('ignores non-soft codes', async () => {
@@ -527,6 +565,32 @@ describe('baselineStore', () => {
     await writeBaseline(workspace, 'demo', scorecard, { baselineDir: path.join(workspace, 'baselines'), force: true });
     const read = await readBaseline(workspace, 'demo', { baselineDir: path.join(workspace, 'baselines') });
     expect(read?.results[0]?.metrics.tool_trajectory_avg_score).toBe(1);
+  });
+
+  it('flags metrics dropped from current relative to baseline as regressions', () => {
+    const baseline: Scorecard = {
+      eval_set_id: 'demo',
+      results: [
+        { eval_id: 'demo', overall_score: 1, metrics: { tool_trajectory_avg_score: 1, response_match_score: 0.9 }, status: 'PASSED' }
+      ]
+    };
+    const droppedMetric: Scorecard = {
+      eval_set_id: 'demo',
+      results: [
+        { eval_id: 'demo', overall_score: 1, metrics: { tool_trajectory_avg_score: 1 }, status: 'PASSED' }
+      ]
+    };
+    const diff = diffScorecards(baseline, droppedMetric);
+    expect(diff.ok).toBe(false);
+    const dropped = diff.changes.find((change) => change.metric === 'response_match_score');
+    expect(dropped?.severity).toBe('regression');
+    expect(dropped?.current).toBeUndefined();
+    expect(dropped?.baseline).toBe(0.9);
+
+    const droppedEvalCase: Scorecard = { eval_set_id: 'demo', results: [] };
+    const diff2 = diffScorecards(baseline, droppedEvalCase);
+    expect(diff2.ok).toBe(false);
+    expect(diff2.changes.every((change) => change.severity === 'regression')).toBe(true);
   });
 
   it('diffs detect regressions, improvements, unchanged, and missing baselines', () => {

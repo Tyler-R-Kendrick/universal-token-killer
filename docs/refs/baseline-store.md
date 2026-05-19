@@ -49,10 +49,13 @@ Severity rules:
 
 | Condition | Severity | `ok` impact |
 | --- | --- | --- |
-| `baseline === undefined` | `missing` | sets `ok = false` |
+| metric in current, not in baseline | `missing` | sets `ok = false` |
+| metric in baseline, **not in current** | `regression` | sets `ok = false` — dropping a metric or eval case is treated as a regression |
 | `delta < -tolerance` | `regression` | sets `ok = false` |
 | `delta > tolerance` | `improvement` | no impact |
 | otherwise | `unchanged` | no impact |
+
+The diff iterates the **union** of `(evalId, metric)` pairs from baseline and current, so removed metrics or removed eval cases cannot silently slip past the gate.
 
 `tolerance` defaults to `0.01`. Use `0` when scoring against booleans (`0` / `1`); use `0.05` or higher when stochastic models are in the loop.
 

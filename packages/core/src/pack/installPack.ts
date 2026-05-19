@@ -51,7 +51,8 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
     await uninstallPackByName(workspaceRoot, conflict.name);
   }
 
-  const packDestination = safeJoin(workspaceRoot, '.utk', 'packs', pack.manifest.pack.name);
+  const packsBase = safeJoin(workspaceRoot, '.utk', 'packs');
+  const packDestination = safeJoin(packsBase, pack.manifest.pack.name);
   await mkdir(path.dirname(packDestination), { recursive: true });
   await rm(packDestination, { recursive: true, force: true });
   await cp(pack.rootDir, packDestination, { recursive: true });

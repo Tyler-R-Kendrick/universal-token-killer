@@ -47,11 +47,11 @@ Boolean rubric on the linked Jaeger trace.
 ```ts
 config: {
   trace: <JaegerTraceLike>,
-  allow: ['pack/', 'template/', 'router/']  // prefixes that count as parse failures
+  allow: ['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.']  // prefixes that count as parse failures
 }
 ```
 
-- Default `allow` list: `['pack/', 'template/', 'router/']`. Any `utk.failure.code` whose value starts with one of these prefixes counts as a failure.
+- Default `allow` list: `['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.']`. Covers both the slash-namespaced codes from `lintPack` (`pack/manifest/missing-license`) and the dot-namespaced codes from `loadPack` / `templateRuntime` (`pack.manifest.parse`, `pack.seed.parse`, `template.load`). Any `utk.failure.code` whose value starts with one of these prefixes counts as a failure.
 - Scans both span tags and log fields.
 - Missing `trace` ⇒ vacuously PASSES (score 1).
 - `details.offending` lists the matching codes.
@@ -69,6 +69,7 @@ config: {
 
 - Default code set: `cache.write`, `guidance.unavailable`, `detok.unavailable`, `router.fallback`.
 - `allow` is an exact-match allowlist — any allowed code is filtered out before the score is computed.
+- Scans both span tags AND span log fields (failures attached to an in-flight span land in `logs[].fields[]`, not in `tags[]`).
 - Missing `trace` ⇒ vacuously PASSES (score 1).
 
 ## Wiring Multiple Evaluators

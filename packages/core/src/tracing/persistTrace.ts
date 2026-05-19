@@ -1,5 +1,4 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { canonicalJson } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { toEvalSet, type EvalSet } from './evalSet.js';
@@ -31,16 +30,17 @@ export async function flushTrace(ctx: RunContext): Promise<FlushResult | undefin
     ]
   };
 
-  const jaegerPath = path.join(eventsDir, `${ctx.runId}.jaeger.json`);
+  const jaegerPath = safeJoin(eventsDir, `${ctx.runId}.jaeger.json`);
   await writeFile(jaegerPath, canonicalJson(document), 'utf8');
 
   let evalSetPath: string | undefined;
   let evalSet: EvalSet | undefined;
   if (ctx.emitEvalSet) {
     evalSet = toEvalSet(ctx.spans, ctx.runId);
-    evalSetPath = path.join(eventsDir, `${ctx.runId}.eval_set.json`);
+    evalSetPath = safeJoin(eventsDir, `${ctx.runId}.eval_set.json`);
     await writeFile(evalSetPath, canonicalJson(evalSet), 'utf8');
   }
 
   return { jaegerPath, evalSetPath, document, evalSet };
 }
+

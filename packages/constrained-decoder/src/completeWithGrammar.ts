@@ -1,4 +1,4 @@
-import { Generation, Session, gen, str, type GrammarNode } from 'guidance-ts';
+import type { GrammarNode } from 'guidance-ts';
 
 export type CompleteWithGrammarTracer = {
   recordFailure(params: { name: string; runType?: 'tool' | 'parser' | 'chain' | 'llm'; error?: { message: string; name?: string } | Error; extra?: Record<string, unknown> }): void;
@@ -24,14 +24,6 @@ export type CompleteWithGrammarRuntime = {
   buildGrammar(lark: string, captureName: string): GrammarNode;
 };
 
-const defaultRuntime: CompleteWithGrammarRuntime = {
-  Session,
-  Generation,
-  str,
-  /* v8 ignore next -- default grammar builder requires a live Guidance session */
-  buildGrammar: (_lark: string, captureName: string) => gen(captureName, /[\s\S]+/)
-};
-
 export type CompleteWithGrammarResult = {
   available: boolean;
   completion?: string;
@@ -44,12 +36,20 @@ export async function completeWithGrammar(params: CompleteWithGrammarParams): Pr
       name: 'guidance.unavailable',
       runType: 'llm',
       error: { message: 'guidance session is not configured' },
-      extra: { slot: params.slotName }
+      extra: { slot: params.slotName, missing: 'sessionConfig' }
     });
     return { available: false, errors: ['guidance session is not configured'] };
   }
-  /* v8 ignore next -- default runtime falls back to live guidance-ts */
-  const runtime = params.runtime ?? defaultRuntime;
+  if (!params.runtime) {
+    params.tracer?.recordFailure({
+      name: 'guidance.unavailable',
+      runType: 'llm',
+      error: { message: 'guidance runtime with lark-capable buildGrammar is not configured' },
+      extra: { slot: params.slotName, missing: 'runtime' }
+    });
+    return { available: false, errors: ['guidance runtime with lark-capable buildGrammar is not configured'] };
+  }
+  const { runtime } = params;
   const grammar = runtime.buildGrammar(params.lark, params.slotName);
   const session = new runtime.Session(params.sessionConfig.url);
   const generation = new runtime.Generation(session, params.prompt, runtime.str('').join(grammar));
