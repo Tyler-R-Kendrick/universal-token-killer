@@ -242,6 +242,44 @@ describe('structured tooling', () => {
     expect(result.invocation.args.scope).toBe('org');
   });
 
+  it('emits planner-miss, guidance-unavailable, and cache-write events into the injected tracer', async () => {
+    const { createRunContext, loadUtkConfig } = await import('../src/index.js');
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-tracer-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(root, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[serialization.providers.toon]',
+          'enabled = true',
+          '',
+          '[serialization.providers.compressed-json]',
+          'enabled = true',
+          '',
+          '[tracing]',
+          'enabled = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+    const config = await loadUtkConfig(root);
+    const tracer = createRunContext(config, root, { runId: 'r-trace', now: () => new Date('2026-05-19T22:00:00Z') });
+    const tracerResult = await completeStructuredToolInvocation({
+      workspaceRoot: root,
+      request: 'unrelated',
+      tools: [{ toolId: 'tool.miss', parameters: [{ name: 'q', required: true, completions: ['alpha', 'beta'] }] }],
+      tracer
+    });
+    expect(tracerResult.missingRequired).toContain('q');
+    const codes = tracer.spans.flatMap((span) => span.tags.filter((tag) => tag.key === 'utk.failure.code').map((tag) => tag.value));
+    expect(codes).toContain('planner.missing-required');
+    expect(codes).toContain('guidance.unavailable');
+  });
+
   it('cache write failures must not break the tool call', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-cache-failopen-'));
     const namespace = 'cache-failopen';

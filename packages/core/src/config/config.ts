@@ -50,6 +50,14 @@ export type UtkConfig = {
       }>;
     }>;
   };
+  tracing: {
+    enabled: boolean;
+    capture_inputs: boolean;
+    capture_outputs: boolean;
+    emit_eval_set: boolean;
+    storage_root: string;
+    process_id: string;
+  };
 };
 
 export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json'] as const;
@@ -84,6 +92,14 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 
 [tools]
 registry = []
+
+[tracing]
+enabled = false
+capture_inputs = true
+capture_outputs = true
+emit_eval_set = true
+storage_root = ".utk/events"
+process_id = "utk"
 `;
 
 export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
@@ -148,7 +164,20 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     },
     tools: {
       registry: normalizeRegisteredTools(tools.registry)
-    }
+    },
+    tracing: normalizeTracing(raw.tracing)
+  };
+}
+
+function normalizeTracing(value: unknown): UtkConfig['tracing'] {
+  const tracing = readNamedOptionalObject(value, 'tracing');
+  return {
+    enabled: readBoolean(tracing.enabled, false),
+    capture_inputs: readBoolean(tracing.capture_inputs, true),
+    capture_outputs: readBoolean(tracing.capture_outputs, true),
+    emit_eval_set: readBoolean(tracing.emit_eval_set, true),
+    storage_root: readString(tracing.storage_root, '.utk/events'),
+    process_id: readString(tracing.process_id, 'utk')
   };
 }
 

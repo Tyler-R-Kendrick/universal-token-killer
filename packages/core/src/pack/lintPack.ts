@@ -4,6 +4,7 @@ import { parse } from 'smol-toml';
 import { pathToFileURL } from 'node:url';
 import type { FieldGrammar } from '../grammar/fieldGrammar.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
 import { normalizeManifest } from './loadPack.js';
 import type {
   PackGrammarEntry,
@@ -33,6 +34,7 @@ export type LintReport = {
 export type LintOptions = {
   importTemplate?: (filePath: string) => Promise<unknown>;
   recommendedFields?: boolean;
+  tracer?: RunContext;
 };
 
 const DEFAULT_RECOMMENDED_FIELDS = true;
@@ -47,6 +49,21 @@ export async function lintPack(packDir: string, options: LintOptions = {}): Prom
     await lintToolEntries(packDir, manifest.tools ?? [], findings);
     await lintGrammarEntries(packDir, manifest.grammars ?? [], findings);
     await lintTemplateEntries(packDir, manifest, options, findings);
+  }
+  if (options.tracer) {
+    for (const finding of findings) {
+      recordFailure(options.tracer, {
+        name: finding.code,
+        runType: 'parser',
+        error: { name: finding.severity, message: finding.message },
+        extra: {
+          severity: finding.severity,
+          packDir,
+          file: finding.file,
+          hint: finding.hint
+        }
+      });
+    }
   }
   return summarize(findings);
 }

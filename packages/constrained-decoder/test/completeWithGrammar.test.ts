@@ -30,6 +30,23 @@ describe('completeWithGrammar', () => {
     expect(result.errors[0]).toContain('not configured');
   });
 
+  it('notifies the injected tracer when guidance is unavailable', async () => {
+    const captured: Array<{ name: string; extra?: Record<string, unknown> }> = [];
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      tracer: {
+        recordFailure: (params) => {
+          captured.push({ name: params.name, extra: params.extra });
+        }
+      }
+    });
+    expect(result.available).toBe(false);
+    expect(captured[0]?.name).toBe('guidance.unavailable');
+    expect(captured[0]?.extra).toEqual({ slot: 'slot' });
+  });
+
   it('returns the captured completion when guidance succeeds', async () => {
     const result = await completeWithGrammar({
       prompt: 'p',

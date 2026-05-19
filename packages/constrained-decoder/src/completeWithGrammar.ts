@@ -1,5 +1,9 @@
 import { Generation, Session, gen, str, type GrammarNode } from 'guidance-ts';
 
+export type CompleteWithGrammarTracer = {
+  recordFailure(params: { name: string; runType?: 'tool' | 'parser' | 'chain' | 'llm'; error?: { message: string; name?: string } | Error; extra?: Record<string, unknown> }): void;
+};
+
 export type CompleteWithGrammarParams = {
   prompt: string;
   lark: string;
@@ -7,6 +11,7 @@ export type CompleteWithGrammarParams = {
   maxTokens?: number;
   sessionConfig?: { url: string };
   runtime?: CompleteWithGrammarRuntime;
+  tracer?: CompleteWithGrammarTracer;
 };
 
 export type CompleteWithGrammarRuntime = {
@@ -35,6 +40,12 @@ export type CompleteWithGrammarResult = {
 
 export async function completeWithGrammar(params: CompleteWithGrammarParams): Promise<CompleteWithGrammarResult> {
   if (!params.sessionConfig) {
+    params.tracer?.recordFailure({
+      name: 'guidance.unavailable',
+      runType: 'llm',
+      error: { message: 'guidance session is not configured' },
+      extra: { slot: params.slotName }
+    });
     return { available: false, errors: ['guidance session is not configured'] };
   }
   /* v8 ignore next -- default runtime falls back to live guidance-ts */

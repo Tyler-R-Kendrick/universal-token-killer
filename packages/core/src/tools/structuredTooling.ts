@@ -8,6 +8,7 @@ import { type FieldGrammar, normalizeWithFieldGrammar } from '../grammar/fieldGr
 import { loadFieldGrammar } from '../grammar/grammarStore.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
 
 export type StructuredToolParameter = {
   name: string;
@@ -72,8 +73,9 @@ export function memoizeTool<I extends Record<string, unknown>, O>(params: {
   cacheKeyPrefix: string;
   enabled: boolean;
   tool: AsyncTool<I, O>;
+  tracer?: RunContext;
 }): AsyncTool<I, MemoizedToolResult<O>> {
-  const { workspaceRoot, cacheNamespace, cacheKeyPrefix, enabled, tool } = params;
+  const { workspaceRoot, cacheNamespace, cacheKeyPrefix, enabled, tool, tracer } = params;
   return async (input: I): Promise<MemoizedToolResult<O>> => {
     const cachePath = cacheFilePath(workspaceRoot, cacheNamespace, cacheKeyPrefix, input);
     if (enabled) {
@@ -84,8 +86,13 @@ export function memoizeTool<I extends Record<string, unknown>, O>(params: {
     if (enabled) {
       try {
         await writeCachedValue(cachePath, value);
-      } catch {
-        // cache writes are best-effort; failures must not break the underlying tool call
+      } catch (error) {
+        recordFailure(tracer, {
+          name: 'cache.write',
+          runType: 'tool',
+          error: error as Error,
+          extra: { cachePath }
+        });
       }
     }
     return { value, cacheHit: false, cachePath };
@@ -96,6 +103,7 @@ export async function completeStructuredToolInvocation(params: {
   workspaceRoot: string;
   request: string;
   tools: StructuredToolDefinition[];
+  tracer?: RunContext;
 }): Promise<StructuredToolInvocationResult> {
   if (params.tools.length === 0) {
     throw new Error('At least one structured tool definition is required');
@@ -120,9 +128,23 @@ export async function completeStructuredToolInvocation(params: {
     cacheNamespace: normalizedToolId,
     cacheKeyPrefix: 'structured-invocation',
     enabled: selectedTool.outputCache === true,
-    tool: planner
+    tool: planner,
+    ...(params.tracer ? { tracer: params.tracer } : {})
   });
   const planned = await memoizedPlanner({ request: params.request, tool: selectedTool, learnedGrammars });
+  if (planned.value.missingRequired.length > 0) {
+    recordFailure(params.tracer, {
+      name: 'planner.missing-required',
+      runType: 'parser',
+      extra: { toolId: selectedTool.toolId, fields: planned.value.missingRequired }
+    });
+  }
+  recordFailure(params.tracer, {
+    name: 'guidance.unavailable',
+    runType: 'llm',
+    error: { message: 'guidance session is not configured' },
+    extra: { toolId: selectedTool.toolId }
+  });
   const template = buildTemplate(selectedTool, planned.value, serializedGrammar);
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');

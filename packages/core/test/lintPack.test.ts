@@ -480,6 +480,46 @@ describe('lintPack', () => {
   });
 });
 
+describe('lintPack tracer wiring', () => {
+  it('emits one trace span per finding into the injected tracer', async () => {
+    const { createRunContext, loadUtkConfig } = await import('../src/index.js');
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-tracer-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspace, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(workspace, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[serialization.providers.toon]',
+          'enabled = true',
+          '',
+          '[serialization.providers.compressed-json]',
+          'enabled = true',
+          '',
+          '[tracing]',
+          'enabled = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
+    );
+    const config = await loadUtkConfig(workspace);
+    const tracer = createRunContext(config, workspace, { runId: 'r-lint', now: () => new Date('2026-05-19T22:00:00Z') });
+
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-tracer-pack-'));
+    await buildPack(dir, {
+      'utk.pack.toml': '[pack]\nname = "ok"\nversion = "1.0.0"\n'
+    });
+    await lintPack(dir, { tracer });
+    const codes = tracer.spans.flatMap((span) => span.tags.filter((tag) => tag.key === 'utk.failure.code').map((tag) => tag.value));
+    expect(codes).toContain('pack/manifest/missing-description');
+    expect(codes).toContain('pack/manifest/missing-license');
+    expect(tracer.spans.length).toBeGreaterThan(0);
+  });
+});
+
 describe('formatLintReport', () => {
   it('formats reports with and without findings', () => {
     const clean = formatLintReport({ ok: true, findings: [], errorCount: 0, warningCount: 0, infoCount: 0 }, 'pack');
