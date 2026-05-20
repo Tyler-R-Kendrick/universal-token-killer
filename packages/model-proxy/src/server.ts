@@ -139,6 +139,10 @@ async function handleRequest(
     }
     sendJson(res, 404, { error: 'not found' });
   } catch (error) {
+    if (isClientClosedRequestError(error)) {
+      if (!res.writableEnded) res.destroy();
+      return;
+    }
     if (res.headersSent || res.writableEnded) {
       res.destroy(error instanceof Error ? error : undefined);
       return;
@@ -250,7 +254,7 @@ function readBody(req: IncomingMessage, maxBytes = 1024 * 1024): Promise<string>
       resolve(Buffer.concat(chunks).toString('utf8'));
     };
     const onClose = (): void => {
-      if (!req.complete) fail(new Error('Request closed before body completed'));
+      if (!req.complete) fail(new ClientClosedRequestError());
     };
     req.on('data', onData);
     req.on('error', onError);
@@ -266,8 +270,19 @@ class PayloadTooLargeError extends Error {
   }
 }
 
+class ClientClosedRequestError extends Error {
+  constructor() {
+    super('Request closed before body completed');
+    this.name = 'ClientClosedRequestError';
+  }
+}
+
 function isPayloadTooLargeError(error: unknown): boolean {
   return error instanceof PayloadTooLargeError || error instanceof Error && error.name === 'PayloadTooLargeError';
+}
+
+function isClientClosedRequestError(error: unknown): boolean {
+  return error instanceof ClientClosedRequestError || error instanceof Error && error.name === 'ClientClosedRequestError';
 }
 
 function isAbortError(error: unknown): boolean {
