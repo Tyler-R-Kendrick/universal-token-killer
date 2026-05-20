@@ -69,6 +69,7 @@ async function handleRequest(
   }
 ): Promise<void> {
   const route = req.url?.split('?')[0] ?? '/';
+  const clientAbort = createClientAbortController(req);
   try {
     if (req.method === 'GET' && route === '/healthz') {
       await context.metricsStore.recordRequest(route);
@@ -81,7 +82,7 @@ async function handleRequest(
     }
     if (req.method === 'GET' && route === '/v1/models') {
       await context.metricsStore.recordRequest(route);
-      const upstream = await fetchModelsWithTimeout(context, route);
+      const upstream = await fetchModelsWithTimeout(context, route, clientAbort.signal);
       await pipeFetchResponse(upstream, res);
       return;
     }
@@ -132,14 +133,15 @@ async function handleRequest(
         upstreamApiKey: context.upstreamApiKey,
         compressorRegistry: context.compressorRegistry,
         metricsStore: context.metricsStore,
-        sessionId: deriveSessionId(req, body)
+        sessionId: deriveSessionId(req, body),
+        signal: clientAbort.signal
       });
       await pipeFetchResponse(upstream, res);
       return;
     }
     sendJson(res, 404, { error: 'not found' });
   } catch (error) {
-    if (isClientClosedRequestError(error)) {
+    if (clientAbort.signal.aborted || isClientClosedRequestError(error)) {
       if (!res.writableEnded) res.destroy();
       return;
     }
@@ -157,6 +159,8 @@ async function handleRequest(
     }
     console.error(error instanceof Error ? error.stack ?? error.message : error);
     sendJson(res, 500, { error: 'Internal server error' });
+  } finally {
+    clientAbort.cleanup();
   }
 }
 
@@ -169,9 +173,11 @@ async function fetchModelsWithTimeout(
     upstreamApiKey?: string;
     upstreamTimeoutMs: number;
   },
-  route: string
+  route: string,
+  clientSignal?: AbortSignal
 ): Promise<Response> {
   const controller = new AbortController();
+  const unlinkClientSignal = linkAbortSignal(clientSignal, controller);
   const timeout = setTimeout(() => controller.abort(), context.upstreamTimeoutMs);
   try {
     return await fetch(joinUpstreamUrl(context.upstreamBaseUrl, route, {
@@ -187,7 +193,39 @@ async function fetchModelsWithTimeout(
     });
   } finally {
     clearTimeout(timeout);
+    unlinkClientSignal();
   }
+}
+
+function createClientAbortController(req: IncomingMessage): { signal: AbortSignal; cleanup(): void } {
+  const controller = new AbortController();
+  const abort = (): void => {
+    if (!req.complete && !controller.signal.aborted) controller.abort(new ClientClosedRequestError());
+  };
+  req.once('aborted', abort);
+  req.once('close', abort);
+  return {
+    signal: controller.signal,
+    cleanup() {
+      req.off('aborted', abort);
+      req.off('close', abort);
+    }
+  };
+}
+
+function linkAbortSignal(source: AbortSignal | undefined, target: AbortController): () => void {
+  if (!source) return () => {};
+  const abort = (): void => {
+    if (!target.signal.aborted) {
+      target.abort(source.reason instanceof Error ? source.reason : new ClientClosedRequestError());
+    }
+  };
+  if (source.aborted) {
+    abort();
+    return () => {};
+  }
+  source.addEventListener('abort', abort, { once: true });
+  return () => source.removeEventListener('abort', abort);
 }
 
 async function pipeFetchResponse(response: Response, res: ServerResponse): Promise<void> {

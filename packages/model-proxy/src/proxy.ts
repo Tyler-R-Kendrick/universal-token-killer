@@ -14,6 +14,7 @@ export type ProxyOpenAiRequestOptions = {
   metricsStore?: ModelProxyMetricsStore;
   sessionId?: string;
   policyOverrides?: Record<string, any>;
+  signal?: AbortSignal;
 };
 
 export async function proxyOpenAiRequest(route: string, body: Record<string, any>, options: ProxyOpenAiRequestOptions): Promise<Response> {
@@ -52,6 +53,7 @@ async function forward(route: string, body: Record<string, any>, options: ProxyO
   return fetch(joinUpstreamUrl(options.upstreamBaseUrl, route, { provider, apiVersion: options.upstreamApiVersion, organization: options.upstreamOrganization }), {
     method: 'POST',
     headers,
+    signal: options.signal,
     body: JSON.stringify(body)
   });
 }
