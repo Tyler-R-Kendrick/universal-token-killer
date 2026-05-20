@@ -12,6 +12,8 @@ export type RunAgentEvalsCliArgs = {
   spawnFn?: SpawnLike;
   /** Hard wall-clock budget; on expiry the child is SIGTERMed and the result is reason: 'timeout'. Defaults to 30s. */
   timeoutMs?: number;
+  /** Grace period after SIGTERM before escalating to SIGKILL. Defaults to 2s. */
+  killGraceMs?: number;
 };
 
 export type RunAgentEvalsCliResult =
@@ -21,6 +23,7 @@ export type RunAgentEvalsCliResult =
 export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunAgentEvalsCliResult> {
   const binary = args.binary ?? 'agentevals';
   const timeoutMs = args.timeoutMs ?? 30_000;
+  const gracePeriodMs = args.killGraceMs ?? 2_000;
   const spawn = args.spawnFn ?? (defaultSpawn as unknown as SpawnLike);
   const argv = ['run', args.tracePath, '--eval-set', args.evalSetPath, '-m', args.metric];
   if (args.threshold !== undefined) {
@@ -38,22 +41,48 @@ export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunA
   child.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
   const exit = await new Promise<{ code: number | null; error?: Error; timedOut?: boolean }>((resolve) => {
     let settled = false;
+    let timedOut = false;
+    let killTimer: ReturnType<typeof setTimeout> | undefined;
+    let timeoutError: Error | undefined;
     const settle = (result: { code: number | null; error?: Error; timedOut?: boolean }) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
       resolve(result);
     };
     const timer = setTimeout(() => {
+      timedOut = true;
+      timeoutError = new Error(`agentevals timed out after ${timeoutMs}ms`);
+      // Send SIGTERM. If kill() itself throws (e.g. the child is already gone),
+      // settle immediately. Otherwise give the child a short grace period to
+      // exit cleanly before escalating to SIGKILL — without escalation, a
+      // stubborn child can keep running in the background after we resolve.
       try {
         child.kill('SIGTERM');
       } catch {
-        /* child may already be dead */
+        settle({ code: null, error: timeoutError, timedOut: true });
+        return;
       }
-      settle({ code: null, error: new Error(`agentevals timed out after ${timeoutMs}ms`), timedOut: true });
+      killTimer = setTimeout(() => {
+        try {
+          child.kill('SIGKILL');
+        } catch {
+          /* already exited */
+        }
+      }, gracePeriodMs);
     }, timeoutMs);
     child.once('error', (error) => settle({ code: null, error }));
-    child.once('close', (code) => settle({ code }));
+    child.once('close', (code) => {
+      // After timeout we already initiated SIGTERM/SIGKILL; the eventual close
+      // here is the timed-out child exiting. Translate to the timeout outcome so
+      // the caller sees `reason: 'timeout'` rather than `non-zero-exit`.
+      if (timedOut) {
+        settle({ code: null, error: timeoutError, timedOut: true });
+      } else {
+        settle({ code });
+      }
+    });
   });
   if (exit.timedOut) {
     return { available: false, reason: 'timeout', detail: exit.error?.message ?? `timed out after ${timeoutMs}ms` };

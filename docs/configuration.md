@@ -103,7 +103,7 @@ The hook only returns `modifiedArgs` when compression actually changes an allowl
 
 ## Registered Structured Tools And Cache Policy
 
-Opt fields into UTK's literal-match completion handling and caching by naming them in the tool registry. UTK matches user input against the `completions` list literally; no observation-based normalization is applied. Tool definitions may also set `curry_fields` to a subset of field names; planner-missed curry fields are auto-filled from the first completion before the invocation is returned.
+Opt fields into UTK's completion handling and caching by naming them in the tool registry. UTK matches user input against `completions` using a normalized-text comparison (case-folded, punctuation collapsed to spaces) and returns the matched completion value **as-is** — no observation-based normalization is applied to the returned string. Tool definitions may also set `curry_fields` to a subset of field names; planner-missed curry fields are auto-filled from the first completion before the invocation is returned.
 
 ```toml
 [[tools.registry]]

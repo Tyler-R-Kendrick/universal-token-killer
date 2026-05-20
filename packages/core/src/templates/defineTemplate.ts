@@ -70,7 +70,10 @@ export function extractSlotReferences(prompt: string): string[] {
 
 function validateGrammarRef(templateId: string, slotName: string, ref: GrammarRef): void {
   if (ref.kind === 'pack') {
-    if (!ref.tool || !ref.field) {
+    if (
+      typeof ref.tool !== 'string' || ref.tool.length === 0 ||
+      typeof ref.field !== 'string' || ref.field.length === 0
+    ) {
       throw new Error(`Template ${templateId} slot '${slotName}' pack grammar must reference tool and field`);
     }
     return;
@@ -82,7 +85,7 @@ function validateGrammarRef(templateId: string, slotName: string, ref: GrammarRe
     return;
   }
   if (ref.kind === 'json-schema') {
-    if (!ref.schema || typeof ref.schema !== 'object') {
+    if (!ref.schema || typeof ref.schema !== 'object' || Array.isArray(ref.schema)) {
       throw new Error(`Template ${templateId} slot '${slotName}' json-schema grammar must include a schema`);
     }
     return;

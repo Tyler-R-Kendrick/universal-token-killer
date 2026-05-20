@@ -87,8 +87,18 @@ async function readManifest(packDir: string, findings: LintFinding[]): Promise<U
   let text: string;
   try {
     text = await readFile(manifestPath, 'utf8');
-  } catch {
-    findings.push({ severity: 'error', code: 'pack/manifest/missing', message: 'utk.pack.toml not found at pack root', file: 'utk.pack.toml' });
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === 'ENOENT') {
+      findings.push({ severity: 'error', code: 'pack/manifest/missing', message: 'utk.pack.toml not found at pack root', file: 'utk.pack.toml' });
+    } else {
+      findings.push({
+        severity: 'error',
+        code: 'pack/manifest/unreadable',
+        message: `failed to read utk.pack.toml: ${nodeError.message}`,
+        file: 'utk.pack.toml'
+      });
+    }
     return undefined;
   }
   let raw: Record<string, unknown>;
@@ -202,7 +212,18 @@ async function lintGrammarEntries(packDir: string, entries: PackGrammarEntry[], 
       });
       continue;
     }
-    const lark = await readFile(safeJoin(packDir, larkRelative), 'utf8');
+    let lark: string;
+    try {
+      lark = await readFile(safeJoin(packDir, larkRelative), 'utf8');
+    } catch (error) {
+      findings.push({
+        severity: 'error',
+        code: 'pack/grammars/unreadable-lark',
+        message: `failed to read Lark grammar: ${(error as Error).message}`,
+        file: larkRelative
+      });
+      continue;
+    }
     if (!/^\s*start\s*:/m.test(lark)) {
       findings.push({ severity: 'error', code: 'pack/grammars/missing-start-rule', message: `Lark grammar lacks a 'start:' rule`, file: larkRelative });
     }

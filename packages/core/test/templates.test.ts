@@ -196,6 +196,16 @@ describe('template descriptor cache and loader', () => {
     expect(cached?.id).toBe('t');
     expect(await readTemplateDescriptorCache(path.join(workspace, 'missing.json'))).toBeUndefined();
     expect(templateCachePath(workspace, template)).toBe(cachePath);
+
+    // A cache file whose contents JSON-parse to a non-object (e.g. a number) must
+    // be treated as a load failure, not silently surfaced as undefined behavior
+    // downstream. readTemplateDescriptorCache returns undefined and (with a tracer)
+    // records `template.load`.
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    const corruptPath = path.join(workspace, 'corrupt.json');
+    await mkdir(path.dirname(corruptPath), { recursive: true });
+    await writeFile(corruptPath, '42', 'utf8');
+    expect(await readTemplateDescriptorCache(corruptPath)).toBeUndefined();
   });
 
   it('loads template descriptors from .js modules', async () => {

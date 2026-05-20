@@ -99,7 +99,14 @@ export async function cacheTemplateDescriptor(workspaceRoot: string, descriptor:
 export async function readTemplateDescriptorCache(cachePath: string, options: { tracer?: RunContext } = {}): Promise<TemplateDescriptor | undefined> {
   try {
     const text = await readFile(cachePath, 'utf8');
-    return JSON.parse(text) as TemplateDescriptor;
+    const parsed = JSON.parse(text) as unknown;
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error(`Template cache ${cachePath} does not contain an object descriptor`);
+    }
+    // Run the same guardrails as `loadTemplateDescriptor` — a corrupted cache
+    // entry should not silently surface as a runtime error in a downstream
+    // template render.
+    return defineTemplate(parsed as TemplateDescriptor);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       recordFailure(options.tracer, {

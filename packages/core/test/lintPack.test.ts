@@ -176,6 +176,37 @@ describe('lintPack', () => {
     expect(codes).toContain('pack/tools/bash-missing-command');
   });
 
+  it('distinguishes a missing manifest from an unreadable one (non-ENOENT)', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-manifest-unreadable-'));
+    // Make utk.pack.toml a directory so readFile fails with EISDIR (not ENOENT).
+    await mkdir(path.join(dir, 'utk.pack.toml'), { recursive: true });
+    const report = await lintPack(dir);
+    const codes = report.findings.map((finding) => finding.code);
+    expect(codes).toContain('pack/manifest/unreadable');
+    expect(codes).not.toContain('pack/manifest/missing');
+  });
+
+  it('emits pack/grammars/unreadable-lark instead of throwing when the lark file cannot be read', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-unreadable-lark-'));
+    await buildPack(dir, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[grammars]]',
+        'tool = "git"',
+        'field = "ref"',
+        ''
+      ].join('\n')
+    });
+    // Make the lark file a directory so readFile fails (file exists but is not a regular file).
+    await mkdir(path.join(dir, 'grammars', 'git'), { recursive: true });
+    await mkdir(path.join(dir, 'grammars', 'git', 'ref.lark'), { recursive: true });
+    const report = await lintPack(dir);
+    const codes = report.findings.map((finding) => finding.code);
+    expect(codes).toContain('pack/grammars/unreadable-lark');
+    // Lint must report the finding and continue — the report itself must still be produced.
+    expect(report.ok).toBe(false);
+  });
+
   it('rejects packs that ship a `.grammar.json` seed (no longer supported)', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-no-json-'));
     await buildPack(dir, {

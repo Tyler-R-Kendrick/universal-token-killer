@@ -134,4 +134,104 @@ describe('runAgentEvalsCli', () => {
     expect(result.available).toBe(false);
     expect(killCalls).toContain('SIGTERM');
   });
+
+  it('on timeout sends SIGTERM, waits for close, and reports timeout', async () => {
+    // A child that never emits close on its own — only after SIGTERM.
+    const killCalls: string[] = [];
+    const spawn: SpawnLike = (() => {
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      const child = new EventEmitter();
+      let acceptedSigterm = false;
+      const childWithExtras = Object.assign(child, {
+        stdout,
+        stderr,
+        kill: (signal?: NodeJS.Signals | number) => {
+          killCalls.push(typeof signal === 'string' ? signal : String(signal ?? ''));
+          if (signal === 'SIGTERM' && !acceptedSigterm) {
+            acceptedSigterm = true;
+            // Simulate a child that exits promptly on SIGTERM.
+            setImmediate(() => child.emit('close', null));
+          }
+          return true;
+        }
+      });
+      return childWithExtras as never;
+    }) as SpawnLike;
+    const result = await runAgentEvalsCli({
+      tracePath: 't',
+      evalSetPath: 's',
+      metric: 'm',
+      spawnFn: spawn,
+      timeoutMs: 20,
+      killGraceMs: 1_000
+    });
+    expect(result.available).toBe(false);
+    if (!result.available) {
+      expect(result.reason).toBe('timeout');
+      expect(result.detail).toContain('timed out after 20ms');
+    }
+    expect(killCalls[0]).toBe('SIGTERM');
+    // No SIGKILL escalation because the child exited within the grace window.
+    expect(killCalls).not.toContain('SIGKILL');
+  });
+
+  it('escalates to SIGKILL when the child ignores SIGTERM past the grace period', async () => {
+    const killCalls: string[] = [];
+    const spawn: SpawnLike = (() => {
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      const child = new EventEmitter();
+      const childWithExtras = Object.assign(child, {
+        stdout,
+        stderr,
+        kill: (signal?: NodeJS.Signals | number) => {
+          killCalls.push(typeof signal === 'string' ? signal : String(signal ?? ''));
+          // Stubborn child: ignore SIGTERM; only honor SIGKILL.
+          if (signal === 'SIGKILL') {
+            setImmediate(() => child.emit('close', null));
+          }
+          return true;
+        }
+      });
+      return childWithExtras as never;
+    }) as SpawnLike;
+    const result = await runAgentEvalsCli({
+      tracePath: 't',
+      evalSetPath: 's',
+      metric: 'm',
+      spawnFn: spawn,
+      timeoutMs: 10,
+      killGraceMs: 20
+    });
+    expect(result.available).toBe(false);
+    if (!result.available) expect(result.reason).toBe('timeout');
+    expect(killCalls).toContain('SIGTERM');
+    expect(killCalls).toContain('SIGKILL');
+  });
+
+  it('settles immediately when child.kill() itself throws (child already dead)', async () => {
+    const spawn: SpawnLike = (() => {
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      const child = new EventEmitter();
+      const childWithExtras = Object.assign(child, {
+        stdout,
+        stderr,
+        kill: () => {
+          throw new Error('ESRCH');
+        }
+      });
+      return childWithExtras as never;
+    }) as SpawnLike;
+    const result = await runAgentEvalsCli({
+      tracePath: 't',
+      evalSetPath: 's',
+      metric: 'm',
+      spawnFn: spawn,
+      timeoutMs: 10
+    });
+    expect(result.available).toBe(false);
+    if (!result.available) expect(result.reason).toBe('timeout');
+  });
 });
