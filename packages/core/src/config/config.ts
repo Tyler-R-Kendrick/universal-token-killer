@@ -425,16 +425,8 @@ function normalizeTracing(value: unknown): UtkConfig['tracing'] {
 
 function normalizeDetokPrompt(value: unknown): UtkConfig['detok']['prompt'] {
   const prompt = readNamedOptionalObject(value, 'detok.prompt');
-  const rate = readNumber(prompt.rate, 0.33);
-  const minChars = readNumber(prompt.min_chars, 0);
-
-  if (!Number.isFinite(rate)) {
-    throw new TypeError('detok.prompt.rate must be a finite number');
-  }
-  if (!Number.isFinite(minChars)) {
-    throw new TypeError('detok.prompt.min_chars must be a finite number');
-  }
-
+  const rate = readFiniteNumber(prompt.rate, 0.33, 'detok.prompt.rate');
+  const minChars = readFiniteNumber(prompt.min_chars, 0, 'detok.prompt.min_chars');
   return {
     model: readString(prompt.model, 'default/LLMLingua2'),
     rate: clampNumber(rate, 0.05, 1),
@@ -444,15 +436,8 @@ function normalizeDetokPrompt(value: unknown): UtkConfig['detok']['prompt'] {
 
 function normalizeCopilotPreToolUse(value: unknown): UtkConfig['detok']['copilot_pre_tool_use'] {
   const hook = readNamedOptionalObject(value, 'detok.copilot_pre_tool_use');
-  const rate = readNumber(hook.rate, 0.33);
-  const minChars = readNumber(hook.min_chars, 8000);
-
-  if (!Number.isFinite(rate)) {
-    throw new TypeError('detok.copilot_pre_tool_use.rate must be a finite number');
-  }
-  if (!Number.isFinite(minChars)) {
-    throw new TypeError('detok.copilot_pre_tool_use.min_chars must be a finite number');
-  }
+  const rate = readFiniteNumber(hook.rate, 0.33, 'detok.copilot_pre_tool_use.rate');
+  const minChars = readFiniteNumber(hook.min_chars, 8000, 'detok.copilot_pre_tool_use.min_chars');
 
   return {
     enabled: readBoolean(hook.enabled, true),
@@ -597,6 +582,12 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
 
 function readNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' ? value : fallback;
+}
+
+function readFiniteNumber(value: unknown, fallback: number, name: string): number {
+  const numberValue = readNumber(value, fallback);
+  if (!Number.isFinite(numberValue)) throw new TypeError(`${name} must be a finite number`);
+  return numberValue;
 }
 
 function clampNumber(value: number, min: number, max: number): number {

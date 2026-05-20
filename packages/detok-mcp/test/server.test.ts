@@ -1,4 +1,4 @@
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -49,10 +49,10 @@ describe('detok MCP server', () => {
       expect(result.compressedPrompt).toContain('Compress this');
       expect(result.compressedPrompt).toContain('`EXACT_TOKEN`');
       expect(result.model).toBe('default/LLMLingua2');
+      expect(result.error).toBeUndefined();
     } finally {
       if (workspaceRoot) {
-        const fs = await import('node:fs/promises');
-        await fs.rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { recursive: true, force: true });
       }
       if (previousFake === undefined) {
         delete process.env.UTK_DETOK_FAKE;
@@ -99,11 +99,12 @@ describe('detok MCP server', () => {
   it('serves detoks-prompt over MCP', async () => {
     const previousFake = process.env.UTK_DETOK_FAKE;
     process.env.UTK_DETOK_FAKE = '1';
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-detok-prompt-mcp-tool-'));
+    let workspaceRoot: string | undefined;
     const server = createDetokServer();
     const client = new Client({ name: 'detok-test-client', version: '0.1.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     try {
+      workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-detok-prompt-mcp-tool-'));
       await Promise.all([
         server.connect(serverTransport),
         client.connect(clientTransport)
@@ -123,11 +124,13 @@ describe('detok MCP server', () => {
       expect(result.structuredContent?.compressedPrompt).toContain('Compress this');
       expect(result.structuredContent?.compressedPrompt).toContain('`EXACT_TOKEN`');
       expect(result.structuredContent?.model).toBe('default/LLMLingua2');
+      expect(result.structuredContent?.error).toBeUndefined();
     } finally {
       await client.close();
       await server.close();
-      const fs = await import('node:fs/promises');
-      await fs.rm(workspaceRoot, { recursive: true, force: true });
+      if (workspaceRoot) {
+        await rm(workspaceRoot, { recursive: true, force: true });
+      }
       if (previousFake === undefined) {
         delete process.env.UTK_DETOK_FAKE;
       } else {

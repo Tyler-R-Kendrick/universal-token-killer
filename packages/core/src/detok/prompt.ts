@@ -316,7 +316,7 @@ function runProcess(command: string, args: string[], stdin: string, timeoutMs: n
     child.on('error', (error) => finish(JSON.stringify({ error: error.message })));
     child.on('close', (code) => {
       const stdout = Buffer.concat(chunks).toString('utf8');
-      if (code === 0 && stdout.trim()) {
+      if (stdout.trim()) {
         finish(stdout);
         return;
       }

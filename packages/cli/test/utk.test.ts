@@ -171,6 +171,24 @@ describe('utk cli', () => {
     expect(writers.getStderr()).toContain('--target-token <n>');
   });
 
+  it('detoks-prompt rejects conflicting input sources', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-conflict-'));
+    const promptPath = path.join(workspace, 'prompt.md');
+    await writeFile(promptPath, 'Prompt from file', 'utf8');
+    const writers = captureWriters();
+
+    const result = await runUtkCli(['detoks-prompt', '--prompt', 'Prompt from flag', '--file', promptPath, '--stdin'], {
+      cwd: workspace,
+      stdout: writers.stdout,
+      stderr: writers.stderr,
+      stdin: async () => 'Prompt from stdin'
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(writers.getStderr()).toContain('Choose one input source');
+    expect(writers.getStderr()).toContain('Usage: utk detoks-prompt');
+  });
+
   it('detoks-prompt rejects invalid numeric options', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-bounds-'));
 

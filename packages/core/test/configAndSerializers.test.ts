@@ -378,6 +378,26 @@ describe('UTK TOML config', () => {
     expect(config.detok.prompt.min_chars).toBe(0);
   });
 
+  it('rejects non-finite detok prompt numbers', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-detok-prompt-nonfinite-'));
+    await mkdir(path.join(root, '.utk'), { recursive: true });
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[detok.prompt]',
+        'rate = inf',
+        'min_chars = 0',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    await expect(loadUtkConfig(root)).rejects.toThrow('detok.prompt.rate must be a finite number');
+  });
+
   it('fails explicitly for malformed detok tables and arrays', async () => {
     const badDetok = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-detok-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badDetok, '.utk'), { recursive: true }));

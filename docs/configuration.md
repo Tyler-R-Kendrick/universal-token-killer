@@ -162,7 +162,7 @@ The hook only returns `modifiedArgs` when compression actually changes an allowl
 
 ## Detoks Prompt Model
 
-CLI `utk detoks-prompt` and the MCP `detoks-prompt` tool read `.utk/config.toml`. Prefer CLI `--file` or `--stdin` for large prompts so prompt text stays outside agent context:
+CLI `utk detoks-prompt` and MCP `detoks-prompt` read `.utk/config.toml`. Use CLI `--file` or `--stdin` for large prompts to keep prompt text outside agent context:
 
 ```powershell
 node packages/cli/dist/utk.js detoks-prompt --file .\prompt.md
@@ -179,9 +179,9 @@ min_chars = 0
 Model ids use `<provider>/<model>`. Built-in ids:
 
 - `default/LLMLingua2`: local LLMLingua-2 path, default.
-- `Hugging-Face/Kompress-small`: optional local Kompress-small adapter. It requires the Kompress inference package to be installed and is intended only for natural-language prompt spans.
+- `Hugging-Face/Kompress-small`: optional local Kompress-small adapter; requires Kompress inference package; for natural-language prompt spans only.
 
-Prompt compression protects fenced code, indented code, inline code, Markdown blockquotes, and quoted strings. Only remaining natural-language spans are sent to the compression model.
+Prompt compression protects fenced code, indented code, inline code, Markdown blockquotes, and quoted strings. Only remaining natural-language spans are sent to compression model.
 
 ## Registered Structured Tools And Cache Policy
 
