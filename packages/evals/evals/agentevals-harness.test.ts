@@ -3,11 +3,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-let savedBaselineUpdate: string | undefined;
+const originalBaselineUpdate = process.env.UTK_BASELINE_UPDATE;
 afterEach(() => {
-  if (savedBaselineUpdate === undefined) delete process.env.UTK_BASELINE_UPDATE;
-  else process.env.UTK_BASELINE_UPDATE = savedBaselineUpdate;
-  savedBaselineUpdate = undefined;
+  if (originalBaselineUpdate === undefined) delete process.env.UTK_BASELINE_UPDATE;
+  else process.env.UTK_BASELINE_UPDATE = originalBaselineUpdate;
 });
 import {
   ALL_EVALUATORS,
@@ -325,14 +324,27 @@ describe('noParseFailures', () => {
   });
 
   it('honors a custom allowlist', async () => {
-    const result = await noParseFailures.evaluate({
+    // The custom allowlist *replaces* the defaults. Codes that match the allowlist
+    // count as parse failures; codes outside it (including the defaults
+    // 'pack/', 'template/', 'router/') no longer do.
+    const matched = await noParseFailures.evaluate({
       protocol_version: '1.0',
       metric_name: 'no_parse_failures',
       threshold: 1,
       config: { trace: buildTrace(['cache.write']), allow: ['cache.'] },
       invocations: [buildInvocation()]
     });
-    expect(result.score).toBe(0);
+    expect(matched.score).toBe(0);
+    expect(matched.details.offending).toContain('cache.write');
+
+    const ignored = await noParseFailures.evaluate({
+      protocol_version: '1.0',
+      metric_name: 'no_parse_failures',
+      threshold: 1,
+      config: { trace: buildTrace(['pack/manifest/parse']), allow: ['cache.'] },
+      invocations: [buildInvocation()]
+    });
+    expect(ignored.score).toBe(1);
   });
 
   it('passes vacuously when no trace is attached', async () => {
@@ -556,7 +568,6 @@ describe('baselineStore', () => {
 
   it('writes baselines only when force or UTK_BASELINE_UPDATE is set', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-baseline-write-'));
-    savedBaselineUpdate = process.env.UTK_BASELINE_UPDATE;
     delete process.env.UTK_BASELINE_UPDATE;
     await expect(writeBaseline(workspace, 'demo', scorecard, { baselineDir: path.join(workspace, 'baselines') })).rejects.toThrow(/Refusing/);
 

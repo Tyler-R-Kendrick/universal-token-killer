@@ -24,7 +24,7 @@ export function defineTemplate(descriptor: TemplateDescriptor): TemplateDescript
   if (typeof descriptor.prompt !== 'string') {
     throw new Error(`Template ${descriptor.id} must have a string prompt`);
   }
-  if (!descriptor.slots || typeof descriptor.slots !== 'object') {
+  if (!descriptor.slots || typeof descriptor.slots !== 'object' || Array.isArray(descriptor.slots)) {
     throw new Error(`Template ${descriptor.id} must define slots`);
   }
   const referenced = extractSlotReferences(descriptor.prompt);

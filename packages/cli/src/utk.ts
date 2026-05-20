@@ -93,7 +93,7 @@ async function handleAdd(args: string[], context: CliHandlerContext): Promise<Cl
 
 async function handleRemove(args: string[], context: CliHandlerContext): Promise<CliResult> {
   const name = args[0];
-  if (!name) {
+  if (!name || args.length !== 1) {
     context.stderr('Usage: utk pack remove <name>\n');
     return { exitCode: 1 };
   }

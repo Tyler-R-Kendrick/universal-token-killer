@@ -156,7 +156,7 @@ describe('compileLark', () => {
       lengthRange: { min: 1, max: 3 }
     };
     const output = compileLark(grammar);
-    expect(output).toContain('VALUE: /[A-Za-z0-9a]{1,3}/');
+    expect(output).toContain('VALUE: /[A-Za-z0-9 a]{1,3}/');
   });
 
   it('clamps length to at least 1', () => {
@@ -167,7 +167,7 @@ describe('compileLark', () => {
       lengthRange: { min: 0, max: 0 }
     };
     const output = compileLark(grammar);
-    expect(output).toContain('VALUE: /[A-Za-z0-9]{1}/');
+    expect(output).toContain('VALUE: /[A-Za-z0-9 ]{1}/');
   });
 });
 
@@ -252,6 +252,52 @@ describe('parsePackSource', () => {
 
   it('rejects non-string inputs', () => {
     expect(() => parsePackSource(undefined as unknown as string)).toThrow();
+  });
+});
+
+describe('loadPack boolean validation', () => {
+  it('rejects non-boolean output_cache values from a pack manifest', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-loadpack-bool-'));
+    await writeFixturePack(dir, {
+      manifest: [
+        '[pack]',
+        'name = "demo"',
+        'version = "1.0.0"',
+        '',
+        '[[tools]]',
+        'id = "git"',
+        'kind = "bash-like"',
+        'output_cache = "yes"',
+        ''
+      ].join('\n')
+    });
+    const { loadPackManifest } = await import('../src/pack/loadPack.js');
+    await expect(loadPackManifest(dir)).rejects.toThrow(/output_cache must be a boolean/);
+  });
+
+  it('falls through (no fallback to seed) when the lark file read fails with a non-ENOENT error', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-loadpack-lark-eacces-'));
+    await writeFixturePack(dir, {
+      manifest: [
+        '[pack]',
+        'name = "demo"',
+        'version = "1.0.0"',
+        '',
+        '[[grammars]]',
+        'tool = "git"',
+        'field = "ref"',
+        ''
+      ].join('\n'),
+      tools: {},
+      grammars: { 'grammars/git/ref.lark': '' },
+      templates: {}
+    });
+    // Make the lark a directory so readFile throws EISDIR (non-ENOENT).
+    const { mkdir, rm } = await import('node:fs/promises');
+    await rm(path.join(dir, 'grammars', 'git', 'ref.lark'));
+    await mkdir(path.join(dir, 'grammars', 'git', 'ref.lark'));
+    const { loadPack } = await import('../src/pack/loadPack.js');
+    await expect(loadPack(dir)).rejects.toThrow();
   });
 });
 
@@ -413,6 +459,14 @@ describe('loadPackManifest', () => {
   });
 });
 
+describe('removeBlocksForPack unterminated', () => {
+  it('throws when a begin marker has no matching end', async () => {
+    const { removeBlocksForPack } = await import('../src/pack/registryRewrite.js');
+    const orphan = '[serialization]\ndefault = "toon"\n\n# utk-pack-begin: ghost\n[[tools.registry]]\ntool = "x"\n';
+    expect(() => removeBlocksForPack(orphan, 'ghost')).toThrow(/has no matching/);
+  });
+});
+
 describe('registryRewrite', () => {
   it('renders, adds, and removes pack blocks idempotently', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-registry-'));
@@ -490,6 +544,23 @@ describe('registryRewrite', () => {
 });
 
 describe('lockfile', () => {
+  it('propagates non-ENOENT lockfile read failures', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-eacces-'));
+    const { mkdir } = await import('node:fs/promises');
+    await mkdir(path.join(workspace, '.utk', 'packs.lock.toml'), { recursive: true });
+    const { readLockfile } = await import('../src/pack/lockfile.js');
+    await expect(readLockfile(workspace)).rejects.toThrow();
+  });
+
+  it('rejects an incompatible spec version', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-spec-'));
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    await mkdir(path.join(workspace, '.utk'), { recursive: true });
+    await writeFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'spec = "999"\n', 'utf8');
+    const { readLockfile } = await import('../src/pack/lockfile.js');
+    await expect(readLockfile(workspace)).rejects.toThrow(/packs\.lock\.toml spec 999 is incompatible/);
+  });
+
   it('renders and reads a populated lockfile', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-'));
     const pack: InstalledPack = {
@@ -695,6 +766,56 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     const list = await listInstalledPacks(workspace);
     expect(list).toHaveLength(1);
     expect(list[0]?.name).toBe('git-cli');
+  });
+
+  it('rejects remote tarball URLs from the built-in fetcher', async () => {
+    const { fetchPackToTempDir } = await import('../src/pack/fetcher.js');
+    await expect(fetchPackToTempDir({ type: 'tarball', path: 'https://example.com/pack.tgz' }, os.tmpdir())).rejects.toThrow(/Remote tarball URLs are not supported/);
+  });
+
+  it('rolls back grammars with no seed (covers undefined-observations branch)', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-noseed-src-'));
+    await writeFixturePack(source, {
+      // grammar declared but no .grammar.json seed file
+      grammars: { 'grammars/git/ref.lark': 'start: VALUE\nVALUE: /[A-Za-z]+/\n' }
+    });
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-install-noseed-ws-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspace, '.utk', 'config.toml'), { recursive: true }));
+    await expect(installPack(workspace, { type: 'local', path: source })).rejects.toThrow();
+    const exists = await import('node:fs/promises').then(async (fs) => {
+      try { await fs.stat(path.join(workspace, '.utk', 'packs', 'git-cli')); return true; } catch { return false; }
+    });
+    expect(exists).toBe(false);
+  });
+
+  it('rolls back even when an individual rollback step fails', async () => {
+    // Pre-create cache file as a directory so the templates-cache cleanup step throws.
+    // The other rollback steps must still run so .utk/packs/<name> is removed.
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-rollback-partial-src-'));
+    await writeFixturePack(source);
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-install-rollback-partial-ws-'));
+    const { mkdir } = await import('node:fs/promises');
+    await mkdir(path.join(workspace, '.utk', 'cache', 'templates', 'git-cli.json'), { recursive: true });
+    await mkdir(path.join(workspace, '.utk', 'config.toml'), { recursive: true });
+    await expect(installPack(workspace, { type: 'local', path: source })).rejects.toThrow();
+    const exists = await import('node:fs/promises').then(async (fs) => {
+      try { await fs.stat(path.join(workspace, '.utk', 'packs', 'git-cli')); return true; } catch { return false; }
+    });
+    expect(exists).toBe(false);
+  });
+
+  it('rolls back partial install state when a downstream step fails', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-install-rollback-src-'));
+    await writeFixturePack(source);
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-install-rollback-ws-'));
+    // Pre-create config.toml as a directory so addPackRegistryBlocks' writeFile throws.
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspace, '.utk', 'config.toml'), { recursive: true }));
+    await expect(installPack(workspace, { type: 'local', path: source })).rejects.toThrow();
+    // Pack directory and template cache must have been rolled back.
+    const exists = await import('node:fs/promises').then(async (fs) => {
+      try { await fs.stat(path.join(workspace, '.utk', 'packs', 'git-cli')); return true; } catch { return false; }
+    });
+    expect(exists).toBe(false);
   });
 
   it('refuses to install a pack whose name contains path-traversal segments', async () => {

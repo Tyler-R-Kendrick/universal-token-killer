@@ -40,10 +40,17 @@ declare module '@utk/core' {
   };
 
   export function parsePackSource(spec: string): PackSource;
+  export type InstallPackOptions = {
+    fetcher?: (source: PackSource, workspaceRoot: string) => Promise<{ dir: string; revision: string }>;
+    force?: boolean;
+    now?: () => Date;
+    skipLint?: boolean;
+    lintOptions?: LintOptions;
+  };
   export function installPack(
     workspaceRoot: string,
     source: PackSource,
-    options?: { force?: boolean; now?: () => Date }
+    options?: InstallPackOptions
   ): Promise<InstalledPack>;
   export function uninstallPack(workspaceRoot: string, name: string): Promise<void>;
   export function listInstalledPacks(workspaceRoot: string): Promise<InstalledPack[]>;

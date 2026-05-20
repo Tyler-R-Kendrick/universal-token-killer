@@ -10,10 +10,14 @@ export async function readLockfile(workspaceRoot: string): Promise<InstalledPack
   let text: string;
   try {
     text = await readFile(lockPath, 'utf8');
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
   }
   const raw = parse(text) as { spec?: string; packs?: unknown[] };
+  if (raw.spec !== undefined && raw.spec !== LOCKFILE_SPEC) {
+    throw new Error(`packs.lock.toml spec ${raw.spec} is incompatible with @utk/core (expected ${LOCKFILE_SPEC}); regenerate via 'utk pack add --force' or remove the lockfile`);
+  }
   if (!Array.isArray(raw.packs)) return [];
   return raw.packs.map(normalizeLockEntry);
 }

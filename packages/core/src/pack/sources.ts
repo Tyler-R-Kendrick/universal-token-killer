@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { PackSource } from './types.js';
 
 export function parsePackSource(spec: string): PackSource {
@@ -28,7 +29,13 @@ export function parsePackSource(spec: string): PackSource {
     return parseGitUrl(trimmed);
   }
 
-  if (trimmed.startsWith('./') || trimmed.startsWith('../') || trimmed.startsWith('/')) {
+  if (
+    trimmed.startsWith('./') ||
+    trimmed.startsWith('../') ||
+    trimmed.startsWith('.\\') ||
+    trimmed.startsWith('..\\') ||
+    path.isAbsolute(trimmed)
+  ) {
     if (trimmed.endsWith('.tgz') || trimmed.endsWith('.tar.gz')) {
       return { type: 'tarball', path: trimmed };
     }

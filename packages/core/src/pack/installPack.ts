@@ -57,37 +57,71 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
   await rm(packDestination, { recursive: true, force: true });
   await cp(pack.rootDir, packDestination, { recursive: true });
 
-  await addPackRegistryBlocks(workspaceRoot, pack.manifest.pack.name, pack.tools);
-  await mergePackGrammars(workspaceRoot, pack.grammars);
-  const templateRecords = await persistTemplateDescriptors(workspaceRoot, pack);
+  try {
+    await addPackRegistryBlocks(workspaceRoot, pack.manifest.pack.name, pack.tools);
+    await mergePackGrammars(workspaceRoot, pack.grammars);
+    const templateRecords = await persistTemplateDescriptors(workspaceRoot, pack);
 
-  const installedAt = (options.now ?? (() => new Date()))().toISOString();
-  const installed: InstalledPack = {
-    name: pack.manifest.pack.name,
-    version: pack.manifest.pack.version,
-    source: describePackSource(source),
-    revision: fetched.revision,
-    contentHash: contentHash(canonicalJson({
-      manifest: pack.manifest,
-      tools: pack.tools.map((tool) => tool.source),
-      grammars: pack.grammars.map((grammar) => ({ tool: grammar.tool, field: grammar.field, lark: grammar.lark })),
-      templates: pack.templates.map((template) => template.source)
-    }), 16),
-    installedAt,
-    tools: pack.tools.map((tool) => tool.entry.id),
-    templates: templateRecords,
-    grammars: pack.grammars.map((grammar) => ({
-      tool: grammar.tool,
-      field: grammar.field,
-      larkHash: grammar.larkHash,
-      seedObservations: grammar.seed?.observations ?? 0,
-      seedHash: grammar.seedHash ?? null
-    }))
-  };
+    const installedAt = (options.now ?? (() => new Date()))().toISOString();
+    const installed: InstalledPack = {
+      name: pack.manifest.pack.name,
+      version: pack.manifest.pack.version,
+      source: describePackSource(source),
+      revision: fetched.revision,
+      contentHash: contentHash(canonicalJson({
+        manifest: pack.manifest,
+        tools: pack.tools.map((tool) => tool.source),
+        grammars: pack.grammars.map((grammar) => ({ tool: grammar.tool, field: grammar.field, lark: grammar.lark })),
+        templates: pack.templates.map((template) => template.source)
+      }), 16),
+      installedAt,
+      tools: pack.tools.map((tool) => tool.entry.id),
+      templates: templateRecords,
+      grammars: pack.grammars.map((grammar) => ({
+        tool: grammar.tool,
+        field: grammar.field,
+        larkHash: grammar.larkHash,
+        seedObservations: grammar.seed?.observations ?? 0,
+        seedHash: grammar.seedHash ?? null
+      }))
+    };
 
-  const remaining = existing.filter((entry) => entry.name !== installed.name);
-  await writeLockfile(workspaceRoot, [...remaining, installed]);
-  return installed;
+    const remaining = existing.filter((entry) => entry.name !== installed.name);
+    await writeLockfile(workspaceRoot, [...remaining, installed]);
+    return installed;
+  } catch (error) {
+    // Best-effort rollback: any failure between cp() and writeLockfile() leaves the
+    // workspace partially mutated. Reverse the steps in lock-step so .utk/config.toml,
+    // .utk/tools/<id>/fields, .utk/cache/templates, and .utk/packs/<name> all return
+    // to their pre-install state. Lockfile was never written so it doesn't need touching.
+    try {
+      await rollbackInstall(workspaceRoot, pack);
+    } catch {
+      /* Rollback is best-effort; surface the original failure either way. */
+    }
+    throw error;
+  }
+}
+
+async function rollbackInstall(workspaceRoot: string, pack: LoadedPack): Promise<void> {
+  // Rollback is best-effort: each step's failure must not stop the others. The pack
+  // directory removal is the highest priority — it's the largest piece of state and
+  // the one most likely to be queried by listInstalledPacks() consumers.
+  const steps: Array<() => Promise<void>> = [
+    () => removePackRegistryBlocks(workspaceRoot, pack.manifest.pack.name),
+    ...pack.grammars.map((grammar) => async () => {
+      await subtractInstalledGrammar(workspaceRoot, grammar.tool, grammar.field, grammar.seed?.observations ?? 0);
+    }),
+    () => rm(safeJoin(workspaceRoot, '.utk', 'cache', 'templates', `${pack.manifest.pack.name}.json`), { force: true }),
+    () => rm(safeJoin(workspaceRoot, '.utk', 'packs', pack.manifest.pack.name), { recursive: true, force: true })
+  ];
+  for (const step of steps) {
+    try {
+      await step();
+    } catch {
+      /* swallow — best-effort rollback */
+    }
+  }
 }
 
 export async function uninstallPack(workspaceRoot: string, name: string): Promise<void> {
@@ -105,6 +139,7 @@ async function uninstallPackByName(workspaceRoot: string, name: string): Promise
     await subtractInstalledGrammar(workspaceRoot, grammar.tool, grammar.field, grammar.seedObservations);
   }
   await rm(safeJoin(workspaceRoot, '.utk', 'packs', name), { recursive: true, force: true });
+  await rm(safeJoin(workspaceRoot, '.utk', 'cache', 'templates', `${name}.json`), { force: true });
   const remaining = existing.filter((entry) => entry.name !== name);
   await writeLockfile(workspaceRoot, remaining);
 }

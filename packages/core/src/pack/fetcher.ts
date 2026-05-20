@@ -38,6 +38,9 @@ async function fetchLocal(sourcePath: string, tempBase: string): Promise<{ dir: 
 }
 
 async function fetchTarball(sourcePath: string, tempBase: string): Promise<{ dir: string; revision: string }> {
+  if (/^https?:\/\//i.test(sourcePath)) {
+    throw new Error(`Remote tarball URLs are not supported by the built-in tarball fetcher: ${sourcePath} — use the npm or git source type, or pass an injected fetcher`);
+  }
   const absolute = path.resolve(sourcePath);
   const stats = await stat(absolute);
   if (!stats.isFile()) {

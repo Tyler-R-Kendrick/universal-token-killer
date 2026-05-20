@@ -10,7 +10,7 @@ UTK's tracing artifacts feed a TDD harness so prompt, template, schema, and gram
 4. The Scorecard is diffed against `packages/evals/baselines/<eval-set-id>.json`.
 5. Any per-metric regression past tolerance fails the test (CI gate).
 
-```
+```text
 prompt/template/schema/grammar change
         │
         ▼

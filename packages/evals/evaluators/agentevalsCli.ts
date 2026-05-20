@@ -10,14 +10,17 @@ export type RunAgentEvalsCliArgs = {
   threshold?: number;
   binary?: string;
   spawnFn?: SpawnLike;
+  /** Hard wall-clock budget; on expiry the child is SIGTERMed and the result is reason: 'timeout'. Defaults to 30s. */
+  timeoutMs?: number;
 };
 
 export type RunAgentEvalsCliResult =
   | { available: true; output: EvaluatorOutput; raw: string }
-  | { available: false; reason: 'binary-missing' | 'spawn-error' | 'parse-error' | 'non-zero-exit'; detail?: string };
+  | { available: false; reason: 'binary-missing' | 'spawn-error' | 'parse-error' | 'non-zero-exit' | 'timeout'; detail?: string };
 
 export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunAgentEvalsCliResult> {
   const binary = args.binary ?? 'agentevals';
+  const timeoutMs = args.timeoutMs ?? 30_000;
   const spawn = args.spawnFn ?? (defaultSpawn as unknown as SpawnLike);
   const argv = ['run', args.tracePath, '--eval-set', args.evalSetPath, '-m', args.metric];
   if (args.threshold !== undefined) {
@@ -33,10 +36,28 @@ export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunA
   const stderrChunks: Buffer[] = [];
   child.stdout.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
   child.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
-  const exit = await new Promise<{ code: number | null; error?: Error }>((resolve) => {
-    child.on('error', (error) => resolve({ code: null, error }));
-    child.on('close', (code) => resolve({ code }));
+  const exit = await new Promise<{ code: number | null; error?: Error; timedOut?: boolean }>((resolve) => {
+    let settled = false;
+    const settle = (result: { code: number | null; error?: Error; timedOut?: boolean }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch {
+        /* child may already be dead */
+      }
+      settle({ code: null, error: new Error(`agentevals timed out after ${timeoutMs}ms`), timedOut: true });
+    }, timeoutMs);
+    child.once('error', (error) => settle({ code: null, error }));
+    child.once('close', (code) => settle({ code }));
   });
+  if (exit.timedOut) {
+    return { available: false, reason: 'timeout', detail: exit.error?.message ?? `timed out after ${timeoutMs}ms` };
+  }
   if (exit.error) {
     try {
       child.kill('SIGTERM');

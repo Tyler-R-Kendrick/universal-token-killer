@@ -4,7 +4,7 @@ Baselines turn `@utk/evals` into a TDD harness: every prompt / template / schema
 
 ## File Layout
 
-```
+```text
 packages/evals/baselines/<eval-set-id>.json
 ```
 

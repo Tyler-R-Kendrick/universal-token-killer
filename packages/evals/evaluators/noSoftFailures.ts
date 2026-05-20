@@ -14,9 +14,11 @@ export const noSoftFailures: Evaluator = {
     const trace = input.config.trace as JaegerTraceLike | undefined;
     const allow = new Set(Array.isArray(input.config.allow) ? (input.config.allow as string[]) : []);
     if (!trace) {
+      const score = 1;
+      const passed = score >= input.threshold;
       return {
-        score: 1,
-        status: 'PASSED',
+        score,
+        status: passed ? 'PASSED' : 'FAILED',
         per_invocation_scores: input.invocations.map(() => 1),
         details: { reason: 'no trace attached; rubric vacuously passes' }
       };

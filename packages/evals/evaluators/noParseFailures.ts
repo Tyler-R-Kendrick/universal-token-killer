@@ -22,9 +22,11 @@ export const noParseFailures: Evaluator = {
       ? (input.config.allow as string[])
       : ['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.'];
     if (!trace) {
+      const score = 1;
+      const passed = score >= input.threshold;
       return {
-        score: 1,
-        status: 'PASSED',
+        score,
+        status: passed ? 'PASSED' : 'FAILED',
         per_invocation_scores: input.invocations.map(() => 1),
         details: { reason: 'no trace was attached; rubric vacuously passes' }
       };

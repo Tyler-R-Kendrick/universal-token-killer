@@ -377,7 +377,7 @@ function extractSlotReferences(prompt: string): string[] {
 
 function extensionMatchesLanguage(entry: PackTemplateEntry): boolean {
   const ext = path.extname(entry.file).toLowerCase();
-  if (entry.language === 'typescript') return ext === '.ts' || ext === '.js' || ext === '.mts' || ext === '.mjs';
+  if (entry.language === 'typescript') return ext === '.ts' || ext === '.js' || ext === '.mts' || ext === '.mjs' || ext === '.cjs';
   return ext === '.py';
 }
 

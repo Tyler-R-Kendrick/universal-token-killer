@@ -26,8 +26,9 @@ export async function removePackRegistryBlocks(workspaceRoot: string, packName: 
 async function readConfigText(configPath: string): Promise<string> {
   try {
     return await readFile(configPath, 'utf8');
-  } catch {
-    return DEFAULT_CONFIG_TOML;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return DEFAULT_CONFIG_TOML;
+    throw error;
   }
 }
 
@@ -66,10 +67,13 @@ export function removeBlocksForPack(text: string, packName: string): string {
   const lines = text.split('\n');
   const keep: string[] = [];
   let skipping = false;
-  for (const line of lines) {
+  let beginLine = -1;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i]!;
     const trimmed = line.trim();
     if (!skipping && trimmed === beginMarker) {
       skipping = true;
+      beginLine = i;
       while (keep.length > 0 && keep[keep.length - 1]!.trim() === '') {
         keep.pop();
       }
@@ -78,10 +82,17 @@ export function removeBlocksForPack(text: string, packName: string): string {
     if (skipping) {
       if (trimmed === endMarker) {
         skipping = false;
+        beginLine = -1;
       }
       continue;
     }
     keep.push(line);
+  }
+  if (skipping) {
+    throw new Error(
+      `Refusing to rewrite .utk/config.toml: pack block opened at line ${beginLine + 1} ('${beginMarker}') has no matching '${endMarker}'. ` +
+      `Restore the trailing marker (or remove the orphaned begin marker by hand) before retrying.`
+    );
   }
   return keep.join('\n');
 }

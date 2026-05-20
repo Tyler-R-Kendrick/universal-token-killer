@@ -123,10 +123,12 @@ async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[], op
     try {
       lark = await readFile(larkPath, 'utf8');
     } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
       if (!seed) {
         throw new Error(`Grammar ${entry.tool}/${entry.field} requires either a lark file or a seed observation`);
       }
-      void error;
       lark = compileLark(seed);
     }
     const record: PackGrammarRecord = {
@@ -178,10 +180,15 @@ function normalizeToolEntry(value: unknown, index: number): PackToolEntry {
   }
   const entry: PackToolEntry = { id, kind: kindRaw };
   if (obj.file !== undefined) entry.file = readString(obj.file, `tools[${index}].file`);
-  if (obj.output_cache !== undefined) entry.output_cache = Boolean(obj.output_cache);
-  if (obj.bypass_on_cache !== undefined) entry.bypass_on_cache = Boolean(obj.bypass_on_cache);
+  if (obj.output_cache !== undefined) entry.output_cache = readBoolean(obj.output_cache, `tools[${index}].output_cache`);
+  if (obj.bypass_on_cache !== undefined) entry.bypass_on_cache = readBoolean(obj.bypass_on_cache, `tools[${index}].bypass_on_cache`);
   if (obj.curry_fields !== undefined) entry.curry_fields = readStringArray(obj.curry_fields, `tools[${index}].curry_fields`);
   return entry;
+}
+
+function readBoolean(value: unknown, name: string): boolean {
+  if (typeof value === 'boolean') return value;
+  throw new Error(`${name} must be a boolean`);
 }
 
 function normalizeGrammarEntry(value: unknown, index: number): PackGrammarEntry {

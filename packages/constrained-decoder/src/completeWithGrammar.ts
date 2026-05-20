@@ -16,7 +16,7 @@ export type CompleteWithGrammarParams = {
 
 export type CompleteWithGrammarRuntime = {
   Session: new (url: string) => any;
-  Generation: new (session: any, prompt: string, grammar: GrammarNode) => {
+  Generation: new (session: any, prompt: string, grammar: GrammarNode, options?: { maxTokens?: number }) => {
     start(): Promise<void>;
     getCapture(name: string): string | undefined;
   };
@@ -52,10 +52,11 @@ export async function completeWithGrammar(params: CompleteWithGrammarParams): Pr
   const { runtime } = params;
   const grammar = runtime.buildGrammar(params.lark, params.slotName);
   const session = new runtime.Session(params.sessionConfig.url);
-  const generation = new runtime.Generation(session, params.prompt, runtime.str('').join(grammar));
+  const generationOptions = params.maxTokens !== undefined ? { maxTokens: params.maxTokens } : undefined;
+  const generation = new runtime.Generation(session, params.prompt, runtime.str('').join(grammar), generationOptions);
   await generation.start();
   const completion = generation.getCapture(params.slotName);
-  if (!completion) {
+  if (completion === undefined) {
     return { available: true, errors: ['guidance generation did not capture slot'] };
   }
   return { available: true, completion, errors: [] };

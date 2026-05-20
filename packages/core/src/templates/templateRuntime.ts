@@ -1,9 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { recordFailure, type RunContext } from '../tracing/index.js';
-import { extractSlotReferences, type GrammarRef, type Slot, type TemplateDescriptor } from './defineTemplate.js';
+import { defineTemplate, extractSlotReferences, type GrammarRef, type Slot, type TemplateDescriptor } from './defineTemplate.js';
 
 export type GrammarCompletion = (params: { prompt: string; lark: string; slotName: string; maxTokens?: number }) => Promise<string>;
 
@@ -80,7 +81,7 @@ export async function loadTemplateDescriptor(filePath: string): Promise<Template
   if (typeof candidate.id !== 'string' || typeof candidate.prompt !== 'string' || !candidate.slots) {
     throw new Error(`Template module ${filePath} did not default-export a valid TemplateDescriptor`);
   }
-  return candidate as TemplateDescriptor;
+  return defineTemplate(candidate as TemplateDescriptor);
 }
 
 export function templateCachePath(workspaceRoot: string, descriptor: TemplateDescriptor): string {
@@ -90,8 +91,7 @@ export function templateCachePath(workspaceRoot: string, descriptor: TemplateDes
 
 export async function cacheTemplateDescriptor(workspaceRoot: string, descriptor: TemplateDescriptor): Promise<string> {
   const cachePath = templateCachePath(workspaceRoot, descriptor);
-  const dir = cachePath.slice(0, cachePath.lastIndexOf('/'));
-  await mkdir(dir, { recursive: true });
+  await mkdir(path.dirname(cachePath), { recursive: true });
   await writeFile(cachePath, canonicalJson(descriptor), 'utf8');
   return cachePath;
 }

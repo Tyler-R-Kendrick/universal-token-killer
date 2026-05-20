@@ -259,7 +259,7 @@ The installer writes the pack into `.utk/packs/<name>/`, merges its tool definit
 
 Authoring a pack:
 
-```
+```text
 my-pack/
 ├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
 ├── tools/<id>.toml           # bash-like or structured tool definitions

@@ -78,6 +78,43 @@ describe('completeWithGrammar', () => {
     expect(result.completion).toBe('main');
   });
 
+  it('propagates maxTokens to the runtime Generation options', async () => {
+    const received: Array<{ maxTokens?: number } | undefined> = [];
+    const runtime: CompleteWithGrammarRuntime = {
+      Session: class {
+        constructor(public url: string) {}
+      } as unknown as CompleteWithGrammarRuntime['Session'],
+      Generation: class {
+        constructor(public session: unknown, public prompt: string, public grammar: unknown, options?: { maxTokens?: number }) {
+          received.push(options);
+        }
+        async start() {}
+        getCapture() {
+          return 'ok';
+        }
+      } as unknown as CompleteWithGrammarRuntime['Generation'],
+      str: () => ({ join: () => ({ serialize: () => ({}) }) }),
+      buildGrammar: () => ({ serialize: () => ({}) }) as never
+    };
+    await completeWithGrammar({ prompt: 'p', lark: 'start: x', slotName: 'slot', sessionConfig: { url: 'http://e' }, runtime, maxTokens: 64 });
+    await completeWithGrammar({ prompt: 'p', lark: 'start: x', slotName: 'slot', sessionConfig: { url: 'http://e' }, runtime });
+    expect(received[0]).toEqual({ maxTokens: 64 });
+    expect(received[1]).toBeUndefined();
+  });
+
+  it('treats an empty-string capture as a valid completion (only undefined is a miss)', async () => {
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      runtime: fakeRuntime('')
+    });
+    expect(result.available).toBe(true);
+    expect(result.completion).toBe('');
+    expect(result.errors).toEqual([]);
+  });
+
   it('reports a capture miss when guidance does not produce a value', async () => {
     const result = await completeWithGrammar({
       prompt: 'p',

@@ -40,9 +40,27 @@ function scoreInvocation(config: Record<string, unknown>, invocation: Invocation
     } catch {
       continue;
     }
-    if (regex.test(text)) hits += 1;
+    if (matchWithBudget(regex, text)) hits += 1;
   }
   return hits / total;
+}
+
+const REGEX_INPUT_BUDGET = 50_000;
+const REGEX_PATTERN_BUDGET = 200;
+
+/**
+ * `regex.test` against user-supplied patterns is a ReDoS surface: `(a+)+b` and
+ * friends backtrack catastrophically on long inputs. There's no portable way to
+ * sandbox a JS regex with a wall-clock timer (the engine runs synchronously and
+ * can't be interrupted), so the only defensible mitigation in pure JS is to bound
+ * the inputs: cap the pattern length and slice the haystack. Anything that
+ * actually requires unbounded scanning belongs in a dedicated regex engine, not
+ * the evaluator.
+ */
+function matchWithBudget(regex: RegExp, text: string): boolean {
+  if (regex.source.length > REGEX_PATTERN_BUDGET) return false;
+  const bounded = text.length > REGEX_INPUT_BUDGET ? text.slice(0, REGEX_INPUT_BUDGET) : text;
+  return regex.test(bounded);
 }
 
 function readArray(value: unknown, invocationId: string): string[] {

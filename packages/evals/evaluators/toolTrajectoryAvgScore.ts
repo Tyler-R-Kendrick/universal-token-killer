@@ -51,10 +51,23 @@ export function scoreOne(expected: ExpectedToolCall[], observed: EvalSetToolUse[
 }
 
 function argsContain(observed: unknown, expected: Record<string, unknown>): boolean {
-  if (!observed || typeof observed !== 'object') return Object.keys(expected).length === 0;
-  const obs = observed as Record<string, unknown>;
-  for (const [key, value] of Object.entries(expected)) {
-    if (obs[key] !== value) return false;
+  return deepContains(observed, expected);
+}
+
+function deepContains(observed: unknown, expected: unknown): boolean {
+  if (Array.isArray(expected)) {
+    if (!Array.isArray(observed) || observed.length < expected.length) return false;
+    return expected.every((value, index) => deepContains(observed[index], value));
   }
-  return true;
+  if (expected && typeof expected === 'object') {
+    const expectedEntries = Object.entries(expected as Record<string, unknown>);
+    if (expectedEntries.length === 0) return true; // vacuous match — caller didn't constrain anything
+    if (!observed || typeof observed !== 'object') return false;
+    const obs = observed as Record<string, unknown>;
+    for (const [key, value] of expectedEntries) {
+      if (!deepContains(obs[key], value)) return false;
+    }
+    return true;
+  }
+  return Object.is(observed, expected);
 }

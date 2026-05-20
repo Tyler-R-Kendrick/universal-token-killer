@@ -39,29 +39,36 @@ export async function mediateToolExecution(params: {
 }): Promise<MediatedResult> {
   const { workspaceRoot, toolId, input, execute, tracer } = params;
   const normalizedToolId = normalizeToolId(toolId);
-  const runId = tracer?.runId ?? randomUUID();
-  const rootSpan = tracer
-    ? startSpan(tracer, {
+  const activeTracer = tracer?.enabled ? tracer : undefined;
+  const runId = activeTracer?.runId ?? randomUUID();
+  const rootSpan = activeTracer
+    ? startSpan(activeTracer, {
         operationName: 'utk.mediate',
         runType: 'chain',
         tags: [
           TAGS.system('utk'),
           TAGS.spanKind('internal'),
-          ...(tracer.captureInputs ? [TAGS.utkInputs(input)] : [])
+          ...(activeTracer.captureInputs ? [TAGS.utkInputs(input)] : [])
         ]
       })
     : undefined;
   try {
-    const result = await mediateToolExecutionInner(workspaceRoot, toolId, normalizedToolId, runId, input, execute, tracer, rootSpan);
-    if (tracer && rootSpan) {
-      endSpan(tracer, rootSpan, { tags: tracer.captureOutputs ? [TAGS.utkOutputs(result.response)] : [] });
+    const result = await mediateToolExecutionInner(workspaceRoot, toolId, normalizedToolId, runId, input, execute, activeTracer, rootSpan);
+    if (activeTracer && rootSpan) {
+      endSpan(activeTracer, rootSpan, { tags: activeTracer.captureOutputs ? [TAGS.utkOutputs(result.response)] : [] });
     }
     return result;
   } catch (error) {
-    if (tracer && rootSpan) endSpan(tracer, rootSpan, { error: error as Error });
+    if (activeTracer && rootSpan) endSpan(activeTracer, rootSpan, { error: error as Error });
     throw error;
   } finally {
-    if (tracer) await flushTrace(tracer);
+    if (activeTracer) {
+      try {
+        await flushTrace(activeTracer);
+      } catch {
+        // Tracing must be fail-open; a flush failure must not break the mediation result.
+      }
+    }
   }
 }
 
