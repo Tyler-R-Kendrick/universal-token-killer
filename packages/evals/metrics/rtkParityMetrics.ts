@@ -82,7 +82,7 @@ export function factRetentionScore(facts: RequiredFact[], artifactTexts: string[
 
 export function recoverabilityScore(input: Pick<RtkParityMeasurementInput, 'rawArtifactExists' | 'compactArtifactExists' | 'responseText'>): number {
   const hasRawReference = /Tool result stored at: .+output\.raw\.(json|txt|bin)/.test(input.responseText);
-  const hasCompactReference = /Compact artifact: .+output\.compact\.(toon|json)/.test(input.responseText);
+  const hasCompactReference = /Compact artifact: .+output\.compact\.(toon|json|tron)/.test(input.responseText);
   const hasSchema = /Schema: \S+/.test(input.responseText);
   return input.rawArtifactExists && input.compactArtifactExists && hasRawReference && hasCompactReference && hasSchema ? 1 : 0;
 }

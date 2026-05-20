@@ -10,7 +10,7 @@ Raw outputs live below:
 .utk/tools/<tool-id>/observations/<run-id>/output.raw.bin
 ```
 
-Compact serialized outputs live beside the raw file as `output.compact.toon` or `output.compact.json`, with `output.compact.validation.json` recording drift validation.
+Compact serialized outputs live beside the raw file as `output.compact.toon`, `output.compact.json`, `output.compact.tron`, or a plugin extension, with `output.compact.validation.json` recording drift validation.
 
 Schema and routing artifacts are stored in:
 

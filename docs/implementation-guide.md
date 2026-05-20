@@ -19,10 +19,14 @@ Use this guide when extending UTK without breaking the hook-first architecture.
 
 ## Add A Serializer Provider
 
-1. Implement `serialize`, `deserialize`, `validate`, and `estimateTokens`.
-2. Add the provider id to config validation.
-3. Add TOML tests for default selection, overrides, disabled providers, and invalid ids.
-4. Add round-trip and drift-validation tests.
+Built-in serializers are implemented as internal plugins and should use the same registrar contract as third-party packages.
+
+1. Publish an installed package named `utk-serializer-*` or `@utk/serializer-*`.
+2. Export `registerUtkSerializerPlugin(registry)`.
+3. Call `registry.register()` with `id`, `extension`, `serialize`, `deserialize`, `validate`, and `estimateTokens`.
+4. Include a Lark grammar in `provider.grammar` when llguidance should constrain model-visible output.
+5. Add TOML tests for default selection, overrides, disabled providers, and invalid ids.
+6. Add round-trip and drift-validation tests.
 
 ## Add A Parity Scenario
 

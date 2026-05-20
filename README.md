@@ -193,6 +193,9 @@ enabled = true
 [serialization.providers.compressed-json]
 enabled = true
 
+[serialization.providers.tron]
+enabled = true
+
 [[serialization.overrides]]
 tool = "shell.git.diff"
 provider = "compressed-json"
@@ -219,6 +222,8 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 [tools]
 registry = []
 ```
+
+Built-in serializers are `toon`, `compressed-json`, and `tron`. Installed packages named `utk-serializer-*` or `@utk/serializer-*` can register additional serializers through `registerUtkSerializerPlugin(registry)`.
 
 ## Packages
 

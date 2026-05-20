@@ -12,6 +12,9 @@ enabled = true
 [serialization.providers.compressed-json]
 enabled = true
 
+[serialization.providers.tron]
+enabled = true
+
 [[serialization.overrides]]
 tool = "shell.git.diff"
 provider = "compressed-json"
@@ -25,4 +28,4 @@ raw_outputs = true
 storage_root = ".utk"
 ```
 
-Supported serializer providers are `toon` and `compressed-json`. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.
+Built-in serializer providers are `toon`, `compressed-json`, and `tron`. Installed plugin packages named `utk-serializer-*` or `@utk/serializer-*` can add more providers by exporting `registerUtkSerializerPlugin(registry)`. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.

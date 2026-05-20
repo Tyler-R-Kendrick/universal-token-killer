@@ -38,7 +38,7 @@ type InitToolRecord = {
   description?: string;
   sampleInput?: unknown;
   sampleOutput?: unknown;
-  serializerOverride?: 'toon' | 'compressed-json';
+  serializerOverride?: string;
 };
 ```
 

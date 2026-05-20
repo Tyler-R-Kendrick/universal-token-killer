@@ -42,7 +42,7 @@ declare module '@utk/core' {
       parameters: Record<string, string>;
     };
     templatePath: string;
-    serializerId: 'toon' | 'compressed-json';
+    serializerId: string;
     confidence: number;
     missingRequired: string[];
     guidance: {

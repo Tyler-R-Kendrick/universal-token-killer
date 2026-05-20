@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { completeWithGrammar } from '@utk/constrained-decoder';
+import { completeWithGrammar } from '../../constrained-decoder/src/completeWithGrammar.js';
 import {
   createRunContext,
   flushTrace,

@@ -14,6 +14,7 @@ Each mediated run writes:
 .utk/tools/<tool-id>/observations/<run-id>/output.raw.bin
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.toon
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.json
+.utk/tools/<tool-id>/observations/<run-id>/output.compact.tron
 .utk/tools/<tool-id>/observations/<run-id>/output.compact.validation.json
 .utk/tools/<tool-id>/observations/<run-id>/output.detok.txt
 .utk/tools/<tool-id>/observations/<run-id>/output.detok.json
@@ -59,6 +60,7 @@ Bash-like invocation helpers write compact templates and serialized guidance gra
 ```text
 .utk/tools/<tool-id>/templates/cli-template.compact.toon
 .utk/tools/<tool-id>/templates/cli-template.compact.json
+.utk/tools/<tool-id>/templates/cli-template.compact.tron
 .utk/tools/<tool-id>/templates/cli-template.guidance.json
 ```
 
@@ -100,7 +102,7 @@ Full payload was written to disk and omitted from chat context.
 This maps to:
 
 - `output.raw.txt`: full command output;
-- `output.compact.toon`: model-safe compact summary;
+- `output.compact.toon`: model-safe compact summary, with `.json` or `.tron` used when configured;
 - `output.schema.json`: inferred output schema for that run;
 - `metadata.json`: run id, schema id, and schema merge reason;
 - `.utk/tools/shell-git-diff/route.json`: current route decision.

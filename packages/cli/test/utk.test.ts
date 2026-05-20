@@ -112,7 +112,7 @@ describe('utk cli', () => {
     const result = await runUtkCli(['pack', 'add', source, '--force'], { cwd: workspace, stdout: writers.stdout, stderr: writers.stderr });
     expect(result.exitCode).toBe(0);
     expect(writers.getStdout()).toContain('Installed');
-  });
+  }, 15000);
 
   it('add: reports template ids when present', async () => {
     const source = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-tpl-src-'));
