@@ -5,11 +5,15 @@ not a public CLI. It is a library surface for hook hosts, generated agents, and
 tests that need compact command invocation templates.
 
 For non-CLI structured parameters, use the companion
-`completeStructuredToolInvocation` helper from `@utk/core`. Both helpers normalize
-parameter values using **learned field grammars** persisted under
-`.utk/tools/<tool-id>/fields/<name>.grammar.json` — UTK does not ship hand-written
-grammar definitions; separator/whitespace style is inferred from observations and
-refined over tool runs.
+`completeStructuredToolInvocation` helper from `@utk/core`. Both helpers match
+parameter values against literal `completions[]` from the tool definition.
+**Per-field grammars are persisted only as `.lark` files** at
+`.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` — both the tool
+id and the field name pass through `normalizeToolId` (lowercased; dots, spaces,
+and other punctuation collapse to dashes), so a `tool.search` field `query.text`
+lands at `.utk/tools/tool-search/fields/query-text.lark`. UTK does not write
+`.grammar.json` sidecars and packs may not ship them — lint rejects packs that
+include `.grammar.json` files.
 
 ## Purpose
 
@@ -58,7 +62,7 @@ The result includes:
 
 - `invocation.command`: the planned command string;
 - `invocation.argv`: shell-safe argument array;
-- `templatePath`: compact template path under `.utk/tools/<tool-id>/templates/`;
+- `templatePath`: compact template path under `.utk/tools/<normalized-tool-id>/templates/` (tool id passes through `normalizeToolId`, so dots and other punctuation become dashes on disk);
 - `missingRequired`: required parameters that could not be completed;
 - `guidance.serializedGrammar`: deterministic grammar sidecar;
 - `guidance.available`: currently `false` when no guidance session is wired.
@@ -71,13 +75,14 @@ guided completion success.
 ## Artifact Layout
 
 ```text
-.utk/tools/<tool-id>/templates/cli-template.compact.toon
-.utk/tools/<tool-id>/templates/cli-template.compact.json
-.utk/tools/<tool-id>/templates/cli-template.guidance.json
+.utk/tools/<normalized-tool-id>/templates/cli-template.compact.toon
+.utk/tools/<normalized-tool-id>/templates/cli-template.compact.json
+.utk/tools/<normalized-tool-id>/templates/cli-template.guidance.json
 ```
 
-Only one compact template is written, based on `.utk/config.toml` serializer
-selection.
+`<normalized-tool-id>` is `normalizeToolId(toolId)` — dots and other punctuation
+become dashes on disk. Only one compact template is written, based on
+`.utk/config.toml` serializer selection.
 
 ## Metrics
 

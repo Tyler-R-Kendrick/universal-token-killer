@@ -35,25 +35,29 @@ flowchart LR
 - **Measurable:** RTK parity metrics enforce savings, fact retention, and artifact recovery.
 - **Generated reuse:** `utk-init` can materialize dynamic session agents and session skills under `.utk/` so repeated project work is referenced instead of re-explained.
 
+## Optional Tracing Pipeline
+
+Every step in the data flow above can emit a [agentevals.io](https://agentevals.io)-compatible Jaeger span when `[tracing] enabled = true` in `.utk/config.toml`. The mediator opens a root `utk.mediate` span and a child `tool.<id>` span; downstream sites (`structuredTooling`, `lintPack`, `loadPack`, `templateRuntime`, `router`, `llmlingua2`) attach failure logs via `recordFailure`. Artifacts land in `.utk/events/<run-id>.{jaeger.json,eval_set.json}` and feed the agentevals-driven TDD harness in `@utk/evals`. See [Tracing](tracing.md) for the overview and [Evals-Driven Iteration](evals-driven-iteration.md) for the baseline loop.
+
 ## Integration Surfaces
 
 UTK currently exposes several surfaces with different constraints:
 
 | Surface | Purpose | Public CLI? |
 |---|---|---:|
-| `@utk/core` | Mediation, artifacts, serializers, config, bash-like templates, session agent/skill generation. | No |
+| `@utk/core` | Mediation, artifacts, serializers, config, bash-like templates, tracing, session agent/skill generation. | No |
 | `@utk/copilot-hook` | GitHub Copilot hook payload adapters and the internal `preToolUse` detok runner. | No |
-| `@utk/constrained-decoder` | `guidance-ts` grammar helpers for constrained route fallback. | No |
+| `@utk/constrained-decoder` | `guidance-ts` grammar helpers for constrained route fallback (carries a `tracer?` DI seam to avoid a core cycle). | No |
 | `@utk/detok-mcp` | Private local MCP server exposing LLMLingua-2 rewriting as `detok`. | MCP only |
-| `@utk/evals` | Fixture-backed parity, safety, and bash rewrite metrics. | No |
+| `@utk/evals` | Fixture-backed parity, safety, bash rewrite, and agentevals.io evaluators / baselines. | No |
 
 ## Runtime Packages
 
-- `@utk/core` owns mediation, config, persistence, serializers, schemas, routing, and recovery artifacts.
+- `@utk/core` owns mediation, config, persistence, serializers, schemas, routing, recovery artifacts, and the tracing module.
 - `@utk/copilot-hook` adapts Copilot hook JSON to core mediation.
 - `@utk/constrained-decoder` owns `guidance-ts` route grammar helpers.
 - `@utk/detok-mcp` owns the private local stdio MCP server for the `detok` tool.
-- `@utk/evals` owns parity fixtures, metrics, and assertions.
+- `@utk/evals` owns parity fixtures, metrics, agentevals.io evaluators, and the baseline store.
 
 ## Related Docs
 
@@ -62,4 +66,6 @@ UTK currently exposes several surfaces with different constraints:
 - [Artifacts And Recovery](artifacts.md)
 - [Bash-Like Tool Templates](bash-like-tool.md)
 - [Session Agents And Skills](session-artifacts.md)
+- [Tracing](tracing.md)
+- [Evals-Driven Iteration](evals-driven-iteration.md)
 - [RTK Parity](rtk-parity.md)

@@ -93,6 +93,27 @@ Run the focused suite:
 npm test --workspace @utk/evals -- --run evals/bash-rewrite-metrics.test.ts
 ```
 
+## Tracing Did Not Write A Trace File
+
+`mediateToolExecution` only writes `.utk/events/<runId>.jaeger.json` when:
+
+- `[tracing] enabled = true` in `.utk/config.toml`, AND
+- a `tracer` is passed via `createRunContext(...)` into the call.
+
+Without both, every call site that takes `tracer?` is a no-op (preserves existing untraced behavior). Once enabled, the run id used for the trace is the `tracer.runId` (defaults to a fresh `randomUUID()`). See [Tracing](tracing.md).
+
+## Trace Contains A Failure Code I Did Not Expect
+
+Look up the code in [refs/tracing-failure-codes.md](refs/tracing-failure-codes.md) — every code lists the source file, runtime trigger, and which `extra` keys it sets. Soft codes (`cache.write`, `guidance.unavailable`, `detok.unavailable`, `router.fallback`) do not break mediation; parse codes (`pack.*`, `template.load`, `planner.missing-required`) usually mean a fixture or pack needs fixing.
+
+## Baseline Refused To Write
+
+`writeBaseline` requires either `UTK_BASELINE_UPDATE=1` in the environment or `{ force: true }` in the options. This prevents `npm test` from silently overwriting a checked-in baseline. See [refs/baseline-store.md](refs/baseline-store.md).
+
+## `agentevals-cli` Spawn Returned `binary-missing`
+
+The optional cross-check via `runAgentEvalsCli(...)` looks for the Python `agentevals` binary on PATH. Install with `pip install agentevals-cli` (Python 3.11+). UTK's TS evaluators do not depend on the CLI — `available: false` is expected in CI environments without Python.
+
 ## Session Agent Or Skill Link Missing
 
 `initializeWorkspaceStore` only creates `.github/agents` and `.agents/skills`

@@ -3,8 +3,6 @@ import { grm, select } from 'guidance-ts';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
-import { type FieldGrammar, normalizeWithFieldGrammar } from '../grammar/fieldGrammar.js';
-import { loadFieldGrammar } from '../grammar/grammarStore.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '../security/pathSafety.js';
 
@@ -65,8 +63,7 @@ export async function completeBashLikeToolInvocation(params: {
   const serializer = getSerializationProvider(serializerId);
   const grammar = buildBashLikeInvocationGrammar(params.tools);
   const serializedGrammar = serializeGrammar(grammar);
-  const learnedGrammars = await loadLearnedGrammars(params.workspaceRoot, selectedTool);
-  const planned = planInvocation(params.request, selectedTool, learnedGrammars);
+  const planned = planInvocation(params.request, selectedTool);
   const template = buildTemplate(selectedTool, planned, serializedGrammar);
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');
@@ -88,16 +85,6 @@ export async function completeBashLikeToolInvocation(params: {
       errors: ['guidance session is not configured; used deterministic known completions']
     }
   };
-}
-
-async function loadLearnedGrammars(
-  workspaceRoot: string,
-  tool: BashLikeToolDefinition
-): Promise<Record<string, FieldGrammar | undefined>> {
-  const entries = await Promise.all(
-    tool.parameters.map(async (parameter) => [parameter.name, await loadFieldGrammar(workspaceRoot, tool.toolId, parameter.name)] as const)
-  );
-  return Object.fromEntries(entries);
 }
 
 export function buildBashLikeInvocationGrammar(tools: BashLikeToolDefinition[]): GuidanceGrammarNode {
@@ -145,23 +132,17 @@ type PlannedInvocation = {
   missingRequired: string[];
 };
 
-function planInvocation(
-  request: string,
-  tool: BashLikeToolDefinition,
-  learnedGrammars: Record<string, FieldGrammar | undefined>
-): PlannedInvocation {
+function planInvocation(request: string, tool: BashLikeToolDefinition): PlannedInvocation {
   const argv = [tool.command];
   const parameters: Record<string, string> = {};
   const missingRequired: string[] = [];
 
   for (const parameter of tool.parameters) {
-    const raw = chooseCompletion(request, parameter);
-    if (!raw) {
+    const completion = chooseCompletion(request, parameter);
+    if (!completion) {
       if (parameter.required) missingRequired.push(parameter.name);
       continue;
     }
-    const completion = normalizeWithFieldGrammar(raw, learnedGrammars[parameter.name]);
-
     parameters[parameter.name] = completion;
     if (parameter.kind === 'positional') {
       argv.push(completion);

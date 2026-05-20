@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { recordFailure, type JaegerSpan, type RunContext } from '../tracing/index.js';
 
 export type DetokOptions = {
   rate?: number;
@@ -10,6 +11,8 @@ export type DetokOptions = {
   minChars?: number;
   forceTokens?: string[];
   modelName?: string;
+  tracer?: RunContext;
+  parentSpan?: JaegerSpan;
 };
 
 export type DetokResult = {
@@ -95,6 +98,13 @@ async function runLlmlingua2(text: string, options: DetokOptions & { rate: numbe
   const output = await runProcess(python, [scriptPath], request);
   const parsed = JSON.parse(output) as Partial<DetokResult> & { error?: string };
   if (parsed.error) {
+    recordFailure(options.tracer, {
+      name: 'detok.unavailable',
+      runType: 'parser',
+      ...(options.parentSpan ? { span: options.parentSpan } : {}),
+      error: { name: 'DetokError', message: parsed.error },
+      extra: { model: options.modelName ?? 'llmlingua2' }
+    });
     return { ...skipped(text, options.rate, originalTokens), error: parsed.error };
   }
 

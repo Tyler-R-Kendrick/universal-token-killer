@@ -8,13 +8,7 @@ import {
   completeStructuredToolInvocation,
   contentHash,
   curryTool,
-  inferFieldGrammar,
-  loadFieldGrammar,
-  memoizeTool,
-  mergeFieldGrammar,
-  normalizeWithFieldGrammar,
-  optimizeStructuredToolArgs,
-  recordFieldObservation
+  memoizeTool
 } from '../src/index.js';
 
 describe('structured tooling', () => {
@@ -176,30 +170,101 @@ describe('structured tooling', () => {
     expect(unmatchedDescription.invocation.args).toEqual({});
   });
 
-  it('optimizes structured field values without mutating unknown or non-string fields', () => {
-    const result = optimizeStructuredToolArgs(
-      {
-        first: '  alpha,beta   gamma  ',
-        second: '   keep   short  ',
-        third: '  many   spaces  ',
-        count: 7,
-        untouched: 7
-      },
-      {
-        parameters: [
-          { name: 'first', completions: ['alpha,beta gamma'] },
-          { name: 'second', completions: ['keep short'] },
-          { name: 'third', completions: [] },
-          { name: 'count', completions: ['7'] }
-        ]
-      }
+  it('auto-fills curry_fields from the first completion when planning misses them', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-curry-'));
+    const result = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'no relevant terms',
+      tools: [
+        {
+          toolId: 'tool.curry',
+          curryFields: ['scope', 'mode', 'orphan', 'unknown'],
+          parameters: [
+            { name: 'scope', completions: ['repo', 'org'], required: true },
+            { name: 'mode', completions: ['safe', 'unsafe'] },
+            { name: 'orphan', completions: [undefined as unknown as string, ''] }
+          ]
+        }
+      ]
+    });
+    expect(result.invocation.args.scope).toBe('repo');
+    expect(result.invocation.args.mode).toBe('safe');
+    expect(result.invocation.args.orphan).toBeUndefined();
+    expect(result.invocation.args.unknown).toBeUndefined();
+    expect(result.missingRequired).toEqual([]);
+  });
+
+  it('leaves curry_fields alone when planning already provided a value', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-curry-noop-'));
+    const result = await completeStructuredToolInvocation({
+      workspaceRoot,
+      request: 'pick org',
+      tools: [
+        {
+          toolId: 'tool.curry-noop',
+          curryFields: ['scope'],
+          parameters: [{ name: 'scope', completions: ['repo', 'org'] }]
+        }
+      ]
+    });
+    expect(result.invocation.args.scope).toBe('org');
+  });
+
+  it('emits planner-miss, guidance-unavailable, and cache-write events into the injected tracer', async () => {
+    const { createRunContext, loadUtkConfig } = await import('../src/index.js');
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-tracer-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await import('node:fs/promises').then((fs) =>
+      fs.writeFile(
+        path.join(root, '.utk', 'config.toml'),
+        [
+          '[serialization]',
+          'default = "toon"',
+          '',
+          '[serialization.providers.toon]',
+          'enabled = true',
+          '',
+          '[serialization.providers.compressed-json]',
+          'enabled = true',
+          '',
+          '[tracing]',
+          'enabled = true',
+          ''
+        ].join('\n'),
+        'utf8'
+      )
     );
-    expect(result.applied).toBe(true);
-    expect(result.value.first).toBe('alpha,beta gamma');
-    expect(result.value.second).toBe('keep short');
-    expect(result.value.third).toBe('many spaces');
-    expect(result.value.count).toBe(7);
-    expect(result.value.untouched).toBe(7);
+    const config = await loadUtkConfig(root);
+    const tracer = createRunContext(config, root, { runId: 'r-trace', now: () => new Date('2026-05-19T22:00:00Z') });
+    const tracerResult = await completeStructuredToolInvocation({
+      workspaceRoot: root,
+      request: 'unrelated',
+      tools: [{ toolId: 'tool.miss', parameters: [{ name: 'q', required: true, completions: ['alpha', 'beta'] }] }],
+      tracer
+    });
+    expect(tracerResult.missingRequired).toContain('q');
+    const codes = tracer.spans.flatMap((span) => span.tags.filter((tag) => tag.key === 'utk.failure.code').map((tag) => tag.value));
+    expect(codes).toContain('planner.missing-required');
+    expect(codes).not.toContain('guidance.unavailable');
+  });
+
+  it('cache write failures must not break the tool call', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-cache-failopen-'));
+    const namespace = 'cache-failopen';
+    const tool = async (_input: { value: string }) => 'ok';
+    const fragilePath = path.join(workspaceRoot, '.utk', 'cache', namespace);
+    await mkdir(path.dirname(fragilePath), { recursive: true });
+    await writeFile(fragilePath, 'blocker', 'utf8');
+    const memoized = memoizeTool({
+      workspaceRoot,
+      cacheNamespace: namespace,
+      cacheKeyPrefix: 'pair',
+      enabled: true,
+      tool
+    });
+    const result = await memoized({ value: 'a' });
+    expect(result.value).toBe('ok');
+    expect(result.cacheHit).toBe(false);
   });
 
   it('exposes curry and memoize functors as composable wrappers', async () => {
@@ -248,62 +313,7 @@ describe('structured tooling', () => {
     expect(invalidCache.cacheHit).toBe(false);
   });
 
-  it('learns field grammars from observations and applies them on subsequent invocations', async () => {
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-learn-'));
-    const toolId = 'tool.learner';
-
-    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'alpha:one alpha:two');
-    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'beta:three beta:four');
-    await recordFieldObservation(workspaceRoot, toolId, 'expr', 'gamma:five gamma:six');
-
-    const learned = await loadFieldGrammar(workspaceRoot, toolId, 'expr');
-    expect(learned).toBeDefined();
-    expect(learned?.observations).toBe(3);
-    expect(learned?.separators[':']?.tight).toBeGreaterThan(0);
-
-    const optimized = optimizeStructuredToolArgs(
-      { expr: '  delta : seven   delta : eight  ' },
-      { parameters: [{ name: 'expr' }] },
-      { expr: learned }
-    );
-    expect(optimized.applied).toBe(true);
-    expect(optimized.value.expr).toBe('delta:seven delta:eight');
-  });
-
-  it('infers and merges field grammars deterministically', () => {
-    const first = inferFieldGrammar('a:b c:d');
-    expect(first.observations).toBe(1);
-    expect(first.separators[':']?.tight).toBe(2);
-    expect(first.separators[':']?.loose).toBe(0);
-
-    const second = inferFieldGrammar('a : b c : d');
-    expect(second.separators[':']?.tight).toBe(0);
-    expect(second.separators[':']?.loose).toBe(2);
-
-    const merged = mergeFieldGrammar(first, second);
-    expect(merged.observations).toBe(2);
-    expect(merged.separators[':']?.tight).toBe(2);
-    expect(merged.separators[':']?.loose).toBe(2);
-
-    const fromEmpty = mergeFieldGrammar(undefined, first);
-    expect(fromEmpty.version).toBe(1);
-    expect(fromEmpty.observations).toBe(1);
-
-    const leading = inferFieldGrammar(':abc');
-    expect(leading.separators[':']?.loose).toBe(1);
-    const trailing = inferFieldGrammar('abc?');
-    expect(trailing.separators['?']?.loose).toBe(1);
-
-    const distinct = mergeFieldGrammar(first, inferFieldGrammar('a=b'));
-    expect(distinct.separators['=']?.tight).toBe(1);
-
-    expect(normalizeWithFieldGrammar('  x   y  ', undefined)).toBe('x y');
-    expect(normalizeWithFieldGrammar('a : b', merged)).toBe('a : b');
-    const tightOnly = mergeFieldGrammar(first, first);
-    expect(normalizeWithFieldGrammar('a : b', tightOnly)).toBe('a:b');
-  });
-
-  it('treats parameters without a completions array as optional and ignores malformed grammar files', async () => {
+  it('treats parameters without a completions array as optional', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-edges-'));
 
     const noCompletions = await completeStructuredToolInvocation({
@@ -315,12 +325,6 @@ describe('structured tooling', () => {
       ]
     });
     expect(noCompletions.invocation.args).toEqual({});
-
-    const grammarDir = path.join(workspaceRoot, '.utk', 'tools', 'tool-malformed', 'fields');
-    await mkdir(grammarDir, { recursive: true });
-    await writeFile(path.join(grammarDir, 'value.grammar.json'), '{"junk":true}', 'utf8');
-    const reloaded = await loadFieldGrammar(workspaceRoot, 'tool.malformed', 'value');
-    expect(reloaded).toBeUndefined();
 
     const result = await completeStructuredToolInvocation({
       workspaceRoot,

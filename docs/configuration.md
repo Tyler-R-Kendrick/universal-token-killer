@@ -35,6 +35,14 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 
 [tools]
 registry = []
+
+[tracing]
+enabled = false
+capture_inputs = true
+capture_outputs = true
+emit_eval_set = true
+storage_root = ".utk/events"
+process_id = "utk"
 ```
 
 Current note: `.utk/config.toml` itself and core mediation artifacts are project-local under `.utk/`. `persistence.storage_root` is also used by auxiliary template helpers; keep it at `.utk` unless you are deliberately testing alternate storage behavior.
@@ -95,7 +103,7 @@ The hook only returns `modifiedArgs` when compression actually changes an allowl
 
 ## Registered Structured Tools And Cache Policy
 
-Opt fields into UTK's normalization and caching by naming them in the tool registry. UTK does not ship any hand-written grammar definitions — the per-field grammar (separator style, whitespace conventions, length range) is **discovered from observations** of past tool runs and refined over time. The `structured_fields` entry just tells UTK which fields are subject to learning.
+Opt fields into UTK's completion handling and caching by naming them in the tool registry. UTK matches user input against `completions` using a normalized-text comparison (case-folded, punctuation collapsed to spaces) and returns the matched completion value **as-is** — no observation-based normalization is applied to the returned string. Tool definitions may also set `curry_fields` to a subset of field names; planner-missed curry fields are auto-filled from the first completion before the invocation is returned.
 
 ```toml
 [[tools.registry]]
@@ -111,10 +119,26 @@ completions = ["is:issue is:open label:bug"]
 required = true
 ```
 
-- Structured fields are normalized before tool execution using a learned grammar persisted at `.utk/tools/<normalized-tool-id>/fields/<field>.grammar.json`.
+- Per-field grammars are persisted only as `.lark` files at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` — both the tool id and the field name pass through `normalizeToolId`, so dots and other punctuation are flattened to dashes on disk. `.grammar.json` sidecars are not supported; `lintPack` rejects packs that include them.
 - `output_cache = true` enables local cache writes keyed by tool input.
 - `bypass_on_cache = true` allows pre-tool hook denial on cache hits to skip repeat calls.
 - Optional `completions` provide canonical example values; UTK matches them against the normalized input but does not require them.
+
+## Tracing
+
+UTK can emit per-run traces in the [agentevals.io](https://agentevals.io) open standard. Tracing is **off by default**; turn it on per-workspace:
+
+```toml
+[tracing]
+enabled = true              # default: false
+capture_inputs = true       # include utk.inputs tags on spans
+capture_outputs = true      # include utk.outputs tags on spans
+emit_eval_set = true        # also write <run>.eval_set.json next to the jaeger.json
+storage_root = ".utk/events"
+process_id = "utk"          # process key in the Jaeger document
+```
+
+When enabled, every traced mediation writes Jaeger JSON + (optionally) a Google-ADK EvalSet derived from the spans. See [Tracing](tracing.md) for the wiring overview and [refs/agentevals-spec.md](refs/agentevals-spec.md) for canonical wire shapes.
 
 ## Defaults And Precedence
 

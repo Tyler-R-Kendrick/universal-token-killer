@@ -1,0 +1,202 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { parse } from 'smol-toml';
+import { safeJoin } from '../security/pathSafety.js';
+import { contentHash } from '../artifact/canonical.js';
+import { recordFailure, type RunContext } from '../tracing/index.js';
+import type {
+  LoadedPack,
+  PackGrammarEntry,
+  PackGrammarRecord,
+  PackTemplateEntry,
+  PackTemplateRecord,
+  PackToolDefinition,
+  PackToolEntry,
+  UtkPackManifest
+} from './types.js';
+
+export type LoadPackOptions = { tracer?: RunContext };
+
+export async function loadPackManifest(packDir: string, options: LoadPackOptions = {}): Promise<UtkPackManifest> {
+  const manifestPath = safeJoin(packDir, 'utk.pack.toml');
+  try {
+    const text = await readFile(manifestPath, 'utf8');
+    const raw = parse(text) as Record<string, unknown>;
+    return normalizeManifest(raw);
+  } catch (error) {
+    recordFailure(options.tracer, {
+      name: 'pack.manifest.parse',
+      runType: 'parser',
+      error: error as Error,
+      extra: { manifestPath }
+    });
+    throw error;
+  }
+}
+
+export async function loadPack(packDir: string, options: LoadPackOptions = {}): Promise<LoadedPack> {
+  const manifest = await loadPackManifest(packDir, options);
+  const tools = await loadPackTools(packDir, manifest.tools ?? []);
+  const grammars = await loadPackGrammars(packDir, manifest.grammars ?? []);
+  const templates = await loadPackTemplates(packDir, manifest.templates ?? []);
+  return { manifest, rootDir: packDir, tools, grammars, templates };
+}
+
+export function normalizeManifest(raw: Record<string, unknown>): UtkPackManifest {
+  const pack = readObject(raw.pack, 'pack');
+  const name = readString(pack.name, 'pack.name');
+  const version = readString(pack.version, 'pack.version');
+  if (!/^[A-Za-z0-9._@/-]+$/.test(name)) {
+    throw new Error(`Invalid pack name: ${name}`);
+  }
+  if (!/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(version)) {
+    throw new Error(`Invalid pack version: ${version}`);
+  }
+  const manifest: UtkPackManifest = {
+    pack: {
+      name,
+      version,
+      ...(pack.description !== undefined ? { description: readString(pack.description, 'pack.description') } : {}),
+      ...(pack.license !== undefined ? { license: readString(pack.license, 'pack.license') } : {}),
+      ...(pack.authors !== undefined ? { authors: readStringArray(pack.authors, 'pack.authors') } : {}),
+      ...(pack.homepage !== undefined ? { homepage: readString(pack.homepage, 'pack.homepage') } : {}),
+      ...(pack.keywords !== undefined ? { keywords: readStringArray(pack.keywords, 'pack.keywords') } : {})
+    }
+  };
+  if (raw.compatibility !== undefined) {
+    const compat = readObject(raw.compatibility, 'compatibility');
+    manifest.compatibility = {
+      ...(compat.utk !== undefined ? { utk: readString(compat.utk, 'compatibility.utk') } : {}),
+      ...(compat.pack_spec !== undefined ? { pack_spec: readString(compat.pack_spec, 'compatibility.pack_spec') } : {})
+    };
+  }
+  if (raw.tools !== undefined) {
+    manifest.tools = readArray(raw.tools, 'tools').map((entry, index) => normalizeToolEntry(entry, index));
+  }
+  if (raw.grammars !== undefined) {
+    manifest.grammars = readArray(raw.grammars, 'grammars').map((entry, index) => normalizeGrammarEntry(entry, index));
+  }
+  if (raw.templates !== undefined) {
+    manifest.templates = readArray(raw.templates, 'templates').map((entry, index) => normalizeTemplateEntry(entry, index));
+  }
+  return manifest;
+}
+
+async function loadPackTools(packDir: string, entries: PackToolEntry[]): Promise<PackToolDefinition[]> {
+  const results: PackToolDefinition[] = [];
+  for (const entry of entries) {
+    const filePath = safeJoin(packDir, entry.file ?? `tools/${entry.id}.toml`);
+    const text = await readFile(filePath, 'utf8');
+    const parsed = parseToolFile(filePath, text);
+    results.push({ entry, source: parsed });
+  }
+  return results;
+}
+
+function parseToolFile(filePath: string, text: string): Record<string, unknown> {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.json') {
+    return JSON.parse(text) as Record<string, unknown>;
+  }
+  return parse(text) as Record<string, unknown>;
+}
+
+async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): Promise<PackGrammarRecord[]> {
+  const results: PackGrammarRecord[] = [];
+  for (const entry of entries) {
+    const larkPath = safeJoin(packDir, entry.lark ?? `grammars/${entry.tool}/${entry.field}.lark`);
+    // `.lark` is the only supported grammar format. Packs may not ship `.grammar.json` —
+    // the FieldGrammar JSON sidecar was removed in favour of lark-only persistence.
+    const lark = await readFile(larkPath, 'utf8');
+    results.push({
+      tool: entry.tool,
+      field: entry.field,
+      lark,
+      larkHash: contentHash(lark, 16)
+    });
+  }
+  return results;
+}
+
+async function loadPackTemplates(packDir: string, entries: PackTemplateEntry[]): Promise<PackTemplateRecord[]> {
+  const results: PackTemplateRecord[] = [];
+  for (const entry of entries) {
+    const filePath = safeJoin(packDir, entry.file);
+    const source = await readFile(filePath, 'utf8');
+    results.push({ entry, source });
+  }
+  return results;
+}
+
+function normalizeToolEntry(value: unknown, index: number): PackToolEntry {
+  const obj = readObject(value, `tools[${index}]`);
+  const id = readString(obj.id, `tools[${index}].id`);
+  const kindRaw = readString(obj.kind, `tools[${index}].kind`);
+  if (kindRaw !== 'bash-like' && kindRaw !== 'structured') {
+    throw new Error(`tools[${index}].kind must be 'bash-like' or 'structured'`);
+  }
+  const entry: PackToolEntry = { id, kind: kindRaw };
+  if (obj.file !== undefined) entry.file = readString(obj.file, `tools[${index}].file`);
+  if (obj.output_cache !== undefined) entry.output_cache = readBoolean(obj.output_cache, `tools[${index}].output_cache`);
+  if (obj.bypass_on_cache !== undefined) entry.bypass_on_cache = readBoolean(obj.bypass_on_cache, `tools[${index}].bypass_on_cache`);
+  if (obj.curry_fields !== undefined) entry.curry_fields = readStringArray(obj.curry_fields, `tools[${index}].curry_fields`);
+  return entry;
+}
+
+function readBoolean(value: unknown, name: string): boolean {
+  if (typeof value === 'boolean') return value;
+  throw new Error(`${name} must be a boolean`);
+}
+
+function normalizeGrammarEntry(value: unknown, index: number): PackGrammarEntry {
+  const obj = readObject(value, `grammars[${index}]`);
+  if (obj.seed !== undefined) {
+    throw new Error(`grammars[${index}].seed is no longer supported — UTK persists grammars as .lark only. Remove the seed field and ship a .lark file instead.`);
+  }
+  const entry: PackGrammarEntry = {
+    tool: readString(obj.tool, `grammars[${index}].tool`),
+    field: readString(obj.field, `grammars[${index}].field`)
+  };
+  if (obj.lark !== undefined) entry.lark = readString(obj.lark, `grammars[${index}].lark`);
+  if (obj.description !== undefined) entry.description = readString(obj.description, `grammars[${index}].description`);
+  return entry;
+}
+
+function normalizeTemplateEntry(value: unknown, index: number): PackTemplateEntry {
+  const obj = readObject(value, `templates[${index}]`);
+  const language = readString(obj.language, `templates[${index}].language`);
+  if (language !== 'typescript' && language !== 'python') {
+    throw new Error(`templates[${index}].language must be 'typescript' or 'python'`);
+  }
+  const entry: PackTemplateEntry = {
+    id: readString(obj.id, `templates[${index}].id`),
+    file: readString(obj.file, `templates[${index}].file`),
+    language
+  };
+  if (obj.tool !== undefined) entry.tool = readString(obj.tool, `templates[${index}].tool`);
+  return entry;
+}
+
+function readObject(value: unknown, name: string): Record<string, unknown> {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  throw new Error(`${name} must be a TOML table`);
+}
+
+function readArray(value: unknown, name: string): unknown[] {
+  if (Array.isArray(value)) return value;
+  throw new Error(`${name} must be an array`);
+}
+
+function readString(value: unknown, name: string): string {
+  if (typeof value === 'string' && value.length > 0) return value;
+  throw new Error(`${name} must be a non-empty string`);
+}
+
+function readStringArray(value: unknown, name: string): string[] {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+    throw new Error(`${name} must be an array of strings`);
+  }
+  return [...value as string[]];
+}

@@ -1,0 +1,130 @@
+import { describe, expect, it } from 'vitest';
+import { completeWithGrammar, type CompleteWithGrammarRuntime } from '../src/completeWithGrammar.js';
+
+function fakeRuntime(capture: string | undefined): CompleteWithGrammarRuntime {
+  const grammarNode = { serialize: () => ({}) };
+  return {
+    Session: class {
+      constructor(public url: string) {}
+    } as unknown as CompleteWithGrammarRuntime['Session'],
+    Generation: class {
+      constructor(public session: unknown, public prompt: string, public grammar: unknown) {}
+      async start() {}
+      getCapture(_name: string) {
+        return capture;
+      }
+    } as unknown as CompleteWithGrammarRuntime['Generation'],
+    str: () => ({ join: () => grammarNode }),
+    buildGrammar: () => grammarNode
+  };
+}
+
+describe('completeWithGrammar', () => {
+  it('reports unavailability when no session config is provided', async () => {
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot'
+    });
+    expect(result.available).toBe(false);
+    expect(result.errors[0]).toContain('not configured');
+  });
+
+  it('notifies the injected tracer when guidance is unavailable', async () => {
+    const captured: Array<{ name: string; extra?: Record<string, unknown> }> = [];
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      tracer: {
+        recordFailure: (params) => {
+          captured.push({ name: params.name, extra: params.extra });
+        }
+      }
+    });
+    expect(result.available).toBe(false);
+    expect(captured[0]?.name).toBe('guidance.unavailable');
+    expect(captured[0]?.extra).toEqual({ slot: 'slot', missing: 'sessionConfig' });
+  });
+
+  it('reports unavailability when sessionConfig is present but no runtime is provided', async () => {
+    const captured: Array<{ name: string; extra?: Record<string, unknown> }> = [];
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      tracer: {
+        recordFailure: (params) => {
+          captured.push({ name: params.name, extra: params.extra });
+        }
+      }
+    });
+    expect(result.available).toBe(false);
+    expect(result.errors[0]).toContain('runtime with lark-capable buildGrammar is not configured');
+    expect(captured[0]?.name).toBe('guidance.unavailable');
+    expect(captured[0]?.extra).toEqual({ slot: 'slot', missing: 'runtime' });
+  });
+
+  it('returns the captured completion when guidance succeeds', async () => {
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      runtime: fakeRuntime('main')
+    });
+    expect(result.available).toBe(true);
+    expect(result.completion).toBe('main');
+  });
+
+  it('propagates maxTokens to the runtime Generation options', async () => {
+    const received: Array<{ maxTokens?: number } | undefined> = [];
+    const runtime: CompleteWithGrammarRuntime = {
+      Session: class {
+        constructor(public url: string) {}
+      } as unknown as CompleteWithGrammarRuntime['Session'],
+      Generation: class {
+        constructor(public session: unknown, public prompt: string, public grammar: unknown, options?: { maxTokens?: number }) {
+          received.push(options);
+        }
+        async start() {}
+        getCapture() {
+          return 'ok';
+        }
+      } as unknown as CompleteWithGrammarRuntime['Generation'],
+      str: () => ({ join: () => ({ serialize: () => ({}) }) }),
+      buildGrammar: () => ({ serialize: () => ({}) }) as never
+    };
+    await completeWithGrammar({ prompt: 'p', lark: 'start: x', slotName: 'slot', sessionConfig: { url: 'http://e' }, runtime, maxTokens: 64 });
+    await completeWithGrammar({ prompt: 'p', lark: 'start: x', slotName: 'slot', sessionConfig: { url: 'http://e' }, runtime });
+    expect(received[0]).toEqual({ maxTokens: 64 });
+    expect(received[1]).toBeUndefined();
+  });
+
+  it('treats an empty-string capture as a valid completion (only undefined is a miss)', async () => {
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      runtime: fakeRuntime('')
+    });
+    expect(result.available).toBe(true);
+    expect(result.completion).toBe('');
+    expect(result.errors).toEqual([]);
+  });
+
+  it('reports a capture miss when guidance does not produce a value', async () => {
+    const result = await completeWithGrammar({
+      prompt: 'p',
+      lark: 'start: x',
+      slotName: 'slot',
+      sessionConfig: { url: 'http://example' },
+      runtime: fakeRuntime(undefined)
+    });
+    expect(result.available).toBe(true);
+    expect(result.completion).toBeUndefined();
+    expect(result.errors[0]).toContain('did not capture');
+  });
+});

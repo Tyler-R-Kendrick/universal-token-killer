@@ -18,6 +18,7 @@ import { upsertRouteIndex } from '../store/artifactStore.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { compressTextWithLlmlingua2, rewriteInputForLlm } from '../detok/llmlingua2.js';
+import { TAGS, endSpan, flushTrace, recordFailure, startSpan, type RunContext } from '../tracing/index.js';
 
 export type ToolExecutor = (input: unknown) => Promise<unknown>;
 
@@ -34,10 +35,53 @@ export async function mediateToolExecution(params: {
   toolId: string;
   input: unknown;
   execute: ToolExecutor;
+  tracer?: RunContext;
 }): Promise<MediatedResult> {
-  const { workspaceRoot, toolId, input, execute } = params;
+  const { workspaceRoot, toolId, input, execute, tracer } = params;
   const normalizedToolId = normalizeToolId(toolId);
-  const runId = randomUUID();
+  const activeTracer = tracer?.enabled ? tracer : undefined;
+  const runId = activeTracer?.runId ?? randomUUID();
+  const rootSpan = activeTracer
+    ? startSpan(activeTracer, {
+        operationName: 'utk.mediate',
+        runType: 'chain',
+        tags: [
+          TAGS.system('utk'),
+          TAGS.spanKind('internal'),
+          ...(activeTracer.captureInputs ? [TAGS.utkInputs(input)] : [])
+        ]
+      })
+    : undefined;
+  try {
+    const result = await mediateToolExecutionInner(workspaceRoot, toolId, normalizedToolId, runId, input, execute, activeTracer, rootSpan);
+    if (activeTracer && rootSpan) {
+      endSpan(activeTracer, rootSpan, { tags: activeTracer.captureOutputs ? [TAGS.utkOutputs(result.response)] : [] });
+    }
+    return result;
+  } catch (error) {
+    if (activeTracer && rootSpan) endSpan(activeTracer, rootSpan, { error: error as Error });
+    throw error;
+  } finally {
+    if (activeTracer) {
+      try {
+        await flushTrace(activeTracer);
+      } catch {
+        // Tracing must be fail-open; a flush failure must not break the mediation result.
+      }
+    }
+  }
+}
+
+async function mediateToolExecutionInner(
+  workspaceRoot: string,
+  toolId: string,
+  normalizedToolId: string,
+  runId: string,
+  input: unknown,
+  execute: ToolExecutor,
+  tracer: RunContext | undefined,
+  rootSpan: ReturnType<typeof startSpan> | undefined
+): Promise<MediatedResult> {
   const config = await loadUtkConfig(workspaceRoot);
   const serializerId = resolveSerializerProviderId(config, normalizedToolId);
   const serializer = getSerializationProvider(serializerId);
@@ -52,12 +96,29 @@ export async function mediateToolExecution(params: {
 
   const inputPath = safeJoin(observationDir, 'input.json');
   await writeFile(inputPath, canonicalJson(input), 'utf8');
-  const detokInput = await rewriteInputForLlm(input);
+  const detokInput = await rewriteInputForLlm(input, { tracer, parentSpan: rootSpan });
   if (detokInput.applied) {
     await writeFile(safeJoin(observationDir, 'input.detok.json'), canonicalJson({ input: detokInput.value, compression: detokInput.results }), 'utf8');
   }
 
-  const output = await execute(input);
+  const toolSpan = tracer && rootSpan
+    ? startSpan(tracer, {
+        operationName: `tool.${normalizedToolId}`,
+        runType: 'tool',
+        parent: rootSpan,
+        tags: tracer.captureInputs ? [TAGS.utkInputs(input)] : []
+      })
+    : undefined;
+  let output: unknown;
+  try {
+    output = await execute(input);
+  } catch (error) {
+    if (tracer && toolSpan) endSpan(tracer, toolSpan, { error: error as Error });
+    throw error;
+  }
+  if (tracer && toolSpan) {
+    endSpan(tracer, toolSpan, { tags: tracer.captureOutputs ? [TAGS.utkOutputs(output)] : [] });
+  }
   const { rawPath, schemaInput, rawBytes, hash } = await persistRawOutput(observationDir, output);
   const compactValue = compactSerializableValue(schemaInput);
   const serialized = serializer.serialize(compactValue, { toolId: normalizedToolId });
@@ -68,7 +129,7 @@ export async function mediateToolExecution(params: {
 
   const schema = typeof schemaInput === 'string' ? inferTextPseudoSchema(schemaInput) : inferSchema(schemaInput);
   const rules = extractRules(schema);
-  const detokOutput = typeof schemaInput === 'string' ? await compressTextWithLlmlingua2(schemaInput) : undefined;
+  const detokOutput = typeof schemaInput === 'string' ? await compressTextWithLlmlingua2(schemaInput, { tracer, parentSpan: rootSpan }) : undefined;
   const current = await readCurrentSchema(toolBase);
   const merge = mergeSchema(normalizedToolId, current, schema, rules);
   const schemaId = merge.schema.id;

@@ -97,7 +97,7 @@ Agents can load `skills/detoks` for when/how guidance around the local MCP tool.
 
 ### Complete A Bash-Like Tool Invocation
 
-UTK includes an internal, non-public helper for bash-like tool invocation templates. It uses `guidance-ts` to serialize known completions, stores the compact template under `.utk/tools/<tool-id>/templates/`, and returns a deterministic invocation when a guidance runtime is unavailable.
+UTK includes an internal, non-public helper for bash-like tool invocation templates. It uses `guidance-ts` to serialize known completions, stores the compact template under `.utk/tools/<normalized-tool-id>/templates/` (tool id passes through `normalizeToolId`), and returns a deterministic invocation when a guidance runtime is unavailable.
 
 ```ts
 import { completeBashLikeToolInvocation } from '@utk/core';
@@ -110,7 +110,7 @@ const result = await completeBashLikeToolInvocation({
     command: 'git',
     parameters: [
       { name: 'subcommand', kind: 'positional', completions: ['status'], required: true },
-      { name: 'short', kind: 'flag', flag: '--short', completions: ['--short'] }
+      { name: 'short', kind: 'flag', flag: '--short', completions: ['--short', 'compact'], description: 'compact' }
     ]
   }]
 });
@@ -120,13 +120,10 @@ console.log(result.invocation.command); // git status --short
 
 ### Complete A Structured LLM Tool Invocation
 
-UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<id>/fields/<name>.grammar.json`). The tool definition just names the fields and any canonical example completions:
+UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are **`.lark` only** — packs ship a `.lark` and UTK persists it at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId`, so dots and other punctuation become dashes on disk). `.grammar.json` sidecars are not supported and are rejected by `lintPack`. The tool definition just names the fields and any canonical example completions:
 
 ```ts
-import { completeStructuredToolInvocation, recordFieldObservation } from '@utk/core';
-
-// Seed observations as real tool runs happen (typically from a hook).
-await recordFieldObservation(process.cwd(), 'tool.search', 'query', 'is:issue is:open label:bug');
+import { completeStructuredToolInvocation } from '@utk/core';
 
 const result = await completeStructuredToolInvocation({
   workspaceRoot: process.cwd(),
@@ -225,11 +222,49 @@ registry = []
 
 ## Packages
 
-- `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, and session artifact helpers.
+- `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls.
-- `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers.
+- `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
+- `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
 - `@utk/evals`: RTK parity fixtures, metrics, assertions, and AgentV-style eval definitions.
+
+## Sharing Optimizations As Packs
+
+Tool definitions, Lark grammars (for llguidance constrained decoding), and prompt-template DSL files travel together as a versioned **pack**. Install one with the `utk` CLI:
+
+```bash
+utk pack add ./my-git-pack            # local directory
+utk pack add ./git-cli-1.2.0.tgz      # tarball
+utk pack add github:alice/utk-pack-git#v1.2.0
+utk pack add @utk/git-cli@^1.0.0      # npm registry
+
+utk pack list
+utk pack remove git-cli
+utk pack lint ./my-git-pack           # validate pack format (exits 1 on errors)
+utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
+```
+
+`utk pack add` runs the linter and refuses to install packs with errors. Pass `--force` after re-checking the report if you need to override.
+
+The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
+
+**Safety:**
+
+- `lintPack`/`installPack` do **not** dynamic-import pack template modules by default — the default lint emits a `pack/templates/runtime-validation-skipped` finding instead. Callers that want full runtime validation pass `{ importTemplate: importTemplateForLint }`. This is the difference between a pack lint that is safe to run on untrusted input and one that is RCE-equivalent.
+- Pack names that contain path-traversal segments (`../`, etc.) are rejected by the installer — destination paths use a two-level `safeJoin` against `.utk/packs`.
+- Install is **crash-safe**: all persistent writes go through `atomicWriteFile` (write-to-temp + `rename`) and the lockfile is written last. A power loss between writes leaves the system reporting the pack as not installed; mid-write tearing of any single file is prevented by the rename-on-commit pattern.
+
+Authoring a pack:
+
+```text
+my-pack/
+├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
+├── tools/<id>.toml           # bash-like or structured tool definitions
+├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
+# .lark is the ONLY supported grammar artifact — no .grammar.json sidecars
+└── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+```
 
 ## Reference Docs
 
@@ -248,6 +283,12 @@ registry = []
 - [Constrained Decoding](docs/constrained-decoding.md)
 - [RTK Parity](docs/rtk-parity.md)
 - [Evals](docs/evals.md)
+- [Tracing](docs/tracing.md)
+- [Evals-Driven Iteration](docs/evals-driven-iteration.md)
+- [Spec Reference: agentevals.io](docs/refs/agentevals-spec.md)
+- [Reference: Tracing Failure Codes](docs/refs/tracing-failure-codes.md)
+- [Reference: Evaluator Config Keys](docs/refs/evaluator-config.md)
+- [Reference: Baseline Store](docs/refs/baseline-store.md)
 - [Implementation Guide](docs/implementation-guide.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
