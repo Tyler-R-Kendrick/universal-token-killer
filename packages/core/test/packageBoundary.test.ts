@@ -138,7 +138,7 @@ describe('package boundary', () => {
     const skillsRoot = path.join(repoRoot, 'skills');
     const skillNames = (await readdir(skillsRoot)).sort();
 
-    expect(skillNames).toEqual(['detoks', 'utk', 'utk-init']);
+    expect(skillNames).toEqual(['detoks', 'detoks-skill', 'utk', 'utk-init']);
 
     for (const skillName of skillNames) {
       const skillRoot = path.join(skillsRoot, skillName);
@@ -183,7 +183,7 @@ describe('package boundary', () => {
     expect(manifest).toMatchObject({
       name: 'universal-token-killer',
       agents: ['./agents'],
-      skills: ['./skills/utk', './skills/utk-init', './skills/detoks'],
+      skills: ['./skills/utk', './skills/utk-init', './skills/detoks', './skills/detoks-skill'],
       mcpServers: '.mcp.json',
       strict: true
     });
@@ -226,5 +226,27 @@ describe('package boundary', () => {
         );
       }
     }
+  });
+
+  it('ships detoks-skill with references, scripts, local copy, and AgentEvals contract', async () => {
+    const skillRoot = path.join(repoRoot, 'skills', 'detoks-skill');
+    const localRoot = path.join(repoRoot, '.agents', 'skills', 'detoks-skill');
+    const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
+    const references = (await readdir(path.join(skillRoot, 'references'))).sort();
+    const scripts = (await readdir(path.join(skillRoot, 'scripts'))).sort();
+    const evalYaml = await readFile(path.join(skillRoot, 'evals', 'EVAL.yaml'), 'utf8');
+
+    await access(path.join(skillRoot, 'agents', 'openai.yaml'));
+    await access(path.join(localRoot, 'SKILL.md'));
+
+    expect(skill.length).toBeLessThan(1800);
+    expect(skill).toContain('name: detoks-skill');
+    expect(skill).toContain('references/workflow.md');
+    expect(references).toEqual(['compression-strategies.md', 'evals.md', 'script-extraction.md', 'workflow.md']);
+    expect(scripts).toEqual(['analyze-skill.ts', 'evolve-candidates.ts', 'optimize-agent-frontmatter.ts', 'render-optimized-skill.ts', 'validate-optimized-skill.ts']);
+    expect(evalYaml).toContain('code_judge');
+    expect(evalYaml).toContain('frontmatter-declarations-preserved');
+    expect(evalYaml).toContain('tool_trajectory');
+    expect(evalYaml).toContain('execution_metrics');
   });
 });

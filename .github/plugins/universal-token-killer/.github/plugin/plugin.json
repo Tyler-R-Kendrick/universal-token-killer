@@ -31,7 +31,8 @@
   "skills": [
     "./skills/utk",
     "./skills/utk-init",
-    "./skills/detoks"
+    "./skills/detoks",
+    "./skills/detoks-skill"
   ],
   "mcpServers": ".mcp.json",
   "hooks": "./hooks/hooks.json",
