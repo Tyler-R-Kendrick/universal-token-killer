@@ -671,6 +671,48 @@ describe('OpenAI-compatible model proxy', () => {
     expect(await response.json()).toMatchObject({ id: 'timeout_open' });
     expect(forwarded[0].messages[0].content).toBe(original);
   });
+
+  it('uses prompt-compression provider api version separate from upstream provider', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-version-'));
+    const compressionCalls: any[] = [];
+    const compressor = await startUpstream(async (req, res, body) => {
+      compressionCalls.push({ url: req.url, apiKey: req.headers['api-key'], body: JSON.parse(body) });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'COMPRESSED USER PROMPT' } }] }));
+    });
+    openedServers.push(compressor);
+    const upstream = await startUpstream(async (_req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'version_ok', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      { model: 'gpt-test', messages: [{ role: 'user', content: 'Versioned prompt ' + 'compress me '.repeat(20) }] },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        upstreamProvider: 'openai',
+        upstreamApiVersion: 'not-an-azure-version',
+        policyOverrides: {
+          prompt_compression_enabled: true,
+          prompt_compression_base_url: `${compressor.url}/models`,
+          prompt_compression_provider: 'azure-ai-inference',
+          prompt_compression_model: 'mistral-large',
+          prompt_compression_api_key: 'azure-compress-key',
+          prompt_compression_api_version: '2024-11-01-preview',
+          prompt_compression_min_tokens: 1
+        }
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'version_ok' });
+    expect(compressionCalls[0]).toMatchObject({
+      url: '/models/chat/completions?api-version=2024-11-01-preview',
+      apiKey: 'azure-compress-key'
+    });
+  });
 });
 
 async function startUpstream(handler: (req: IncomingMessage, res: ServerResponse, body: string) => Promise<void> | void): Promise<{ url: string; close: () => Promise<void> }> {

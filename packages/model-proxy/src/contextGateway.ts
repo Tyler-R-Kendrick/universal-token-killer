@@ -447,7 +447,10 @@ async function compressPromptTextWithModel(text: string, role: string, policy: R
         temperature: 0
       })
     });
-    if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return { text, before: 0, after: 0, applied: false };
+    if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+      console.warn(`UTK model proxy prompt compression skipped: provider returned ${response.status} ${response.statusText}.`);
+      return { text, before: 0, after: 0, applied: false };
+    }
     const json = await response.json() as any;
     const compressed = String(json?.choices?.[0]?.message?.content ?? '').trim();
     if (!compressed || estimateTokens(compressed) > before) return { text, before, after: before, applied: false };
@@ -549,7 +552,7 @@ function promptCompressionUrl(policy: Record<string, any>): string {
   const provider = String(policy.prompt_compression_provider ?? 'github-models');
   if (provider === 'azure-ai-inference') {
     const separator = base.includes('?') ? '&' : '?';
-    return `${base}/chat/completions${separator}api-version=${encodeURIComponent(String(policy.upstream_api_version ?? '2024-05-01-preview'))}`;
+    return `${base}/chat/completions${separator}api-version=${encodeURIComponent(promptCompressionApiVersion(policy))}`;
   }
   return `${base}/chat/completions`;
 }
@@ -559,7 +562,7 @@ function promptCompressionHeaders(policy: Record<string, any>, apiKey: string | 
   const provider = String(policy.prompt_compression_provider ?? 'github-models');
   if (provider === 'github-models') {
     headers.accept = 'application/vnd.github+json';
-    headers['x-github-api-version'] = String(policy.upstream_api_version ?? '2026-03-10');
+    headers['x-github-api-version'] = promptCompressionApiVersion(policy);
   }
   if (apiKey) {
     if (provider === 'azure-ai-inference' || provider === 'azure-openai') headers['api-key'] = apiKey;
@@ -579,6 +582,19 @@ function promptCompressionApiKey(policy: Record<string, any>): string | undefine
 
 function isLoopbackUrl(value: string): boolean {
   return /^https?:\/\/(?:127\.0\.0\.1|localhost|\[::1\])(?::\d+)?(?:\/|$)/i.test(value);
+}
+
+function promptCompressionApiVersion(policy: Record<string, any>): string {
+  if (typeof policy.prompt_compression_api_version === 'string' && policy.prompt_compression_api_version.trim()) {
+    return policy.prompt_compression_api_version;
+  }
+  const provider = String(policy.prompt_compression_provider ?? 'github-models');
+  if (provider === 'github-models') return '2026-03-10';
+  if (provider === 'azure-ai-inference') return '2024-05-01-preview';
+  if (provider === 'azure-openai' && typeof policy.upstream_api_version === 'string' && policy.upstream_api_version) {
+    return policy.upstream_api_version;
+  }
+  return typeof policy.upstream_api_version === 'string' && policy.upstream_api_version ? policy.upstream_api_version : '';
 }
 
 function readPositiveNumber(value: unknown, fallback: number): number {

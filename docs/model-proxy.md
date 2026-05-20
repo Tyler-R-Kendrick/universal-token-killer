@@ -82,6 +82,7 @@ Key defaults:
 - `prompt_compression_provider = "github-models"`
 - `prompt_compression_model = "openai/gpt-4.1"`
 - `prompt_compression_base_url = "https://models.github.ai/inference"`
+- `prompt_compression_api_version = "2026-03-10"`
 - `prompt_compression_min_tokens = 64`
 - `prompt_compression_timeout_ms = 2500`
 - `provider_strict_mode = false`

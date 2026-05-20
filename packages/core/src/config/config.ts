@@ -94,6 +94,7 @@ export type UtkConfig = {
     prompt_compression_provider: 'none' | 'github-models' | 'azure-openai' | 'azure-ai-inference' | 'openai-compatible';
     prompt_compression_model: string;
     prompt_compression_base_url: string;
+    prompt_compression_api_version: string;
     prompt_compression_min_tokens: number;
     prompt_compression_timeout_ms: number;
     inject_expand_context: boolean;
@@ -190,6 +191,7 @@ prompt_compression_enabled = true
 prompt_compression_provider = "github-models"
 prompt_compression_model = "openai/gpt-4.1"
 prompt_compression_base_url = "https://models.github.ai/inference"
+prompt_compression_api_version = "2026-03-10"
 prompt_compression_min_tokens = 64
 prompt_compression_timeout_ms = 2500
 inject_expand_context = true
@@ -283,6 +285,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
 }
 
 function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_proxy'] {
+  const promptCompressionProvider = readPromptCompressionProvider(proxy.prompt_compression_provider);
   return {
     enabled: readBoolean(proxy.enabled, true),
     host: readString(proxy.host, '127.0.0.1'),
@@ -311,9 +314,10 @@ function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_p
     prompt_asset_style: readPipeIndex(proxy.prompt_asset_style, 'model_proxy prompt_asset_style'),
     remote_compressors_enabled: readBoolean(proxy.remote_compressors_enabled, false),
     prompt_compression_enabled: readBoolean(proxy.prompt_compression_enabled, true),
-    prompt_compression_provider: readPromptCompressionProvider(proxy.prompt_compression_provider),
+    prompt_compression_provider: promptCompressionProvider,
     prompt_compression_model: readString(proxy.prompt_compression_model, 'openai/gpt-4.1'),
     prompt_compression_base_url: readString(proxy.prompt_compression_base_url, 'https://models.github.ai/inference'),
+    prompt_compression_api_version: readString(proxy.prompt_compression_api_version, defaultPromptCompressionApiVersion(promptCompressionProvider)),
     prompt_compression_min_tokens: readNumber(proxy.prompt_compression_min_tokens, 64),
     prompt_compression_timeout_ms: readNumber(proxy.prompt_compression_timeout_ms, 2500),
     inject_expand_context: readBoolean(proxy.inject_expand_context, true),
@@ -324,6 +328,12 @@ function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_p
     protected_file_patterns: readStringArray(proxy.protected_file_patterns, DEFAULT_PROTECTED_FILE_PATTERNS, 'model_proxy.protected_file_patterns'),
     deny_tools: readStringArray(proxy.deny_tools, DEFAULT_MODEL_PROXY_DENY_TOOLS, 'model_proxy.deny_tools')
   };
+}
+
+function defaultPromptCompressionApiVersion(provider: UtkConfig['model_proxy']['prompt_compression_provider']): string {
+  if (provider === 'github-models') return '2026-03-10';
+  if (provider === 'azure-ai-inference') return '2024-05-01-preview';
+  return '';
 }
 
 function normalizePromptOptimization(value: Record<string, unknown>): UtkConfig['prompt_optimization'] {

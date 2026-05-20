@@ -139,6 +139,10 @@ async function handleRequest(
     }
     sendJson(res, 404, { error: 'not found' });
   } catch (error) {
+    if (res.headersSent || res.writableEnded) {
+      res.destroy(error instanceof Error ? error : undefined);
+      return;
+    }
     if (isPayloadTooLargeError(error)) {
       sendJson(res, 413, { error: 'Payload too large' });
       return;
@@ -215,6 +219,7 @@ function readBody(req: IncomingMessage, maxBytes = 1024 * 1024): Promise<string>
       req.off('data', onData);
       req.off('error', onError);
       req.off('end', onEnd);
+      req.off('close', onClose);
     };
     const fail = (error: Error): void => {
       if (settled) return;
@@ -244,9 +249,13 @@ function readBody(req: IncomingMessage, maxBytes = 1024 * 1024): Promise<string>
       cleanup();
       resolve(Buffer.concat(chunks).toString('utf8'));
     };
+    const onClose = (): void => {
+      if (!req.complete) fail(new Error('Request closed before body completed'));
+    };
     req.on('data', onData);
     req.on('error', onError);
     req.on('end', onEnd);
+    req.on('close', onClose);
   });
 }
 
