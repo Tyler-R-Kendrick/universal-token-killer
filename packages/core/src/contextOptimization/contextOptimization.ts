@@ -40,6 +40,9 @@ export async function resolveModelProxyPolicy(
   if (env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_MODEL) {
     envOverrides.prompt_compression_model = env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_MODEL;
   }
+  if (env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_TIMEOUT_MS) {
+    envOverrides.prompt_compression_timeout_ms = Number(env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_TIMEOUT_MS);
+  }
   return { ...config.model_proxy, ...envOverrides, ...overrides };
 }
 

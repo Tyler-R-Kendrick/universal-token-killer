@@ -87,7 +87,10 @@ describe('model proxy coverage paths', () => {
     expect(() => normalizeOpenAiRequest('/v1/chat/completions', null)).toThrow('OpenAI request body');
     expect(() => normalizeOpenAiRequest('/v1/embeddings', {})).toThrow('Unsupported OpenAI route');
     expect(normalizeOpenAiRequest('/v1/chat/completions', { messages: 'bad' }).messages).toEqual([]);
-    expect(normalizeOpenAiRequest('/v1/responses', { input: 'bad' }).items).toEqual([]);
+    expect(normalizeOpenAiRequest('/v1/responses', { input: 'bad' }).items).toEqual([
+      { role: 'user', content: [{ type: 'input_text', text: 'bad' }] }
+    ]);
+    expect(normalizeOpenAiRequest('/v1/responses', { input: null }).items).toEqual([]);
 
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-edit-cover-'));
     await writeFile(path.join(workspaceRoot, 'a.ts'), 'one\ntwo\n', 'utf8');
@@ -100,6 +103,7 @@ describe('model proxy coverage paths', () => {
           { function: { name: 'edit', arguments: '{' } },
           { function: { name: 'edit', arguments: JSON.stringify({ path: 'a.ts', oldString: '3-2' }) } },
           { function: { name: 'edit', arguments: JSON.stringify({ path: 'a.ts', oldString: '9' }) } },
+          { function: { name: 'edit', arguments: JSON.stringify({ path: 'missing.ts', oldString: '1' }) } },
           { function: { name: 'edit', arguments: JSON.stringify({ path: 'a.ts', oldString: '1' }) } },
           { function: { name: 'edit', arguments: JSON.stringify({ oldString: '1' }) } }
         ] }
@@ -117,6 +121,10 @@ describe('model proxy coverage paths', () => {
     try {
       await symlink('C:\\', path.join(workspaceRoot, 'link'));
       expect(() => safeJoin(workspaceRoot, 'link', 'x')).toThrow('Symlink traversal blocked');
+      const escaped = await expandEditRangesInRequest({
+        messages: [{ tool_calls: [{ function: { name: 'edit', arguments: JSON.stringify({ path: 'link\\Windows\\win.ini', oldString: '1' }) } }] }]
+      }, { workspaceRoot, enabled: true });
+      expect(escaped.expansions).toEqual([]);
     } catch (error) {
       expect((error as NodeJS.ErrnoException).code).toBe('EPERM');
     }
@@ -166,8 +174,32 @@ describe('model proxy coverage paths', () => {
     expect(await (await fetch(`${proxy.url}/healthz`)).json()).toMatchObject({ ok: true });
     expect((await fetch(`${proxy.url}/missing`)).status).toBe(404);
     expect((await fetch(`${proxy.url}/v1/utk/expand_context`, { method: 'POST', body: '{}' })).status).toBe(400);
-    expect((await fetch(`${proxy.url}/v1/chat/completions`, { method: 'POST', body: '{' })).status).toBe(500);
+    const internalError = await fetch(`${proxy.url}/v1/chat/completions`, { method: 'POST', body: '{' });
+    expect(internalError.status).toBe(500);
+    expect(await internalError.json()).toEqual({ error: 'Internal server error' });
+    const tooLarge = await fetch(`${proxy.url}/v1/chat/completions`, { method: 'POST', body: 'x'.repeat(1024 * 1024 + 1) });
+    expect(tooLarge.status).toBe(413);
+    expect(await tooLarge.json()).toEqual({ error: 'Payload too large' });
     expect((await fetch(`${proxy.url}/v1/models`)).status).toBe(204);
+  });
+
+  it('returns 504 when model listing upstream hangs', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-models-timeout-'));
+    const upstream = await startUpstream(async (req, res) => {
+      if (req.url === '/v1/models') {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        if (res.destroyed) return;
+      }
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: [] }));
+    });
+    openedServers.push(upstream);
+    const proxy = await createModelProxyServer({ workspaceRoot, upstreamProvider: 'openai', upstreamBaseUrl: upstream.url, upstreamTimeoutMs: 10, port: 0 });
+    openedServers.push(proxy);
+
+    const response = await fetch(`${proxy.url}/v1/models`);
+    expect(response.status).toBe(504);
+    expect(await response.json()).toEqual({ error: 'Upstream request timed out' });
   });
 });
 

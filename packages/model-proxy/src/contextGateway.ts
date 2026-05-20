@@ -1,4 +1,4 @@
-/* c8 ignore file -- covered by model-proxy behavior tests; branch coverage is dominated by fail-open policy paths. */
+/* c8 ignore file -- Context gateway fail-open branches are covered through integration behavior tests. */
 import { expandEditRangesInRequest } from './editRanges.js';
 import { estimateTokens, isObject, normalizeOpenAiRequest } from './openai.js';
 import { type ContextArtifact, persistCompactContextArtifact, persistContextArtifact } from './recovery.js';
@@ -427,10 +427,14 @@ async function compressPromptTextWithModel(text: string, role: string, policy: R
   const baseUrl = String(policy.prompt_compression_base_url ?? '');
   const apiKey = promptCompressionApiKey(policy);
   if (!apiKey && !isLoopbackUrl(baseUrl)) return { text, before: 0, after: 0, applied: false };
+  const controller = new AbortController();
+  const timeoutMs = readPositiveNumber(policy.prompt_compression_timeout_ms, 2500);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(promptCompressionUrl(policy), {
       method: 'POST',
       headers: promptCompressionHeaders(policy, apiKey),
+      signal: controller.signal,
       body: JSON.stringify({
         model: String(policy.prompt_compression_model ?? 'openai/gpt-4.1'),
         messages: [
@@ -448,8 +452,13 @@ async function compressPromptTextWithModel(text: string, role: string, policy: R
     const compressed = String(json?.choices?.[0]?.message?.content ?? '').trim();
     if (!compressed || estimateTokens(compressed) > before) return { text, before, after: before, applied: false };
     return { text: compressed, before, after: estimateTokens(compressed), applied: true };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error)) {
+      console.warn(`UTK model proxy prompt compression timed out after ${timeoutMs}ms; forwarding original prompt.`);
+    }
     return { text, before: 0, after: 0, applied: false };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -570,6 +579,15 @@ function promptCompressionApiKey(policy: Record<string, any>): string | undefine
 
 function isLoopbackUrl(value: string): boolean {
   return /^https?:\/\/(?:127\.0\.0\.1|localhost|\[::1\])(?::\d+)?(?:\/|$)/i.test(value);
+}
+
+function readPositiveNumber(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
 }
 
 function clone<T>(value: T): T {

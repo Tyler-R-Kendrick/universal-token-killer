@@ -1,4 +1,4 @@
-/* c8 ignore file -- covered by model-proxy behavior tests; path-safety platform branches vary by OS. */
+/* c8 ignore file -- Path safety varies by platform; behavior tests cover traversal and symlinks. */
 import { createHash } from 'node:crypto';
 import { lstatSync, realpathSync } from 'node:fs';
 import path from 'node:path';

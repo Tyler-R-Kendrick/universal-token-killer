@@ -79,6 +79,7 @@ prompt_compression_provider = "github-models"
 prompt_compression_model = "openai/gpt-4.1"
 prompt_compression_base_url = "https://models.github.ai/inference"
 prompt_compression_min_tokens = 64
+prompt_compression_timeout_ms = 2500
 inject_expand_context = true
 minimize_tool_schemas = true
 expand_edit_ranges = true
@@ -235,7 +236,7 @@ upstream_provider = "azure-openai"
 upstream_base_url = "https://<resource>.openai.azure.com/openai/v1"
 ```
 
-Prompt compression is model-backed when credentials are available. By default it calls GitHub Models with `prompt_compression_model = "openai/gpt-4.1"` and intercepts system, developer, and user prompt text before the final upstream request. Tool outputs still use UTK routing, TOON/compressed JSON, `.utk` artifacts, and expansion refs before any model-backed compression.
+Prompt compression is model-backed when credentials are available. By default it calls GitHub Models with `prompt_compression_model = "openai/gpt-4.1"` and a bounded `prompt_compression_timeout_ms = 2500`, then intercepts system, developer, and user prompt text before the final upstream request. Tool outputs still use UTK routing, TOON/compressed JSON, `.utk` artifacts, and expansion refs before any model-backed compression.
 
 `POST /v1/utk/expand_context` accepts `{ "id": "...", "range": "N-M", "query": "text", "blockId": "b0001" }` or `{ "handle": { "artifactId": "...", "range": "N-M" } }` for full, line-range, search, block, or handle-based recovery from indexed `.utk/model-proxy` artifacts. `POST /v1/utk/find_tool` resolves deferred tool catalogs. `POST /v1/utk/proof` returns deterministic stored raw/compact hash, fact-retention, no-leakage, and recovery checks for an artifact id.
 

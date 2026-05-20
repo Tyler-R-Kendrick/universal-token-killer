@@ -226,6 +226,7 @@ describe('UTK TOML config', () => {
     expect(config.model_proxy.prompt_compression_model).toBe('openai/gpt-4.1');
     expect(config.model_proxy.prompt_compression_base_url).toBe('https://models.github.ai/inference');
     expect(config.model_proxy.prompt_compression_min_tokens).toBe(64);
+    expect(config.model_proxy.prompt_compression_timeout_ms).toBe(2500);
     expect(config.model_proxy.protected_fields).toContain('command');
     expect(config.model_proxy.protected_tools).toContain('apply_patch');
     expect(config.model_proxy.protected_file_patterns).toContain('*.pem');
@@ -428,6 +429,7 @@ describe('UTK TOML config', () => {
         'prompt_compression_model = "mistral-large"',
         'prompt_compression_base_url = "https://example.services.ai.azure.com/models"',
         'prompt_compression_min_tokens = 12',
+        'prompt_compression_timeout_ms = 1234',
         'inject_expand_context = false',
         'minimize_tool_schemas = false',
         'expand_edit_ranges = false',
@@ -474,6 +476,7 @@ describe('UTK TOML config', () => {
       prompt_compression_model: 'mistral-large',
       prompt_compression_base_url: 'https://example.services.ai.azure.com/models',
       prompt_compression_min_tokens: 12,
+      prompt_compression_timeout_ms: 1234,
       inject_expand_context: false,
       minimize_tool_schemas: false,
       expand_edit_ranges: false,

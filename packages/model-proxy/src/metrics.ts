@@ -1,4 +1,4 @@
-/* c8 ignore file -- covered by model-proxy behavior tests; counters are validated through HTTP integration. */
+/* c8 ignore file -- Metrics store writes JSONL; HTTP behavior tests validate counters end-to-end. */
 import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { safeJoin } from './utils.js';

@@ -1,5 +1,5 @@
-/* c8 ignore file -- covered by model-proxy behavior tests; branch coverage is dominated by invalid hook payloads. */
-import { readFile } from 'node:fs/promises';
+/* c8 ignore file -- Edit range expansion fail-opens; behavior tests cover invalid hooks and symlink escapes. */
+import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 export type EditRangeExpansion = {
@@ -26,9 +26,14 @@ export async function expandEditRangesInRequest<T extends Record<string, any>>(
       if (!args || typeof args.path !== 'string' || typeof args.oldString !== 'string') continue;
       const range = parseRange(args.oldString);
       if (!range) continue;
-      const resolved = resolveInside(options.workspaceRoot, args.path);
+      const resolved = await resolveInside(options.workspaceRoot, args.path);
       if (!resolved) continue;
-      const text = await readFile(resolved, 'utf8');
+      let text: string;
+      try {
+        text = await readFile(resolved, 'utf8');
+      } catch {
+        continue;
+      }
       const oldString = sliceLines(text, range.start, range.end);
       if (oldString === undefined) continue;
       args.oldString = oldString;
@@ -49,12 +54,18 @@ function parseRange(value: string): { raw: string; start: number; end: number } 
   return { raw: value, start, end };
 }
 
-function resolveInside(workspaceRoot: string, requestedPath: string): string | undefined {
-  const root = path.resolve(workspaceRoot);
-  const resolved = path.resolve(root, requestedPath);
-  const relative = path.relative(root, resolved);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) return undefined;
-  return resolved;
+async function resolveInside(workspaceRoot: string, requestedPath: string): Promise<string | undefined> {
+  try {
+    const root = await realpath(path.resolve(workspaceRoot));
+    const requested = path.isAbsolute(requestedPath) ? requestedPath : path.join(root, requestedPath);
+    const resolved = path.resolve(requested);
+    const real = await realpath(resolved);
+    const relative = path.relative(root, real);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) return undefined;
+    return real;
+  } catch {
+    return undefined;
+  }
 }
 
 function sliceLines(text: string, start: number, end: number): string | undefined {

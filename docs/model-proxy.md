@@ -83,6 +83,7 @@ Key defaults:
 - `prompt_compression_model = "openai/gpt-4.1"`
 - `prompt_compression_base_url = "https://models.github.ai/inference"`
 - `prompt_compression_min_tokens = 64`
+- `prompt_compression_timeout_ms = 2500`
 - `provider_strict_mode = false`
 - `protected_tools = ["edit", "write", "apply_patch", "auth*", "secret*"]`
 - `protected_file_patterns = [".env*", "*.pem", "*.key"]`

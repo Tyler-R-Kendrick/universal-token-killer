@@ -56,6 +56,15 @@ describe('OpenAI-compatible model proxy', () => {
     expect(responses.kind).toBe('responses');
     expect(responses.body.metadata).toEqual({ trace: 'def' });
     expect(responses.items).toHaveLength(2);
+
+    const stringInput = normalizeOpenAiRequest('/v1/responses', {
+      model: 'gpt-test',
+      input: 'plain Responses prompt'
+    });
+    expect(stringInput.body.input).toEqual([
+      { role: 'user', content: [{ type: 'input_text', text: 'plain Responses prompt' }] }
+    ]);
+    expect(stringInput.items[0]?.content[0]?.text).toBe('plain Responses prompt');
   });
 
   it('compacts tool context, minimizes tool schemas, injects recovery, and preserves protected spans in artifacts', async () => {
@@ -622,6 +631,45 @@ describe('OpenAI-compatible model proxy', () => {
       expect.stringContaining('COMPRESSED:'),
       expect.stringContaining('COMPRESSED:')
     ]);
+  });
+
+  it('fails open when prompt compression model times out', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-timeout-'));
+    const compressor = await startUpstream(async (_req, res) => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (res.destroyed) return;
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'COMPRESSED' } }] }));
+    });
+    openedServers.push(compressor);
+    const forwarded: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      forwarded.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'timeout_open', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const original = 'User instruction must survive timeout. ' + 'compress candidate '.repeat(20);
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      { model: 'openai/gpt-4.1', messages: [{ role: 'user', content: original }] },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        policyOverrides: {
+          prompt_compression_enabled: true,
+          prompt_compression_base_url: `${compressor.url}/inference`,
+          prompt_compression_provider: 'github-models',
+          prompt_compression_model: 'openai/gpt-4.1',
+          prompt_compression_min_tokens: 1,
+          prompt_compression_timeout_ms: 10
+        }
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'timeout_open' });
+    expect(forwarded[0].messages[0].content).toBe(original);
   });
 });
 

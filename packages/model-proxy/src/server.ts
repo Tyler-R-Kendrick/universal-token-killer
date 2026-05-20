@@ -17,6 +17,7 @@ export type ModelProxyServerOptions = {
   upstreamApiVersion?: string;
   upstreamOrganization?: string;
   upstreamApiKey?: string;
+  upstreamTimeoutMs?: number;
   compressorRegistry?: CompressorRegistry;
 };
 
@@ -36,11 +37,12 @@ export async function createModelProxyServer(options: ModelProxyServerOptions = 
   const upstreamApiVersion = options.upstreamApiVersion ?? process.env.UTK_MODEL_PROXY_UPSTREAM_API_VERSION ?? defaultUpstreamApiVersion(upstreamProvider);
   const upstreamOrganization = options.upstreamOrganization ?? process.env.UTK_MODEL_PROXY_UPSTREAM_ORGANIZATION;
   const upstreamApiKey = options.upstreamApiKey ?? process.env.UTK_MODEL_PROXY_UPSTREAM_API_KEY ?? process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN ?? process.env.OPENAI_API_KEY;
+  const upstreamTimeoutMs = readPositiveNumber(options.upstreamTimeoutMs ?? process.env.UTK_MODEL_PROXY_UPSTREAM_TIMEOUT_MS, 10000);
   const compressorRegistry = options.compressorRegistry ?? createDefaultCompressorRegistry();
   const metricsStore = createMetricsStore(workspaceRoot);
 
   const server = createServer((req, res) => {
-    void handleRequest(req, res, { workspaceRoot, upstreamBaseUrl, upstreamProvider, upstreamApiVersion, upstreamOrganization, upstreamApiKey, compressorRegistry, metricsStore });
+    void handleRequest(req, res, { workspaceRoot, upstreamBaseUrl, upstreamProvider, upstreamApiVersion, upstreamOrganization, upstreamApiKey, upstreamTimeoutMs, compressorRegistry, metricsStore });
   });
   await new Promise<void>((resolve) => server.listen(port, host, resolve));
   const address = server.address();
@@ -62,6 +64,7 @@ async function handleRequest(
     upstreamApiVersion: string;
     upstreamOrganization?: string;
     upstreamApiKey?: string;
+    upstreamTimeoutMs: number;
     metricsStore: ModelProxyMetricsStore;
   }
 ): Promise<void> {
@@ -78,16 +81,7 @@ async function handleRequest(
     }
     if (req.method === 'GET' && route === '/v1/models') {
       await context.metricsStore.recordRequest(route);
-      const upstream = await fetch(joinUpstreamUrl(context.upstreamBaseUrl, route, {
-        provider: context.upstreamProvider,
-        apiVersion: context.upstreamApiVersion,
-        organization: context.upstreamOrganization
-      }), {
-        headers: upstreamHeaders(context.upstreamProvider, {
-          upstreamApiKey: context.upstreamApiKey,
-          upstreamApiVersion: context.upstreamApiVersion
-        })
-      });
+      const upstream = await fetchModelsWithTimeout(context, route);
       await pipeFetchResponse(upstream, res);
       return;
     }
@@ -145,7 +139,46 @@ async function handleRequest(
     }
     sendJson(res, 404, { error: 'not found' });
   } catch (error) {
-    sendJson(res, 500, { error: error instanceof Error ? error.message : String(error) });
+    if (isPayloadTooLargeError(error)) {
+      sendJson(res, 413, { error: 'Payload too large' });
+      return;
+    }
+    if (isAbortError(error)) {
+      sendJson(res, 504, { error: 'Upstream request timed out' });
+      return;
+    }
+    console.error(error instanceof Error ? error.stack ?? error.message : error);
+    sendJson(res, 500, { error: 'Internal server error' });
+  }
+}
+
+async function fetchModelsWithTimeout(
+  context: {
+    upstreamBaseUrl: string;
+    upstreamProvider: 'openai' | 'github-models' | 'azure-openai' | 'azure-ai-inference';
+    upstreamApiVersion: string;
+    upstreamOrganization?: string;
+    upstreamApiKey?: string;
+    upstreamTimeoutMs: number;
+  },
+  route: string
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), context.upstreamTimeoutMs);
+  try {
+    return await fetch(joinUpstreamUrl(context.upstreamBaseUrl, route, {
+      provider: context.upstreamProvider,
+      apiVersion: context.upstreamApiVersion,
+      organization: context.upstreamOrganization
+    }), {
+      signal: controller.signal,
+      headers: upstreamHeaders(context.upstreamProvider, {
+        upstreamApiKey: context.upstreamApiKey,
+        upstreamApiVersion: context.upstreamApiVersion
+      })
+    });
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -173,13 +206,68 @@ function sendJson(res: ServerResponse, status: number, value: unknown): void {
   res.end(JSON.stringify(value));
 }
 
-function readBody(req: IncomingMessage): Promise<string> {
+function readBody(req: IncomingMessage, maxBytes = 1024 * 1024): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    req.on('error', reject);
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    let total = 0;
+    let settled = false;
+    const cleanup = (): void => {
+      req.off('data', onData);
+      req.off('error', onError);
+      req.off('end', onEnd);
+    };
+    const fail = (error: Error): void => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      req.resume();
+      reject(error);
+    };
+    const onData = (chunk: Buffer | string): void => {
+      const buffer = Buffer.from(chunk);
+      total += buffer.byteLength;
+      if (total > maxBytes) {
+        fail(new PayloadTooLargeError(maxBytes));
+        return;
+      }
+      chunks.push(buffer);
+    };
+    const onError = (error: Error): void => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+    const onEnd = (): void => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(Buffer.concat(chunks).toString('utf8'));
+    };
+    req.on('data', onData);
+    req.on('error', onError);
+    req.on('end', onEnd);
   });
+}
+
+class PayloadTooLargeError extends Error {
+  constructor(maxBytes: number) {
+    super(`Request body exceeds ${maxBytes} bytes`);
+    this.name = 'PayloadTooLargeError';
+  }
+}
+
+function isPayloadTooLargeError(error: unknown): boolean {
+  return error instanceof PayloadTooLargeError || error instanceof Error && error.name === 'PayloadTooLargeError';
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
+function readPositiveNumber(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function readUpstreamProvider(value: string | undefined): 'openai' | 'github-models' | 'azure-openai' | 'azure-ai-inference' {

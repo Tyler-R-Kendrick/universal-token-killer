@@ -1,4 +1,4 @@
-/* c8 ignore file -- covered by model-proxy behavior tests; artifact behavior is validated through expansion tests. */
+/* c8 ignore file -- Artifact recovery owns refs; expansion tests validate raw and compact paths. */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { contentHash, safeJoin } from './utils.js';
 

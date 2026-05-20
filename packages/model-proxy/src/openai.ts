@@ -19,7 +19,7 @@ export function normalizeOpenAiRequest(route: string, body: unknown): Normalized
   }
 
   if (route.endsWith('/responses')) {
-    const input = Array.isArray(body.input) ? body.input.filter(isObject).map((item) => ({ ...item })) : [];
+    const input = normalizeResponsesInput(body.input);
     return { kind: 'responses', body: { ...body, input }, messages: [], items: input };
   }
 
@@ -28,6 +28,13 @@ export function normalizeOpenAiRequest(route: string, body: unknown): Normalized
 
 export function isObject(value: unknown): value is Record<string, any> {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeResponsesInput(input: unknown): Array<Record<string, any>> {
+  if (typeof input === 'string') {
+    return [{ role: 'user', content: [{ type: 'input_text', text: input }] }];
+  }
+  return Array.isArray(input) ? input.filter(isObject).map((item) => ({ ...item })) : [];
 }
 
 export function estimateTokens(text: string): number {

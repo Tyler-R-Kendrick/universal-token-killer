@@ -95,6 +95,7 @@ export type UtkConfig = {
     prompt_compression_model: string;
     prompt_compression_base_url: string;
     prompt_compression_min_tokens: number;
+    prompt_compression_timeout_ms: number;
     inject_expand_context: boolean;
     minimize_tool_schemas: boolean;
     expand_edit_ranges: boolean;
@@ -190,6 +191,7 @@ prompt_compression_provider = "github-models"
 prompt_compression_model = "openai/gpt-4.1"
 prompt_compression_base_url = "https://models.github.ai/inference"
 prompt_compression_min_tokens = 64
+prompt_compression_timeout_ms = 2500
 inject_expand_context = true
 minimize_tool_schemas = true
 expand_edit_ranges = true
@@ -313,6 +315,7 @@ function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_p
     prompt_compression_model: readString(proxy.prompt_compression_model, 'openai/gpt-4.1'),
     prompt_compression_base_url: readString(proxy.prompt_compression_base_url, 'https://models.github.ai/inference'),
     prompt_compression_min_tokens: readNumber(proxy.prompt_compression_min_tokens, 64),
+    prompt_compression_timeout_ms: readNumber(proxy.prompt_compression_timeout_ms, 2500),
     inject_expand_context: readBoolean(proxy.inject_expand_context, true),
     minimize_tool_schemas: readBoolean(proxy.minimize_tool_schemas, true),
     expand_edit_ranges: readBoolean(proxy.expand_edit_ranges, true),
