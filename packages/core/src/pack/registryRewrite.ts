@@ -1,5 +1,6 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { atomicWriteFile } from '../artifact/atomicWrite.js';
 import { DEFAULT_CONFIG_TOML } from '../config/config.js';
 import type { PackToolDefinition } from './types.js';
 
@@ -13,14 +14,16 @@ export async function addPackRegistryBlocks(workspaceRoot: string, packName: str
   const additions = tools.map((tool) => renderPackRegistryBlock(packName, tool)).join('');
   const next = ensureTrailingNewline(cleaned) + additions;
   await mkdir(path.dirname(configPath), { recursive: true });
-  await writeFile(configPath, next, 'utf8');
+  // Atomic write — `.utk/config.toml` is user-edited; a torn write could lose
+  // hand-authored settings outside the pack-managed `# utk-pack-*` blocks.
+  await atomicWriteFile(configPath, next);
 }
 
 export async function removePackRegistryBlocks(workspaceRoot: string, packName: string): Promise<void> {
   const configPath = path.join(workspaceRoot, '.utk', 'config.toml');
   const original = await readConfigText(configPath);
   const cleaned = removeBlocksForPack(original, packName);
-  await writeFile(configPath, cleaned, 'utf8');
+  await atomicWriteFile(configPath, cleaned);
 }
 
 async function readConfigText(configPath: string): Promise<string> {

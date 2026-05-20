@@ -256,6 +256,7 @@ The installer writes the pack into `.utk/packs/<name>/`, merges its tool definit
 
 - `lintPack`/`installPack` do **not** dynamic-import pack template modules by default — the default lint emits a `pack/templates/runtime-validation-skipped` finding instead. Callers that want full runtime validation pass `{ importTemplate: importTemplateForLint }`. This is the difference between a pack lint that is safe to run on untrusted input and one that is RCE-equivalent.
 - Pack names that contain path-traversal segments (`../`, etc.) are rejected by the installer — destination paths use a two-level `safeJoin` against `.utk/packs`.
+- Install is **crash-safe**: all persistent writes go through `atomicWriteFile` (write-to-temp + `rename`) and the lockfile is written last. A power loss between writes leaves the system reporting the pack as not installed; mid-write tearing of any single file is prevented by the rename-on-commit pattern.
 
 Authoring a pack:
 

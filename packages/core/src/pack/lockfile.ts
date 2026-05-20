@@ -1,6 +1,7 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
+import { atomicWriteFile } from '../artifact/atomicWrite.js';
 import type { InstalledPack } from './types.js';
 
 export const LOCKFILE_SPEC = '1';
@@ -25,7 +26,10 @@ export async function readLockfile(workspaceRoot: string): Promise<InstalledPack
 export async function writeLockfile(workspaceRoot: string, packs: InstalledPack[]): Promise<void> {
   const lockPath = path.join(workspaceRoot, '.utk', 'packs.lock.toml');
   await mkdir(path.dirname(lockPath), { recursive: true });
-  await writeFile(lockPath, renderLockfile(packs), 'utf8');
+  // Atomic write — the lockfile is UTK's source of truth for installed packs and
+  // must survive crashes mid-write. A torn file would make every subsequent
+  // `utk pack list` / `add` / `remove` operation see corrupted state.
+  await atomicWriteFile(lockPath, renderLockfile(packs));
 }
 
 export function renderLockfile(packs: InstalledPack[]): string {

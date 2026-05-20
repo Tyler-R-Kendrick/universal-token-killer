@@ -768,6 +768,32 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     expect(list[0]?.name).toBe('git-cli');
   });
 
+  it('preserves the previous lockfile when install fails (lockfile-last invariant)', async () => {
+    // Install a pack successfully first.
+    const source1 = await mkdtemp(path.join(os.tmpdir(), 'utk-atomic-src1-'));
+    await writeFixturePack(source1);
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-atomic-ws-'));
+    await installPack(workspace, { type: 'local', path: source1 });
+    const lockBefore = await import('node:fs/promises').then((fs) => fs.readFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'utf8'));
+    expect(lockBefore).toContain('git-cli');
+
+    // Stage a second install that will fail mid-way (config.toml turned into a directory).
+    const source2 = await mkdtemp(path.join(os.tmpdir(), 'utk-atomic-src2-'));
+    await writeFixturePack(source2, {
+      manifest: '[pack]\nname = "other-pack"\nversion = "1.0.0"\ndescription = "x"\nlicense = "MIT"\n[compatibility]\nutk = "^0.1"\n'
+    });
+    await import('node:fs/promises').then(async (fs) => {
+      await fs.rm(path.join(workspace, '.utk', 'config.toml'), { force: true });
+      await fs.mkdir(path.join(workspace, '.utk', 'config.toml'), { recursive: true });
+    });
+    await expect(installPack(workspace, { type: 'local', path: source2 }, { skipLint: true })).rejects.toThrow();
+
+    // The lockfile must still report the original pack only — no torn write, no half-applied state.
+    const lockAfter = await import('node:fs/promises').then((fs) => fs.readFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'utf8'));
+    expect(lockAfter).toBe(lockBefore);
+    expect(lockAfter).not.toContain('other-pack');
+  });
+
   it('rejects remote tarball URLs from the built-in fetcher', async () => {
     const { fetchPackToTempDir } = await import('../src/pack/fetcher.js');
     await expect(fetchPackToTempDir({ type: 'tarball', path: 'https://example.com/pack.tgz' }, os.tmpdir())).rejects.toThrow(/Remote tarball URLs are not supported/);

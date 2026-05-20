@@ -1,5 +1,6 @@
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { atomicWriteFile } from '../artifact/atomicWrite.js';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
 import { mergeFieldGrammar } from '../grammar/fieldGrammar.js';
@@ -154,13 +155,16 @@ async function mergePackGrammars(workspaceRoot: string, grammars: PackGrammarRec
     const fieldId = normalizeToolId(grammar.field);
     const larkPath = safeJoin(workspaceRoot, '.utk', 'tools', toolId, 'fields', `${fieldId}.lark`);
     await mkdir(path.dirname(larkPath), { recursive: true });
-    await writeFile(larkPath, grammar.lark, 'utf8');
+    // Atomic writes — these files are referenced by the lockfile and used by
+    // the constrained decoder; a torn write would surface as an unparseable
+    // grammar at the next mediation.
+    await atomicWriteFile(larkPath, grammar.lark);
     if (grammar.seed) {
       const existing = await loadFieldGrammar(workspaceRoot, grammar.tool, grammar.field);
       const merged = mergeFieldGrammar(existing, grammar.seed);
       const grammarPath = fieldGrammarPath(workspaceRoot, grammar.tool, grammar.field);
       await mkdir(path.dirname(grammarPath), { recursive: true });
-      await writeFile(grammarPath, canonicalJson(merged), 'utf8');
+      await atomicWriteFile(grammarPath, canonicalJson(merged));
     }
   }
 }
@@ -207,6 +211,6 @@ async function persistTemplateDescriptors(workspaceRoot: string, pack: LoadedPac
   const cacheDir = safeJoin(workspaceRoot, '.utk', 'cache', 'templates');
   await mkdir(cacheDir, { recursive: true });
   const manifestPath = safeJoin(cacheDir, `${pack.manifest.pack.name}.json`);
-  await writeFile(manifestPath, canonicalJson({ pack: pack.manifest.pack.name, templates: descriptorList }), 'utf8');
+  await atomicWriteFile(manifestPath, canonicalJson({ pack: pack.manifest.pack.name, templates: descriptorList }));
   return ids;
 }
