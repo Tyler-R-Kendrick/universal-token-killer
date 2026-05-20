@@ -5,7 +5,7 @@ description: Use when local prompt or artifact compression is needed before send
 
 # Detoks
 
-Use the local `utk detoks-prompt` CLI flow for LLMLingua-2 prompt compression so bulky prompt text can stay in files or stdin instead of being pasted into agent context. Use the detok MCP server for explicit tool workflows over already-loaded text. This skill does not replace UTK raw artifact persistence, schema inference, routing, or recovery.
+Use the local `detoks-prompt` CLI flow for LLMLingua-2 prompt compression so bulky prompt text can stay in files or stdin instead of being pasted into agent context. Use the detok MCP server for explicit tool workflows over already-loaded text. This skill does not replace UTK raw artifact persistence, schema inference, routing, or recovery.
 
 ## Decision Rules
 

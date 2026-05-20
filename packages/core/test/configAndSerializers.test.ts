@@ -353,6 +353,31 @@ describe('UTK TOML config', () => {
     ]);
   });
 
+  it('normalizes detoks-prompt model settings from config', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-detok-prompt-'));
+    await mkdir(path.join(root, '.utk'), { recursive: true });
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[detok.prompt]',
+        'model = "Hugging-Face/Kompress-small"',
+        'rate = 2',
+        'min_chars = -4.8',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(config.detok.prompt.model).toBe('Hugging-Face/Kompress-small');
+    expect(config.detok.prompt.rate).toBe(1);
+    expect(config.detok.prompt.min_chars).toBe(0);
+  });
+
   it('fails explicitly for malformed detok tables and arrays', async () => {
     const badDetok = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-detok-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badDetok, '.utk'), { recursive: true }));

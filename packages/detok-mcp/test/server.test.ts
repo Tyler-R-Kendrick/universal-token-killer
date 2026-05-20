@@ -90,4 +90,42 @@ describe('detok MCP server', () => {
       }
     }
   });
+
+  it('serves detoks-prompt over MCP', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_FAKE = '1';
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-detok-prompt-mcp-tool-'));
+    const server = createDetokServer();
+    const client = new Client({ name: 'detok-test-client', version: '0.1.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    try {
+      await Promise.all([
+        server.connect(serverTransport),
+        client.connect(clientTransport)
+      ]);
+
+      const tools = await client.listTools();
+      expect(tools.tools.map((tool) => tool.name)).toContain('detoks-prompt');
+
+      const result = await client.callTool({
+        name: 'detoks-prompt',
+        arguments: {
+          prompt: 'Compress this long natural language prompt. `EXACT_TOKEN` remains unchanged.',
+          workspaceRoot,
+          rate: 0.5
+        }
+      });
+      expect(result.structuredContent?.compressedPrompt).toContain('Compress this');
+      expect(result.structuredContent?.compressedPrompt).toContain('`EXACT_TOKEN`');
+      expect(result.structuredContent?.model).toBe('default/LLMLingua2');
+    } finally {
+      await client.close();
+      await server.close();
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+    }
+  });
 });

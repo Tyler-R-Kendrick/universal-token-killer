@@ -15,7 +15,8 @@ def main():
                 "error": (
                     "Hugging-Face/Kompress-small requires the optional kompress "
                     f"inference package to be installed: {exc}"
-                )
+                ),
+                "usedLlmlingua2": False,
             },
             sys.stdout,
         )

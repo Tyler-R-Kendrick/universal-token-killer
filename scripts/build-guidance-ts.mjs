@@ -28,6 +28,8 @@ if (install.status !== 0) {
   process.exit(install.status ?? 1);
 }
 
+// Temporary Windows postinstall compatibility: guidance-ts resolves Chalk like v4 today.
+// Remove once upstream publishes a build that works without this nested pin.
 const chalkCompat = spawnSync(npmCommand, ['install', '--ignore-scripts', 'chalk@4'], {
   ...spawnOptions
 });

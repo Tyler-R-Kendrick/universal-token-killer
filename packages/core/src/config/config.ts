@@ -427,8 +427,8 @@ function normalizeDetokPrompt(value: unknown): UtkConfig['detok']['prompt'] {
   const prompt = readNamedOptionalObject(value, 'detok.prompt');
   return {
     model: readString(prompt.model, 'default/LLMLingua2'),
-    rate: readNumber(prompt.rate, 0.33),
-    min_chars: readNumber(prompt.min_chars, 0)
+    rate: clampNumber(readNumber(prompt.rate, 0.33), 0.05, 1),
+    min_chars: Math.max(0, Math.floor(readNumber(prompt.min_chars, 0)))
   };
 }
 
@@ -577,6 +577,10 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
 
 function readNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' ? value : fallback;
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 function readStringArray(value: unknown, fallback: string[], name: string): string[] {

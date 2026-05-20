@@ -40,6 +40,8 @@ type CompressionModel =
   | { kind: 'llmlingua2'; model: 'default/LLMLingua2' }
   | { kind: 'kompress-small'; model: 'Hugging-Face/Kompress-small' };
 
+const DEFAULT_KOMPRESS_TIMEOUT_MS = 30_000;
+
 export type PromptCompressionRawSegment = {
   kind: PromptCompressionSegmentKind;
   text: string;
@@ -235,8 +237,9 @@ async function compressTextWithKompressSmall(text: string, options: { rate: numb
   }
 
   const scriptPath = path.join(repoRoot(), 'scripts', 'kompress_small_compress.py');
-  const output = await runProcess(process.env.UTK_DETOK_PYTHON ?? 'python', [scriptPath], JSON.stringify({ text, rate: options.rate }));
-  const parsed = JSON.parse(output) as Partial<DetokResult> & { error?: string };
+  const timeoutMs = readPositiveInteger(process.env.UTK_KOMPRESS_TIMEOUT_MS, DEFAULT_KOMPRESS_TIMEOUT_MS);
+  const output = await runProcess(process.env.UTK_DETOK_PYTHON ?? 'python', [scriptPath], JSON.stringify({ text, rate: options.rate }), timeoutMs);
+  const parsed = parseKompressOutput(output);
   if (parsed.error) {
     return {
       originalText: text,
@@ -275,22 +278,49 @@ function repoRoot(): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 }
 
+function parseKompressOutput(output: string): Partial<DetokResult> & { error?: string } {
+  try {
+    return JSON.parse(output) as Partial<DetokResult> & { error?: string };
+  } catch (error) {
+    return {
+      error: `kompress-small emitted invalid JSON: ${(error as Error).message}; raw output: ${output}`
+    };
+  }
+}
+
+function readPositiveInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 /* c8 ignore start */
-function runProcess(command: string, args: string[], stdin: string): Promise<string> {
+function runProcess(command: string, args: string[], stdin: string, timeoutMs: number): Promise<string> {
   return new Promise((resolve) => {
     const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
     const chunks: Buffer[] = [];
     const errors: Buffer[] = [];
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const finish = (output: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(output);
+    };
+    timer = setTimeout(() => {
+      child.kill();
+      finish(JSON.stringify({ error: `kompress-small timed out after ${timeoutMs}ms` }));
+    }, timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
     child.stderr.on('data', (chunk: Buffer) => errors.push(chunk));
-    child.on('error', (error) => resolve(JSON.stringify({ error: error.message })));
+    child.on('error', (error) => finish(JSON.stringify({ error: error.message })));
     child.on('close', (code) => {
       const stdout = Buffer.concat(chunks).toString('utf8');
       if (code === 0 && stdout.trim()) {
-        resolve(stdout);
+        finish(stdout);
         return;
       }
-      resolve(JSON.stringify({ error: Buffer.concat(errors).toString('utf8') || `kompress-small exited with code ${code}` }));
+      finish(JSON.stringify({ error: Buffer.concat(errors).toString('utf8') || `kompress-small exited with code ${code}` }));
     });
     child.stdin.end(stdin);
   });

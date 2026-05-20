@@ -126,10 +126,10 @@ async function handleDetoksPrompt(args: string[], context: CliHandlerContext): P
         break;
       case '--rate':
       case '-r':
-        rate = readNumberArg(args[++index], '--rate');
+        rate = readNumberArg(args[++index], '--rate', { minExclusive: 0, max: 1 });
         break;
       case '--target-token':
-        targetToken = readNumberArg(args[++index], '--target-token');
+        targetToken = readNumberArg(args[++index], '--target-token', { integer: true, min: 1 });
         break;
       default:
         if (file === undefined && arg && !arg.startsWith('-')) {
@@ -224,14 +224,18 @@ function printUsage(write: CliWriter): void {
   write('  pack validate [<path>]        Alias for `pack lint`\n');
 }
 
-function readNumberArg(value: string | undefined, name: string): number {
+function readNumberArg(value: string | undefined, name: string, bounds: { integer?: boolean; min?: number; minExclusive?: number; max?: number } = {}): number {
   const numberValue = Number(value);
   if (!Number.isFinite(numberValue)) throw new Error(`${name} must be a number`);
+  if (bounds.integer && !Number.isInteger(numberValue)) throw new Error(`${name} must be an integer`);
+  if (bounds.min !== undefined && numberValue < bounds.min) throw new Error(`${name} must be at least ${bounds.min}`);
+  if (bounds.minExclusive !== undefined && numberValue <= bounds.minExclusive) throw new Error(`${name} must be greater than ${bounds.minExclusive}`);
+  if (bounds.max !== undefined && numberValue > bounds.max) throw new Error(`${name} must be at most ${bounds.max}`);
   return numberValue;
 }
 
 function detoksPromptUsage(): string {
-  return 'Usage: utk detoks-prompt [--prompt <text> | --file <path> | --stdin] [--model <provider/model>] [--rate <0..1>]\n';
+  return 'Usage: utk detoks-prompt [--prompt <text> | --file <path> | --stdin] [--model <provider/model>] [--rate <0..1>] [--target-token <n>]\n';
 }
 
 async function readProcessStdin(): Promise<string> {

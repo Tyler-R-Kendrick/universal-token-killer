@@ -123,7 +123,7 @@ describe('package boundary', () => {
     await access(path.join(skillRoot, 'agents', 'openai.yaml'));
 
     expect(skill).toContain('name: detoks');
-    expect(skill).toContain('detoks-prompt` CLI flow');
+    expect(skill).toContain('`detoks-prompt` CLI flow');
     expect(skill).toContain('node packages/cli/dist/utk.js detoks-prompt --file <path>');
     expect(skill).toContain('detok MCP server');
     expect(skill).toContain('LLMLingua-2');

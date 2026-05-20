@@ -168,6 +168,29 @@ describe('utk cli', () => {
 
     expect(result.exitCode).toBe(1);
     expect(writers.getStderr()).toContain('Usage: utk detoks-prompt');
+    expect(writers.getStderr()).toContain('--target-token <n>');
+  });
+
+  it('detoks-prompt rejects invalid numeric options', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-bounds-'));
+
+    const badRate = captureWriters();
+    const badRateResult = await runUtkCli(['detoks-prompt', '--prompt', 'Prompt text', '--rate', '2'], {
+      cwd: workspace,
+      stdout: badRate.stdout,
+      stderr: badRate.stderr
+    });
+    expect(badRateResult.exitCode).toBe(1);
+    expect(badRate.getStderr()).toContain('--rate must be at most 1');
+
+    const badTarget = captureWriters();
+    const badTargetResult = await runUtkCli(['detoks-prompt', '--prompt', 'Prompt text', '--target-token', '1.5'], {
+      cwd: workspace,
+      stdout: badTarget.stdout,
+      stderr: badTarget.stderr
+    });
+    expect(badTargetResult.exitCode).toBe(1);
+    expect(badTarget.getStderr()).toContain('--target-token must be an integer');
   });
 
   it('rejects unknown pack subcommands', async () => {
