@@ -320,6 +320,10 @@ function runProcess(command: string, args: string[], stdin: string, timeoutMs: n
         finish(stdout);
         return;
       }
+      if (code !== 0 && stdout.trim()) {
+        finish(stdout);
+        return;
+      }
       finish(JSON.stringify({ error: Buffer.concat(errors).toString('utf8') || `kompress-small exited with code ${code}` }));
     });
     child.stdin.end(stdin);

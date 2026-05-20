@@ -39,7 +39,8 @@ const detokPromptOutputSchema = {
   compressedTokens: z.number(),
   rate: z.number(),
   model: z.string(),
-  applied: z.boolean()
+  applied: z.boolean(),
+  error: z.string().optional()
 };
 
 export type DetokToolArgs = {
@@ -75,6 +76,7 @@ export type DetokPromptToolOutput = {
   rate: number;
   model: string;
   applied: boolean;
+  error?: string;
 };
 
 export async function runDetokTool(args: DetokToolArgs): Promise<DetokToolOutput> {
@@ -158,7 +160,8 @@ function toPromptToolOutput(result: PromptCompressionResult): DetokPromptToolOut
     compressedTokens: result.compressedTokens,
     rate: result.rate,
     model: result.model,
-    applied: result.applied
+    applied: result.applied,
+    ...(result.error ? { error: result.error } : {})
   };
 }
 

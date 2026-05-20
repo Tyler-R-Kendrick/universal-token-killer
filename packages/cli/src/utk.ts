@@ -141,6 +141,16 @@ async function handleDetoksPrompt(args: string[], context: CliHandlerContext): P
     }
   }
 
+  const promptProvided = prompt !== undefined;
+  const fileProvided = file !== undefined;
+  const stdinProvided = readFromStdin;
+  const sourcesProvided = [promptProvided, fileProvided, stdinProvided].filter(Boolean).length;
+
+  if (sourcesProvided > 1) {
+    context.stderr('Error: Multiple prompt sources specified. Use only one of --prompt, --file, or --stdin.\n');
+    return { exitCode: 1 };
+  }
+
   if (prompt === undefined && file !== undefined) {
     prompt = await readFile(path.resolve(context.cwd, file), 'utf8');
   }

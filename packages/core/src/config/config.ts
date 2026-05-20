@@ -425,19 +425,39 @@ function normalizeTracing(value: unknown): UtkConfig['tracing'] {
 
 function normalizeDetokPrompt(value: unknown): UtkConfig['detok']['prompt'] {
   const prompt = readNamedOptionalObject(value, 'detok.prompt');
+  const rate = readNumber(prompt.rate, 0.33);
+  const minChars = readNumber(prompt.min_chars, 0);
+
+  if (!Number.isFinite(rate)) {
+    throw new TypeError('detok.prompt.rate must be a finite number');
+  }
+  if (!Number.isFinite(minChars)) {
+    throw new TypeError('detok.prompt.min_chars must be a finite number');
+  }
+
   return {
     model: readString(prompt.model, 'default/LLMLingua2'),
-    rate: clampNumber(readNumber(prompt.rate, 0.33), 0.05, 1),
-    min_chars: Math.max(0, Math.floor(readNumber(prompt.min_chars, 0)))
+    rate: clampNumber(rate, 0.05, 1),
+    min_chars: Math.max(0, Math.floor(minChars))
   };
 }
 
 function normalizeCopilotPreToolUse(value: unknown): UtkConfig['detok']['copilot_pre_tool_use'] {
   const hook = readNamedOptionalObject(value, 'detok.copilot_pre_tool_use');
+  const rate = readNumber(hook.rate, 0.33);
+  const minChars = readNumber(hook.min_chars, 8000);
+
+  if (!Number.isFinite(rate)) {
+    throw new TypeError('detok.copilot_pre_tool_use.rate must be a finite number');
+  }
+  if (!Number.isFinite(minChars)) {
+    throw new TypeError('detok.copilot_pre_tool_use.min_chars must be a finite number');
+  }
+
   return {
     enabled: readBoolean(hook.enabled, true),
-    rate: readNumber(hook.rate, 0.33),
-    min_chars: readNumber(hook.min_chars, 8000),
+    rate,
+    min_chars: minChars,
     deny_tools: readStringArray(hook.deny_tools, DEFAULT_DENY_TOOLS, 'detok.copilot_pre_tool_use.deny_tools'),
     rewrite_fields: readStringArray(hook.rewrite_fields, DEFAULT_REWRITE_FIELDS, 'detok.copilot_pre_tool_use.rewrite_fields'),
     protected_fields: readStringArray(hook.protected_fields, DEFAULT_PROTECTED_FIELDS, 'detok.copilot_pre_tool_use.protected_fields'),
