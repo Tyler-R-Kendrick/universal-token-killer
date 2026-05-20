@@ -38,6 +38,25 @@ declare module '@utk/core' {
   };
 
   export function parsePackSource(spec: string): PackSource;
+  export function compressPromptForLlm(
+    prompt: string,
+    options: {
+      workspaceRoot: string;
+      model?: string;
+      rate?: number;
+      minChars?: number;
+      targetToken?: number;
+      forceTokens?: string[];
+    }
+  ): Promise<{
+    compressedPrompt: string;
+    originalTokens: number;
+    compressedTokens: number;
+    rate: number;
+    model: string;
+    applied: boolean;
+    error?: string;
+  }>;
   export type InstallPackOptions = {
     fetcher?: (source: PackSource, workspaceRoot: string) => Promise<{ dir: string; revision: string }>;
     force?: boolean;

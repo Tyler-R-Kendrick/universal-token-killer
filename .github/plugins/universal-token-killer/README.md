@@ -4,7 +4,7 @@ This plugin exposes UTK to GitHub Copilot CLI using the official plugin marketpl
 
 - `agents/`: UTK operator custom agent.
 - `skills/`: `utk`, `utk-init`, and `detoks` Agent Skills.
-- `.mcp.json`: local `detok` MCP server configuration.
+- `.mcp.json`: local `detok` MCP server configuration, including prompt-safe `detoks-prompt`.
 - `hooks/hooks.json`: Copilot CLI `preToolUse` hook for safe LLMLingua rewriting of long LLM-bound tool input fields.
 
 The hook file uses GitHub's `version: 1` contract:
@@ -51,3 +51,5 @@ npm run build
 ```
 
 The repository also includes `.github/hooks/utk-detok-inputs.json` for repo-local hook registration. Use either the repo hook or the plugin hook in a workspace, not both, to avoid double compression.
+
+For prompt compression, prefer the CLI flow (`node packages/cli/dist/utk.js detoks-prompt --file <path>` or piped `--stdin`) so bulky prompt text stays out of agent context. `detoks-prompt` reads `[detok.prompt]` from `.utk/config.toml`, defaults to `default/LLMLingua2`, and preserves code/quoted spans while compressing only natural-language prompt text.

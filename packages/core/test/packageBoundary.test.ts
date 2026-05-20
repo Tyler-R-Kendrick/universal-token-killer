@@ -115,7 +115,7 @@ describe('package boundary', () => {
     ]);
   });
 
-  it('ships a detoks agent skill for local LLMLingua2 MCP usage', async () => {
+  it('ships a detoks agent skill for CLI-first prompt compression with MCP fallback', async () => {
     const skillRoot = path.join(repoRoot, 'skills', 'detoks');
     const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
     const reference = await readFile(path.join(skillRoot, 'references', 'detok-mcp.md'), 'utf8');
@@ -123,6 +123,8 @@ describe('package boundary', () => {
     await access(path.join(skillRoot, 'agents', 'openai.yaml'));
 
     expect(skill).toContain('name: detoks');
+    expect(skill).toContain('`detoks-prompt` CLI flow');
+    expect(skill).toContain('node packages/cli/dist/utk.js detoks-prompt --file <path>');
     expect(skill).toContain('detok MCP server');
     expect(skill).toContain('LLMLingua-2');
     expect(skill).toContain('does not replace UTK raw artifact persistence');

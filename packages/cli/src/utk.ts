@@ -1,5 +1,8 @@
 #!/usr/bin/env node
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import {
+  compressPromptForLlm,
   formatLintReport,
   installPack,
   lintPack,
@@ -14,6 +17,7 @@ export type CliHandlerContext = {
   cwd: string;
   stdout: CliWriter;
   stderr: CliWriter;
+  stdin?: () => Promise<string>;
 };
 
 export type CliResult = { exitCode: number };
@@ -33,6 +37,9 @@ async function dispatch(argv: string[], context: CliHandlerContext): Promise<Cli
     return { exitCode: 0 };
   }
   const [command, subcommand, ...rest] = argv;
+  if (command === 'detoks-prompt') {
+    return await handleDetoksPrompt([subcommand, ...rest].filter((arg): arg is string => arg !== undefined), context);
+  }
   if (command !== 'pack') {
     context.stderr(`Unknown command: ${command}\n`);
     printUsage(context.stderr);
@@ -91,6 +98,81 @@ async function handleAdd(args: string[], context: CliHandlerContext): Promise<Cl
   return { exitCode: 0 };
 }
 
+async function handleDetoksPrompt(args: string[], context: CliHandlerContext): Promise<CliResult> {
+  let prompt: string | undefined;
+  let file: string | undefined;
+  let model: string | undefined;
+  let rate: number | undefined;
+  let targetToken: number | undefined;
+  let readFromStdin = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    switch (arg) {
+      case '--prompt':
+      case '-p':
+        prompt = args[++index];
+        break;
+      case '--file':
+      case '-f':
+        file = args[++index];
+        break;
+      case '--stdin':
+        readFromStdin = true;
+        break;
+      case '--model':
+      case '-m':
+        model = args[++index];
+        break;
+      case '--rate':
+      case '-r':
+        rate = readNumberArg(args[++index], '--rate', { minExclusive: 0, max: 1 });
+        break;
+      case '--target-token':
+        targetToken = readNumberArg(args[++index], '--target-token', { integer: true, min: 1 });
+        break;
+      default:
+        if (file === undefined && arg && !arg.startsWith('-')) {
+          file = arg;
+          break;
+        }
+        context.stderr(`Unexpected argument: ${arg}\n`);
+        return { exitCode: 1 };
+    }
+  }
+
+  const inputSources = (prompt !== undefined ? 1 : 0) + (file !== undefined ? 1 : 0) + (readFromStdin ? 1 : 0);
+  if (inputSources > 1) {
+    context.stderr('Choose one input source: --prompt, --file, or --stdin\n');
+    context.stderr(detoksPromptUsage());
+    return { exitCode: 1 };
+  }
+
+  if (prompt === undefined && file !== undefined) {
+    prompt = await readFile(path.resolve(context.cwd, file), 'utf8');
+  }
+  if (prompt === undefined && (readFromStdin || file === undefined)) {
+    prompt = await (context.stdin?.() ?? Promise.resolve(''));
+  }
+  if (prompt === undefined) {
+    context.stderr(detoksPromptUsage());
+    return { exitCode: 1 };
+  }
+  if (prompt.trim().length === 0) {
+    context.stderr(detoksPromptUsage());
+    return { exitCode: 1 };
+  }
+
+  const result = await compressPromptForLlm(prompt, {
+    workspaceRoot: context.cwd,
+    ...(model ? { model } : {}),
+    ...(rate !== undefined ? { rate } : {}),
+    ...(targetToken !== undefined ? { targetToken } : {})
+  });
+  context.stdout(`${result.compressedPrompt}\n`);
+  return { exitCode: result.error ? 1 : 0 };
+}
+
 async function handleRemove(args: string[], context: CliHandlerContext): Promise<CliResult> {
   const name = args[0];
   if (!name || args.length !== 1) {
@@ -141,6 +223,7 @@ function printUsage(write: CliWriter): void {
   write('Usage: utk <command> <subcommand> [options]\n');
   write('\n');
   write('Commands:\n');
+  write('  detoks-prompt [--prompt <text> | --file <path> | --stdin] Compress prompt prose while preserving code and quoted spans\n');
   write('  pack add <source> [--force]   Install a pack (local dir, tarball, git URL, npm spec)\n');
   write('  pack remove <name>            Uninstall a pack by name\n');
   write('  pack list                     List installed packs\n');
@@ -148,12 +231,36 @@ function printUsage(write: CliWriter): void {
   write('  pack validate [<path>]        Alias for `pack lint`\n');
 }
 
+function readNumberArg(value: string | undefined, name: string, bounds: { integer?: boolean; min?: number; minExclusive?: number; max?: number } = {}): number {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) throw new Error(`${name} must be a number`);
+  if (bounds.integer && !Number.isInteger(numberValue)) throw new Error(`${name} must be an integer`);
+  if (bounds.min !== undefined && numberValue < bounds.min) throw new Error(`${name} must be at least ${bounds.min}`);
+  if (bounds.minExclusive !== undefined && numberValue <= bounds.minExclusive) throw new Error(`${name} must be greater than ${bounds.minExclusive}`);
+  if (bounds.max !== undefined && numberValue > bounds.max) throw new Error(`${name} must be at most ${bounds.max}`);
+  return numberValue;
+}
+
+function detoksPromptUsage(): string {
+  return 'Usage: utk detoks-prompt [--prompt <text> | --file <path> | --stdin] [--model <provider/model>] [--rate <0..1>] [--target-token <n>]\n';
+}
+
+async function readProcessStdin(): Promise<string> {
+  if (process.stdin.isTTY) return '';
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
 /* v8 ignore start -- direct CLI entrypoint exercised only when invoked as a binary */
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
   runUtkCli(process.argv.slice(2), {
     cwd: process.cwd(),
     stdout: (message) => process.stdout.write(message),
-    stderr: (message) => process.stderr.write(message)
+    stderr: (message) => process.stderr.write(message),
+    stdin: readProcessStdin
   })
     .then((result) => {
       process.exit(result.exitCode);

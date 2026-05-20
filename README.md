@@ -95,6 +95,24 @@ Use detok to rewrite this output at rate 0.33 before reasoning over it.
 
 Agents can load `skills/detoks` for when/how guidance around the local MCP tool.
 
+For prompt-specific compression, prefer the CLI `detoks-prompt` surface so large prompt text can stay in files or stdin instead of being pasted into chat context. It compresses only natural-language spans and preserves fenced code, indented code, inline code, Markdown blockquotes, and quoted strings:
+
+```bash
+node packages/cli/dist/utk.js detoks-prompt --file prompt.md --rate 0.33
+Get-Content .\prompt.md -Raw | node packages/cli/dist/utk.js detoks-prompt --stdin
+```
+
+Prompt compression reads `.utk/config.toml`:
+
+```toml
+[detok.prompt]
+model = "default/LLMLingua2"
+rate = 0.33
+min_chars = 0
+```
+
+Model ids use `<provider>/<model>`. `default/LLMLingua2` is built in. `Hugging-Face/Kompress-small` is recognized as an optional local adapter when its inference package is installed.
+
 ### Complete A Bash-Like Tool Invocation
 
 UTK includes an internal, non-public helper for bash-like tool invocation templates. It uses `guidance-ts` to serialize known completions, stores the compact template under `.utk/tools/<normalized-tool-id>/templates/` (tool id passes through `normalizeToolId`), and returns a deterministic invocation when a guidance runtime is unavailable.
@@ -210,6 +228,11 @@ storage_root = ".utk"
 
 [detok]
 enabled = true
+
+[detok.prompt]
+model = "default/LLMLingua2"
+rate = 0.33
+min_chars = 0
 
 [detok.copilot_pre_tool_use]
 enabled = true

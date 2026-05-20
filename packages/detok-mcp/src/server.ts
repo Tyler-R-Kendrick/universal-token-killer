@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { compressTextWithLlmlingua2, type DetokResult } from '@utk/core';
+import { compressPromptForLlm, compressTextWithLlmlingua2, type DetokResult, type PromptCompressionResult } from '@utk/core';
 import { z } from 'zod';
 
 const detokInputSchema = {
@@ -25,6 +25,24 @@ const detokOutputSchema = {
   applied: z.boolean()
 };
 
+const detokPromptInputSchema = {
+  prompt: z.string().describe('Prompt text to compress. Only natural-language spans are rewritten.'),
+  workspaceRoot: z.string().optional().describe('Workspace root containing .utk/config.toml. Defaults to current working directory.'),
+  rate: z.number().min(0.05).max(1).optional().describe('Compression rate to keep. Defaults to .utk/config.toml detok.prompt.rate.'),
+  targetToken: z.number().int().positive().optional().describe('Optional target token count passed to the compression provider.'),
+  model: z.string().optional().describe('Compression model id in <provider>/<model> form, for example default/LLMLingua2.')
+};
+
+const detokPromptOutputSchema = {
+  compressedPrompt: z.string(),
+  originalTokens: z.number(),
+  compressedTokens: z.number(),
+  rate: z.number(),
+  model: z.string(),
+  applied: z.boolean(),
+  error: z.string().optional()
+};
+
 export type DetokToolArgs = {
   text: string;
   rate?: number;
@@ -43,6 +61,24 @@ export type DetokToolOutput = {
   applied: boolean;
 };
 
+export type DetokPromptToolArgs = {
+  prompt: string;
+  workspaceRoot?: string;
+  rate?: number;
+  targetToken?: number;
+  model?: string;
+};
+
+export type DetokPromptToolOutput = {
+  compressedPrompt: string;
+  originalTokens: number;
+  compressedTokens: number;
+  rate: number;
+  model: string;
+  applied: boolean;
+  error?: string;
+};
+
 export async function runDetokTool(args: DetokToolArgs): Promise<DetokToolOutput> {
   const result = await compressTextWithLlmlingua2(args.text, {
     force: true,
@@ -52,6 +88,16 @@ export async function runDetokTool(args: DetokToolArgs): Promise<DetokToolOutput
     forceTokens: args.forceTokens
   });
   return toToolOutput(result);
+}
+
+export async function runDetokPromptTool(args: DetokPromptToolArgs): Promise<DetokPromptToolOutput> {
+  const result = await compressPromptForLlm(args.prompt, {
+    workspaceRoot: args.workspaceRoot ?? process.cwd(),
+    rate: args.rate,
+    targetToken: args.targetToken,
+    model: args.model
+  });
+  return toPromptToolOutput(result);
 }
 
 export function createDetokServer(): McpServer {
@@ -73,6 +119,19 @@ export function createDetokServer(): McpServer {
     };
   });
 
+  server.registerTool('detoks-prompt', {
+    title: 'Detoks Prompt',
+    description: 'Compress only natural-language spans in a prompt while preserving code, inline code, blockquotes, and quoted strings.',
+    inputSchema: detokPromptInputSchema,
+    outputSchema: detokPromptOutputSchema
+  }, async (args) => {
+    const output = await runDetokPromptTool(args);
+    return {
+      structuredContent: output,
+      content: [{ type: 'text', text: output.compressedPrompt }]
+    };
+  });
+
   return server;
 }
 
@@ -91,6 +150,18 @@ function toToolOutput(result: DetokResult): DetokToolOutput {
     model: result.model,
     usedLlmlingua2: result.usedLlmlingua2,
     applied: result.applied
+  };
+}
+
+function toPromptToolOutput(result: PromptCompressionResult): DetokPromptToolOutput {
+  return {
+    compressedPrompt: result.compressedPrompt,
+    originalTokens: result.originalTokens,
+    compressedTokens: result.compressedTokens,
+    rate: result.rate,
+    model: result.model,
+    applied: result.applied,
+    ...(result.error ? { error: result.error } : {})
   };
 }
 

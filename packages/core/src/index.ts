@@ -6,6 +6,7 @@ export * from './copilot/refinement.js';
 export * from './config/config.js';
 export * from './contextOptimization/contextOptimization.js';
 export * from './detok/llmlingua2.js';
+export * from './detok/prompt.js';
 export * from './history/schemaHistory.js';
 export * from './mediation/toolMediator.js';
 export * from './pack/index.js';
