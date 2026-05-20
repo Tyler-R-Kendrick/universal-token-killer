@@ -76,6 +76,48 @@ Output:
 }
 ```
 
+CLI command: `detoks-prompt`, preferred for prompts because file/stdin input avoids copying bulky prompt text into agent context.
+
+File input:
+
+```powershell
+node packages/cli/dist/utk.js detoks-prompt --file .\prompt.md
+```
+
+Pipe input:
+
+```powershell
+Get-Content .\prompt.md -Raw | node packages/cli/dist/utk.js detoks-prompt --stdin
+```
+
+MCP tool name: `detoks-prompt`, secondary when an MCP workflow already has prompt text loaded.
+
+MCP input:
+
+```json
+{
+  "prompt": "Long prompt with ```code``` and quoted requirements.",
+  "workspaceRoot": ".",
+  "rate": 0.33,
+  "model": "default/LLMLingua2"
+}
+```
+
+Output:
+
+```json
+{
+  "compressedPrompt": "Long prompt with ```code``` quoted requirements.",
+  "originalTokens": 14,
+  "compressedTokens": 10,
+  "rate": 0.33,
+  "model": "default/LLMLingua2",
+  "applied": true
+}
+```
+
+CLI and MCP `detoks-prompt` both read `[detok.prompt]` from `.utk/config.toml`. They rewrite only natural-language spans and preserve fenced code, indented code, inline code, Markdown blockquotes, and quoted strings exactly.
+
 ## UTK Integration
 
 UTK also uses the same local compressor for LLM-bound mediation artifacts:

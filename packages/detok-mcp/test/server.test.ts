@@ -1,7 +1,10 @@
+import { mkdtemp } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { createDetokServer, runDetokTool } from '../src/server.js';
+import { createDetokServer, runDetokPromptTool, runDetokTool } from '../src/server.js';
 
 describe('detok MCP server', () => {
   it('rewrites text with the LLMLingua2-backed detok tool', async () => {
@@ -29,6 +32,29 @@ describe('detok MCP server', () => {
   it('creates an MCP server named detok', () => {
     const server = createDetokServer();
     expect(server.isConnected()).toBe(false);
+  });
+
+  it('runs detoks-prompt with prompt-safe compression', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_FAKE = '1';
+    try {
+      const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-detok-prompt-mcp-'));
+      const result = await runDetokPromptTool({
+        prompt: 'Compress this long natural language prompt. `EXACT_TOKEN` must stay unchanged.',
+        workspaceRoot,
+        rate: 0.5
+      });
+
+      expect(result.compressedPrompt).toContain('Compress this');
+      expect(result.compressedPrompt).toContain('`EXACT_TOKEN`');
+      expect(result.model).toBe('default/LLMLingua2');
+    } finally {
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+    }
   });
 
   it('serves the detok tool over MCP', async () => {

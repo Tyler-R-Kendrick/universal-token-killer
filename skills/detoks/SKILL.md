@@ -1,15 +1,21 @@
 ---
 name: detoks
-description: Use when local LLMLingua2 prompt compression is needed through the detok MCP server, especially before sending bulky text, recovered artifacts, logs, diffs, reports, or tool output into an LLM context
+description: Use when local prompt or artifact compression is needed before sending bulky text, recovered artifacts, logs, diffs, reports, or tool output into an LLM context
 ---
 
 # Detoks
 
-Use the local `detok` MCP server to rewrite bulky LLM-bound text with LLMLingua-2. This skill is about when and how to use the MCP helper and the automatic Copilot pre-tool input hook; it does not replace UTK raw artifact persistence, schema inference, routing, or recovery.
+Use the local `utk detoks-prompt` CLI flow for LLMLingua-2 prompt compression so bulky prompt text can stay in files or stdin instead of being pasted into agent context. Use the detok MCP server for explicit tool workflows over already-loaded text. This skill does not replace UTK raw artifact persistence, schema inference, routing, or recovery.
 
 ## Decision Rules
 
-Use `detok` when:
+Use `detoks-prompt` CLI when:
+
+- the target is a prompt, instruction block, or reusable skill/agent text;
+- prompt text is large enough that pasting it into chat would waste context;
+- prompt text may contain fenced code, inline code, Markdown blockquotes, or quoted requirements that must remain unchanged.
+
+Use MCP `detok` when:
 
 - text is large enough to crowd model context;
 - the task needs gist-level reasoning over logs, diffs, markdown reports, or recovered raw artifacts;
@@ -29,10 +35,12 @@ The Copilot CLI `preToolUse` hook may run automatically for long, allowlisted pr
 
 1. Preserve or locate the raw source first.
 2. If the content comes from UTK, prefer raw artifacts for recovery and schema facts.
-3. Call MCP tool `detok` only for the LLM-bound reading copy.
-4. Use `rate: 0.33` by default; raise it for code, diffs, and dense technical output.
-5. Keep force tokens such as newlines, punctuation, paths, and issue markers when structure matters.
-6. State that reasoning used compressed text when final conclusions depend on compression.
+3. For prompt text, write or locate it in a file and run `node packages/cli/dist/utk.js detoks-prompt --file <path>`.
+4. For piped prompt text, run `Get-Content <path> -Raw | node packages/cli/dist/utk.js detoks-prompt --stdin`.
+5. Use MCP tool `detok` only for explicit LLM-bound reading copies where CLI file/stdin flow is not the right fit.
+6. Use `rate: 0.33` by default; raise it for code, diffs, and dense technical output.
+7. Keep force tokens such as newlines, punctuation, paths, and issue markers when structure matters.
+8. State that reasoning used compressed text when final conclusions depend on compression.
 
 ## Reference
 

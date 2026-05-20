@@ -65,6 +65,111 @@ describe('utk cli', () => {
     expect(writers.getStderr()).toContain('Unknown command');
   });
 
+  it('detoks-prompt compresses stdin with protected prompt spans preserved', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_FAKE = '1';
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-'));
+    const writers = captureWriters();
+    try {
+      const result = await runUtkCli(['detoks-prompt', '--prompt', 'Summarize this verbose prompt carefully. `EXACT_TOKEN` must stay.'], {
+        cwd: workspace,
+        stdout: writers.stdout,
+        stderr: writers.stderr
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(writers.getStdout()).toContain('Summarize');
+      expect(writers.getStdout()).toContain('`EXACT_TOKEN`');
+      expect(writers.getStdout()).not.toContain('carefully');
+      expect(writers.getStderr()).toBe('');
+    } finally {
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+    }
+  });
+
+  it('detoks-prompt reads prompt text from a file', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_FAKE = '1';
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-file-'));
+    const promptPath = path.join(workspace, 'prompt.md');
+    await writeFile(promptPath, ['Compress this verbose prompt carefully.', '```ts', 'const exact = true;', '```', '"MUST_STAY"'].join('\n'), 'utf8');
+    const writers = captureWriters();
+    try {
+      const result = await runUtkCli(['detoks-prompt', '--file', promptPath], {
+        cwd: workspace,
+        stdout: writers.stdout,
+        stderr: writers.stderr
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(writers.getStdout()).toContain('Compress');
+      expect(writers.getStdout()).toContain('```ts\nconst exact = true;\n```');
+      expect(writers.getStdout()).toContain('"MUST_STAY"');
+      expect(writers.getStdout()).not.toContain('carefully');
+    } finally {
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+    }
+  });
+
+  it('detoks-prompt reads prompt text from stdin when requested or when no input source is provided', async () => {
+    const previousFake = process.env.UTK_DETOK_FAKE;
+    process.env.UTK_DETOK_FAKE = '1';
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-stdin-'));
+    try {
+      const explicit = captureWriters();
+      const explicitResult = await runUtkCli(['detoks-prompt', '--stdin'], {
+        cwd: workspace,
+        stdout: explicit.stdout,
+        stderr: explicit.stderr,
+        stdin: async () => 'Rewrite this natural language prompt. `TOKEN` remains.'
+      });
+
+      expect(explicitResult.exitCode).toBe(0);
+      expect(explicit.getStdout()).toContain('Rewrite');
+      expect(explicit.getStdout()).toContain('`TOKEN`');
+
+      const implicit = captureWriters();
+      const implicitResult = await runUtkCli(['detoks-prompt'], {
+        cwd: workspace,
+        stdout: implicit.stdout,
+        stderr: implicit.stderr,
+        stdin: async () => 'Default stdin prompt should compress. `TOKEN` remains.'
+      });
+
+      expect(implicitResult.exitCode).toBe(0);
+      expect(implicit.getStdout()).toContain('Default');
+      expect(implicit.getStdout()).toContain('`TOKEN`');
+    } finally {
+      if (previousFake === undefined) {
+        delete process.env.UTK_DETOK_FAKE;
+      } else {
+        process.env.UTK_DETOK_FAKE = previousFake;
+      }
+    }
+  });
+
+  it('detoks-prompt reports usage for empty stdin', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-cli-detoks-prompt-empty-'));
+    const writers = captureWriters();
+    const result = await runUtkCli(['detoks-prompt', '--stdin'], {
+      cwd: workspace,
+      stdout: writers.stdout,
+      stderr: writers.stderr,
+      stdin: async () => ''
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(writers.getStderr()).toContain('Usage: utk detoks-prompt');
+  });
+
   it('rejects unknown pack subcommands', async () => {
     const writers = captureWriters();
     const result = await runUtkCli(['pack', 'frobnicate'], { cwd: process.cwd(), stdout: writers.stdout, stderr: writers.stderr });

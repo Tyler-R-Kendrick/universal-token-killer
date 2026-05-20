@@ -14,19 +14,30 @@ if (!existsSync(packageRoot)) {
 }
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const spawnOptions = {
+  cwd: packageRoot,
+  stdio: 'inherit',
+  ...(process.platform === 'win32' ? { shell: true } : {})
+};
 
 const install = spawnSync(npmCommand, ['install', '--ignore-scripts'], {
-  cwd: packageRoot,
-  stdio: 'inherit'
+  ...spawnOptions
 });
 
 if (install.status !== 0) {
   process.exit(install.status ?? 1);
 }
 
+const chalkCompat = spawnSync(npmCommand, ['install', '--ignore-scripts', 'chalk@4'], {
+  ...spawnOptions
+});
+
+if (chalkCompat.status !== 0) {
+  process.exit(chalkCompat.status ?? 1);
+}
+
 const build = spawnSync(npmCommand, ['run', 'build'], {
-  cwd: packageRoot,
-  stdio: 'inherit'
+  ...spawnOptions
 });
 
 process.exit(build.status ?? 1);

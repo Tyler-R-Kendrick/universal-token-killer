@@ -25,6 +25,11 @@ export type UtkConfig = {
   };
   detok: {
     enabled: boolean;
+    prompt: {
+      model: string;
+      rate: number;
+      min_chars: number;
+    };
     copilot_pre_tool_use: {
       enabled: boolean;
       rate: number;
@@ -140,6 +145,11 @@ storage_root = ".utk"
 
 [detok]
 enabled = true
+
+[detok.prompt]
+model = "default/LLMLingua2"
+rate = 0.33
+min_chars = 0
 
 [detok.copilot_pre_tool_use]
 enabled = true
@@ -273,6 +283,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     },
     detok: {
       enabled: readBoolean(detok.enabled, true),
+      prompt: normalizeDetokPrompt(detok.prompt),
       copilot_pre_tool_use: normalizeCopilotPreToolUse(detok.copilot_pre_tool_use)
     },
     tools: {
@@ -409,6 +420,15 @@ function normalizeTracing(value: unknown): UtkConfig['tracing'] {
     emit_eval_set: readBoolean(tracing.emit_eval_set, true),
     storage_root: readString(tracing.storage_root, '.utk/events'),
     process_id: readString(tracing.process_id, 'utk')
+  };
+}
+
+function normalizeDetokPrompt(value: unknown): UtkConfig['detok']['prompt'] {
+  const prompt = readNamedOptionalObject(value, 'detok.prompt');
+  return {
+    model: readString(prompt.model, 'default/LLMLingua2'),
+    rate: readNumber(prompt.rate, 0.33),
+    min_chars: readNumber(prompt.min_chars, 0)
   };
 }
 

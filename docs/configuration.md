@@ -28,6 +28,11 @@ storage_root = ".utk"
 [detok]
 enabled = true
 
+[detok.prompt]
+model = "default/LLMLingua2"
+rate = 0.33
+min_chars = 0
+
 [detok.copilot_pre_tool_use]
 enabled = true
 rate = 0.33
@@ -154,6 +159,29 @@ protected_fields = ["path", "file", "content", "patch", "diff", "id"]
 ```
 
 The hook only returns `modifiedArgs` when compression actually changes an allowlisted field. Errors, unavailable LLMLingua, short text, denied tools, and protected fields fail open.
+
+## Detoks Prompt Model
+
+CLI `utk detoks-prompt` and the MCP `detoks-prompt` tool read `.utk/config.toml`. Prefer CLI `--file` or `--stdin` for large prompts so prompt text stays outside agent context:
+
+```powershell
+node packages/cli/dist/utk.js detoks-prompt --file .\prompt.md
+Get-Content .\prompt.md -Raw | node packages/cli/dist/utk.js detoks-prompt --stdin
+```
+
+```toml
+[detok.prompt]
+model = "default/LLMLingua2"
+rate = 0.33
+min_chars = 0
+```
+
+Model ids use `<provider>/<model>`. Built-in ids:
+
+- `default/LLMLingua2`: local LLMLingua-2 path, default.
+- `Hugging-Face/Kompress-small`: optional local Kompress-small adapter. It requires the Kompress inference package to be installed and is intended only for natural-language prompt spans.
+
+Prompt compression protects fenced code, indented code, inline code, Markdown blockquotes, and quoted strings. Only remaining natural-language spans are sent to the compression model.
 
 ## Registered Structured Tools And Cache Policy
 
