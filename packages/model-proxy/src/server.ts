@@ -69,7 +69,7 @@ async function handleRequest(
   }
 ): Promise<void> {
   const route = req.url?.split('?')[0] ?? '/';
-  const clientAbort = createClientAbortController(req);
+  const clientAbort = createClientAbortController(req, res);
   try {
     if (req.method === 'GET' && route === '/healthz') {
       await context.metricsStore.recordRequest(route);
@@ -83,7 +83,11 @@ async function handleRequest(
     if (req.method === 'GET' && route === '/v1/models') {
       await context.metricsStore.recordRequest(route);
       const upstream = await fetchModelsWithTimeout(context, route, clientAbort.signal);
-      await pipeFetchResponse(upstream, res);
+      try {
+        await pipeFetchResponse(upstream.response, res);
+      } finally {
+        upstream.cleanup();
+      }
       return;
     }
     if (req.method === 'POST' && route === '/v1/utk/expand_context') {
@@ -175,12 +179,12 @@ async function fetchModelsWithTimeout(
   },
   route: string,
   clientSignal?: AbortSignal
-): Promise<Response> {
+): Promise<{ response: Response; cleanup(): void }> {
   const controller = new AbortController();
   const unlinkClientSignal = linkAbortSignal(clientSignal, controller);
   const timeout = setTimeout(() => controller.abort(), context.upstreamTimeoutMs);
   try {
-    return await fetch(joinUpstreamUrl(context.upstreamBaseUrl, route, {
+    const response = await fetch(joinUpstreamUrl(context.upstreamBaseUrl, route, {
       provider: context.upstreamProvider,
       apiVersion: context.upstreamApiVersion,
       organization: context.upstreamOrganization
@@ -191,24 +195,32 @@ async function fetchModelsWithTimeout(
         upstreamApiVersion: context.upstreamApiVersion
       })
     });
-  } finally {
+    return {
+      response,
+      cleanup() {
+        clearTimeout(timeout);
+        unlinkClientSignal();
+      }
+    };
+  } catch (error) {
     clearTimeout(timeout);
     unlinkClientSignal();
+    throw error;
   }
 }
 
-function createClientAbortController(req: IncomingMessage): { signal: AbortSignal; cleanup(): void } {
+function createClientAbortController(req: IncomingMessage, res: ServerResponse): { signal: AbortSignal; cleanup(): void } {
   const controller = new AbortController();
   const abort = (): void => {
-    if (!req.complete && !controller.signal.aborted) controller.abort(new ClientClosedRequestError());
+    if (!res.writableEnded && !controller.signal.aborted) controller.abort(new ClientClosedRequestError());
   };
   req.once('aborted', abort);
-  req.once('close', abort);
+  res.once('close', abort);
   return {
     signal: controller.signal,
     cleanup() {
       req.off('aborted', abort);
-      req.off('close', abort);
+      res.off('close', abort);
     }
   };
 }
