@@ -175,31 +175,21 @@ describe('bash-like llguidance tool invocation', () => {
     expect(emptyCompletionResult.invocation.argv).toEqual(['literal']);
   });
 
-  it('applies learned field grammars to completions on subsequent invocations', async () => {
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-bash-tool-learn-'));
+  it('returns completions literally without applying any FieldGrammar normalization', async () => {
+    // FieldGrammar observation-based normalization was removed when .grammar.json
+    // sidecars were dropped in favour of lark-only persistence. Completions are
+    // canonical literal values; the planner returns the matched completion as-is.
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-bash-tool-literal-'));
     const tool = {
       toolId: 'bash.fmt',
       command: 'fmt',
       parameters: [{ name: 'expr', kind: 'positional' as const, completions: ['a : b'], required: true }]
     };
-
-    const first = await completeBashLikeToolInvocation({
+    const result = await completeBashLikeToolInvocation({
       workspaceRoot,
       request: 'use expr a : b',
       tools: [tool]
     });
-    expect(first.invocation.parameters.expr).toBe('a : b');
-
-    const { recordFieldObservation } = await import('../src/index.js');
-    for (let i = 0; i < 5; i += 1) {
-      await recordFieldObservation(workspaceRoot, tool.toolId, 'expr', 'a:b');
-    }
-
-    const after = await completeBashLikeToolInvocation({
-      workspaceRoot,
-      request: 'use expr a : b',
-      tools: [tool]
-    });
-    expect(after.invocation.parameters.expr).toBe('a:b');
+    expect(result.invocation.parameters.expr).toBe('a : b');
   });
 });

@@ -2,7 +2,6 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
 import { pathToFileURL } from 'node:url';
-import type { FieldGrammar } from '../grammar/fieldGrammar.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 import { normalizeManifest } from './loadPack.js';
@@ -181,34 +180,31 @@ async function lintGrammarEntries(packDir: string, entries: PackGrammarEntry[], 
     }
     seenPairs.add(pairKey);
     const larkRelative = entry.lark ?? `grammars/${entry.tool}/${entry.field}.lark`;
-    const seedRelative = entry.seed ?? `grammars/${entry.tool}/${entry.field}.grammar.json`;
     const larkExists = await pathExists(safeJoin(packDir, larkRelative));
-    const seedExists = await pathExists(safeJoin(packDir, seedRelative));
-    if (!larkExists && !seedExists) {
+    const strayJsonRelative = `grammars/${entry.tool}/${entry.field}.grammar.json`;
+    const strayJsonExists = await pathExists(safeJoin(packDir, strayJsonRelative));
+    if (strayJsonExists) {
       findings.push({
         severity: 'error',
-        code: 'pack/grammars/missing-files',
-        message: `grammar ${pairKey} has neither a Lark file nor a FieldGrammar seed`,
+        code: 'pack/grammars/json-not-supported',
+        message: `.grammar.json sidecars are no longer supported; UTK persists field grammars as .lark only`,
+        file: strayJsonRelative,
+        hint: `remove ${strayJsonRelative} and ship ${larkRelative} instead`
+      });
+    }
+    if (!larkExists) {
+      findings.push({
+        severity: 'error',
+        code: 'pack/grammars/missing-lark',
+        message: `grammar ${pairKey} has no Lark file`,
         file: larkRelative,
-        hint: `expected ${larkRelative} or ${seedRelative}`
+        hint: `expected ${larkRelative}`
       });
       continue;
     }
-    if (larkExists) {
-      const lark = await readFile(safeJoin(packDir, larkRelative), 'utf8');
-      if (!/^\s*start\s*:/m.test(lark)) {
-        findings.push({ severity: 'error', code: 'pack/grammars/missing-start-rule', message: `Lark grammar lacks a 'start:' rule`, file: larkRelative });
-      }
-    }
-    if (seedExists) {
-      try {
-        const seed = JSON.parse(await readFile(safeJoin(packDir, seedRelative), 'utf8')) as FieldGrammar;
-        if (typeof seed.observations !== 'number' || typeof seed.version !== 'number' || !seed.separators || !seed.lengthRange) {
-          findings.push({ severity: 'error', code: 'pack/grammars/invalid-seed', message: `FieldGrammar seed has unexpected shape`, file: seedRelative });
-        }
-      } catch (error) {
-        findings.push({ severity: 'error', code: 'pack/grammars/invalid-seed', message: `FieldGrammar seed is not valid JSON: ${(error as Error).message}`, file: seedRelative });
-      }
+    const lark = await readFile(safeJoin(packDir, larkRelative), 'utf8');
+    if (!/^\s*start\s*:/m.test(lark)) {
+      findings.push({ severity: 'error', code: 'pack/grammars/missing-start-rule', message: `Lark grammar lacks a 'start:' rule`, file: larkRelative });
     }
   }
 }

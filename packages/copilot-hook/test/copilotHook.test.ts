@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, contentHash, normalizeToolId, recordFieldObservation } from '@utk/core';
+import { canonicalJson, contentHash, normalizeToolId } from '@utk/core';
 import { processCopilotPreToolUsePayload, processCopilotToolHookPayload } from '../src/copilotHook.js';
 
 describe('GitHub Copilot tool hook', () => {
@@ -232,8 +232,8 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
     }
   });
 
-  it('applies structured input normalization and cache bypass for registered tools', async () => {
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-structured-'));
+  it('writes a cache entry for the post-tool path and bypasses subsequent pre-tool calls with the same input', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-bypass-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
     await import('node:fs/promises').then((fs) =>
       fs.writeFile(
@@ -249,29 +249,11 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
           'tool = "github.search.issues"',
           'output_cache = true',
           'bypass_on_cache = true',
-          '',
-          '[[tools.registry.structured_fields]]',
-          'name = "query"',
-          'completions = ["is:issue is:open label:bug"]',
-          'required = true',
           ''
         ].join('\n'),
         'utf8'
       )
     );
-
-    await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:issue is:open label:bug');
-    await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:pr is:open label:fix');
-
-    const normalized = await processCopilotPreToolUsePayload(
-      JSON.stringify({
-        toolName: 'github.search.issues',
-        toolArgs: { query: '  is:issue  is:open  label : bug  ' }
-      }),
-      { workspaceRoot }
-    );
-    const normalizedParsed = JSON.parse(normalized ?? '{}') as { modifiedArgs?: { query?: string } };
-    expect(normalizedParsed.modifiedArgs?.query).toBe('is:issue is:open label:bug');
 
     await processCopilotToolHookPayload(
       JSON.stringify({
@@ -293,6 +275,8 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
     expect(bypassedParsed.permissionDecision).toBe('deny');
     expect(bypassedParsed.permissionDecisionReason).toContain('cache hit');
 
+    // An input that was never cached must NOT bypass — even when a stale file
+    // exists at an unrelated cache path.
     const malformedInput = { query: 'is:issue is:open label:enhancement' };
     const malformedHash = contentHash(canonicalJson(malformedInput));
     const malformedPath = path.join(
@@ -314,65 +298,26 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
         { workspaceRoot }
       )
     ).resolves.toBeUndefined();
-  });
 
-  it('preserves structured optimization when detok rewrite fails open', async () => {
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-detok-error-preserves-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
-    await import('node:fs/promises').then((fs) =>
-      fs.writeFile(
-        path.join(workspaceRoot, '.utk', 'config.toml'),
-        [
-          '[serialization]',
-          'default = "toon"',
-          '',
-          '[detok]',
-          'enabled = true',
-          '',
-          '[detok.copilot_pre_tool_use]',
-          'enabled = true',
-          'min_chars = 10',
-          'deny_tools = []',
-          'rewrite_fields = ["prompt"]',
-          'protected_fields = []',
-          '',
-          '[[tools.registry]]',
-          'tool = "agent.plan"',
-          '',
-          '[[tools.registry.structured_fields]]',
-          'name = "query"',
-          'completions = ["is:issue is:open"]',
-          ''
-        ].join('\n'),
-        'utf8'
-      )
+    // A genuinely-malformed cache file (not valid JSON) must also fall through
+    // without throwing — readCachedToolOutput's catch swallows parse errors.
+    const corruptInput = { query: 'corrupt-cache' };
+    const corruptHash = contentHash(canonicalJson(corruptInput));
+    const corruptPath = path.join(
+      workspaceRoot,
+      '.utk',
+      'cache',
+      'tool-output',
+      normalizeToolId('github.search.issues'),
+      `${corruptHash}.json`
     );
-
-    await recordFieldObservation(workspaceRoot, 'agent.plan', 'query', 'is:issue is:open');
-    await recordFieldObservation(workspaceRoot, 'agent.plan', 'query', 'is:pr is:closed');
-
-    const previousPython = process.env.UTK_DETOK_PYTHON;
-    process.env.UTK_DETOK_PYTHON = 'definitely-missing-python';
-
-    try {
-      const longPrompt = Array.from({ length: 1000 }, () => 'compress me').join(' ');
-      const output = await processCopilotPreToolUsePayload(
-        JSON.stringify({
-          toolName: 'agent.plan',
-          toolArgs: {
-            prompt: longPrompt,
-            query: '  is:issue   is:open  '
-          }
-        }),
+    await import('node:fs/promises').then((fs) => fs.writeFile(corruptPath, '{ not valid json', 'utf8'));
+    await expect(
+      processCopilotPreToolUsePayload(
+        JSON.stringify({ tool_name: 'github.search.issues', tool_input: corruptInput }),
         { workspaceRoot }
-      );
-      const parsed = JSON.parse(output ?? '{}') as { modifiedArgs?: { prompt?: string; query?: string } };
-      expect(parsed.modifiedArgs?.query).toBe('is:issue is:open');
-      expect(parsed.modifiedArgs?.prompt).toBe(longPrompt);
-    } finally {
-      if (previousPython === undefined) delete process.env.UTK_DETOK_PYTHON;
-      else process.env.UTK_DETOK_PYTHON = previousPython;
-    }
+      )
+    ).resolves.toBeUndefined();
   });
 
   it('writes cache even when post-tool input is not a plain object', async () => {
@@ -407,58 +352,6 @@ describe('GitHub Copilot LLMLingua preToolUse hook', () => {
         { workspaceRoot }
       )
     ).resolves.toContain('updatedOutput');
-  });
-
-  it('normalizes args in the post-tool path so pre-tool bypass hits regardless of caller arg shape', async () => {
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-copilot-cache-post-normalize-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(workspaceRoot, '.utk'), { recursive: true }));
-    await import('node:fs/promises').then((fs) =>
-      fs.writeFile(
-        path.join(workspaceRoot, '.utk', 'config.toml'),
-        [
-          '[serialization]',
-          'default = "toon"',
-          '',
-          '[detok]',
-          'enabled = false',
-          '',
-          '[[tools.registry]]',
-          'tool = "github.search.issues"',
-          'output_cache = true',
-          'bypass_on_cache = true',
-          '',
-          '[[tools.registry.structured_fields]]',
-          'name = "query"',
-          'completions = ["is:issue is:open label:bug"]',
-          'required = true',
-          ''
-        ].join('\n'),
-        'utf8'
-      )
-    );
-
-    for (let i = 0; i < 5; i += 1) {
-      await recordFieldObservation(workspaceRoot, 'github.search.issues', 'query', 'is:issue is:open label:bug');
-    }
-
-    await processCopilotToolHookPayload(
-      JSON.stringify({
-        toolName: 'github.search.issues',
-        toolArgs: { query: '  is:issue   is:open   label : bug  ' },
-        toolOutput: { items: [{ id: 1 }] }
-      }),
-      { workspaceRoot }
-    );
-
-    const bypassed = await processCopilotPreToolUsePayload(
-      JSON.stringify({
-        tool_name: 'github.search.issues',
-        tool_input: { query: 'is:issue is:open label:bug' }
-      }),
-      { workspaceRoot }
-    );
-    const bypassedParsed = JSON.parse(bypassed ?? '{}') as { permissionDecision?: string };
-    expect(bypassedParsed.permissionDecision).toBe('deny');
   });
 
   it('hashes cache keys canonically so arg key order does not cause cache misses', async () => {

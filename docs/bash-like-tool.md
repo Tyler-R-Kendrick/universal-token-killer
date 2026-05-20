@@ -5,14 +5,15 @@ not a public CLI. It is a library surface for hook hosts, generated agents, and
 tests that need compact command invocation templates.
 
 For non-CLI structured parameters, use the companion
-`completeStructuredToolInvocation` helper from `@utk/core`. Both helpers normalize
-parameter values using **learned field grammars** persisted under
-`.utk/tools/<normalized-tool-id>/fields/<normalized-field>.grammar.json` — both the
-tool id and the field name are passed through `normalizeToolId` (lowercased; dots,
-spaces, and other punctuation collapse to dashes), so the on-disk layout for
-`tool.search` field `query.text` is `.utk/tools/tool-search/fields/query-text.grammar.json`.
-UTK does not ship hand-written grammar definitions; separator/whitespace style is
-inferred from observations and refined over tool runs.
+`completeStructuredToolInvocation` helper from `@utk/core`. Both helpers match
+parameter values against literal `completions[]` from the tool definition.
+**Per-field grammars are persisted only as `.lark` files** at
+`.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` — both the tool
+id and the field name pass through `normalizeToolId` (lowercased; dots, spaces,
+and other punctuation collapse to dashes), so a `tool.search` field `query.text`
+lands at `.utk/tools/tool-search/fields/query-text.lark`. UTK does not write
+`.grammar.json` sidecars and packs may not ship them — lint rejects packs that
+include `.grammar.json` files.
 
 ## Purpose
 

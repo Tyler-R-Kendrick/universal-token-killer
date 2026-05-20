@@ -176,8 +176,8 @@ describe('lintPack', () => {
     expect(codes).toContain('pack/tools/bash-missing-command');
   });
 
-  it('lints grammars that ship only a seed observation', async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-seed-only-'));
+  it('rejects packs that ship a `.grammar.json` seed (no longer supported)', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-no-json-'));
     await buildPack(dir, {
       'utk.pack.toml': [
         manifest(),
@@ -186,15 +186,12 @@ describe('lintPack', () => {
         'field = "ref"',
         ''
       ].join('\n'),
-      'grammars/git/ref.grammar.json': JSON.stringify({
-        version: 1,
-        observations: 5,
-        separators: { '-': { tight: 5, loose: 0 } },
-        lengthRange: { min: 3, max: 12 }
-      })
+      'grammars/git/ref.lark': 'start: R\nR: /[a-z]+/\n',
+      'grammars/git/ref.grammar.json': '{}'
     });
     const report = await lintPack(dir);
-    expect(report.ok).toBe(true);
+    const codes = report.findings.map((finding) => finding.code);
+    expect(codes).toContain('pack/grammars/json-not-supported');
   });
 
   it('reports tool parse errors', async () => {
@@ -207,7 +204,7 @@ describe('lintPack', () => {
     expect(report.findings[0]?.code).toBe('pack/tools/parse');
   });
 
-  it('detects duplicate grammar pairs and missing files', async () => {
+  it('detects duplicate grammar pairs and missing .lark files', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-grammar-'));
     await buildPack(dir, {
       'utk.pack.toml': [
@@ -230,10 +227,10 @@ describe('lintPack', () => {
     const report = await lintPack(dir);
     const codes = report.findings.map((finding) => finding.code);
     expect(codes).toContain('pack/grammars/duplicate');
-    expect(codes).toContain('pack/grammars/missing-files');
+    expect(codes).toContain('pack/grammars/missing-lark');
   });
 
-  it('flags Lark grammars missing a start rule and seeds that are invalid', async () => {
+  it('flags Lark grammars missing a start rule', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-grammar-shape-'));
     await buildPack(dir, {
       'utk.pack.toml': [
@@ -241,25 +238,16 @@ describe('lintPack', () => {
         '[[grammars]]',
         'tool = "git"',
         'field = "ref"',
-        '',
-        '[[grammars]]',
-        'tool = "git"',
-        'field = "remote"',
         ''
       ].join('\n'),
-      'grammars/git/ref.lark': '# no start rule here\nFOO: /a/\n',
-      'grammars/git/ref.grammar.json': '{ "garbage": true }',
-      'grammars/git/remote.lark': 'start: R\nR: /b/\n',
-      'grammars/git/remote.grammar.json': '{ not json'
+      'grammars/git/ref.lark': '# no start rule here\nFOO: /a/\n'
     });
     const report = await lintPack(dir);
     const codes = report.findings.map((finding) => finding.code);
     expect(codes).toContain('pack/grammars/missing-start-rule');
-    expect(codes).toContain('pack/grammars/invalid-seed');
-    expect(codes.filter((code) => code === 'pack/grammars/invalid-seed').length).toBeGreaterThanOrEqual(2);
   });
 
-  it('accepts explicit lark and seed paths', async () => {
+  it('accepts explicit lark paths', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-grammar-explicit-'));
     await buildPack(dir, {
       'utk.pack.toml': [
@@ -268,16 +256,9 @@ describe('lintPack', () => {
         'tool = "git"',
         'field = "ref"',
         'lark = "explicit.lark"',
-        'seed = "explicit.grammar.json"',
         ''
       ].join('\n'),
-      'explicit.lark': 'start: R\nR: /b/\n',
-      'explicit.grammar.json': JSON.stringify({
-        version: 1,
-        observations: 1,
-        separators: {},
-        lengthRange: { min: 1, max: 1 }
-      })
+      'explicit.lark': 'start: R\nR: /b/\n'
     });
     const report = await lintPack(dir);
     expect(report.ok).toBe(true);

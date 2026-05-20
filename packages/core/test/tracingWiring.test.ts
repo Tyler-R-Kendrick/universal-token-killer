@@ -270,30 +270,4 @@ describe('loadPack tracer', () => {
     expect(codes).toContain('pack.manifest.parse');
   });
 
-  it('records pack.seed.parse when the seed file is malformed JSON', async () => {
-    const workspace = await workspaceWithTracing();
-    const config = await loadUtkConfig(workspace);
-    const tracer = createRunContext(config, workspace, { runId: 'pack-2', now: () => new Date('2026-05-19T22:00:00Z') });
-    const packDir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-seed-'));
-    await writeFile(
-      path.join(packDir, 'utk.pack.toml'),
-      [
-        '[pack]',
-        'name = "demo"',
-        'version = "1.0.0"',
-        '',
-        '[[grammars]]',
-        'tool = "t"',
-        'field = "f"',
-        ''
-      ].join('\n'),
-      'utf8'
-    );
-    await mkdir(path.join(packDir, 'grammars', 't'), { recursive: true });
-    await writeFile(path.join(packDir, 'grammars', 't', 'f.lark'), 'start: "x"\n', 'utf8');
-    await writeFile(path.join(packDir, 'grammars', 't', 'f.grammar.json'), 'not valid json', 'utf8');
-    await loadPack(packDir, { tracer });
-    const codes = tracer.spans.flatMap((span) => span.logs.flatMap((log) => log.fields.filter((field) => field.key === 'utk.failure.code').map((field) => field.value)));
-    expect(codes).toContain('pack.seed.parse');
-  });
 });

@@ -51,7 +51,7 @@ config: {
 }
 ```
 
-- Default `allow` list: `['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.']`. Covers both the slash-namespaced codes from `lintPack` (`pack/manifest/missing-license`) and the dot-namespaced codes from `loadPack` / `templateRuntime` (`pack.manifest.parse`, `pack.seed.parse`, `template.load`). Any `utk.failure.code` whose value starts with one of these prefixes counts as a failure.
+- Default `allow` list: `['pack/', 'pack.', 'template/', 'template.', 'router/', 'router.']`. Covers both the slash-namespaced codes from `lintPack` (`pack/manifest/missing-license`) and the dot-namespaced codes from `loadPack` / `templateRuntime` (`pack.manifest.parse`, `template.load`). Any `utk.failure.code` whose value starts with one of these prefixes counts as a failure.
 - Scans both span tags and log fields.
 - Missing `trace` ⇒ vacuously PASSES (score 1).
 - `details.offending` lists the matching codes.

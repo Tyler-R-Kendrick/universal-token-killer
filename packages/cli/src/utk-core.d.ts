@@ -18,8 +18,6 @@ declare module '@utk/core' {
       tool: string;
       field: string;
       larkHash: string;
-      seedObservations: number;
-      seedHash: string | null;
     }>;
   };
 

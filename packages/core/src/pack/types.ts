@@ -1,5 +1,3 @@
-import type { FieldGrammar } from '../grammar/fieldGrammar.js';
-
 export type PackToolEntry = {
   id: string;
   kind: 'bash-like' | 'structured';
@@ -13,7 +11,6 @@ export type PackGrammarEntry = {
   tool: string;
   field: string;
   lark?: string;
-  seed?: string;
   description?: string;
 };
 
@@ -54,8 +51,6 @@ export type PackGrammarRecord = {
   field: string;
   lark: string;
   larkHash: string;
-  seed?: FieldGrammar;
-  seedHash?: string;
 };
 
 export type PackToolDefinition = {
@@ -90,7 +85,5 @@ export type InstalledPack = {
     tool: string;
     field: string;
     larkHash: string;
-    seedObservations: number;
-    seedHash: string | null;
   }>;
 };

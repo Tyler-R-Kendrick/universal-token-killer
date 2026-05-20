@@ -1,11 +1,8 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { atomicWriteFile } from '../artifact/atomicWrite.js';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
-import { mergeFieldGrammar } from '../grammar/fieldGrammar.js';
-import { fieldGrammarPath, loadFieldGrammar } from '../grammar/grammarStore.js';
-import { subtractFieldGrammar } from '../grammar/subtractFieldGrammar.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { fetchPackToTempDir, type PackFetcher } from './fetcher.js';
 import { lintPack, type LintOptions, type LintReport, formatLintReport } from './lintPack.js';
@@ -60,7 +57,7 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
 
   try {
     await addPackRegistryBlocks(workspaceRoot, pack.manifest.pack.name, pack.tools);
-    await mergePackGrammars(workspaceRoot, pack.grammars);
+    await installPackGrammars(workspaceRoot, pack.grammars);
     const templateRecords = await persistTemplateDescriptors(workspaceRoot, pack);
 
     const installedAt = (options.now ?? (() => new Date()))().toISOString();
@@ -81,9 +78,7 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
       grammars: pack.grammars.map((grammar) => ({
         tool: grammar.tool,
         field: grammar.field,
-        larkHash: grammar.larkHash,
-        seedObservations: grammar.seed?.observations ?? 0,
-        seedHash: grammar.seedHash ?? null
+        larkHash: grammar.larkHash
       }))
     };
 
@@ -91,10 +86,6 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
     await writeLockfile(workspaceRoot, [...remaining, installed]);
     return installed;
   } catch (error) {
-    // Best-effort rollback: any failure between cp() and writeLockfile() leaves the
-    // workspace partially mutated. Reverse the steps in lock-step so .utk/config.toml,
-    // .utk/tools/<id>/fields, .utk/cache/templates, and .utk/packs/<name> all return
-    // to their pre-install state. Lockfile was never written so it doesn't need touching.
     try {
       await rollbackInstall(workspaceRoot, pack);
     } catch {
@@ -105,13 +96,11 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
 }
 
 async function rollbackInstall(workspaceRoot: string, pack: LoadedPack): Promise<void> {
-  // Rollback is best-effort: each step's failure must not stop the others. The pack
-  // directory removal is the highest priority — it's the largest piece of state and
-  // the one most likely to be queried by listInstalledPacks() consumers.
+  // Rollback is best-effort: each step's failure must not stop the others.
   const steps: Array<() => Promise<void>> = [
     () => removePackRegistryBlocks(workspaceRoot, pack.manifest.pack.name),
     ...pack.grammars.map((grammar) => async () => {
-      await subtractInstalledGrammar(workspaceRoot, grammar.tool, grammar.field, grammar.seed?.observations ?? 0);
+      await removeLarkArtifact(workspaceRoot, grammar.tool, grammar.field);
     }),
     () => rm(safeJoin(workspaceRoot, '.utk', 'cache', 'templates', `${pack.manifest.pack.name}.json`), { force: true }),
     () => rm(safeJoin(workspaceRoot, '.utk', 'packs', pack.manifest.pack.name), { recursive: true, force: true })
@@ -137,7 +126,7 @@ async function uninstallPackByName(workspaceRoot: string, name: string): Promise
   }
   await removePackRegistryBlocks(workspaceRoot, name);
   for (const grammar of target.grammars) {
-    await subtractInstalledGrammar(workspaceRoot, grammar.tool, grammar.field, grammar.seedObservations);
+    await removeLarkArtifact(workspaceRoot, grammar.tool, grammar.field);
   }
   await rm(safeJoin(workspaceRoot, '.utk', 'packs', name), { recursive: true, force: true });
   await rm(safeJoin(workspaceRoot, '.utk', 'cache', 'templates', `${name}.json`), { force: true });
@@ -149,49 +138,16 @@ export async function listInstalledPacks(workspaceRoot: string): Promise<Install
   return await readLockfile(workspaceRoot);
 }
 
-async function mergePackGrammars(workspaceRoot: string, grammars: PackGrammarRecord[]): Promise<void> {
+async function installPackGrammars(workspaceRoot: string, grammars: PackGrammarRecord[]): Promise<void> {
   for (const grammar of grammars) {
     const toolId = normalizeToolId(grammar.tool);
     const fieldId = normalizeToolId(grammar.field);
     const larkPath = safeJoin(workspaceRoot, '.utk', 'tools', toolId, 'fields', `${fieldId}.lark`);
     await mkdir(path.dirname(larkPath), { recursive: true });
-    // Atomic writes — these files are referenced by the lockfile and used by
-    // the constrained decoder; a torn write would surface as an unparseable
-    // grammar at the next mediation.
+    // Atomic write — the .lark is read by the constrained decoder at every
+    // mediation; a torn write would surface as an unparseable grammar.
     await atomicWriteFile(larkPath, grammar.lark);
-    if (grammar.seed) {
-      const existing = await loadFieldGrammar(workspaceRoot, grammar.tool, grammar.field);
-      const merged = mergeFieldGrammar(existing, grammar.seed);
-      const grammarPath = fieldGrammarPath(workspaceRoot, grammar.tool, grammar.field);
-      await mkdir(path.dirname(grammarPath), { recursive: true });
-      await atomicWriteFile(grammarPath, canonicalJson(merged));
-    }
   }
-}
-
-async function subtractInstalledGrammar(workspaceRoot: string, tool: string, field: string, seedObservations: number): Promise<void> {
-  if (seedObservations <= 0) {
-    await removeLarkArtifact(workspaceRoot, tool, field);
-    return;
-  }
-  const existing = await loadFieldGrammar(workspaceRoot, tool, field);
-  if (!existing) {
-    await removeLarkArtifact(workspaceRoot, tool, field);
-    return;
-  }
-  const reduced = subtractFieldGrammar(existing, {
-    version: existing.version,
-    observations: seedObservations,
-    separators: existing.separators,
-    lengthRange: existing.lengthRange
-  });
-  const grammarPath = fieldGrammarPath(workspaceRoot, tool, field);
-  if (!reduced) {
-    await rm(grammarPath, { force: true });
-  } else {
-    await writeFile(grammarPath, canonicalJson(reduced), 'utf8');
-  }
-  await removeLarkArtifact(workspaceRoot, tool, field);
 }
 
 async function removeLarkArtifact(workspaceRoot: string, tool: string, field: string): Promise<void> {

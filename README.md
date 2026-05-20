@@ -120,13 +120,10 @@ console.log(result.invocation.command); // git status --short
 
 ### Complete A Structured LLM Tool Invocation
 
-UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are not declared — they are **discovered** from observations and refined over tool runs (persisted at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.grammar.json` — both ids pass through `normalizeToolId`, so dots and other punctuation become dashes on disk). The tool definition just names the fields and any canonical example completions:
+UTK supports structured tool parameters with cache-aware invocation planning. Per-field grammars are **`.lark` only** — packs ship a `.lark` and UTK persists it at `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId`, so dots and other punctuation become dashes on disk). `.grammar.json` sidecars are not supported and are rejected by `lintPack`. The tool definition just names the fields and any canonical example completions:
 
 ```ts
-import { completeStructuredToolInvocation, recordFieldObservation } from '@utk/core';
-
-// Seed observations as real tool runs happen (typically from a hook).
-await recordFieldObservation(process.cwd(), 'tool.search', 'query', 'is:issue is:open label:bug');
+import { completeStructuredToolInvocation } from '@utk/core';
 
 const result = await completeStructuredToolInvocation({
   workspaceRoot: process.cwd(),
@@ -234,7 +231,7 @@ registry = []
 
 ## Sharing Optimizations As Packs
 
-Tool definitions, Lark grammars (for llguidance constrained decoding), FieldGrammar seed observations, and prompt-template DSL files travel together as a versioned **pack**. Install one with the `utk` CLI:
+Tool definitions, Lark grammars (for llguidance constrained decoding), and prompt-template DSL files travel together as a versioned **pack**. Install one with the `utk` CLI:
 
 ```bash
 utk pack add ./my-git-pack            # local directory
@@ -250,7 +247,7 @@ utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
 
 `utk pack add` runs the linter and refuses to install packs with errors. Pass `--force` after re-checking the report if you need to override.
 
-The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk), merges `FieldGrammar` seeds with any already-observed locally, caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
+The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
 
 **Safety:**
 
@@ -265,7 +262,7 @@ my-pack/
 ├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
 ├── tools/<id>.toml           # bash-like or structured tool definitions
 ├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
-├── grammars/<tool>/<field>.grammar.json # optional FieldGrammar seed
+# .lark is the ONLY supported grammar artifact — no .grammar.json sidecars
 └── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
 ```
 

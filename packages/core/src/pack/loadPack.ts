@@ -1,8 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
-import type { FieldGrammar } from '../grammar/fieldGrammar.js';
-import { compileLark } from '../grammar/compileLark.js';
 import { safeJoin } from '../security/pathSafety.js';
 import { contentHash } from '../artifact/canonical.js';
 import { recordFailure, type RunContext } from '../tracing/index.js';
@@ -39,7 +37,7 @@ export async function loadPackManifest(packDir: string, options: LoadPackOptions
 export async function loadPack(packDir: string, options: LoadPackOptions = {}): Promise<LoadedPack> {
   const manifest = await loadPackManifest(packDir, options);
   const tools = await loadPackTools(packDir, manifest.tools ?? []);
-  const grammars = await loadPackGrammars(packDir, manifest.grammars ?? [], options);
+  const grammars = await loadPackGrammars(packDir, manifest.grammars ?? []);
   const templates = await loadPackTemplates(packDir, manifest.templates ?? []);
   return { manifest, rootDir: packDir, tools, grammars, templates };
 }
@@ -103,62 +101,21 @@ function parseToolFile(filePath: string, text: string): Record<string, unknown> 
   return parse(text) as Record<string, unknown>;
 }
 
-async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[], options: LoadPackOptions = {}): Promise<PackGrammarRecord[]> {
+async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): Promise<PackGrammarRecord[]> {
   const results: PackGrammarRecord[] = [];
   for (const entry of entries) {
     const larkPath = safeJoin(packDir, entry.lark ?? `grammars/${entry.tool}/${entry.field}.lark`);
-    let seed: FieldGrammar | undefined;
-    let seedHash: string | undefined;
-    if (entry.seed !== undefined) {
-      const seedPath = safeJoin(packDir, entry.seed);
-      const seedText = await readFile(seedPath, 'utf8');
-      seed = JSON.parse(seedText) as FieldGrammar;
-      seedHash = contentHash(seed, 16);
-    } else {
-      const defaultSeedPath = safeJoin(packDir, `grammars/${entry.tool}/${entry.field}.grammar.json`);
-      seed = await tryReadSeed(defaultSeedPath, options);
-      if (seed) seedHash = contentHash(seed, 16);
-    }
-    let lark: string;
-    try {
-      lark = await readFile(larkPath, 'utf8');
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error;
-      }
-      if (!seed) {
-        throw new Error(`Grammar ${entry.tool}/${entry.field} requires either a lark file or a seed observation`);
-      }
-      lark = compileLark(seed);
-    }
-    const record: PackGrammarRecord = {
+    // `.lark` is the only supported grammar format. Packs may not ship `.grammar.json` —
+    // the FieldGrammar JSON sidecar was removed in favour of lark-only persistence.
+    const lark = await readFile(larkPath, 'utf8');
+    results.push({
       tool: entry.tool,
       field: entry.field,
       lark,
       larkHash: contentHash(lark, 16)
-    };
-    if (seed) record.seed = seed;
-    if (seedHash) record.seedHash = seedHash;
-    results.push(record);
+    });
   }
   return results;
-}
-
-async function tryReadSeed(seedPath: string, options: LoadPackOptions = {}): Promise<FieldGrammar | undefined> {
-  try {
-    const text = await readFile(seedPath, 'utf8');
-    return JSON.parse(text) as FieldGrammar;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      recordFailure(options.tracer, {
-        name: 'pack.seed.parse',
-        runType: 'parser',
-        error: error as Error,
-        extra: { seedPath }
-      });
-    }
-    return undefined;
-  }
 }
 
 async function loadPackTemplates(packDir: string, entries: PackTemplateEntry[]): Promise<PackTemplateRecord[]> {
@@ -193,12 +150,14 @@ function readBoolean(value: unknown, name: string): boolean {
 
 function normalizeGrammarEntry(value: unknown, index: number): PackGrammarEntry {
   const obj = readObject(value, `grammars[${index}]`);
+  if (obj.seed !== undefined) {
+    throw new Error(`grammars[${index}].seed is no longer supported — UTK persists grammars as .lark only. Remove the seed field and ship a .lark file instead.`);
+  }
   const entry: PackGrammarEntry = {
     tool: readString(obj.tool, `grammars[${index}].tool`),
     field: readString(obj.field, `grammars[${index}].field`)
   };
   if (obj.lark !== undefined) entry.lark = readString(obj.lark, `grammars[${index}].lark`);
-  if (obj.seed !== undefined) entry.seed = readString(obj.seed, `grammars[${index}].seed`);
   if (obj.description !== undefined) entry.description = readString(obj.description, `grammars[${index}].description`);
   return entry;
 }

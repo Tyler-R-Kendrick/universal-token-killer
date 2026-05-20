@@ -44,7 +44,7 @@ The mediator emits a root `utk.mediate` span and a child `tool.<id>` span around
 | `detok.unavailable` | soft | LLMLingua-2 subprocess error |
 | `router.fallback` | soft | `routeFromCandidates` reached the empty-candidate fallback |
 | `template.load` | parse | cached template descriptor missing/malformed |
-| `pack.manifest.parse`, `pack.seed.parse`, `pack/<rule>` | parse | `loadPack` / `lintPack` |
+| `pack.manifest.parse`, `pack/<rule>` | parse | `loadPack` / `lintPack` |
 
 Full vocabulary, extras, and the source-of-truth file/line each code is emitted from: [refs/tracing-failure-codes.md](refs/tracing-failure-codes.md).
 

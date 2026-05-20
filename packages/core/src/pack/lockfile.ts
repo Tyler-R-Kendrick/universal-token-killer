@@ -4,7 +4,7 @@ import { parse } from 'smol-toml';
 import { atomicWriteFile } from '../artifact/atomicWrite.js';
 import type { InstalledPack } from './types.js';
 
-export const LOCKFILE_SPEC = '1';
+export const LOCKFILE_SPEC = '2';
 
 export async function readLockfile(workspaceRoot: string): Promise<InstalledPack[]> {
   const lockPath = path.join(workspaceRoot, '.utk', 'packs.lock.toml');
@@ -51,8 +51,6 @@ export function renderLockfile(packs: InstalledPack[]): string {
       lines.push(`tool = ${tomlString(grammar.tool)}`);
       lines.push(`field = ${tomlString(grammar.field)}`);
       lines.push(`lark_hash = ${tomlString(grammar.larkHash)}`);
-      lines.push(`seed_observations = ${grammar.seedObservations}`);
-      lines.push(`seed_hash = ${grammar.seedHash !== null ? tomlString(grammar.seedHash) : '""'}`);
     }
   }
   return `${lines.join('\n')}\n`;
@@ -82,13 +80,10 @@ function normalizeLockGrammar(raw: unknown): InstalledPack['grammars'][number] {
     throw new Error('packs.lock.toml grammars entry must be a table');
   }
   const obj = raw as Record<string, unknown>;
-  const seedHashValue = typeof obj.seed_hash === 'string' && obj.seed_hash.length > 0 ? obj.seed_hash : null;
   return {
     tool: readString(obj.tool, 'tool'),
     field: readString(obj.field, 'field'),
-    larkHash: readString(obj.lark_hash, 'lark_hash'),
-    seedObservations: typeof obj.seed_observations === 'number' ? obj.seed_observations : 0,
-    seedHash: seedHashValue
+    larkHash: readString(obj.lark_hash, 'lark_hash')
   };
 }
 

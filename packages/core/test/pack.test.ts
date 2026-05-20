@@ -4,10 +4,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
-import { compileLark } from '../src/grammar/compileLark.js';
-import { inferFieldGrammar, mergeFieldGrammar, type FieldGrammar } from '../src/grammar/fieldGrammar.js';
-import { fieldGrammarPath, loadFieldGrammar } from '../src/grammar/grammarStore.js';
-import { subtractFieldGrammar } from '../src/grammar/subtractFieldGrammar.js';
 import { installPack, listInstalledPacks, uninstallPack } from '../src/pack/installPack.js';
 import { loadPack, loadPackManifest, normalizeManifest } from '../src/pack/loadPack.js';
 import { readLockfile, renderLockfile, writeLockfile } from '../src/pack/lockfile.js';
@@ -29,7 +25,7 @@ async function writeFixturePack(dir: string, overrides: { manifest?: string; too
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, content, 'utf8');
   }
-  const grammars = overrides.grammars ?? { 'grammars/git/ref.lark': defaultLark(), 'grammars/git/ref.grammar.json': JSON.stringify(defaultSeedGrammar(), null, 2) };
+  const grammars = overrides.grammars ?? { 'grammars/git/ref.lark': defaultLark() };
   for (const [relative, content] of Object.entries(grammars)) {
     const target = path.join(dir, relative);
     await mkdir(path.dirname(target), { recursive: true });
@@ -56,7 +52,7 @@ function defaultManifest(): string {
     '',
     '[compatibility]',
     'utk = ">=0.1.0"',
-    'pack_spec = "1"',
+    'pack_spec = "2"',
     '',
     '[[tools]]',
     'id = "git"',
@@ -104,11 +100,6 @@ function defaultLark(): string {
   ].join('\n');
 }
 
-function defaultSeedGrammar(): FieldGrammar {
-  const merged = mergeFieldGrammar(inferFieldGrammar('feature/login-fix'), inferFieldGrammar('main'));
-  return mergeFieldGrammar(merged, inferFieldGrammar('release-v1.0'));
-}
-
 function defaultTemplate(): string {
   return [
     "import { defineTemplate, grammarSlot } from '@utk/core';",
@@ -124,87 +115,6 @@ function defaultTemplate(): string {
     ''
   ].join('\n');
 }
-
-describe('compileLark', () => {
-  it('emits deterministic Lark with observed separators', () => {
-    const grammar = mergeFieldGrammar(inferFieldGrammar('feature/login-fix'), inferFieldGrammar('main'));
-    const a = compileLark(grammar);
-    const b = compileLark(grammar);
-    expect(a).toBe(b);
-    expect(a).toContain('start: VALUE');
-    expect(a).toContain('VALUE: /[A-Za-z0-9');
-    expect(a).toContain('observations:');
-  });
-
-  it('accepts a custom rule name and exact length range', () => {
-    const grammar: FieldGrammar = {
-      version: 1,
-      observations: 1,
-      separators: { '/': { tight: 1, loose: 0 }, '_': { tight: 0, loose: 1 }, '?': { tight: 0, loose: 0 } },
-      lengthRange: { min: 5, max: 5 }
-    };
-    const output = compileLark(grammar, { ruleName: 'REF' });
-    expect(output).toContain('start: REF');
-    expect(output).toMatch(/REF: \/\[A-Za-z0-9[^\]]*\]\{5\}\//);
-  });
-
-  it('preserves alphanumeric separators when escaping', () => {
-    const grammar: FieldGrammar = {
-      version: 1,
-      observations: 1,
-      separators: { a: { tight: 1, loose: 0 } },
-      lengthRange: { min: 1, max: 3 }
-    };
-    const output = compileLark(grammar);
-    expect(output).toContain('VALUE: /[A-Za-z0-9 a]{1,3}/');
-  });
-
-  it('clamps length to at least 1', () => {
-    const grammar: FieldGrammar = {
-      version: 1,
-      observations: 1,
-      separators: {},
-      lengthRange: { min: 0, max: 0 }
-    };
-    const output = compileLark(grammar);
-    expect(output).toContain('VALUE: /[A-Za-z0-9 ]{1}/');
-  });
-});
-
-describe('subtractFieldGrammar', () => {
-  it('round-trips through merge', () => {
-    const seed = mergeFieldGrammar(inferFieldGrammar('feature/login-fix'), inferFieldGrammar('main'));
-    const observation = inferFieldGrammar('release-v1.0');
-    const merged = mergeFieldGrammar(seed, observation);
-    const restored = subtractFieldGrammar(merged, observation);
-    expect(restored).toBeDefined();
-    expect(restored?.observations).toBe(seed.observations);
-  });
-
-  it('returns undefined when subtraction fully consumes observations', () => {
-    const seed = inferFieldGrammar('main');
-    const result = subtractFieldGrammar(seed, seed);
-    expect(result).toBeUndefined();
-  });
-
-  it('drops separator entries that hit zero and clamps negative remainders', () => {
-    const current: FieldGrammar = {
-      version: 1,
-      observations: 5,
-      separators: { '-': { tight: 3, loose: 0 }, '/': { tight: 2, loose: 0 } },
-      lengthRange: { min: 1, max: 10 }
-    };
-    const seed: FieldGrammar = {
-      version: 1,
-      observations: 2,
-      separators: { '-': { tight: 3, loose: 0 }, '/': { tight: 10, loose: 0 } },
-      lengthRange: { min: 1, max: 10 }
-    };
-    const reduced = subtractFieldGrammar(current, seed);
-    expect(reduced?.separators['-']).toBeUndefined();
-    expect(reduced?.separators['/']).toBeUndefined();
-  });
-});
 
 describe('parsePackSource', () => {
   it('parses local paths', () => {
@@ -322,17 +232,8 @@ describe('loadPackManifest', () => {
     expect(pack.templates[0]?.source).toContain('defineTemplate');
   });
 
-  it('compiles lark from seed when lark file is absent', async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-seed-only-'));
-    await writeFixturePack(dir, {
-      grammars: { 'grammars/git/ref.grammar.json': JSON.stringify(defaultSeedGrammar(), null, 2) }
-    });
-    const pack = await loadPack(dir);
-    expect(pack.grammars[0]?.lark).toContain('# generated by @utk/core');
-  });
-
-  it('rejects a grammar entry with neither lark nor seed', async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-missing-grammar-'));
+  it('rejects a grammar entry without a .lark file', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-missing-lark-'));
     const manifest = [
       '[pack]',
       'name = "x"',
@@ -344,7 +245,24 @@ describe('loadPackManifest', () => {
       ''
     ].join('\n');
     await writeFixturePack(dir, { manifest, tools: {}, grammars: {}, templates: {} });
-    await expect(loadPack(dir)).rejects.toThrow(/requires either/);
+    await expect(loadPack(dir)).rejects.toThrow();
+  });
+
+  it('rejects a pack that declares a `seed` field on a grammar entry', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-rejects-seed-'));
+    const manifest = [
+      '[pack]',
+      'name = "x"',
+      'version = "1.0.0"',
+      '',
+      '[[grammars]]',
+      'tool = "git"',
+      'field = "ref"',
+      'seed = "grammars/git/ref.grammar.json"',
+      ''
+    ].join('\n');
+    await writeFixturePack(dir, { manifest, tools: {}, grammars: {}, templates: {} });
+    await expect(loadPackManifest(dir)).rejects.toThrow(/no longer supported/);
   });
 
   it('supports a JSON tool file via the file override', async () => {
@@ -370,8 +288,8 @@ describe('loadPackManifest', () => {
     expect(pack.tools[0]?.source.tool).toBeDefined();
   });
 
-  it('reads explicit seed paths and supports structured tools', async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-explicit-seed-'));
+  it('reads explicit lark paths and supports structured tools', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-explicit-lark-'));
     const manifest = [
       '[pack]',
       'name = "code-search"',
@@ -385,21 +303,19 @@ describe('loadPackManifest', () => {
       'tool = "tool.code.search"',
       'field = "query"',
       'lark = "grammars/explicit.lark"',
-      'seed = "grammars/explicit.grammar.json"',
       ''
     ].join('\n');
     await writeFixturePack(dir, {
       manifest,
       tools: { 'tools/tool.code.search.toml': '[tool]\nid = "tool.code.search"\n' },
       grammars: {
-        'grammars/explicit.lark': 'start: Q\nQ: /[A-Za-z]+/\n',
-        'grammars/explicit.grammar.json': JSON.stringify(inferFieldGrammar('hello'))
+        'grammars/explicit.lark': 'start: Q\nQ: /[A-Za-z]+/\n'
       },
       templates: {}
     });
     const pack = await loadPack(dir);
     expect(pack.grammars[0]?.lark).toContain('Q: /[A-Za-z]+/');
-    expect(pack.grammars[0]?.seed?.observations).toBe(1);
+    expect(pack.grammars[0]?.larkHash).toMatch(/^[a-f0-9]+$/);
   });
 
   it('rejects invalid manifest shapes', () => {
@@ -573,16 +489,16 @@ describe('lockfile', () => {
       tools: ['git'],
       templates: ['git.checkout'],
       grammars: [
-        { tool: 'git', field: 'ref', larkHash: 'h1', seedObservations: 3, seedHash: 'h2' },
-        { tool: 'git', field: 'remote', larkHash: 'h3', seedObservations: 0, seedHash: null }
+        { tool: 'git', field: 'ref', larkHash: 'h1' },
+        { tool: 'git', field: 'remote', larkHash: 'h3' }
       ]
     };
     await writeLockfile(workspace, [pack]);
     const round = await readLockfile(workspace);
     expect(round).toHaveLength(1);
     expect(round[0]?.name).toBe('git-cli');
-    expect(round[0]?.grammars[0]?.seedHash).toBe('h2');
-    expect(round[0]?.grammars[1]?.seedHash).toBe(null);
+    expect(round[0]?.grammars[0]?.larkHash).toBe('h1');
+    expect(round[0]?.grammars[1]?.larkHash).toBe('h3');
   });
 
   it('returns an empty list when the lockfile is missing', async () => {
@@ -594,14 +510,14 @@ describe('lockfile', () => {
   it('rejects malformed lockfile entries', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-bad-'));
     await mkdir(path.join(workspace, '.utk'), { recursive: true });
-    await writeFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'spec = "1"\n\n[[packs]]\nname = 42\n', 'utf8');
+    await writeFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'spec = "2"\n\n[[packs]]\nname = 42\n', 'utf8');
     await expect(readLockfile(workspace)).rejects.toThrow();
   });
 
   it('rejects non-table pack entries', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-nontable-'));
     await mkdir(path.join(workspace, '.utk'), { recursive: true });
-    await writeFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'spec = "1"\npacks = ["broken"]\n', 'utf8');
+    await writeFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'spec = "2"\npacks = ["broken"]\n', 'utf8');
     await expect(readLockfile(workspace)).rejects.toThrow(/must be a table/);
   });
 
@@ -611,7 +527,7 @@ describe('lockfile', () => {
     await writeFile(
       path.join(workspace, '.utk', 'packs.lock.toml'),
       [
-        'spec = "1"',
+        'spec = "2"',
         '',
         '[[packs]]',
         'name = "p"',
@@ -629,35 +545,7 @@ describe('lockfile', () => {
   });
 
   it('renders empty pack lists', () => {
-    expect(renderLockfile([])).toContain('spec = "1"');
-  });
-
-  it('reads grammars whose seed_observations field is missing', async () => {
-    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-lockfile-no-seed-'));
-    await mkdir(path.join(workspace, '.utk'), { recursive: true });
-    await writeFile(
-      path.join(workspace, '.utk', 'packs.lock.toml'),
-      [
-        'spec = "1"',
-        '',
-        '[[packs]]',
-        'name = "p"',
-        'version = "1.0.0"',
-        'source = "s"',
-        'revision = "r"',
-        'content_hash = "h"',
-        'installed_at = "t"',
-        '',
-        '[[packs.grammars]]',
-        'tool = "git"',
-        'field = "ref"',
-        'lark_hash = "h"',
-        ''
-      ].join('\n'),
-      'utf8'
-    );
-    const round = await readLockfile(workspace);
-    expect(round[0]?.grammars[0]?.seedObservations).toBe(0);
+    expect(renderLockfile([])).toContain('spec = "2"');
   });
 
   it('handles arrays missing optional fields gracefully', async () => {
@@ -666,7 +554,7 @@ describe('lockfile', () => {
     await writeFile(
       path.join(workspace, '.utk', 'packs.lock.toml'),
       [
-        'spec = "1"',
+        'spec = "2"',
         '',
         '[[packs]]',
         'name = "p"',
@@ -760,8 +648,10 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     const lark = await readFile(path.join(workspace, '.utk', 'tools', 'git', 'fields', 'ref.lark'), 'utf8');
     expect(lark).toContain('REF');
 
-    const grammar = await loadFieldGrammar(workspace, 'git', 'ref');
-    expect(grammar?.observations).toBeGreaterThan(0);
+    // .grammar.json must never be written under .utk/ — lark is the only persisted format.
+    const fieldsDir = path.join(workspace, '.utk', 'tools', 'git', 'fields');
+    const fieldFiles = await readdir(fieldsDir);
+    expect(fieldFiles.every((name) => !name.endsWith('.grammar.json'))).toBe(true);
 
     const list = await listInstalledPacks(workspace);
     expect(list).toHaveLength(1);
@@ -884,27 +774,29 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     await expect(uninstallPack(workspace, 'absent')).rejects.toThrow(/not installed/);
   });
 
-  it('subtracts seed observations during uninstall and preserves residual learning', async () => {
-    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-residual-src-'));
+  it('removes the .lark artifact during uninstall and writes no .grammar.json on install', async () => {
+    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-lark-src-'));
     await writeFixturePack(source);
-    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-residual-ws-'));
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-lark-ws-'));
     await installPack(workspace, { type: 'local', path: source });
-    const grammarPath = fieldGrammarPath(workspace, 'git', 'ref');
-    const before = await loadFieldGrammar(workspace, 'git', 'ref');
-    const next = mergeFieldGrammar(before, inferFieldGrammar('extra/local-observation'));
-    await writeFile(grammarPath, JSON.stringify(next), 'utf8');
+    // Walk the workspace and assert no .grammar.json files exist.
+    async function findGrammarJson(dir: string): Promise<string[]> {
+      const out: string[] = [];
+      const stack = [dir];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        const entries = await readdir(current, { withFileTypes: true });
+        for (const entry of entries) {
+          const full = path.join(current, entry.name);
+          if (entry.isDirectory()) stack.push(full);
+          else if (entry.name.endsWith('.grammar.json')) out.push(full);
+        }
+      }
+      return out;
+    }
+    expect(await findGrammarJson(path.join(workspace, '.utk'))).toEqual([]);
     await uninstallPack(workspace, 'git-cli');
-    const after = await loadFieldGrammar(workspace, 'git', 'ref');
-    expect(after?.observations).toBeGreaterThanOrEqual(1);
-  });
-
-  it('handles uninstall when no residual grammar remains on disk', async () => {
-    const source = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-empty-src-'));
-    await writeFixturePack(source);
-    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-uninstall-empty-ws-'));
-    await installPack(workspace, { type: 'local', path: source });
-    await rm(fieldGrammarPath(workspace, 'git', 'ref'), { force: true });
-    await uninstallPack(workspace, 'git-cli');
+    await expect(stat(path.join(workspace, '.utk', 'tools', 'git', 'fields', 'ref.lark'))).rejects.toThrow();
     const list = await listInstalledPacks(workspace);
     expect(list).toEqual([]);
   });
