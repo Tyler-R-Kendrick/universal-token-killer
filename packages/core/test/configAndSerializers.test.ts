@@ -1,9 +1,21 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../src/config/config.js';
-import { getSerializationProvider, serializedExtension } from '../src/serialization/providers.js';
+import {
+  createSerializationRegistry,
+  getSerializationProvider,
+  getSerializerGrammar,
+  loadSerializationRegistry,
+  listSerializationProviders,
+  registerBuiltInSerializerPlugins,
+  registerSerializationProvider,
+  serializedExtension
+} from '../src/serialization/providers.js';
+import { registerUtkSerializerPlugin as registerCompressedJsonPlugin } from '../src/serialization/plugins/compressedJson.js';
+import { registerUtkSerializerPlugin as registerToonPlugin } from '../src/serialization/plugins/toon.js';
+import { registerUtkSerializerPlugin as registerTronPlugin } from '../src/serialization/plugins/tron.js';
 
 describe('UTK TOML config', () => {
   it('creates and uses TOON defaults when config is missing', async () => {
@@ -13,6 +25,7 @@ describe('UTK TOML config', () => {
     expect(config.serialization.default).toBe('toon');
     expect(resolveSerializerProviderId(config, 'tool.any')).toBe('toon');
     expect(await readFile(path.join(root, '.utk', 'config.toml'), 'utf8')).toContain('[serialization]');
+    expect(config.serialization.providers.tron.enabled).toBe(true);
   });
 
   it('supports compressed-json default and per-tool provider overrides', async () => {
@@ -42,6 +55,38 @@ describe('UTK TOML config', () => {
 
     expect(resolveSerializerProviderId(config, 'tool.any')).toBe('compressed-json');
     expect(resolveSerializerProviderId(config, 'tool.toon')).toBe('toon');
+  });
+
+  it('supports tron default and per-tool provider overrides', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-tron-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "tron"',
+        '',
+        '[serialization.providers.toon]',
+        'enabled = true',
+        '',
+        '[serialization.providers.compressed-json]',
+        'enabled = true',
+        '',
+        '[serialization.providers.tron]',
+        'enabled = true',
+        '',
+        '[[serialization.overrides]]',
+        'tool = "tool.json"',
+        'provider = "compressed-json"',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(resolveSerializerProviderId(config, 'tool.any')).toBe('tron');
+    expect(resolveSerializerProviderId(config, 'tool.json')).toBe('compressed-json');
   });
 
   it('supports wildcard overrides and explicit disabled-provider errors', async () => {
@@ -78,12 +123,46 @@ describe('UTK TOML config', () => {
     expect(() => resolveSerializerProviderId(disabledConfig, 'tool.any')).toThrow('Serialization provider is disabled: compressed-json');
   });
 
+  it('uses exact serializer overrides before wildcard overrides regardless of config order', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-exact-before-wildcard-'));
+    await mkdir(path.join(root, '.utk'), { recursive: true });
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[[serialization.overrides]]',
+        'tool = "shell.*"',
+        'provider = "compressed-json"',
+        '',
+        '[[serialization.overrides]]',
+        'tool = "shell.git.diff"',
+        'provider = "tron"',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(resolveSerializerProviderId(config, 'shell.git.diff')).toBe('tron');
+    expect(resolveSerializerProviderId(config, 'shell.git.status')).toBe('compressed-json');
+  });
+
   it('fails explicitly for invalid providers', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-invalid-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
     await writeFile(path.join(root, '.utk', 'config.toml'), '[serialization]\ndefault = "yaml"\n', 'utf8');
 
-    await expect(loadUtkConfig(root)).rejects.toThrow('Unsupported serialization provider: yaml');
+    const config = await loadUtkConfig(root);
+    expect(() => resolveSerializerProviderId(config, 'tool.any')).toThrow('Unsupported serialization provider: yaml. Loaded providers: compressed-json, toon, tron');
+
+    const malformed = await mkdtemp(path.join(os.tmpdir(), 'utk-config-invalid-provider-value-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(malformed, '.utk'), { recursive: true }));
+    await writeFile(path.join(malformed, '.utk', 'config.toml'), '[serialization]\ndefault = 1\n', 'utf8');
+
+    await expect(loadUtkConfig(malformed)).rejects.toThrow('Unsupported serialization provider: 1');
   });
 
   it('fails explicitly for malformed serialization tables and overrides', async () => {
@@ -292,6 +371,206 @@ describe('serialization providers', () => {
     expect(provider.validate(value, serialized).valid).toBe(true);
     expect(provider.validate(value, '{"b":2,"a":{"d":4,"c":3}}').valid).toBe(false);
     expect(provider.validate(value, '{"b":2,"a":{"d":4,"c":3}}').regenerated).toBe(serialized);
+    expect(provider.estimateTokens('abcd')).toBe(1);
     expect(serializedExtension('compressed-json')).toBe('json');
   });
+
+  it('uses official TRON parse/stringify for round trips and exposes grammar', () => {
+    const provider = getSerializationProvider('tron');
+    const value = [{ a: 1, b: 2 }, { a: 3, b: 4 }];
+    const serialized = provider.serialize(value, { toolId: 'tool.tron' });
+
+    expect(serialized).toContain('class');
+    expect(provider.deserialize(serialized, { toolId: 'tool.tron' })).toEqual(value);
+    expect(provider.validate(value, serialized).valid).toBe(true);
+    expect(provider.validate(value, 'not tron').valid).toBe(false);
+    expect(provider.validate(value, provider.serialize([{ a: 1, b: 9 }], { toolId: 'tool.tron' })).errors).toContain('TRON artifact drifted from canonical value');
+    expect(provider.estimateTokens('abcd')).toBe(1);
+    expect(serializedExtension('tron')).toBe('tron');
+    expect(getSerializerGrammar('tron')?.format).toBe('lark');
+    expect(getSerializerGrammar('tron')?.source).toContain('start:');
+  });
+
+  it('validates registry providers and rejects duplicates', () => {
+    const registry = createSerializationRegistry();
+    expect(registry.list().map((provider) => provider.id)).toEqual(['toon', 'compressed-json', 'tron']);
+    expect(() => registry.register(getSerializationProvider('tron'))).toThrow('Serialization provider already registered: tron');
+    expect(() => registry.register(null as never)).toThrow('Serialization provider must be an object');
+    expect(() => registry.register({ id: 'Bad', extension: 'bad' } as never)).toThrow('Serialization provider has invalid id: Bad');
+    expect(() => registry.register({ id: 'bad', extension: 'bad' } as never)).toThrow('Serialization provider bad is missing serialize');
+    expect(() => registry.register({ ...getSerializationProvider('compressed-json'), id: 'bad-ext', extension: '../json' })).toThrow('Serialization provider bad-ext has invalid extension');
+    expect(() => registry.register({ ...getSerializationProvider('compressed-json'), id: 'bad-grammar', grammar: { format: 'peg' as 'lark', source: 'start: value' } })).toThrow('Serialization provider bad-grammar has unsupported grammar format');
+    expect(() => registry.register({ ...getSerializationProvider('compressed-json'), id: 'empty-grammar', grammar: { format: 'lark', source: ' ' } })).toThrow('Serialization provider empty-grammar has empty grammar source');
+    expect(() => registry.require('missing')).toThrow('Unsupported serialization provider: missing. Loaded providers: compressed-json, toon, tron');
+  });
+
+  it('dogfoods built-in serializers through the plugin registrar contract', () => {
+    expect(typeof registerToonPlugin).toBe('function');
+    expect(typeof registerCompressedJsonPlugin).toBe('function');
+    expect(typeof registerTronPlugin).toBe('function');
+
+    const registry = createSerializationRegistry({ includeBuiltIns: false });
+    expect(registry.list()).toEqual([]);
+
+    registerBuiltInSerializerPlugins(registry);
+
+    expect(registry.list().map((provider) => provider.id)).toEqual(['toon', 'compressed-json', 'tron']);
+    expect(() => registerBuiltInSerializerPlugins(registry)).toThrow('Serialization provider already registered: toon');
+  });
+
+  it('keeps serializer implementations in plugin modules instead of registry core', async () => {
+    const providersSource = await readFile(path.resolve(import.meta.dirname, '../src/serialization/providers.ts'), 'utf8');
+    const toonSource = await readFile(path.resolve(import.meta.dirname, '../src/serialization/plugins/toon.ts'), 'utf8');
+    const tronSource = await readFile(path.resolve(import.meta.dirname, '../src/serialization/plugins/tron.ts'), 'utf8');
+    const compressedJsonSource = await readFile(path.resolve(import.meta.dirname, '../src/serialization/plugins/compressedJson.ts'), 'utf8');
+
+    expect(providersSource).not.toContain('@toon-format/toon');
+    expect(providersSource).not.toContain('@tron-format/tron');
+    expect(providersSource).not.toContain('const builtInProviders');
+    expect(toonSource).toContain('@toon-format/toon');
+    expect(tronSource).toContain('@tron-format/tron');
+    expect(compressedJsonSource).toContain('sortValue');
+  });
+
+  it('supports process-level serializer registration for embedders', () => {
+    registerSerializationProvider({
+      id: 'process-demo',
+      extension: 'pdemo',
+      serialize(value) {
+        return JSON.stringify(value);
+      },
+      deserialize(text) {
+        return JSON.parse(text) as unknown;
+      },
+      validate() {
+        return { valid: true, errors: [] };
+      },
+      estimateTokens(text) {
+        return Math.ceil(text.length / 4);
+      }
+    });
+
+    expect(listSerializationProviders().map((provider) => provider.id)).toContain('process-demo');
+    expect(getSerializationProvider('process-demo').extension).toBe('pdemo');
+  });
+
+  it('auto-loads installed serializer plugin packages from package manifests', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-registry-'));
+    await writeFile(
+      path.join(root, 'package.json'),
+      JSON.stringify({ dependencies: { 'utk-serializer-demo': '1.0.0' } }),
+      'utf8'
+    );
+    await writeSerializerPluginPackage(root, 'utk-serializer-demo', 'demo');
+
+    const registry = await loadSerializationRegistry(root);
+
+    expect(registry.require('demo').serialize({ ok: true }, { toolId: 'tool.demo' })).toBe('{"ok":true}');
+  });
+
+  it('resolves auto-loaded plugin providers as defaults and enforces disabled plugin providers', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-config-default-'));
+    await mkdir(path.join(root, '.utk'), { recursive: true });
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { 'utk-serializer-demo': '1.0.0' } }), 'utf8');
+    await writeSerializerPluginPackage(root, 'utk-serializer-demo', 'demo');
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "demo"',
+        '',
+        '[serialization.providers.demo]',
+        'enabled = true',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const registry = await loadSerializationRegistry(root);
+    const config = await loadUtkConfig(root);
+
+    expect(resolveSerializerProviderId(config, 'tool.any', registry)).toBe('demo');
+
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "demo"',
+        '',
+        '[serialization.providers.demo]',
+        'enabled = false',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+    const disabledConfig = await loadUtkConfig(root);
+
+    expect(() => resolveSerializerProviderId(disabledConfig, 'tool.any', registry)).toThrow('Serialization provider is disabled: demo');
+  });
+
+  it('rejects auto-loaded plugins that collide with built-in provider ids', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-collision-'));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { 'utk-serializer-toon': '1.0.0' } }), 'utf8');
+    await writeSerializerPluginPackage(root, 'utk-serializer-toon', 'toon');
+
+    await expect(loadSerializationRegistry(root)).rejects.toThrow('Serialization provider already registered: toon');
+  });
+
+  it('ignores non-serializer dependency names during plugin auto-load', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-ignore-'));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { leftpad: '1.0.0' } }), 'utf8');
+
+    const registry = await loadSerializationRegistry(root);
+
+    expect(registry.list().map((provider) => provider.id)).toEqual(['toon', 'compressed-json', 'tron']);
+  });
+
+  it('fails clearly when serializer plugin package lacks registrar export', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-bad-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, 'node_modules', '@utk', 'serializer-bad'), { recursive: true }));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ devDependencies: { '@utk/serializer-bad': '1.0.0' } }), 'utf8');
+    await writeFile(
+      path.join(root, 'node_modules', '@utk', 'serializer-bad', 'package.json'),
+      JSON.stringify({ name: '@utk/serializer-bad', version: '1.0.0', type: 'module', main: './index.js' }),
+      'utf8'
+    );
+    await writeFile(path.join(root, 'node_modules', '@utk', 'serializer-bad', 'index.js'), 'export const nope = true;\n', 'utf8');
+
+    await expect(loadSerializationRegistry(root)).rejects.toThrow('Serializer plugin @utk/serializer-bad must export registerUtkSerializerPlugin');
+  });
+
+  it('fails clearly when declared serializer plugin package is not installed', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-plugin-missing-'));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { 'utk-serializer-missing': '1.0.0' } }), 'utf8');
+
+    await expect(loadSerializationRegistry(root)).rejects.toThrow('Serializer plugin utk-serializer-missing could not be resolved');
+  });
 });
+
+async function writeSerializerPluginPackage(root: string, packageName: string, providerId: string): Promise<void> {
+  const packageRoot = packageName.startsWith('@')
+    ? path.join(root, 'node_modules', ...packageName.split('/'))
+    : path.join(root, 'node_modules', packageName);
+  await mkdir(packageRoot, { recursive: true });
+  await writeFile(
+    path.join(packageRoot, 'package.json'),
+    JSON.stringify({ name: packageName, version: '1.0.0', type: 'module', main: './index.js' }),
+    'utf8'
+  );
+  await writeFile(
+    path.join(packageRoot, 'index.js'),
+    [
+      'export function registerUtkSerializerPlugin(registry) {',
+      '  registry.register({',
+      `    id: ${JSON.stringify(providerId)},`,
+      '    extension: "demo",',
+      '    serialize(value) { return JSON.stringify(value); },',
+      '    deserialize(text) { return JSON.parse(text); },',
+      '    validate() { return { valid: true, errors: [] }; },',
+      '    estimateTokens(text) { return Math.ceil(text.length / 4); }',
+      '  });',
+      '}'
+    ].join('\n'),
+    'utf8'
+  );
+}

@@ -2,7 +2,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
 
-export type SerializerProviderId = 'toon' | 'compressed-json';
+export type SerializerProviderId = string;
+
+type SerializationRegistryLike = {
+  get(id: string): unknown;
+  list(): Array<{ id: string }>;
+};
 
 export type UtkConfig = {
   serialization: {
@@ -60,7 +65,7 @@ export type UtkConfig = {
   };
 };
 
-export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json'] as const;
+export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json', 'tron'] as const;
 
 export const DEFAULT_CONFIG_TOML = `[serialization]
 default = "toon"
@@ -69,6 +74,9 @@ default = "toon"
 enabled = true
 
 [serialization.providers.compressed-json]
+enabled = true
+
+[serialization.providers.tron]
 enabled = true
 
 [routing]
@@ -108,9 +116,14 @@ export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
   return normalizeConfig(parse(text) as Record<string, unknown>);
 }
 
-export function resolveSerializerProviderId(config: UtkConfig, toolId: string): SerializerProviderId {
-  const override = config.serialization.overrides.find((item) => toolMatches(item.tool, toolId));
+export function resolveSerializerProviderId(config: UtkConfig, toolId: string, registry?: SerializationRegistryLike): SerializerProviderId {
+  const override = resolveSerializerOverride(config.serialization.overrides, toolId);
   const selected = override?.provider ?? config.serialization.default;
+  const loaded = registry ? registry.list().map((provider) => provider.id).sort() : [...SUPPORTED_SERIALIZERS].sort();
+  const isLoaded = registry ? Boolean(registry.get(selected)) : (SUPPORTED_SERIALIZERS as readonly string[]).includes(selected);
+  if (!isLoaded) {
+    throw new Error(`Unsupported serialization provider: ${selected}. Loaded providers: ${loaded.join(', ')}`);
+  }
   const provider = config.serialization.providers[selected];
   if (!provider?.enabled) {
     throw new Error(`Serialization provider is disabled: ${selected}`);
@@ -137,17 +150,13 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const tools = readOptionalObject(raw.tools);
 
   const defaultProvider = readProvider(serialization.default ?? 'toon');
-  const toonProvider = normalizeProvider(providers.toon);
-  const compressedJsonProvider = normalizeProvider(providers['compressed-json']);
+  const normalizedProviders = normalizeProviders(providers);
   const overrides = normalizeOverrides(serialization.overrides);
 
   return {
     serialization: {
       default: defaultProvider,
-      providers: {
-        toon: toonProvider,
-        'compressed-json': compressedJsonProvider
-      },
+      providers: normalizedProviders,
       overrides
     },
     routing: {
@@ -215,6 +224,21 @@ function normalizeDetokOverrides(value: unknown): UtkConfig['detok']['copilot_pr
   });
 }
 
+function normalizeProviders(providers: Record<string, unknown>): Record<string, { enabled: boolean }> {
+  const normalized: Record<string, { enabled: boolean }> = {};
+  for (const providerId of SUPPORTED_SERIALIZERS) {
+    normalized[providerId] = normalizeProvider(providers[providerId]);
+  }
+  for (const [providerId, value] of Object.entries(providers)) {
+    normalized[providerId] = normalizeProvider(value);
+  }
+  return normalized;
+}
+
+function resolveSerializerOverride(overrides: Array<{ tool: string; provider: SerializerProviderId }>, toolId: string): { tool: string; provider: SerializerProviderId } | undefined {
+  return overrides.find((item) => item.tool === toolId) ?? overrides.find((item) => toolMatches(item.tool, toolId));
+}
+
 function normalizeProvider(value: unknown): { enabled: boolean } {
   const provider = readOptionalObject(value);
   return { enabled: readBoolean(provider.enabled, true) };
@@ -269,12 +293,11 @@ function normalizeOverrides(value: unknown): Array<{ tool: string; provider: Ser
 }
 
 function readProvider(value: unknown): SerializerProviderId {
-  if (value === 'toon' || value === 'compressed-json') return value;
+  if (typeof value === 'string' && value.length > 0) return value;
   throw new Error(`Unsupported serialization provider: ${String(value)}`);
 }
 
 function toolMatches(pattern: string, toolId: string): boolean {
-  if (pattern === toolId) return true;
   if (pattern.endsWith('*')) return toolId.startsWith(pattern.slice(0, -1));
   return false;
 }

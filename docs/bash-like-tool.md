@@ -77,6 +77,7 @@ guided completion success.
 ```text
 .utk/tools/<normalized-tool-id>/templates/cli-template.compact.toon
 .utk/tools/<normalized-tool-id>/templates/cli-template.compact.json
+.utk/tools/<normalized-tool-id>/templates/cli-template.compact.tron
 .utk/tools/<normalized-tool-id>/templates/cli-template.guidance.json
 ```
 

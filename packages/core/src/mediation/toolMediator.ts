@@ -16,7 +16,7 @@ import { assertNoRawLeakage } from '../validation/leakage.js';
 import { persistStream } from '../stream/persistStream.js';
 import { upsertRouteIndex } from '../store/artifactStore.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
-import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
+import { loadSerializationRegistry, serializedExtension } from '../serialization/providers.js';
 import { compressTextWithLlmlingua2, rewriteInputForLlm } from '../detok/llmlingua2.js';
 import { TAGS, endSpan, flushTrace, recordFailure, startSpan, type RunContext } from '../tracing/index.js';
 
@@ -83,8 +83,9 @@ async function mediateToolExecutionInner(
   rootSpan: ReturnType<typeof startSpan> | undefined
 ): Promise<MediatedResult> {
   const config = await loadUtkConfig(workspaceRoot);
-  const serializerId = resolveSerializerProviderId(config, normalizedToolId);
-  const serializer = getSerializationProvider(serializerId);
+  const registry = await loadSerializationRegistry(workspaceRoot);
+  const serializerId = resolveSerializerProviderId(config, normalizedToolId, registry);
+  const serializer = registry.require(serializerId);
 
   const toolBase = safeJoin(workspaceRoot, '.utk', 'tools', normalizedToolId);
   const observationDir = safeJoin(toolBase, 'observations', runId);
@@ -122,7 +123,7 @@ async function mediateToolExecutionInner(
   const { rawPath, schemaInput, rawBytes, hash } = await persistRawOutput(observationDir, output);
   const compactValue = compactSerializableValue(schemaInput);
   const serialized = serializer.serialize(compactValue, { toolId: normalizedToolId });
-  const serializedPath = safeJoin(observationDir, `output.compact.${serializedExtension(serializerId)}`);
+  const serializedPath = safeJoin(observationDir, `output.compact.${serializedExtension(serializerId, registry)}`);
   await writeFile(serializedPath, `${serialized}\n`, 'utf8');
   const serializedValidation = serializer.validate(compactValue, serialized, { toolId: normalizedToolId });
   await writeFile(safeJoin(observationDir, 'output.compact.validation.json'), canonicalJson(serializedValidation), 'utf8');

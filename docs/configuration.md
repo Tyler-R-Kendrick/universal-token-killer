@@ -14,6 +14,9 @@ enabled = true
 [serialization.providers.compressed-json]
 enabled = true
 
+[serialization.providers.tron]
+enabled = true
+
 [routing]
 deterministic_confidence_threshold = 0.95
 constrained_routing_enabled = true
@@ -53,7 +56,7 @@ Set a global provider:
 
 ```toml
 [serialization]
-default = "compressed-json"
+default = "tron"
 ```
 
 Override individual tools by exact id or trailing wildcard:
@@ -68,7 +71,7 @@ tool = "shell.gh.*"
 provider = "toon"
 ```
 
-Supported providers are `toon` and `compressed-json`. Unsupported or disabled providers fail with explicit configuration errors.
+Built-in providers are `toon`, `compressed-json`, and `tron`. Installed serializer plugin packages can add providers when their package name matches `utk-serializer-*` or `@utk/serializer-*` and exports `registerUtkSerializerPlugin(registry)`. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
 
 ## Detok Hook Policy
 
@@ -173,4 +176,15 @@ default = "toon"
 [[serialization.overrides]]
 tool = "shell.gh.*"
 provider = "compressed-json"
+```
+
+Prefer TRON globally, but use TOON for one tool family:
+
+```toml
+[serialization]
+default = "tron"
+
+[[serialization.overrides]]
+tool = "shell.gh.*"
+provider = "toon"
 ```

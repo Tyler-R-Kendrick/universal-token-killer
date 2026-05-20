@@ -1,0 +1,26 @@
+start: value
+
+?value: class_defs? node
+?node: object
+     | array
+     | constructor
+     | string
+     | SIGNED_NUMBER
+     | "true"
+     | "false"
+     | "null"
+
+class_defs: class_def+
+class_def: "class" NAME ":" NAME ("," NAME)* NEWLINE+
+constructor: NAME "(" [value ("," value)*] ")"
+object: "{" [pair ("," pair)*] "}"
+pair: string ":" value
+array: "[" [value ("," value)*] "]"
+string: ESCAPED_STRING
+
+%import common.CNAME -> NAME
+%import common.ESCAPED_STRING
+%import common.SIGNED_NUMBER
+%import common.NEWLINE
+%import common.WS_INLINE
+%ignore WS_INLINE

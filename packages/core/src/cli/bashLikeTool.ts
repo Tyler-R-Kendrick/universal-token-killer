@@ -3,7 +3,7 @@ import { grm, select } from 'guidance-ts';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
-import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
+import { loadSerializationRegistry, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '../security/pathSafety.js';
 
 export type BashLikeParameter = {
@@ -32,7 +32,7 @@ export type BashLikeInvocation = {
 export type BashLikeInvocationResult = {
   invocation: BashLikeInvocation;
   templatePath: string;
-  serializerId: 'toon' | 'compressed-json';
+  serializerId: string;
   confidence: number;
   missingRequired: string[];
   guidance: {
@@ -57,10 +57,11 @@ export async function completeBashLikeToolInvocation(params: {
   }
 
   const config = await loadUtkConfig(params.workspaceRoot);
+  const registry = await loadSerializationRegistry(params.workspaceRoot);
   const selectedTool = selectTool(params.request, params.tools);
   const normalizedToolId = normalizeToolId(selectedTool.toolId);
-  const serializerId = resolveSerializerProviderId(config, normalizedToolId);
-  const serializer = getSerializationProvider(serializerId);
+  const serializerId = resolveSerializerProviderId(config, normalizedToolId, registry);
+  const serializer = registry.require(serializerId);
   const grammar = buildBashLikeInvocationGrammar(params.tools);
   const serializedGrammar = serializeGrammar(grammar);
   const planned = planInvocation(params.request, selectedTool);
@@ -68,7 +69,7 @@ export async function completeBashLikeToolInvocation(params: {
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');
   await mkdir(templateDir, { recursive: true });
-  const templatePath = safeJoin(templateDir, `cli-template.compact.${serializedExtension(serializerId)}`);
+  const templatePath = safeJoin(templateDir, `cli-template.compact.${serializedExtension(serializerId, registry)}`);
   await writeFile(templatePath, `${serializedTemplate}\n`, 'utf8');
   await writeFile(safeJoin(templateDir, 'cli-template.guidance.json'), canonicalJson(serializedGrammar), 'utf8');
 

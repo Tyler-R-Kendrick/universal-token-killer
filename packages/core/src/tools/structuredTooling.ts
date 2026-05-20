@@ -32,7 +32,7 @@ export type StructuredToolInvocation = {
 export type StructuredToolInvocationResult = {
   invocation: StructuredToolInvocation;
   templatePath: string;
-  serializerId: 'toon' | 'compressed-json';
+  serializerId: string;
   confidence: number;
   missingRequired: string[];
   guidance: {

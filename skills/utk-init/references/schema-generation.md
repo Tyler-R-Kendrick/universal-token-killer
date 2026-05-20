@@ -62,6 +62,9 @@ enabled = true
 
 [serialization.providers.compressed-json]
 enabled = true
+
+[serialization.providers.tron]
+enabled = true
 ```
 
 Only add per-tool overrides when the user requests them or when an existing config already contains one.
