@@ -74,7 +74,7 @@ export async function upsertSessionSkill(params: {
   await writeFile(skillPath, renderSessionSkill({ ...params, slug }), 'utf8');
   await writeFile(
     safeJoin(agentsRoot, 'openai.yaml'),
-    `interface: openai\ndisplay_name: ${params.name}\nshort_description: ${params.description}\ndefault_prompt: "Use $${slug} to avoid repeating session-specific instructions."\n`,
+    `interface: openai\ndisplay_name: ${params.name}\nshort_description: ${params.description}\ndefault_prompt: "Use $${slug} when relevant; details in references."\n`,
     'utf8'
   );
 
@@ -101,7 +101,7 @@ function renderSessionSkill(params: {
   const triggerText = params.triggers.slice(0, 5).map((trigger) => `- ${trigger}`).join('\n');
   const procedureText = params.procedure.slice(0, 5).map((step, index) => `${index + 1}. ${step}`).join('\n');
   const referenceText = referenceNames.map((fileName) => `- references/${fileName}`).join('\n');
-  return `---\nname: ${params.slug}\ndescription: ${params.description}\n---\n\n# ${params.slug}\n\nPurpose: ${params.purpose}\n\nUse this skill when the session repeats one of these patterns:\n\n${triggerText}\n\n## Compact Procedure\n\n${procedureText}\n\n## References\n\n${referenceText}\n`;
+  return `---\nname: ${params.slug}\ndescription: ${params.description}\n---\n\nPurpose: ${params.purpose}\n\nUse when repeated:\n${triggerText}\n\nProcedure:\n${procedureText}\n\nRefs:\n${referenceText}\n`;
 }
 
 function normalizeReferenceName(fileName: string): string {

@@ -62,7 +62,8 @@ describe('session skills', () => {
     expect(skillText).toContain('description: Use when repeated UTK schema routing triage is needed.');
     expect(skillText).toContain('Purpose: Reduce repeated schema routing instructions across future turns.');
     expect(skillText).toContain('references/route-checklist.md');
-    expect(skillText.length).toBeLessThan(1200);
+    expect(skillText.length).toBeLessThan(850);
+    expect(await readFile(path.join(result.skillRoot, 'agents', 'openai.yaml'), 'utf8')).toContain('Use $schema-route-triage when relevant; details in references.');
     expect(referenceText).toContain('route confidence');
   });
 

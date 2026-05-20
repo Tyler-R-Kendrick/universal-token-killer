@@ -63,6 +63,57 @@ export type UtkConfig = {
     storage_root: string;
     process_id: string;
   };
+  model_proxy: {
+    enabled: boolean;
+    host: string;
+    port: number;
+    upstream_provider: 'openai' | 'github-models' | 'azure-openai' | 'azure-ai-inference';
+    upstream_base_url: string;
+    upstream_api_version: string;
+    upstream_organization: string;
+    compression_level: 'off' | 'lite' | 'standard' | 'max';
+    min_tokens: number;
+    reserve_output_tokens: number;
+    tool_discovery_mode: 'off' | 'static-filter' | 'deferred-search';
+    cache_volatility: 'observe';
+    session_id_header: string;
+    session_blocks_enabled: boolean;
+    history_compaction_mode: 'summary-block' | 'replace-with-summary-block';
+    history_compaction_enabled: boolean;
+    history_compaction_threshold: number;
+    dedupe_policy: 'off' | 'observe' | 'compact';
+    stale_error_policy: 'off' | 'observe' | 'compact';
+    purge_error_after_turns: number;
+    artifact_search_enabled: boolean;
+    context_proofs_enabled: boolean;
+    deferred_tool_search_enabled: boolean;
+    provider_strict_mode: boolean;
+    prompt_asset_style: 'pipe-index';
+    remote_compressors_enabled: boolean;
+    prompt_compression_enabled: boolean;
+    prompt_compression_provider: 'none' | 'github-models' | 'azure-openai' | 'azure-ai-inference' | 'openai-compatible';
+    prompt_compression_model: string;
+    prompt_compression_base_url: string;
+    prompt_compression_api_version: string;
+    prompt_compression_min_tokens: number;
+    prompt_compression_timeout_ms: number;
+    inject_expand_context: boolean;
+    minimize_tool_schemas: boolean;
+    expand_edit_ranges: boolean;
+    protected_fields: string[];
+    protected_tools: string[];
+    protected_file_patterns: string[];
+    deny_tools: string[];
+  };
+  prompt_optimization: {
+    enabled: boolean;
+    surfaces: string[];
+    min_tokens: number;
+    target_ratio: number;
+    persist_originals: boolean;
+    cache_volatility: 'observe';
+    asset_style: 'pipe-index';
+  };
 };
 
 export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json', 'tron'] as const;
@@ -108,6 +159,57 @@ capture_outputs = true
 emit_eval_set = true
 storage_root = ".utk/events"
 process_id = "utk"
+
+[model_proxy]
+enabled = true
+host = "127.0.0.1"
+port = 8787
+upstream_provider = "github-models"
+upstream_base_url = "https://models.github.ai/inference"
+upstream_api_version = "2026-03-10"
+upstream_organization = ""
+compression_level = "standard"
+min_tokens = 1024
+reserve_output_tokens = 4096
+tool_discovery_mode = "static-filter"
+cache_volatility = "observe"
+session_id_header = "x-utk-session-id"
+session_blocks_enabled = true
+history_compaction_mode = "replace-with-summary-block"
+history_compaction_enabled = true
+history_compaction_threshold = 0.75
+dedupe_policy = "compact"
+stale_error_policy = "compact"
+purge_error_after_turns = 4
+artifact_search_enabled = true
+context_proofs_enabled = true
+deferred_tool_search_enabled = true
+provider_strict_mode = false
+prompt_asset_style = "pipe-index"
+remote_compressors_enabled = false
+prompt_compression_enabled = true
+prompt_compression_provider = "github-models"
+prompt_compression_model = "openai/gpt-4.1"
+prompt_compression_base_url = "https://models.github.ai/inference"
+prompt_compression_api_version = "2026-03-10"
+prompt_compression_min_tokens = 64
+prompt_compression_timeout_ms = 2500
+inject_expand_context = true
+minimize_tool_schemas = true
+expand_edit_ranges = true
+protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+protected_tools = ["edit", "write", "apply_patch", "auth*", "secret*"]
+protected_file_patterns = [".env*", "*.pem", "*.key"]
+deny_tools = ["auth*", "secret*", "credential*"]
+
+[prompt_optimization]
+enabled = true
+surfaces = ["system-prompt", "ghcp-agent", "agent-skill", "tool-definition", "recovery-tool", "copilot-instructions", "session-agent", "session-skill"]
+min_tokens = 256
+target_ratio = 0.50
+persist_originals = true
+cache_volatility = "observe"
+asset_style = "pipe-index"
 `;
 
 export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
@@ -148,6 +250,8 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const detok = readNamedOptionalObject(raw.detok, 'detok');
   const providers = readOptionalObject(serialization.providers);
   const tools = readOptionalObject(raw.tools);
+  const modelProxy = readNamedOptionalObject(raw.model_proxy, 'model_proxy');
+  const promptOptimization = readNamedOptionalObject(raw.prompt_optimization, 'prompt_optimization');
 
   const defaultProvider = readProvider(serialization.default ?? 'toon');
   const normalizedProviders = normalizeProviders(providers);
@@ -174,8 +278,126 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     tools: {
       registry: normalizeRegisteredTools(tools.registry)
     },
-    tracing: normalizeTracing(raw.tracing)
+    tracing: normalizeTracing(raw.tracing),
+    model_proxy: normalizeModelProxy(modelProxy),
+    prompt_optimization: normalizePromptOptimization(promptOptimization)
   };
+}
+
+function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_proxy'] {
+  const promptCompressionProvider = readPromptCompressionProvider(proxy.prompt_compression_provider);
+  return {
+    enabled: readBoolean(proxy.enabled, true),
+    host: readString(proxy.host, '127.0.0.1'),
+    port: readNumber(proxy.port, 8787),
+    upstream_provider: readUpstreamProvider(proxy.upstream_provider),
+    upstream_base_url: readString(proxy.upstream_base_url, 'https://models.github.ai/inference'),
+    upstream_api_version: readString(proxy.upstream_api_version, '2026-03-10'),
+    upstream_organization: readString(proxy.upstream_organization, ''),
+    compression_level: readCompressionLevel(proxy.compression_level),
+    min_tokens: readNumber(proxy.min_tokens, 1024),
+    reserve_output_tokens: readNumber(proxy.reserve_output_tokens, 4096),
+    tool_discovery_mode: readToolDiscoveryMode(proxy.tool_discovery_mode),
+    cache_volatility: readObserveOnly(proxy.cache_volatility, 'model_proxy cache_volatility'),
+    session_id_header: readString(proxy.session_id_header, 'x-utk-session-id'),
+    session_blocks_enabled: readBoolean(proxy.session_blocks_enabled, true),
+    history_compaction_mode: readHistoryCompactionMode(proxy.history_compaction_mode),
+    history_compaction_enabled: readBoolean(proxy.history_compaction_enabled, true),
+    history_compaction_threshold: readNumber(proxy.history_compaction_threshold, 0.75),
+    dedupe_policy: readDedupePolicy(proxy.dedupe_policy),
+    stale_error_policy: readStaleErrorPolicy(proxy.stale_error_policy),
+    purge_error_after_turns: readNumber(proxy.purge_error_after_turns, 4),
+    artifact_search_enabled: readBoolean(proxy.artifact_search_enabled, true),
+    context_proofs_enabled: readBoolean(proxy.context_proofs_enabled, true),
+    deferred_tool_search_enabled: readBoolean(proxy.deferred_tool_search_enabled, true),
+    provider_strict_mode: readBoolean(proxy.provider_strict_mode, false),
+    prompt_asset_style: readPipeIndex(proxy.prompt_asset_style, 'model_proxy prompt_asset_style'),
+    remote_compressors_enabled: readBoolean(proxy.remote_compressors_enabled, false),
+    prompt_compression_enabled: readBoolean(proxy.prompt_compression_enabled, true),
+    prompt_compression_provider: promptCompressionProvider,
+    prompt_compression_model: readString(proxy.prompt_compression_model, 'openai/gpt-4.1'),
+    prompt_compression_base_url: readString(proxy.prompt_compression_base_url, 'https://models.github.ai/inference'),
+    prompt_compression_api_version: readString(proxy.prompt_compression_api_version, defaultPromptCompressionApiVersion(promptCompressionProvider)),
+    prompt_compression_min_tokens: readNumber(proxy.prompt_compression_min_tokens, 64),
+    prompt_compression_timeout_ms: readNumber(proxy.prompt_compression_timeout_ms, 2500),
+    inject_expand_context: readBoolean(proxy.inject_expand_context, true),
+    minimize_tool_schemas: readBoolean(proxy.minimize_tool_schemas, true),
+    expand_edit_ranges: readBoolean(proxy.expand_edit_ranges, true),
+    protected_fields: readStringArray(proxy.protected_fields, DEFAULT_PROTECTED_FIELDS, 'model_proxy.protected_fields'),
+    protected_tools: readStringArray(proxy.protected_tools, DEFAULT_MODEL_PROXY_PROTECTED_TOOLS, 'model_proxy.protected_tools'),
+    protected_file_patterns: readStringArray(proxy.protected_file_patterns, DEFAULT_PROTECTED_FILE_PATTERNS, 'model_proxy.protected_file_patterns'),
+    deny_tools: readStringArray(proxy.deny_tools, DEFAULT_MODEL_PROXY_DENY_TOOLS, 'model_proxy.deny_tools')
+  };
+}
+
+function defaultPromptCompressionApiVersion(provider: UtkConfig['model_proxy']['prompt_compression_provider']): string {
+  if (provider === 'github-models') return '2026-03-10';
+  if (provider === 'azure-ai-inference') return '2024-05-01-preview';
+  return '';
+}
+
+function normalizePromptOptimization(value: Record<string, unknown>): UtkConfig['prompt_optimization'] {
+  return {
+    enabled: readBoolean(value.enabled, true),
+    surfaces: readStringArray(value.surfaces, DEFAULT_PROMPT_SURFACES, 'prompt_optimization.surfaces'),
+    min_tokens: readNumber(value.min_tokens, 256),
+    target_ratio: readNumber(value.target_ratio, 0.5),
+    persist_originals: readBoolean(value.persist_originals, true),
+    cache_volatility: readObserveOnly(value.cache_volatility, 'prompt_optimization cache_volatility'),
+    asset_style: readPipeIndex(value.asset_style, 'prompt_optimization asset_style')
+  };
+}
+
+function readCompressionLevel(value: unknown): UtkConfig['model_proxy']['compression_level'] {
+  if (value === undefined) return 'standard';
+  if (value === 'off' || value === 'lite' || value === 'standard' || value === 'max') return value;
+  throw new Error(`Unsupported model_proxy compression_level: ${String(value)}`);
+}
+
+function readToolDiscoveryMode(value: unknown): UtkConfig['model_proxy']['tool_discovery_mode'] {
+  if (value === undefined) return 'static-filter';
+  if (value === 'off' || value === 'static-filter' || value === 'deferred-search') return value;
+  throw new Error(`Unsupported model_proxy tool_discovery_mode: ${String(value)}`);
+}
+
+function readUpstreamProvider(value: unknown): UtkConfig['model_proxy']['upstream_provider'] {
+  if (value === undefined) return 'github-models';
+  if (value === 'openai' || value === 'github-models' || value === 'azure-openai' || value === 'azure-ai-inference') return value;
+  throw new Error(`Unsupported model_proxy upstream_provider: ${String(value)}`);
+}
+
+function readPromptCompressionProvider(value: unknown): UtkConfig['model_proxy']['prompt_compression_provider'] {
+  if (value === undefined) return 'github-models';
+  if (value === 'none' || value === 'github-models' || value === 'azure-openai' || value === 'azure-ai-inference' || value === 'openai-compatible') return value;
+  throw new Error(`Unsupported model_proxy prompt_compression_provider: ${String(value)}`);
+}
+
+function readHistoryCompactionMode(value: unknown): UtkConfig['model_proxy']['history_compaction_mode'] {
+  if (value === undefined) return 'replace-with-summary-block';
+  if (value === 'summary-block' || value === 'replace-with-summary-block') return value;
+  throw new Error(`Unsupported model_proxy history_compaction_mode: ${String(value)}`);
+}
+
+function readDedupePolicy(value: unknown): UtkConfig['model_proxy']['dedupe_policy'] {
+  if (value === undefined) return 'compact';
+  if (value === 'off' || value === 'observe' || value === 'compact') return value;
+  throw new Error(`Unsupported model_proxy dedupe_policy: ${String(value)}`);
+}
+
+function readStaleErrorPolicy(value: unknown): UtkConfig['model_proxy']['stale_error_policy'] {
+  if (value === undefined) return 'compact';
+  if (value === 'off' || value === 'observe' || value === 'compact') return value;
+  throw new Error(`Unsupported model_proxy stale_error_policy: ${String(value)}`);
+}
+
+function readObserveOnly(value: unknown, name: string): 'observe' {
+  if (value === undefined || value === 'observe') return 'observe';
+  throw new Error(`Unsupported ${name}: ${String(value)}`);
+}
+
+function readPipeIndex(value: unknown, name: string): 'pipe-index' {
+  if (value === undefined || value === 'pipe-index') return 'pipe-index';
+  throw new Error(`Unsupported ${name}: ${String(value)}`);
 }
 
 function normalizeTracing(value: unknown): UtkConfig['tracing'] {
@@ -348,3 +570,7 @@ function readStringArray(value: unknown, fallback: string[], name: string): stri
 const DEFAULT_DENY_TOOLS = ['bash', 'powershell', 'create', 'edit', 'view', 'grep', 'glob'];
 const DEFAULT_REWRITE_FIELDS = ['prompt', 'instructions', 'description', 'question', 'message', 'summary', 'notes', 'body'];
 const DEFAULT_PROTECTED_FIELDS = ['command', 'cmd', 'path', 'file', 'files', 'cwd', 'url', 'pattern', 'regex', 'glob', 'patch', 'diff', 'content', 'old_string', 'new_string', 'id'];
+const DEFAULT_MODEL_PROXY_PROTECTED_TOOLS = ['edit', 'write', 'apply_patch', 'auth*', 'secret*'];
+const DEFAULT_PROTECTED_FILE_PATTERNS = ['.env*', '*.pem', '*.key'];
+const DEFAULT_MODEL_PROXY_DENY_TOOLS = ['auth*', 'secret*', 'credential*'];
+const DEFAULT_PROMPT_SURFACES = ['system-prompt', 'ghcp-agent', 'agent-skill', 'tool-definition', 'recovery-tool', 'copilot-instructions', 'session-agent', 'session-skill'];

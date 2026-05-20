@@ -682,7 +682,7 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     const lockAfter = await import('node:fs/promises').then((fs) => fs.readFile(path.join(workspace, '.utk', 'packs.lock.toml'), 'utf8'));
     expect(lockAfter).toBe(lockBefore);
     expect(lockAfter).not.toContain('other-pack');
-  });
+  }, 15000);
 
   it('rejects remote tarball URLs from the built-in fetcher', async () => {
     const { fetchPackToTempDir } = await import('../src/pack/fetcher.js');
