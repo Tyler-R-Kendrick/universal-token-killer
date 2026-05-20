@@ -10,6 +10,9 @@ export type LoadedUtkTrace = {
 };
 
 export async function loadUtkTrace(workspaceRoot: string, runId: string, options: { storageRoot?: string } = {}): Promise<LoadedUtkTrace> {
+  if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
+    throw new Error(`Invalid runId: ${runId} (must match /^[A-Za-z0-9._-]+$/)`);
+  }
   const storageRoot = options.storageRoot ?? '.utk/events';
   const eventsDir = path.isAbsolute(storageRoot) ? storageRoot : path.join(workspaceRoot, storageRoot);
   const evalSet = JSON.parse(await readFile(path.join(eventsDir, `${runId}.eval_set.json`), 'utf8')) as EvalSet;

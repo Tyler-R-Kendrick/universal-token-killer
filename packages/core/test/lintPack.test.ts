@@ -413,13 +413,20 @@ describe('lintPack', () => {
       'templates/undef.js': "export default { id: 't', prompt: 'a {{missing}} b', slots: {} };",
       'templates/external.js': "export default { id: 't', prompt: 'x {{r}}', slots: { r: { grammar: { kind: 'pack', tool: 'unknown', field: 'ref' } } } };"
     });
-    const report = await lintPack(dir);
+    const { importTemplateForLint } = await import('../src/pack/lintPack.js');
+    const report = await lintPack(dir, { importTemplate: importTemplateForLint });
     const codes = report.findings.map((finding) => finding.code);
     expect(codes).toContain('pack/templates/import-failed');
     expect(codes).toContain('pack/templates/missing-default-export');
     expect(codes).toContain('pack/templates/invalid-shape');
     expect(codes).toContain('pack/templates/undefined-slot');
     expect(codes).toContain('pack/templates/external-grammar');
+
+    // Default lint must NOT execute pack code — RCE surface.
+    const safeReport = await lintPack(dir);
+    const safeCodes = safeReport.findings.map((finding) => finding.code);
+    expect(safeCodes).not.toContain('pack/templates/import-failed');
+    expect(safeCodes.filter((code) => code === 'pack/templates/runtime-validation-skipped').length).toBeGreaterThanOrEqual(5);
   });
 
   it('tolerates slots with invalid or non-pack grammar refs', async () => {

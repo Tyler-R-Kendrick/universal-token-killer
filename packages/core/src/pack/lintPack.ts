@@ -238,7 +238,17 @@ async function lintTemplateEntries(packDir: string, manifest: UtkPackManifest, o
       continue;
     }
     if (entry.language === 'typescript' && isExecutableJsExtension(entry.file)) {
-      await lintExecutableTemplate(absolute, relative, declaredGrammars, options, findings);
+      if (options.importTemplate) {
+        await lintExecutableTemplate(absolute, relative, declaredGrammars, options.importTemplate, findings);
+      } else {
+        lintTemplateSourceHeuristically(source, relative, findings);
+        findings.push({
+          severity: 'info',
+          code: 'pack/templates/runtime-validation-skipped',
+          message: 'skipped runtime template import for safety; pass options.importTemplate to opt in',
+          file: relative
+        });
+      }
     } else if (entry.language === 'typescript') {
       lintTemplateSourceHeuristically(source, relative, findings);
     } else {
@@ -247,8 +257,7 @@ async function lintTemplateEntries(packDir: string, manifest: UtkPackManifest, o
   }
 }
 
-async function lintExecutableTemplate(absolute: string, relative: string, declaredGrammars: Set<string>, options: LintOptions, findings: LintFinding[]): Promise<void> {
-  const importTemplate = options.importTemplate ?? defaultImport;
+async function lintExecutableTemplate(absolute: string, relative: string, declaredGrammars: Set<string>, importTemplate: NonNullable<LintOptions['importTemplate']>, findings: LintFinding[]): Promise<void> {
   let imported: unknown;
   try {
     imported = await importTemplate(absolute);
@@ -342,8 +351,19 @@ function isExecutableJsExtension(file: string): boolean {
 }
 
 function defaultImport(filePath: string): Promise<unknown> {
+  /* c8 ignore start -- callers must explicitly opt in via options.importTemplate; this helper is exported for that use only */
   return import(pathToFileURL(filePath).href);
+  /* c8 ignore stop */
 }
+
+/**
+ * The dynamic-import helper UTK ships for callers that want full runtime
+ * validation of pack templates. **Not** wired into lintPack by default —
+ * dynamic-importing untrusted pack code during lint is an RCE surface.
+ * Callers (e.g. trusted CI lint with vetted packs) must explicitly opt in by
+ * passing `options.importTemplate: importTemplateForLint` to `lintPack`.
+ */
+export const importTemplateForLint = defaultImport;
 
 function extractSlotReferences(prompt: string): string[] {
   const pattern = /\{\{\s*([A-Za-z_][\w-]*)\s*\}\}/g;

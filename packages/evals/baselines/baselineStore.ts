@@ -100,6 +100,9 @@ export function diffScorecards(baseline: Scorecard | null, current: Scorecard, t
 }
 
 function baselineFilePath(workspaceRoot: string, evalSetId: string, baselineDir?: string): string {
+  if (!/^[A-Za-z0-9._-]+$/.test(evalSetId)) {
+    throw new Error(`Invalid evalSetId: ${evalSetId} (must match /^[A-Za-z0-9._-]+$/)`);
+  }
   const dir = baselineDir ?? DEFAULT_DIR;
   return path.isAbsolute(dir) ? path.join(dir, `${evalSetId}.json`) : path.join(workspaceRoot, dir, `${evalSetId}.json`);
 }

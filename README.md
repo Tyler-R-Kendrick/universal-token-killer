@@ -252,6 +252,11 @@ utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
 
 The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk), merges `FieldGrammar` seeds with any already-observed locally, caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
 
+**Safety:**
+
+- `lintPack`/`installPack` do **not** dynamic-import pack template modules by default — the default lint emits a `pack/templates/runtime-validation-skipped` finding instead. Callers that want full runtime validation pass `{ importTemplate: importTemplateForLint }`. This is the difference between a pack lint that is safe to run on untrusted input and one that is RCE-equivalent.
+- Pack names that contain path-traversal segments (`../`, etc.) are rejected by the installer — destination paths use a two-level `safeJoin` against `.utk/packs`.
+
 Authoring a pack:
 
 ```

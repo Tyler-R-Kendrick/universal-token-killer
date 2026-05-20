@@ -527,6 +527,12 @@ describe('loadUtkTrace', () => {
     const loaded = await loadUtkTrace(workspace, 'run-2', { storageRoot: workspace });
     expect(loaded.evalSet.eval_set_id).toBe('run-2');
   });
+
+  it('rejects runIds containing path-traversal segments before any read', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-load-trace-traversal-'));
+    await expect(loadUtkTrace(workspace, '../escapee')).rejects.toThrow(/Invalid runId/);
+    await expect(loadUtkTrace(workspace, 'a/b')).rejects.toThrow(/Invalid runId/);
+  });
 });
 
 describe('baselineStore', () => {
@@ -540,6 +546,12 @@ describe('baselineStore', () => {
   it('returns null when a baseline file does not exist', async () => {
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-baseline-missing-'));
     expect(await readBaseline(workspace, 'demo')).toBeNull();
+  });
+
+  it('rejects evalSetIds containing path-traversal segments before any IO', async () => {
+    const workspace = await mkdtemp(path.join(os.tmpdir(), 'utk-baseline-traversal-'));
+    await expect(readBaseline(workspace, '../escapee')).rejects.toThrow(/Invalid evalSetId/);
+    await expect(writeBaseline(workspace, '../escapee', scorecard, { baselineDir: path.join(workspace, 'b'), force: true })).rejects.toThrow(/Invalid evalSetId/);
   });
 
   it('writes baselines only when force or UTK_BASELINE_UPDATE is set', async () => {

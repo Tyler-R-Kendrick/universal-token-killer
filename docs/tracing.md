@@ -54,6 +54,8 @@ One `RunContext` represents **one trace**: its `runId` is the Jaeger `traceID`, 
 
 `capture_inputs` and `capture_outputs` gate the `utk.inputs` / `utk.outputs` tags on both the root and child tool span. Disable them when inputs/outputs may contain credentials or PII that should never reach the on-disk trace.
 
+**`runId` is the trace filename stem.** Both `flushTrace` (writer) and `loadUtkTrace` (reader) validate `runId` against `/^[A-Za-z0-9._-]+$/` and reject values that contain `..` or path separators, so a caller-supplied id can never redirect writes outside `storage_root` or reads outside `events_dir`.
+
 ## See Also
 
 - [Evals-Driven Iteration](evals-driven-iteration.md) — turn traces into TDD baselines.

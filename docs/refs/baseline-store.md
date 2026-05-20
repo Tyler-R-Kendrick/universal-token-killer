@@ -21,6 +21,7 @@ diffScorecards(baseline, current, tolerance = 0.01): BaselineDiff
 ### `readBaseline`
 
 - Returns `null` when the baseline file does not exist or fails to parse.
+- **`evalSetId` is validated against `/^[A-Za-z0-9._-]+$/` before any IO** — values containing `..`, `/`, or other separators throw `Invalid evalSetId` before disk is touched.
 - `opts.baselineDir`: override the directory (absolute or workspace-relative); defaults to `packages/evals/baselines`.
 
 ### `writeBaseline`
