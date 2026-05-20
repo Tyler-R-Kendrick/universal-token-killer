@@ -58,6 +58,9 @@ describe('session agents', () => {
     expect(agentText).toContain('sketch-of-thought');
     expect(agentText).toContain(result.grammarHash);
     expect(agentText).not.toContain('serializer');
+    expect(agentText.length).toBeLessThan(700);
+    expect(result.promptReferencePath).toBeTruthy();
+    await expect(readFile(result.promptReferencePath!, 'utf8')).resolves.toContain('Preserve UTK architecture');
     expect(grammarText).toContain('serializer');
     expect(grammarText).toContain('confidence');
     expect(toolText).toContain('reason-with-lexicon');

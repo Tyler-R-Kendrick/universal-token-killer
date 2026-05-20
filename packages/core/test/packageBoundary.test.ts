@@ -61,13 +61,23 @@ function assertCopilotHookConfig(config: Record<string, unknown>): void {
 }
 
 describe('package boundary', () => {
-  it('does not expose a public CLI or mediation MCP package', async () => {
+  it('exposes only the approved model proxy public CLI package', async () => {
     const rootPackage = await readJson('package.json');
     const packages = await readdir(path.join(repoRoot, 'packages'));
 
     expect(rootPackage).not.toHaveProperty('bin');
     expect(packages).not.toContain('mcp-server');
     expect(packages).toContain('detok-mcp');
+    expect(packages).toContain('model-proxy');
+
+    const modelProxyPackage = await readJson('packages/model-proxy/package.json');
+    expect(modelProxyPackage).toMatchObject({
+      name: '@utk/model-proxy',
+      private: true,
+      bin: {
+        'utk-model-proxy': 'dist/server.js'
+      }
+    });
   });
 
   it('does not include the accidental VS Code extension package', async () => {

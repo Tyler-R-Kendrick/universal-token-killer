@@ -46,6 +46,55 @@ capture_outputs = true
 emit_eval_set = true
 storage_root = ".utk/events"
 process_id = "utk"
+
+[model_proxy]
+enabled = true
+host = "127.0.0.1"
+port = 8787
+upstream_provider = "github-models"
+upstream_base_url = "https://models.github.ai/inference"
+upstream_api_version = "2026-03-10"
+upstream_organization = ""
+compression_level = "standard"
+min_tokens = 1024
+reserve_output_tokens = 4096
+tool_discovery_mode = "static-filter"
+cache_volatility = "observe"
+session_id_header = "x-utk-session-id"
+session_blocks_enabled = true
+history_compaction_mode = "replace-with-summary-block"
+history_compaction_enabled = true
+history_compaction_threshold = 0.75
+dedupe_policy = "compact"
+stale_error_policy = "compact"
+purge_error_after_turns = 4
+artifact_search_enabled = true
+context_proofs_enabled = true
+deferred_tool_search_enabled = true
+provider_strict_mode = false
+prompt_asset_style = "pipe-index"
+remote_compressors_enabled = false
+prompt_compression_enabled = true
+prompt_compression_provider = "github-models"
+prompt_compression_model = "openai/gpt-4.1"
+prompt_compression_base_url = "https://models.github.ai/inference"
+prompt_compression_min_tokens = 64
+inject_expand_context = true
+minimize_tool_schemas = true
+expand_edit_ranges = true
+protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
+protected_tools = ["edit", "write", "apply_patch", "auth*", "secret*"]
+protected_file_patterns = [".env*", "*.pem", "*.key"]
+deny_tools = ["auth*", "secret*", "credential*"]
+
+[prompt_optimization]
+enabled = true
+surfaces = ["system-prompt", "ghcp-agent", "agent-skill", "tool-definition", "recovery-tool", "copilot-instructions", "session-agent", "session-skill"]
+min_tokens = 256
+target_ratio = 0.50
+persist_originals = true
+cache_volatility = "observe"
+asset_style = "pipe-index"
 ```
 
 Current note: `.utk/config.toml` itself and core mediation artifacts are project-local under `.utk/`. `persistence.storage_root` is also used by auxiliary template helpers; keep it at `.utk` unless you are deliberately testing alternate storage behavior.
@@ -142,6 +191,53 @@ process_id = "utk"          # process key in the Jaeger document
 ```
 
 When enabled, every traced mediation writes Jaeger JSON + (optionally) a Google-ADK EvalSet derived from the spans. See [Tracing](tracing.md) for the wiring overview and [refs/agentevals-spec.md](refs/agentevals-spec.md) for canonical wire shapes.
+
+## Model Proxy
+
+`@utk/model-proxy` is the approved public proxy package. It exposes an OpenAI-compatible local endpoint for explicit opt-in use:
+
+- `POST /v1/chat/completions`
+- `POST /v1/responses`
+- `GET /v1/models`
+- `GET /healthz`
+- `GET /metrics`
+- `POST /v1/utk/expand_context`
+- `POST /v1/utk/find_tool`
+- `POST /v1/utk/proof`
+
+Environment defaults:
+
+```powershell
+$env:UTK_MODEL_PROXY_HOST = "127.0.0.1"
+$env:UTK_MODEL_PROXY_PORT = "8787"
+$env:UTK_MODEL_PROXY_UPSTREAM_PROVIDER = "github-models"
+$env:UTK_MODEL_PROXY_UPSTREAM_BASE_URL = "https://models.github.ai/inference"
+$env:UTK_MODEL_PROXY_UPSTREAM_API_KEY = $env:GITHUB_TOKEN
+$env:UTK_MODEL_PROXY_WORKSPACE_ROOT = "<workspace path>"
+```
+
+The development default uses GitHub Models so VS Code/Microsoft Foundry AI Toolkit workflows can allocate or defer model choice through the model catalog. GitHub Models chat traffic maps `/v1/chat/completions` to `https://models.github.ai/inference/chat/completions`, and `/v1/models` to `https://models.github.ai/catalog/models`.
+
+Azure AI Inference services:
+
+```toml
+[model_proxy]
+upstream_provider = "azure-ai-inference"
+upstream_base_url = "https://<resource>.services.ai.azure.com/models"
+upstream_api_version = "2024-05-01-preview"
+```
+
+Foundry OpenAI v1-compatible deployments:
+
+```toml
+[model_proxy]
+upstream_provider = "azure-openai"
+upstream_base_url = "https://<resource>.openai.azure.com/openai/v1"
+```
+
+Prompt compression is model-backed when credentials are available. By default it calls GitHub Models with `prompt_compression_model = "openai/gpt-4.1"` and intercepts system, developer, and user prompt text before the final upstream request. Tool outputs still use UTK routing, TOON/compressed JSON, `.utk` artifacts, and expansion refs before any model-backed compression.
+
+`POST /v1/utk/expand_context` accepts `{ "id": "...", "range": "N-M", "query": "text", "blockId": "b0001" }` or `{ "handle": { "artifactId": "...", "range": "N-M" } }` for full, line-range, search, block, or handle-based recovery from indexed `.utk/model-proxy` artifacts. `POST /v1/utk/find_tool` resolves deferred tool catalogs. `POST /v1/utk/proof` returns deterministic stored raw/compact hash, fact-retention, no-leakage, and recovery checks for an artifact id.
 
 ## Defaults And Precedence
 

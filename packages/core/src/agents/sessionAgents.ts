@@ -23,6 +23,7 @@ export type SessionAgentResult = {
   agentPath: string;
   grammarPath: string;
   toolRegistrationPath: string;
+  promptReferencePath?: string;
   grammarHash: string;
 };
 
@@ -69,8 +70,10 @@ export async function upsertSessionAgent(params: {
   const sessionAgentsRoot = safeJoin(params.workspaceRoot, '.utk', 'session-agents');
   const grammarsRoot = safeJoin(sessionAgentsRoot, 'grammars');
   const toolsRoot = safeJoin(sessionAgentsRoot, 'tools');
+  const referencesRoot = safeJoin(sessionAgentsRoot, 'references');
   await mkdir(grammarsRoot, { recursive: true });
   await mkdir(toolsRoot, { recursive: true });
+  await mkdir(referencesRoot, { recursive: true });
 
   const grammar = buildSketchOfThoughtLexiconGrammar(params.domain, params.lexicon);
   const serializedGrammar = grammar.serialize();
@@ -78,6 +81,7 @@ export async function upsertSessionAgent(params: {
   const grammarPath = safeJoin(grammarsRoot, `${slug}.${grammarHash}.guidance.json`);
   const toolRegistrationPath = safeJoin(toolsRoot, `${slug}.reason-with-lexicon.json`);
   const agentPath = safeJoin(sessionAgentsRoot, `${slug}.agent.md`);
+  const promptReferencePath = safeJoin(referencesRoot, `${slug}.prompt.md`);
 
   await writeFile(
     grammarPath,
@@ -113,8 +117,19 @@ export async function upsertSessionAgent(params: {
     }),
     'utf8'
   );
+  await writeFile(
+    promptReferencePath,
+    [
+      `# ${slug} prompt reference`,
+      '',
+      'Preserve UTK architecture: hook-first mediation, project-local artifacts, schema routing, official TOON, compressed JSON, and guidance-backed constraints.',
+      `Expected reuse signal: ${params.expectedReuse}`,
+      'Keep visible answers concise and actionable; do not inline lexicon grammar.'
+    ].join('\n'),
+    'utf8'
+  );
 
-  return { name: slug, agentPath, grammarPath, toolRegistrationPath, grammarHash };
+  return { name: slug, agentPath, grammarPath, toolRegistrationPath, promptReferencePath, grammarHash };
 }
 
 function buildSketchOfThoughtLexiconGrammar(domain: string, lexicon: string[]) {
@@ -130,7 +145,7 @@ function renderSessionAgent(params: {
   grammarPath: string;
   toolRegistrationPath: string;
 }): string {
-  return `---\nname: ${params.slug}\ndescription: ${params.description}\ntools: ["reason-with-lexicon"]\n---\n\nYou are a UTK dynamic GitHub Copilot subagent for repeated session work.\n\nRequired process:\n\n- Before giving recommendations, call \`reason-with-lexicon\` and produce sketch-of-thought.\n- Use grammar hash \`${params.grammarHash}\`; the formal lexicon grammar is stored at \`${params.grammarPath}\`.\n- The tool registration is stored at \`${params.toolRegistrationPath}\`.\n- Keep the visible answer concise and actionable; do not inline the lexicon grammar.\n- Preserve UTK architecture: hook-first mediation, project-local artifacts, schema routing, official TOON, compressed JSON, and guidance-backed constraints.\n\nExpected reuse signal: ${params.expectedReuse}\n`;
+  return `---\nname: ${params.slug}\ndescription: ${params.description}\ntools: ["reason-with-lexicon"]\n---\n\nCall \`reason-with-lexicon\` first; output sketch-of-thought.\nGrammar hash: \`${params.grammarHash}\`.\nGrammar: \`${params.grammarPath}\`.\nTool registration: \`${params.toolRegistrationPath}\`.\nOutput contract: sketch-of-thought.\nFull prompt guidance: \`.utk/session-agents/references/${params.slug}.prompt.md\`.\n`;
 }
 
 function normalizeText(value: string): string {

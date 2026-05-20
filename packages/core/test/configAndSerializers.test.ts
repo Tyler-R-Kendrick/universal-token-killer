@@ -194,6 +194,49 @@ describe('UTK TOML config', () => {
     expect(config.detok.copilot_pre_tool_use.rewrite_fields).toContain('prompt');
     expect(config.detok.copilot_pre_tool_use.protected_fields).toContain('command');
     expect(config.tools.registry).toEqual([]);
+    expect(config.model_proxy.enabled).toBe(true);
+    expect(config.model_proxy.host).toBe('127.0.0.1');
+    expect(config.model_proxy.port).toBe(8787);
+    expect(config.model_proxy.upstream_provider).toBe('github-models');
+    expect(config.model_proxy.upstream_base_url).toBe('https://models.github.ai/inference');
+    expect(config.model_proxy.upstream_api_version).toBe('2026-03-10');
+    expect(config.model_proxy.upstream_organization).toBe('');
+    expect(config.model_proxy.compression_level).toBe('standard');
+    expect(config.model_proxy.inject_expand_context).toBe(true);
+    expect(config.model_proxy.minimize_tool_schemas).toBe(true);
+    expect(config.model_proxy.expand_edit_ranges).toBe(true);
+    expect(config.model_proxy.tool_discovery_mode).toBe('static-filter');
+    expect(config.model_proxy.cache_volatility).toBe('observe');
+    expect(config.model_proxy.session_id_header).toBe('x-utk-session-id');
+    expect(config.model_proxy.history_compaction_enabled).toBe(true);
+    expect(config.model_proxy.history_compaction_threshold).toBe(0.75);
+    expect(config.model_proxy.session_blocks_enabled).toBe(true);
+    expect(config.model_proxy.history_compaction_mode).toBe('replace-with-summary-block');
+    expect(config.model_proxy.dedupe_policy).toBe('compact');
+    expect(config.model_proxy.stale_error_policy).toBe('compact');
+    expect(config.model_proxy.purge_error_after_turns).toBe(4);
+    expect(config.model_proxy.artifact_search_enabled).toBe(true);
+    expect(config.model_proxy.context_proofs_enabled).toBe(true);
+    expect(config.model_proxy.deferred_tool_search_enabled).toBe(true);
+    expect(config.model_proxy.provider_strict_mode).toBe(false);
+    expect(config.model_proxy.prompt_asset_style).toBe('pipe-index');
+    expect(config.model_proxy.remote_compressors_enabled).toBe(false);
+    expect(config.model_proxy.prompt_compression_enabled).toBe(true);
+    expect(config.model_proxy.prompt_compression_provider).toBe('github-models');
+    expect(config.model_proxy.prompt_compression_model).toBe('openai/gpt-4.1');
+    expect(config.model_proxy.prompt_compression_base_url).toBe('https://models.github.ai/inference');
+    expect(config.model_proxy.prompt_compression_min_tokens).toBe(64);
+    expect(config.model_proxy.protected_fields).toContain('command');
+    expect(config.model_proxy.protected_tools).toContain('apply_patch');
+    expect(config.model_proxy.protected_file_patterns).toContain('*.pem');
+    expect(config.model_proxy.deny_tools).toContain('auth*');
+    expect(config.prompt_optimization.enabled).toBe(true);
+    expect(config.prompt_optimization.surfaces).toContain('system-prompt');
+    expect(config.prompt_optimization.min_tokens).toBe(256);
+    expect(config.prompt_optimization.target_ratio).toBe(0.5);
+    expect(config.prompt_optimization.persist_originals).toBe(true);
+    expect(config.prompt_optimization.cache_volatility).toBe('observe');
+    expect(config.prompt_optimization.asset_style).toBe('pipe-index');
   });
 
   it('supports registered tool field and cache annotations with wildcard fallback', async () => {
@@ -342,6 +385,162 @@ describe('UTK TOML config', () => {
       'utf8'
     );
     await expect(loadUtkConfig(badFields)).rejects.toThrow('tools.registry[].structured_fields must be an array');
+  });
+
+  it('supports model proxy configuration', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-model-proxy-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        'default = "toon"',
+        '',
+        '[model_proxy]',
+        'enabled = false',
+        'host = "0.0.0.0"',
+        'port = 9999',
+        'upstream_provider = "azure-ai-inference"',
+        'upstream_base_url = "https://example.services.ai.azure.com/models"',
+        'upstream_api_version = "2024-05-01-preview"',
+        'upstream_organization = "octo-org"',
+        'compression_level = "lite"',
+        'min_tokens = 512',
+        'reserve_output_tokens = 2048',
+        'tool_discovery_mode = "deferred-search"',
+        'cache_volatility = "observe"',
+        'session_id_header = "x-session"',
+        'history_compaction_enabled = false',
+        'history_compaction_mode = "replace-with-summary-block"',
+        'history_compaction_threshold = 0.80',
+        'session_blocks_enabled = false',
+        'dedupe_policy = "off"',
+        'stale_error_policy = "observe"',
+        'purge_error_after_turns = 7',
+        'artifact_search_enabled = false',
+        'context_proofs_enabled = false',
+        'deferred_tool_search_enabled = false',
+        'provider_strict_mode = true',
+        'prompt_asset_style = "pipe-index"',
+        'remote_compressors_enabled = true',
+        'prompt_compression_enabled = true',
+        'prompt_compression_provider = "azure-ai-inference"',
+        'prompt_compression_model = "mistral-large"',
+        'prompt_compression_base_url = "https://example.services.ai.azure.com/models"',
+        'prompt_compression_min_tokens = 12',
+        'inject_expand_context = false',
+        'minimize_tool_schemas = false',
+        'expand_edit_ranges = false',
+        'protected_fields = ["command", "path"]',
+        'protected_tools = ["write"]',
+        'protected_file_patterns = [".env"]',
+        'deny_tools = ["secret.*"]',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(config.model_proxy).toEqual({
+      enabled: false,
+      host: '0.0.0.0',
+      port: 9999,
+      upstream_provider: 'azure-ai-inference',
+      upstream_base_url: 'https://example.services.ai.azure.com/models',
+      upstream_api_version: '2024-05-01-preview',
+      upstream_organization: 'octo-org',
+      compression_level: 'lite',
+      min_tokens: 512,
+      reserve_output_tokens: 2048,
+      tool_discovery_mode: 'deferred-search',
+      cache_volatility: 'observe',
+      session_id_header: 'x-session',
+      history_compaction_enabled: false,
+      history_compaction_mode: 'replace-with-summary-block',
+      history_compaction_threshold: 0.8,
+      session_blocks_enabled: false,
+      dedupe_policy: 'off',
+      stale_error_policy: 'observe',
+      purge_error_after_turns: 7,
+      artifact_search_enabled: false,
+      context_proofs_enabled: false,
+      deferred_tool_search_enabled: false,
+      provider_strict_mode: true,
+      prompt_asset_style: 'pipe-index',
+      remote_compressors_enabled: true,
+      prompt_compression_enabled: true,
+      prompt_compression_provider: 'azure-ai-inference',
+      prompt_compression_model: 'mistral-large',
+      prompt_compression_base_url: 'https://example.services.ai.azure.com/models',
+      prompt_compression_min_tokens: 12,
+      inject_expand_context: false,
+      minimize_tool_schemas: false,
+      expand_edit_ranges: false,
+      protected_fields: ['command', 'path'],
+      protected_tools: ['write'],
+      protected_file_patterns: ['.env'],
+      deny_tools: ['secret.*']
+    });
+
+    const badLevel = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-level-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badLevel, '.utk'), { recursive: true }));
+    await writeFile(path.join(badLevel, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\ncompression_level = "wild"\n', 'utf8');
+    await expect(loadUtkConfig(badLevel)).rejects.toThrow('Unsupported model_proxy compression_level: wild');
+
+    const badDiscovery = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-discovery-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badDiscovery, '.utk'), { recursive: true }));
+    await writeFile(path.join(badDiscovery, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\ntool_discovery_mode = "all"\n', 'utf8');
+    await expect(loadUtkConfig(badDiscovery)).rejects.toThrow('Unsupported model_proxy tool_discovery_mode: all');
+
+    const badUpstreamProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-upstream-provider-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badUpstreamProvider, '.utk'), { recursive: true }));
+    await writeFile(path.join(badUpstreamProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nupstream_provider = "bad"\n', 'utf8');
+    await expect(loadUtkConfig(badUpstreamProvider)).rejects.toThrow('Unsupported model_proxy upstream_provider: bad');
+
+    const badPromptProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-prompt-provider-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badPromptProvider, '.utk'), { recursive: true }));
+    await writeFile(path.join(badPromptProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nprompt_compression_provider = "bad"\n', 'utf8');
+    await expect(loadUtkConfig(badPromptProvider)).rejects.toThrow('Unsupported model_proxy prompt_compression_provider: bad');
+
+    const badVolatility = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-volatility-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badVolatility, '.utk'), { recursive: true }));
+    await writeFile(path.join(badVolatility, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\ncache_volatility = "rewrite"\n', 'utf8');
+    await expect(loadUtkConfig(badVolatility)).rejects.toThrow('Unsupported model_proxy cache_volatility: rewrite');
+
+    const badHistoryMode = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-history-mode-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badHistoryMode, '.utk'), { recursive: true }));
+    await writeFile(path.join(badHistoryMode, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nhistory_compaction_mode = "raw"\n', 'utf8');
+    await expect(loadUtkConfig(badHistoryMode)).rejects.toThrow('Unsupported model_proxy history_compaction_mode: raw');
+
+    const badDedupe = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-dedupe-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badDedupe, '.utk'), { recursive: true }));
+    await writeFile(path.join(badDedupe, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\ndedupe_policy = "delete"\n', 'utf8');
+    await expect(loadUtkConfig(badDedupe)).rejects.toThrow('Unsupported model_proxy dedupe_policy: delete');
+
+    const badStale = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-stale-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badStale, '.utk'), { recursive: true }));
+    await writeFile(path.join(badStale, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nstale_error_policy = "delete"\n', 'utf8');
+    await expect(loadUtkConfig(badStale)).rejects.toThrow('Unsupported model_proxy stale_error_policy: delete');
+
+    const badPromptStyle = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-prompt-style-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badPromptStyle, '.utk'), { recursive: true }));
+    await writeFile(path.join(badPromptStyle, '.utk', 'config.toml'), '[serialization]\n[prompt_optimization]\nasset_style = "paragraphs"\n', 'utf8');
+    await expect(loadUtkConfig(badPromptStyle)).rejects.toThrow('Unsupported prompt_optimization asset_style: paragraphs');
+  });
+
+  it('fails explicitly for malformed model proxy tables and arrays', async () => {
+    const badProxy = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badProxy, '.utk'), { recursive: true }));
+    await writeFile(path.join(badProxy, '.utk', 'config.toml'), 'model_proxy = "bad"\n[serialization]\n', 'utf8');
+
+    await expect(loadUtkConfig(badProxy)).rejects.toThrow('model_proxy must be a TOML table');
+
+    const badFields = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-fields-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badFields, '.utk'), { recursive: true }));
+    await writeFile(path.join(badFields, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nprotected_fields = "command"\n', 'utf8');
+
+    await expect(loadUtkConfig(badFields)).rejects.toThrow('model_proxy.protected_fields must be an array of strings');
   });
 });
 
