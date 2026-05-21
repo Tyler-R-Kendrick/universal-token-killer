@@ -52,7 +52,13 @@ export async function gradeCavemanParityCodeGraderInput(input: AgentVCodeGraderI
     minFactScore: expected.min_fact_score
   });
   const metrics = assertion.metrics;
-  const score = assertion.passed ? 1 : Math.min(metrics.autoevalsFactScore, metrics.candidateVsCavemanTokenRatio <= (expected.max_token_ratio ?? 1) ? 1 : 0);
+  const anyParityCheckFailed = metrics.requiredTermRetentionScore < 1 ||
+    metrics.exactTermRetentionScore < 1 ||
+    metrics.orderedTermScore < 1 ||
+    metrics.forbiddenLeakageScore < 1 ||
+    metrics.requiredPatternScore < 1 ||
+    metrics.forbiddenPatternScore < 1;
+  const score = anyParityCheckFailed ? 0 : assertion.passed ? 1 : Math.min(metrics.autoevalsFactScore, metrics.candidateVsCavemanTokenRatio <= (expected.max_token_ratio ?? 1) ? 1 : 0);
 
   return {
     score,

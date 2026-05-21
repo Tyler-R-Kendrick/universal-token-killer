@@ -5,12 +5,17 @@ import sys
 try:
     import compresr
     from compresr import MODELS, CompressionClient
-    from importlib.metadata import version
-except Exception as exc:
+    from importlib.metadata import version, PackageNotFoundError
+except (ModuleNotFoundError, ImportError) as exc:
     print(json.dumps({"installed": False, "error": str(exc)}))
     sys.exit(1)
 
-installed_version = version("compresr")
+try:
+    installed_version = version("compresr")
+except PackageNotFoundError as exc:
+    print(json.dumps({"installed": False, "error": str(exc)}))
+    sys.exit(1)
+
 model_values = [value for name, value in MODELS.__dict__.items() if name.isupper() and isinstance(value, str)]
 api_key_present = bool(os.environ.get("COMPRESR_API_KEY"))
 

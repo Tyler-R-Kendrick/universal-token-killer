@@ -20,6 +20,9 @@ describe('Compresr install and configuration', () => {
   });
 
   it('verifies the local Compresr Python SDK install when available', () => {
+    if (!process.env[COMPRESR_INSTALL_CONFIG.apiKeyEnvVar]) {
+      return;
+    }
     const output = execFileSync('python', ['scripts/verify-compresr-install.py'], {
       cwd: path.resolve(import.meta.dirname, '..'),
       encoding: 'utf8'

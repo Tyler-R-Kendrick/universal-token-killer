@@ -22,3 +22,6 @@ export * from './baselines/baselineStore.js';
 export * from './reports/rtkParityReport.js';
 export * from './reports/cavemanParityReport.js';
 export * from './reports/compresrParityReport.js';
+export { gradeRtkParityCodeGraderInput } from './graders/rtkParityCodeGrader.js';
+export { gradeCavemanParityCodeGraderInput } from './graders/cavemanParityCodeGrader.js';
+export { gradeCompresrParityCodeGraderInput } from './graders/compresrParityCodeGrader.js';

@@ -95,7 +95,11 @@ export async function gradeCompresrParityCodeGraderInput(input: AgentVCodeGrader
 
 function parseExpected(text: string): ExpectedPayload {
   try {
-    return JSON.parse(text) as ExpectedPayload;
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object' && parsed.scenario) {
+      return parsed as ExpectedPayload;
+    }
+    return { scenario: 'compresr-parity' };
   } catch {
     return { scenario: 'compresr-parity' };
   }
@@ -103,7 +107,11 @@ function parseExpected(text: string): ExpectedPayload {
 
 function parseActual(text: string): ActualPayload {
   try {
-    return JSON.parse(text) as ActualPayload;
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object' && parsed.raw_text !== undefined) {
+      return parsed as ActualPayload;
+    }
+    return { compact_text: text };
   } catch {
     return { compact_text: text };
   }
@@ -116,11 +124,17 @@ if (process.argv[1]?.endsWith('compresrParityCodeGrader.js')) {
     stdin += chunk;
   });
   process.stdin.on('end', () => {
-    gradeCompresrParityCodeGraderInput(JSON.parse(stdin) as AgentVCodeGraderInput)
-      .then((result) => process.stdout.write(`${JSON.stringify(result)}\n`))
-      .catch((error: unknown) => {
-        process.stderr.write(`${(error as Error).message}\n`);
-        process.exitCode = 1;
-      });
+    try {
+      const input = JSON.parse(stdin) as AgentVCodeGraderInput;
+      gradeCompresrParityCodeGraderInput(input)
+        .then((result) => process.stdout.write(`${JSON.stringify(result)}\n`))
+        .catch((error: unknown) => {
+          process.stderr.write(`${(error as Error).message}\n`);
+          process.exitCode = 1;
+        });
+    } catch (error: unknown) {
+      process.stderr.write(`${(error as Error).message}\n`);
+      process.exitCode = 1;
+    }
   });
 }

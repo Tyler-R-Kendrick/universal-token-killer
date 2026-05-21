@@ -196,21 +196,22 @@ async function buildSingleReportRow() {
   });
   const rawText = (await readFile(result.rawPath)).toString();
   const compactText = await readFile(result.serializedPath, 'utf8');
+  const assertResult = await assertRtkParityWithAutoevals({
+    fixture,
+    rawText,
+    compactText,
+    responseText: result.response,
+    rawArtifactExists: true,
+    compactArtifactExists: true
+  });
   return {
     fixture,
     rawText,
     compactText,
     responseText: result.response,
-    metrics: (await assertRtkParityWithAutoevals({
-      fixture,
-      rawText,
-      compactText,
-      responseText: result.response,
-      rawArtifactExists: true,
-      compactArtifactExists: true
-    })).metrics,
-    passed: true,
-    failures: []
+    metrics: assertResult.metrics,
+    passed: assertResult.passed,
+    failures: assertResult.failures
   };
 }
 

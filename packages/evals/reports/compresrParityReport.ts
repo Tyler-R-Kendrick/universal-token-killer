@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,33 +27,37 @@ export async function buildCompresrParityReport(): Promise<{ markdown: string; r
 
 export async function runCompresrParityFixture(fixture: CompresrParityFixture): Promise<CompresrParityReportRow> {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), `utk-compresr-report-${fixture.name}-`));
-  const result = await mediateToolExecution({
-    workspaceRoot,
-    toolId: fixture.toolId,
-    input: fixture.input,
-    execute: async () => fixture.rawOutput
-  });
-  const raw = await readFile(result.rawPath);
-  const compactText = await readFile(result.serializedPath, 'utf8');
-  await access(result.rawPath);
-  await access(result.serializedPath);
-  const assertion = await assertCompresrParity({
-    fixture,
-    rawText: raw.toString(),
-    compactText,
-    responseText: result.response,
-    rawArtifactExists: true,
-    compactArtifactExists: true
-  });
-  return {
-    fixture,
-    rawText: raw.toString(),
-    compactText,
-    responseText: result.response,
-    metrics: assertion.metrics,
-    passed: assertion.passed,
-    failures: assertion.failures
-  };
+  try {
+    const result = await mediateToolExecution({
+      workspaceRoot,
+      toolId: fixture.toolId,
+      input: fixture.input,
+      execute: async () => fixture.rawOutput
+    });
+    const raw = await readFile(result.rawPath);
+    const compactText = await readFile(result.serializedPath, 'utf8');
+    await access(result.rawPath);
+    await access(result.serializedPath);
+    const assertion = await assertCompresrParity({
+      fixture,
+      rawText: raw.toString(),
+      compactText,
+      responseText: result.response,
+      rawArtifactExists: true,
+      compactArtifactExists: true
+    });
+    return {
+      fixture,
+      rawText: raw.toString(),
+      compactText,
+      responseText: result.response,
+      metrics: assertion.metrics,
+      passed: assertion.passed,
+      failures: assertion.failures
+    };
+  } finally {
+    await rm(workspaceRoot, { recursive: true, force: true });
+  }
 }
 
 export function renderCompresrParityEvalYaml(fixtures: CompresrParityFixture[] = COMPRESR_PARITY_FIXTURES): string {
