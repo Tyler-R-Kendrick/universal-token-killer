@@ -32,7 +32,7 @@ flowchart LR
 - **Payload safe:** raw payloads are written to disk and omitted from chat context.
 - **Recoverable:** compact responses always point back to raw artifacts.
 - **Generalized:** schema inference and routing are based on shape, not command-specific special cases.
-- **Measurable:** RTK parity metrics enforce savings, fact retention, and artifact recovery.
+- **Measurable:** RTK, Caveman, Compresr, and LeanCTX Copilot benchmarks enforce savings plus fact retention, recoverability, relevance, correctness, groundedness, and edge-case gates.
 - **Generated reuse:** `utk-init` can materialize dynamic session agents and session skills under `.utk/` so repeated project work is referenced instead of re-explained.
 
 ## Optional Tracing Pipeline
@@ -69,3 +69,4 @@ UTK currently exposes several surfaces with different constraints:
 - [Tracing](tracing.md)
 - [Evals-Driven Iteration](evals-driven-iteration.md)
 - [RTK Parity](rtk-parity.md)
+- [Internal Benchmark Summary](internal/benchmark-summary.md)

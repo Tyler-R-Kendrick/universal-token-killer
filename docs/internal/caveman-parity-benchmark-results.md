@@ -2,6 +2,8 @@
 
 Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 
+Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
+
 ## Summary
 
 - Scenarios: 80

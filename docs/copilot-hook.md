@@ -137,3 +137,15 @@ Structured tool output:
 ```
 
 Both shapes are mediated when the output is observable. The compact response points to `.utk/` artifacts for recovery.
+
+## Benchmark Coverage
+
+Copilot-specific context behavior is covered by the LeanCTX Copilot benchmark:
+
+- 50 unique cases across prompt surfaces, tool output, and tool-schema discovery.
+- 10 repeated loops, 3 rounds per loop, 1,500 total evaluated cases.
+- 0 failed comparisons.
+- UTK token savings vs LeanCTX baseline: 55,230 tokens, 33.68%.
+- Minimum relevance, correctness, and groundedness: 1.000.
+
+Standalone report: [LeanCTX Copilot benchmark results](internal/leanctx-copilot-benchmark-results.md). Aggregate table: [benchmark summary](internal/benchmark-summary.md).

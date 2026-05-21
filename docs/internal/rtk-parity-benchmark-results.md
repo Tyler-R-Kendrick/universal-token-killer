@@ -2,6 +2,8 @@
 
 Generated from `packages/evals/fixtures/rtkParityFixtures.ts`.
 
+Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
+
 ## Summary
 
 - Scenarios: 61

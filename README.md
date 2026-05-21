@@ -14,7 +14,18 @@ UTK is not a public CLI or VS Code extension. Its primary mediation surface is t
 - **Stay configurable:** choose `toon` or `compressed-json` globally or per tool in `.utk/config.toml`.
 - **Rewrite LLM-bound text locally:** `detok` uses LLMLingua-2 to simplify inputs and post-schema output text before it reaches a model.
 - **Reuse session-specific expertise:** `utk-init` can prepare `.utk/session-agents` and `.utk/session-skills` so repeated work becomes compact, discoverable project context.
-- **Stay measurable:** RTK parity tests assert fact retention, recoverability, savings, and strict CLI wins over checked-in RTK baselines.
+- **Stay measurable:** benchmark suites assert token savings plus fact retention, recoverability, relevance, correctness, groundedness, and strict wins over checked-in competitor baselines.
+
+## Benchmark Snapshot
+
+Current aggregate comparison: `docs/internal/benchmark-summary.md`.
+
+| Benchmark | Baseline | Cases | Passed | UTK/baseline ratio | Savings | Quality gates |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| RTK parity | RTK shell baselines | 61 | 61/61 | 0.271 on RTK-supported shell cases | 417 | Facts/autoevals/recovery 1.000 |
+| Caveman parity | Caveman terse prose | 80 | 80/80 | 0.756 | 375 | Autoevals/edge gates 1.000 |
+| Compresr parity | Compresr deterministic SDK baselines | 39 | 39/39 | 0.452 | 527 | Autoevals/recovery 1.000 |
+| LeanCTX Copilot | LeanCTX context-runtime baseline | 50 unique; 1,500 evaluated | 1,500/1,500 | 0.663 | 55,230 | Relevance/correctness/groundedness 1.000 |
 
 ## RTK Parity Stats
 
@@ -73,6 +84,20 @@ Compresr SDK `2.5.1` is installed for local verification and configured in `@utk
 - Recoverability: `1.000`
 
 Full report: `docs/internal/compresr-parity-benchmark-results.md`.
+
+## LeanCTX Copilot Benchmark
+
+The LeanCTX Copilot suite compares UTK against a context-runtime baseline across Copilot prompt surfaces, post-tool output, and deferred tool-schema discovery. It runs 50 unique cases across 10 repeated improvement loops and 3 internal rounds per loop.
+
+- Total evaluated cases: `1,500`
+- Failed comparisons: `0`
+- UTK tokens: `108,750`
+- LeanCTX baseline tokens: `163,980`
+- Total estimated token savings vs LeanCTX: `55,230`
+- Savings vs LeanCTX: `33.68%`
+- Minimum relevance/correctness/groundedness: `1.000`
+
+Full report: `docs/internal/leanctx-copilot-benchmark-results.md`.
 
 ## Example Usage
 

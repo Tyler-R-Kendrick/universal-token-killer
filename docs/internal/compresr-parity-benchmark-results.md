@@ -2,6 +2,8 @@
 
 Generated from `packages/evals/fixtures/compresrParityFixtures.ts`.
 
+Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
+
 ## Installation
 
 - Installed package: `compresr@2.5.1`
