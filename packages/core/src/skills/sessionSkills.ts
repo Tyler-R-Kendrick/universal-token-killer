@@ -262,9 +262,9 @@ function isWordChar(value: string | undefined): boolean {
 }
 
 function normalizeRequiredSkills(values: string[]): string[] {
-  return uniqueNormalizedLines(values)
-    .map((value) => value.replace(/^\$/, '').trim())
-    .filter(Boolean);
+  return uniqueNormalizedLines(
+    values.map((value) => value.replace(/^\$/, '').trim())
+  ).filter(Boolean);
 }
 
 function shouldUseProcedureReferencePreview(procedure: string[]): boolean {

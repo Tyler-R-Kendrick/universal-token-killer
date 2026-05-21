@@ -287,8 +287,19 @@ function normalizeAgentTools(values: string[] | string | undefined, needsAgentTo
   const rawTools = typeof values === 'string' ? values.split(',') : (values ?? ['reason-with-lexicon']);
   const tools = uniqueLines(rawTools.map((tool) => tool.replace(/^#tool:/, '').trim())).filter(isSafeToolName);
   if (tools.includes('*')) return ['*'];
-  if (needsAgentTool && !tools.includes('agent')) tools.push('agent');
-  return tools.map((tool) => sanitizeLine(tool)).filter(Boolean).sort();
+
+  // Ensure "reason-with-lexicon" is present and placed first
+  const hasReasonWithLexicon = tools.includes('reason-with-lexicon');
+  const otherTools = tools.filter((tool) => tool !== 'reason-with-lexicon');
+
+  // Add "agent" if needed
+  if (needsAgentTool && !otherTools.includes('agent')) otherTools.push('agent');
+
+  // Sanitize, deduplicate, and sort other tools
+  const sanitizedOtherTools = uniqueLines(otherTools.map((tool) => sanitizeLine(tool)).filter(Boolean)).sort();
+
+  // Return with "reason-with-lexicon" at the front
+  return hasReasonWithLexicon ? ['reason-with-lexicon', ...sanitizedOtherTools] : sanitizedOtherTools;
 }
 
 function uniqueLines(values: string[]): string[] {
@@ -373,13 +384,20 @@ function renderMetadata(metadata: Record<string, string>): string[] {
 }
 
 function renderHooks(hooks: Record<string, Array<{ command: string; timeout?: number }>>): string[] {
-  const entries = Object.entries(hooks).filter(([event, commands]) => sanitizeLine(event) && commands.length > 0);
+  const entries = Object.entries(hooks)
+    .map(([event, commands]) => {
+      const sanitizedEvent = sanitizeLine(event);
+      const sanitizedCommands = commands.map((c) => ({ sanitized: sanitizeLine(c.command), timeout: c.timeout })).filter((c) => c.sanitized);
+      return { event: sanitizedEvent, commands: sanitizedCommands };
+    })
+    .filter((entry) => entry.event && entry.commands.length > 0);
+
   if (entries.length === 0) return [];
   const lines = ['hooks:'];
-  for (const [event, commands] of entries.sort(([left], [right]) => left.localeCompare(right))) {
-    lines.push(`  ${sanitizeLine(event)}:`);
-    for (const command of commands.filter((item) => sanitizeLine(item.command))) {
-      lines.push(`    - command: ${yamlScalar(sanitizeLine(command.command))}`);
+  for (const entry of entries.sort((left, right) => left.event.localeCompare(right.event))) {
+    lines.push(`  ${yamlScalar(entry.event)}:`);
+    for (const command of entry.commands) {
+      lines.push(`    - command: ${yamlScalar(command.sanitized)}`);
       if (command.timeout !== undefined) lines.push(`      timeout: ${command.timeout}`);
     }
   }
