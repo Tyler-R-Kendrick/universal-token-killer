@@ -1,0 +1,4 @@
+interface:
+  display_name: "Detoks Skill"
+  short_description: "Optimize skills for fewer tokens"
+  default_prompt: "Use $detoks-skill to create a token-optimized companion Agent Skill while preserving the original source skill and validating with AgentEvals."

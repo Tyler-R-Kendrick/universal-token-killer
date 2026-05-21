@@ -1,0 +1,26 @@
+name: detoks-skill
+description: Validates token-optimized Agent Skill companion generation.
+evaluators:
+  - name: preservation-and-budget
+    type: code_judge
+    script: scripts/validate-optimized-skill.ts
+    asserts:
+      - source-preserved
+      - frontmatter-declarations-preserved
+      - optimized-root-token-ratio-under-1
+      - code-blocks-preserved
+      - references-linked
+  - name: workflow-trajectory
+    type: tool_trajectory
+    expected:
+      - analyze-skill
+      - render-optimized-skill
+      - validate-optimized-skill
+      - agent-evals
+  - name: token-execution-metrics
+    type: execution_metrics
+    metrics:
+      optimizedRootTokenRatio:
+        lt: 1
+      validationOk:
+        equals: true
