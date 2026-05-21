@@ -115,19 +115,28 @@ describe('package boundary', () => {
     ]);
   });
 
-  it('ships a detoks agent skill for CLI-first prompt compression with MCP fallback', async () => {
+  it('ships a detoks agent skill for CLI-first prompt compression and agent guidance refactors', async () => {
     const skillRoot = path.join(repoRoot, 'skills', 'detoks');
     const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
     const reference = await readFile(path.join(skillRoot, 'references', 'detok-mcp.md'), 'utf8');
+    const promptReference = await readFile(path.join(skillRoot, 'references', 'detoks-prompt.md'), 'utf8');
+    const skillReference = await readFile(path.join(skillRoot, 'references', 'detoks-skill.md'), 'utf8');
+    const agentsMdReference = await readFile(path.join(skillRoot, 'references', 'detoks-agentsmd.md'), 'utf8');
+    const ghcpReference = await readFile(path.join(skillRoot, 'references', 'detoks-ghcp-subagent.md'), 'utf8');
 
     await access(path.join(skillRoot, 'agents', 'openai.yaml'));
 
     expect(skill).toContain('name: detoks');
-    expect(skill).toContain('`detoks-prompt` CLI flow');
-    expect(skill).toContain('node packages/cli/dist/utk.js detoks-prompt --file <path>');
-    expect(skill).toContain('detok MCP server');
-    expect(skill).toContain('LLMLingua-2');
-    expect(skill).toContain('does not replace UTK raw artifact persistence');
+    expect(skill).toContain('references/detoks-prompt.md');
+    expect(skill).toContain('references/detoks-skill.md');
+    expect(skill).toContain('references/detoks-agentsmd.md');
+    expect(skill).toContain('references/detoks-ghcp-subagent.md');
+    expect(promptReference).toContain('node packages/cli/dist/utk.js detoks-prompt --file');
+    expect(skillReference).toContain('Do not create a sibling `detoks-skill` folder');
+    expect(agentsMdReference).toContain('Extract durable facts into memory');
+    expect(agentsMdReference).toContain('Extract repeatable procedures and tool/API guidance into agent skills');
+    expect(ghcpReference).toContain('handoffs');
+    expect(ghcpReference).toContain('body remains under 30,000 characters');
     expect(reference).toContain('"forceTokens"');
     expect(reference).toContain('Do not compress before UTK has parsed schemas/templates');
   });
