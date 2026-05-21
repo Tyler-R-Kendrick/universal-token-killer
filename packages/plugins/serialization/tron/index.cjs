@@ -12,15 +12,15 @@ function registerUtkSerializerPlugin(registry, context) {
       return context.parser.parse(text, (candidate) => TRON.parse(candidate));
     },
     validate(value, text) {
-      const expected = TRON.stringify(toJsonValue(value));
       try {
+        const expected = TRON.stringify(toJsonValue(value));
         const decoded = context.parser.parse(text, (candidate) => TRON.parse(candidate));
         if (canonicalJson(decoded) === canonicalJson(toJsonValue(value))) {
           return { valid: true, errors: [] };
         }
         return { valid: false, errors: ['TRON artifact drifted from canonical value'], regenerated: expected };
       } catch (error) {
-        return { valid: false, errors: [String(error)], regenerated: expected };
+        return { valid: false, errors: [String(error)] };
       }
     },
     estimateTokens

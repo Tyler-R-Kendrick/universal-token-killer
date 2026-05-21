@@ -301,7 +301,18 @@ async function lintPluginEntries(packDir: string, entries: PackPluginEntry[], fi
         findings.push({ severity: 'error', code: 'pack/plugins/grammar-missing', message: `serialization plugin grammar not found`, file: entry.grammar, hint: `referenced by plugins[${i}]` });
         continue;
       }
-      const lark = await readFile(grammarPath, 'utf8');
+      let lark: string;
+      try {
+        lark = await readFile(grammarPath, 'utf8');
+      } catch (error) {
+        findings.push({
+          severity: 'error',
+          code: 'pack/plugins/grammar-read-failed',
+          message: `failed to read plugin grammar '${entry.id}' at '${entry.grammar}': ${(error as Error).message}`,
+          file: entry.grammar
+        });
+        continue;
+      }
       if (!/^\s*start\s*:/m.test(lark)) {
         findings.push({ severity: 'error', code: 'pack/plugins/grammar-missing-start-rule', message: `serialization plugin '${entry.id}' grammar lacks a 'start:' rule`, file: entry.grammar });
       }

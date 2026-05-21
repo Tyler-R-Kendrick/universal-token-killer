@@ -11,7 +11,12 @@ function registerUtkSerializerPlugin(registry, context) {
       return context.parser.parse(text, (candidate) => JSON.parse(candidate));
     },
     validate(value, text) {
-      const expected = JSON.stringify(sortValue(value));
+      let expected;
+      try {
+        expected = JSON.stringify(sortValue(value));
+      } catch {
+        return { valid: false, errors: ['json-compact artifact drifted from canonical value'] };
+      }
       if (text === expected) {
         return { valid: true, errors: [] };
       }
