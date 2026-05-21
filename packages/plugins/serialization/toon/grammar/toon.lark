@@ -1,0 +1,7 @@
+start: value
+
+?value: document
+document: line+
+line: /[^\r\n]*/ NEWLINE?
+
+%import common.NEWLINE

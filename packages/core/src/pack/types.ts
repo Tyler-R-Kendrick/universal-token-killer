@@ -21,6 +21,26 @@ export type PackTemplateEntry = {
   tool?: string;
 };
 
+export type PackSerializationPluginEntry = {
+  type: 'serialization';
+  id: string;
+  module: string;
+  grammar: string;
+  extension: string;
+  aliases?: string[];
+  config_fields?: Record<string, unknown>;
+};
+
+export type PackAgentPluginEntry = {
+  type: 'agent';
+  id: string;
+  target: string;
+  path?: string;
+  manifest?: string;
+};
+
+export type PackPluginEntry = PackSerializationPluginEntry | PackAgentPluginEntry;
+
 export type UtkPackManifest = {
   pack: {
     name: string;
@@ -38,6 +58,7 @@ export type UtkPackManifest = {
   tools?: PackToolEntry[];
   grammars?: PackGrammarEntry[];
   templates?: PackTemplateEntry[];
+  plugins?: PackPluginEntry[];
 };
 
 export type PackSource =
@@ -64,12 +85,27 @@ export type PackTemplateRecord = {
   descriptorPath?: string;
 };
 
+export type PackSerializationPluginRecord = {
+  entry: PackSerializationPluginEntry;
+  grammar: {
+    lark: string;
+    larkHash: string;
+  };
+};
+
+export type PackAgentPluginRecord = {
+  entry: PackAgentPluginEntry;
+};
+
+export type PackPluginRecord = PackSerializationPluginRecord | PackAgentPluginRecord;
+
 export type LoadedPack = {
   manifest: UtkPackManifest;
   rootDir: string;
   tools: PackToolDefinition[];
   grammars: PackGrammarRecord[];
   templates: PackTemplateRecord[];
+  plugins: PackPluginRecord[];
 };
 
 export type InstalledPack = {
@@ -85,5 +121,11 @@ export type InstalledPack = {
     tool: string;
     field: string;
     larkHash: string;
+  }>;
+  plugins: Array<{
+    type: 'serialization' | 'agent';
+    id: string;
+    target?: string;
+    larkHash?: string;
   }>;
 };

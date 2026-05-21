@@ -11,7 +11,7 @@ UTK is not a public CLI or VS Code extension. Its primary mediation surface is t
 - **Spend fewer tokens on tool output:** UTK returns compact summaries and artifact references instead of raw command dumps.
 - **Keep the facts recoverable:** raw outputs, compact artifacts, schemas, routes, and validation metadata are written to `.utk/`.
 - **Handle more than shell:** shell and non-shell tool calls use the same mediation path whenever Copilot exposes input/output.
-- **Stay configurable:** choose `toon` or `compressed-json` globally or per tool in `.utk/config.toml`.
+- **Stay configurable:** choose `toon` or `json-compact` globally or per tool in `.utk/config.toml`.
 - **Rewrite LLM-bound text locally:** `detok` uses LLMLingua-2 to simplify inputs and post-schema output text before it reaches a model.
 - **Reuse session-specific expertise:** `utk-init` can prepare `.utk/session-agents` and `.utk/session-skills` so repeated work becomes compact, discoverable project context.
 - **Stay measurable:** benchmark suites assert token savings plus fact retention, recoverability, relevance, correctness, groundedness, and strict wins over checked-in competitor baselines.
@@ -144,7 +144,7 @@ It also initializes dynamic reuse locations:
 Example prompt:
 
 ```text
-Use utk-init for this repo. Initialize all registered tools. For github.pull-request.list, expect JSON objects with number, title, author, state, labels, and url. For shell.git.diff, use compressed-json.
+Use utk-init for this repo. Initialize all registered tools. For github.pull-request.list, expect JSON objects with number, title, author, state, labels, and url. For shell.git.diff, use json-compact.
 ```
 
 ### Rewrite Text With Detok MCP
@@ -278,15 +278,18 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
 
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
+
 [[serialization.overrides]]
 tool = "shell.git.diff"
-provider = "compressed-json"
+provider = "json-compact"
 
 [routing]
 deterministic_confidence_threshold = 0.95
@@ -316,7 +319,7 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 registry = []
 ```
 
-Built-in serializers are `toon`, `compressed-json`, and `tron`. Installed packages named `utk-serializer-*` or `@utk/serializer-*` can register additional serializers through `registerUtkSerializerPlugin(registry)`.
+Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializers live in `packages/plugins/serialization`; workspace serializers load from `.utk/plugins/serialization/<plugin-name>` as packs using `utk.pack.toml` plus `grammar/<id>.lark`. Installed serializer packs under `.utk/packs/<pack-name>` are loaded the same way.
 
 ## Packages
 
@@ -345,7 +348,7 @@ utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
 
 `utk pack add` runs the linter and refuses to install packs with errors. Pass `--force` after re-checking the report if you need to override.
 
-The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
+The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, exposes declared `[[plugins]]` from the installed pack root, and records the install in `.utk/packs.lock.toml`.
 
 **Safety:**
 
@@ -357,11 +360,12 @@ Authoring a pack:
 
 ```text
 my-pack/
-├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
+├── utk.pack.toml             # manifest (name, version, tools, grammars, templates, plugins)
 ├── tools/<id>.toml           # bash-like or structured tool definitions
 ├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
 # .lark is the ONLY supported grammar artifact — no .grammar.json sidecars
-└── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+├── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+└── grammar/<plugin>.lark                # serialization plugin grammar when [[plugins]] needs it
 ```
 
 ## Reference Docs

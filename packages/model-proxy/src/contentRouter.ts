@@ -5,7 +5,7 @@ import { estimateTokens } from './openai.js';
 export type ContentRoute = {
   routeReason: string;
   kind: string;
-  serializerId: 'toon' | 'compressed-json';
+  serializerId: 'toon' | 'json-compact';
   compactText: string;
   protectedPreview: string;
   rawTokens: number;
@@ -16,7 +16,7 @@ export function routeContentForProxy(content: string, query: string): ContentRou
   const routeReason = classifyRouteReason(content, query);
   const protectedPreview = extractProtectedPreview(content);
   const compactObject = routeSpecificCompactObject(content, routeReason, query, protectedPreview);
-  const serializerId: 'toon' | 'compressed-json' = routeReason.startsWith('structured-json') ? 'compressed-json' : 'toon';
+  const serializerId: 'toon' | 'json-compact' = routeReason.startsWith('structured-json') ? 'json-compact' : 'toon';
   const serialized = serializerId === 'toon' ? encode(compactObject) : stableJson(compactObject);
   const compactText = serialized;
   return {

@@ -232,6 +232,61 @@ describe('loadPackManifest', () => {
     expect(pack.templates[0]?.source).toContain('defineTemplate');
   });
 
+  it('loads serialization and agent plugin entries from the pack manifest', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-plugin-'));
+    await writeFixturePack(dir, {
+      manifest: [
+        '[pack]',
+        'name = "serializer-demo"',
+        'version = "1.0.0"',
+        '',
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'module = "index.js"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        'aliases = ["demo-alt"]',
+        '',
+        '[plugins.config_fields.prefix]',
+        'type = "string"',
+        'default = ""',
+        '',
+        '[[plugins]]',
+        'type = "agent"',
+        'id = "demo-agent"',
+        'target = "copilot"',
+        'path = "."',
+        'manifest = "plugin.json"',
+        ''
+      ].join('\n'),
+      tools: {},
+      grammars: { 'grammar/demo.lark': 'start: value\nvalue: /.+/\n' },
+      templates: {}
+    });
+    await writeFile(path.join(dir, 'index.js'), 'export function registerUtkSerializerPlugin() {}\n', 'utf8');
+    await writeFile(path.join(dir, 'plugin.json'), '{"name":"demo-agent"}\n', 'utf8');
+
+    const pack = await loadPack(dir);
+
+    expect(pack.manifest.plugins?.[0]).toMatchObject({
+      type: 'serialization',
+      id: 'demo',
+      module: 'index.js',
+      grammar: 'grammar/demo.lark',
+      extension: 'demo',
+      aliases: ['demo-alt'],
+      config_fields: { prefix: { type: 'string', default: '' } }
+    });
+    expect(pack.plugins[0]).toMatchObject({
+      entry: { type: 'serialization', id: 'demo' },
+      grammar: { lark: expect.stringContaining('start:'), larkHash: expect.stringMatching(/^[a-f0-9]+$/) }
+    });
+    expect(pack.plugins[1]).toMatchObject({
+      entry: { type: 'agent', id: 'demo-agent', target: 'copilot', manifest: 'plugin.json' }
+    });
+  });
+
   it('rejects a grammar entry without a .lark file', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-pack-missing-lark-'));
     const manifest = [
@@ -373,6 +428,27 @@ describe('loadPackManifest', () => {
     expect(manifest.grammars?.[0]?.description).toBe('d');
     expect(manifest.templates?.[0]?.language).toBe('python');
   });
+
+  it('rejects invalid plugin manifest shapes', () => {
+    expect(() =>
+      normalizeManifest({
+        pack: { name: 'ok', version: '1.0.0' },
+        plugins: [{ type: 'serialization', id: 'demo', module: 'index.js', grammar: 'grammar/demo.lark', extension: 'demo' }]
+      })
+    ).not.toThrow();
+    expect(() =>
+      normalizeManifest({
+        pack: { name: 'ok', version: '1.0.0' },
+        plugins: [{ type: 'agent', id: 'copilot-demo', target: 'copilot', manifest: 'plugin.json' }]
+      })
+    ).not.toThrow();
+    expect(() =>
+      normalizeManifest({
+        pack: { name: 'ok', version: '1.0.0' },
+        plugins: [{ type: 'mystery', id: 'demo' }]
+      })
+    ).toThrow(/plugins\[0\]\.type/);
+  });
 });
 
 describe('removeBlocksForPack unterminated', () => {
@@ -491,6 +567,10 @@ describe('lockfile', () => {
       grammars: [
         { tool: 'git', field: 'ref', larkHash: 'h1' },
         { tool: 'git', field: 'remote', larkHash: 'h3' }
+      ],
+      plugins: [
+        { type: 'serialization', id: 'toon', larkHash: 'h4' },
+        { type: 'agent', id: 'utk-cli', target: 'copilot' }
       ]
     };
     await writeLockfile(workspace, [pack]);
@@ -499,6 +579,10 @@ describe('lockfile', () => {
     expect(round[0]?.name).toBe('git-cli');
     expect(round[0]?.grammars[0]?.larkHash).toBe('h1');
     expect(round[0]?.grammars[1]?.larkHash).toBe('h3');
+    expect(round[0]?.plugins).toEqual([
+      { type: 'serialization', id: 'toon', larkHash: 'h4' },
+      { type: 'agent', id: 'utk-cli', target: 'copilot' }
+    ]);
   });
 
   it('returns an empty list when the lockfile is missing', async () => {
@@ -571,6 +655,7 @@ describe('lockfile', () => {
     expect(round[0]?.tools).toEqual([]);
     expect(round[0]?.templates).toEqual([]);
     expect(round[0]?.grammars).toEqual([]);
+    expect(round[0]?.plugins).toEqual([]);
   });
 });
 
@@ -656,6 +741,7 @@ describe('installPack / uninstallPack / listInstalledPacks', () => {
     const list = await listInstalledPacks(workspace);
     expect(list).toHaveLength(1);
     expect(list[0]?.name).toBe('git-cli');
+    expect(list[0]?.plugins).toEqual([]);
   });
 
   it('preserves the previous lockfile when install fails (lockfile-last invariant)', async () => {
@@ -886,6 +972,7 @@ function makeLoadedPack(): LoadedPack {
       }
     ],
     grammars: [],
-    templates: []
+    templates: [],
+    plugins: []
   };
 }

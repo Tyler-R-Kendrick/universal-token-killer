@@ -14,10 +14,10 @@ Malformed JSON and output-less events are not mediated.
 If config contains an unknown provider, UTK throws:
 
 ```text
-Unsupported serialization provider: <value>. Loaded providers: compressed-json, toon, tron
+Unsupported serialization provider: <value>. Loaded providers: json-compact, toon, tron
 ```
 
-Built-in values are `toon`, `compressed-json`, and `tron`. Installed serializer plugin packages can add more values when their package name matches `utk-serializer-*` or `@utk/serializer-*`.
+Built-in values are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` when the folder is a pack with `utk.pack.toml`, a valid `.lark` grammar, and a registrar module.
 
 ## Disabled Serializer
 

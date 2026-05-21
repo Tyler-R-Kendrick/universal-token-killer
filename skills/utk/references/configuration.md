@@ -9,15 +9,18 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
 
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
+
 [[serialization.overrides]]
 tool = "shell.git.diff"
-provider = "compressed-json"
+provider = "json-compact"
 
 [routing]
 deterministic_confidence_threshold = 0.95
@@ -28,4 +31,4 @@ raw_outputs = true
 storage_root = ".utk"
 ```
 
-Built-in serializer providers are `toon`, `compressed-json`, and `tron`. Installed plugin packages named `utk-serializer-*` or `@utk/serializer-*` can add more providers by exporting `registerUtkSerializerPlugin(registry)`. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.
+Built-in serializer providers are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` with `utk.pack.toml`, `grammar/<id>.lark`, and `registerUtkSerializerPlugin(registry, context)`. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.

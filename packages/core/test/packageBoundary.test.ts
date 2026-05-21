@@ -1,6 +1,7 @@
 import { access, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { loadPackManifest } from '../src/pack/loadPack.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 
@@ -174,6 +175,8 @@ describe('package boundary', () => {
     const agentsRoot = path.join(repoRoot, 'packages', 'plugins', 'agents');
     const agentFolders = (await readdir(agentsRoot)).sort();
     const copilotPackage = await readJson('packages/plugins/agents/copilot/package.json');
+    const opencodePack = await loadPackManifest(path.join(agentsRoot, 'opencode'));
+    const windsurfPack = await loadPackManifest(path.join(agentsRoot, 'windsurf'));
 
     expect(agentFolders).toEqual(['copilot', 'opencode', 'windsurf']);
     expect(copilotPackage).toMatchObject({
@@ -186,6 +189,32 @@ describe('package boundary', () => {
     await access(path.join(agentsRoot, 'copilot', 'plugins'));
     await access(path.join(agentsRoot, 'opencode', 'extensions', 'README.md'));
     await access(path.join(agentsRoot, 'windsurf', 'extensions', 'README.md'));
+    expect(opencodePack.plugins?.[0]).toMatchObject({ type: 'agent', target: 'opencode', path: 'extensions' });
+    expect(windsurfPack.plugins?.[0]).toMatchObject({ type: 'agent', target: 'windsurf', path: 'extensions' });
+  });
+
+  it('keeps maintained serialization plugins under packages/plugins/serialization', async () => {
+    const serializationRoot = path.join(repoRoot, 'packages', 'plugins', 'serialization');
+    const pluginFolders = (await readdir(serializationRoot)).sort();
+
+    expect(pluginFolders).toEqual(['json-compact', 'toon', 'tron']);
+    await expect(access(path.join(repoRoot, 'packages', 'core', 'src', 'serialization', 'plugins'))).rejects.toThrow();
+    await expect(access(path.join(repoRoot, 'packages', 'core', 'grammars', 'tron.lark'))).rejects.toThrow();
+
+    for (const plugin of pluginFolders) {
+      const manifest = await loadPackManifest(path.join(serializationRoot, plugin));
+      const grammarName = plugin === 'json-compact' ? 'json-compact.lark' : `${plugin}.lark`;
+      const grammar = await readFile(path.join(serializationRoot, plugin, 'grammar', grammarName), 'utf8');
+
+      expect(manifest.pack.name).toBe(plugin);
+      expect(manifest.plugins?.[0]).toMatchObject({
+        id: plugin,
+        type: 'serialization',
+        module: 'index.cjs',
+        grammar: `grammar/${grammarName}`
+      });
+      expect(grammar).toContain('start:');
+    }
   });
 
   it('exposes UTK as focused GitHub Copilot plugin marketplace bundles', async () => {
@@ -196,6 +225,9 @@ describe('package boundary', () => {
     const cliManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-cli', 'plugin.json'));
     const proxyManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-model-proxy', 'plugin.json'));
     const detoksManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', 'plugin.json'));
+    const cliPack = await loadPackManifest(path.join(pluginRoot, 'utk-cli'));
+    const proxyPack = await loadPackManifest(path.join(pluginRoot, 'utk-model-proxy'));
+    const detoksPack = await loadPackManifest(path.join(pluginRoot, 'utk-detoks'));
     const mcpConfig = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', '.mcp.json'));
     const hooksConfig = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', 'hooks', 'hooks.json'));
     const pluginHookRunner = await readFile(path.join(pluginRoot, 'utk-detoks', 'hooks', 'detokPreToolUseHook.js'), 'utf8');
@@ -243,6 +275,9 @@ describe('package boundary', () => {
       hooks: './hooks/hooks.json',
       strict: true
     });
+    expect(cliPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-cli', target: 'copilot', manifest: 'plugin.json' });
+    expect(proxyPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-model-proxy', target: 'copilot', manifest: 'plugin.json' });
+    expect(detoksPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-detoks', target: 'copilot', manifest: 'plugin.json' });
     expect((mcpConfig.mcpServers as Record<string, unknown>).detok).toMatchObject({
       type: 'stdio',
       command: 'node',

@@ -7,6 +7,7 @@ import { recordFailure, type RunContext } from '../tracing/index.js';
 import { normalizeManifest } from './loadPack.js';
 import type {
   PackGrammarEntry,
+  PackPluginEntry,
   PackTemplateEntry,
   PackToolEntry,
   UtkPackManifest
@@ -48,6 +49,7 @@ export async function lintPack(packDir: string, options: LintOptions = {}): Prom
     await lintToolEntries(packDir, manifest.tools ?? [], findings);
     await lintGrammarEntries(packDir, manifest.grammars ?? [], findings);
     await lintTemplateEntries(packDir, manifest, options, findings);
+    await lintPluginEntries(packDir, manifest.plugins ?? [], findings);
   }
   if (options.tracer) {
     for (const finding of findings) {
@@ -270,6 +272,47 @@ async function lintTemplateEntries(packDir: string, manifest: UtkPackManifest, o
       lintTemplateSourceHeuristically(source, relative, findings);
     } else {
       lintPythonTemplateSource(source, relative, findings);
+    }
+  }
+}
+
+async function lintPluginEntries(packDir: string, entries: PackPluginEntry[], findings: LintFinding[]): Promise<void> {
+  const seen = new Set<string>();
+  for (let i = 0; i < entries.length; i += 1) {
+    const entry = entries[i]!;
+    const key = `${entry.type}:${entry.id}`;
+    if (seen.has(key)) {
+      findings.push({ severity: 'error', code: 'pack/plugins/duplicate-id', message: `duplicate plugin ${key}`, file: 'utk.pack.toml' });
+    }
+    seen.add(key);
+    if (entry.type === 'serialization') {
+      if (!/^[a-z0-9][a-z0-9._-]*$/.test(entry.id)) {
+        findings.push({ severity: 'error', code: 'pack/plugins/invalid-id', message: `serialization plugin id is invalid: ${entry.id}`, file: 'utk.pack.toml' });
+      }
+      if (!entry.grammar.endsWith('.lark')) {
+        findings.push({ severity: 'error', code: 'pack/plugins/grammar-format', message: `serialization plugin '${entry.id}' grammar must be a .lark file`, file: entry.grammar });
+      }
+      const moduleExists = await pathExists(safeJoin(packDir, entry.module));
+      if (!moduleExists) {
+        findings.push({ severity: 'error', code: 'pack/plugins/module-missing', message: `serialization plugin module not found`, file: entry.module, hint: `referenced by plugins[${i}]` });
+      }
+      const grammarPath = safeJoin(packDir, entry.grammar);
+      if (!(await pathExists(grammarPath))) {
+        findings.push({ severity: 'error', code: 'pack/plugins/grammar-missing', message: `serialization plugin grammar not found`, file: entry.grammar, hint: `referenced by plugins[${i}]` });
+        continue;
+      }
+      const lark = await readFile(grammarPath, 'utf8');
+      if (!/^\s*start\s*:/m.test(lark)) {
+        findings.push({ severity: 'error', code: 'pack/plugins/grammar-missing-start-rule', message: `serialization plugin '${entry.id}' grammar lacks a 'start:' rule`, file: entry.grammar });
+      }
+    } else {
+      const pluginPath = entry.path ?? '.';
+      if (!(await pathExists(safeJoin(packDir, pluginPath)))) {
+        findings.push({ severity: 'error', code: 'pack/plugins/path-missing', message: `agent plugin path not found`, file: pluginPath, hint: `referenced by plugins[${i}]` });
+      }
+      if (entry.manifest !== undefined && !(await pathExists(safeJoin(packDir, entry.manifest)))) {
+        findings.push({ severity: 'error', code: 'pack/plugins/manifest-missing', message: `agent plugin manifest not found`, file: entry.manifest, hint: `referenced by plugins[${i}]` });
+      }
     }
   }
 }

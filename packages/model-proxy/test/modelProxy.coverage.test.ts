@@ -28,7 +28,7 @@ afterEach(async () => {
 
 describe('model proxy coverage paths', () => {
   it('covers route classifiers and schema minimization fallbacks', () => {
-    expect(routeContentForProxy('{"b":2,"a":1}', '').serializerId).toBe('compressed-json');
+    expect(routeContentForProxy('{"b":2,"a":1}', '').serializerId).toBe('json-compact');
     expect(routeContentForProxy('```ts\nconst x = 1;\n```', '').routeReason).toBe('protected-spans');
     expect(routeContentForProxy('<type>file</type>\noldString', '').routeReason).toBe('file-read-envelope');
     expect(routeContentForProxy('INFO ready', '').routeReason).toBe('tool-output');

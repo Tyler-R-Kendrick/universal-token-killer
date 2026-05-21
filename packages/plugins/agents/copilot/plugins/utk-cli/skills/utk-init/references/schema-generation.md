@@ -60,11 +60,14 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
+
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
 ```
 
 Only add per-tool overrides when the user requests them or when an existing config already contains one.

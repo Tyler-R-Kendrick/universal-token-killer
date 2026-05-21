@@ -803,7 +803,7 @@ type UtkRouteRecordV1 = {
   schemaId: string;
   routeId: string;
   confidence: number;
-  serializerId: "toon" | "compressed-json";
+  serializerId: "toon" | "json-compact";
   deterministic: boolean;
   constrainedFallback: "not-needed" | "used" | "unavailable" | "failed";
   reasonCode: string;

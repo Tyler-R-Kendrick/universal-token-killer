@@ -1197,7 +1197,7 @@ export const RTK_PARITY_FIXTURES: RtkParityFixture[] = [
       'default = "toon"',
       '',
       '[tools."shell.git.diff"]',
-      'serializer = "compressed-json"',
+      'serializer = "json-compact"',
       'include_raw_artifact = true',
       '',
       '[detok]',
