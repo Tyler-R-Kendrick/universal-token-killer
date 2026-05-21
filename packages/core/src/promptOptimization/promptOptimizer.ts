@@ -127,7 +127,7 @@ function optimizeBySurface(surface: PromptSurface, text: string, protectedSpans:
       const uncoveredMandatoryLines = mandatoryLines.filter((line) => !requiredTerms.some((term) => line.includes(term)));
       return uniqueLines([
         compactGhcpFrontmatter(frontmatter),
-        ...uncoveredMandatoryLines.slice(0, 1),
+        ...uncoveredMandatoryLines,
         requiredLine,
         'Visible output: concise; recover via sidecar.'
       ]).join('\n');
