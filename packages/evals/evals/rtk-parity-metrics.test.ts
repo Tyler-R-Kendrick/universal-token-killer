@@ -3,9 +3,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { mediateToolExecution } from '@utk/core';
-import { RTK_PARITY_FIXTURES } from '../fixtures/rtkParityFixtures.js';
-import { assertRtkParity, factRetentionScore, measureRtkParity, recoverabilityScore } from '../metrics/rtkParityMetrics.js';
+import { RTK_PARITY_FIXTURES, rtkParityExpectedPayload } from '../fixtures/rtkParityFixtures.js';
+import { assertRtkParity, assertRtkParityWithAutoevals, factRetentionScore, measureRtkParity, recoverabilityScore } from '../metrics/rtkParityMetrics.js';
 import { RTK_PARITY_EVALS } from './rtk-parity.eval.js';
+import { gradeRtkParityCodeGraderInput } from '../graders/rtkParityCodeGrader.js';
+import { buildRtkParityReport, renderRtkParityEvalYaml, rtkParityActualPayload } from '../reports/rtkParityReport.js';
 
 describe('RTK parity metric helpers', () => {
   it('calculates deterministic comparative metrics', () => {
@@ -80,6 +82,21 @@ describe('RTK parity metric helpers', () => {
     expect(factRetentionScore([], [])).toBe(1);
   });
 
+  it('uses autoevals JSONDiff to catch missing recoverable facts', async () => {
+    const fixture = RTK_PARITY_FIXTURES[0]!;
+    const assertion = await assertRtkParityWithAutoevals({
+      fixture,
+      rawText: 'missing',
+      compactText: 'tiny',
+      responseText: 'Tool result stored at: .utk/tools/t/observations/r/output.raw.txt\nSchema: t.v1.a\nCompact artifact: .utk/tools/t/observations/r/output.compact.toon\nRoute confidence: 0.95',
+      rawArtifactExists: true,
+      compactArtifactExists: true
+    });
+
+    expect(assertion.passed).toBe(false);
+    expect(assertion.failures.join('\n')).toContain('autoevalsFactScore=');
+  });
+
   it('scores recoverability from raw and compact artifact references', () => {
     expect(recoverabilityScore({
       rawArtifactExists: true,
@@ -113,7 +130,7 @@ describe('fixture-backed RTK parity scenarios', () => {
     await expect(access(result.serializedPath)).resolves.toBeUndefined();
     expect(result.response).not.toContain(typeof fixture.rawOutput === 'string' ? fixture.rawOutput.trim().slice(0, 20) : JSON.stringify(fixture.rawOutput).slice(0, 20));
 
-    const assertion = assertRtkParity({
+    const assertion = await assertRtkParityWithAutoevals({
       fixture,
       rawText: rawText.toString(),
       compactText,
@@ -124,9 +141,79 @@ describe('fixture-backed RTK parity scenarios', () => {
 
     expect(assertion.failures, assertion.failures.join('\n')).toEqual([]);
     expect(assertion.passed).toBe(true);
+    expect(assertion.metrics.autoevalsFactScore).toBe(1);
     if (fixture.rtkSupported) {
       expect(assertion.metrics.utkVsRtkTokenDelta, `${fixture.name}: expected UTK to beat RTK`).toBeGreaterThan(0);
       expect(assertion.metrics.utkVsRtkTokenRatio, `${fixture.name}: expected UTK token ratio under 1`).toBeLessThan(1);
     }
   });
+
+  it('exposes AgentV code-grader output for autoevals-backed RTK parity checks', async () => {
+    const row = await buildSingleReportRow();
+    const result = await gradeRtkParityCodeGraderInput({
+      output_text: rtkParityActualPayload(row),
+      expected_output_text: rtkParityExpectedPayload(row.fixture)
+    });
+
+    expect(result.score).toBe(1);
+    expect(result.assertions.every((assertion) => assertion.passed)).toBe(true);
+    expect(result.reasoning).toContain(row.fixture.name);
+  });
+
+  it('declares AgentV YAML code-grader scenarios for every RTK parity fixture', async () => {
+    const yaml = normalizeLineEndings(await readFile(new URL('./rtk-parity.EVAL.yaml', import.meta.url), 'utf8'));
+
+    for (const name of RTK_PARITY_EVALS) {
+      expect(yaml).toContain(`id: ${name}`);
+    }
+    expect(yaml).toContain('type: code-grader');
+    expect(yaml).toContain('rtkParityCodeGrader.js');
+    expect(yaml).toBe(renderRtkParityEvalYaml());
+  });
+
+  it('documents RTK strengths, UTK attempts, and measured results', async () => {
+    const report = await buildRtkParityReport();
+
+    expect(report.rows).toHaveLength(RTK_PARITY_FIXTURES.length);
+    expect(report.markdown).toContain('## Findings');
+    expect(report.markdown).toContain('RTK is strongest');
+    expect(report.markdown).toContain('UTK wins');
+    expect(report.rows.every((row) => row.passed)).toBe(true);
+    expect(report.rows.every((row) => row.metrics.autoevalsFactScore === 1)).toBe(true);
+    expect(report.rows.every((row) => row.metrics.recoverabilityScore === 1)).toBe(true);
+    expect(new Set(report.rows.map((row) => row.fixture.testStrategy)).size).toBe(report.rows.length);
+  }, 30000);
 });
+
+async function buildSingleReportRow() {
+  const fixture = RTK_PARITY_FIXTURES[0]!;
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), `utk-rtk-grader-${fixture.name}-`));
+  const result = await mediateToolExecution({
+    workspaceRoot,
+    toolId: fixture.toolId,
+    input: fixture.input,
+    execute: async () => fixture.rawOutput
+  });
+  const rawText = (await readFile(result.rawPath)).toString();
+  const compactText = await readFile(result.serializedPath, 'utf8');
+  return {
+    fixture,
+    rawText,
+    compactText,
+    responseText: result.response,
+    metrics: (await assertRtkParityWithAutoevals({
+      fixture,
+      rawText,
+      compactText,
+      responseText: result.response,
+      rawArtifactExists: true,
+      compactArtifactExists: true
+    })).metrics,
+    passed: true,
+    failures: []
+  };
+}
+
+function normalizeLineEndings(value: string): string {
+  return value.replace(/\r\n/g, '\n');
+}

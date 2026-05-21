@@ -1,0 +1,1925 @@
+tests:
+  - id: tool-output-large-json-gemfilter
+    input:
+      - role: user
+        content: "Compress large JSON tool output while retaining route and failed event."
+    expected_output: |
+      {
+        "scenario": "tool-output-large-json-gemfilter",
+        "tool_id": "compresr.tool.large-json",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.route",
+            "expected": "tool-output"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.events[23].status",
+            "expected": "failed"
+          }
+        ],
+        "compresr_baseline_text": "Compresr gemfilter keeps query-relevant failed event, route=tool-output, event evt-23 failed, shadow ref for full JSON.",
+        "compresr_baseline_tokens": 30,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: query-specific-markdown-latte
+    input:
+      - role: user
+        content: "Compress Markdown context for a question while preserving answer paragraph."
+    expected_output: |
+      {
+        "scenario": "query-specific-markdown-latte",
+        "tool_id": "compresr.query.markdown",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Dropping legacy_events.payload is irreversible"
+          },
+          {
+            "kind": "literal",
+            "value": "deploy 2026.05.20.4"
+          }
+        ],
+        "compresr_baseline_text": "Compresr latte keeps irreversible migration paragraph for query, with shadow ref to full Markdown.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: agnostic-doc-espresso
+    input:
+      - role: user
+        content: "Compress documentation without query while retaining headline and warning."
+    expected_output: |
+      {
+        "scenario": "agnostic-doc-espresso",
+        "tool_id": "compresr.agnostic.doc",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Production Signing Key"
+          },
+          {
+            "kind": "literal",
+            "value": "invalidates all active sessions"
+          }
+        ],
+        "compresr_baseline_text": "Compresr espresso keeps heading and warning, strips explanatory filler, returns compressed doc text.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: batch-mixed-contexts
+    input:
+      - role: user
+        content: "Compress multiple contexts in one batch while preserving per-item facts."
+    expected_output: |
+      {
+        "scenario": "batch-mixed-contexts",
+        "tool_id": "compresr.batch.contexts",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.results[1].id",
+            "expected": "doc-b"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.average_compression_ratio",
+            "expected": 0.31
+          }
+        ],
+        "compresr_baseline_text": "Compresr batch response preserves doc-b result, average ratio 0.31, total token savings across contexts.",
+        "compresr_baseline_tokens": 26,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: streaming-compression-chunks
+    input:
+      - role: user
+        content: "Compress streaming chunks while retaining done marker and final content."
+    expected_output: |
+      {
+        "scenario": "streaming-compression-chunks",
+        "tool_id": "compresr.stream.chunks",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "failed shard windows-node20"
+          },
+          {
+            "kind": "literal",
+            "value": "done=true"
+          }
+        ],
+        "compresr_baseline_text": "Compresr stream emits compressed chunks, including failed shard windows-node20 and final done marker.",
+        "compresr_baseline_tokens": 26,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: history-compaction-threshold
+    input:
+      - role: user
+        content: "Compact long history only near threshold while preserving reserve budget."
+    expected_output: |
+      {
+        "scenario": "history-compaction-threshold",
+        "tool_id": "compresr.history.threshold",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "threshold=75%"
+          },
+          {
+            "kind": "literal",
+            "value": "reserve_output_tokens=4096"
+          }
+        ],
+        "compresr_baseline_text": "Compresr history compaction triggers at 75 percent context, keeps 4096 output-token reserve, stores history summary reference.",
+        "compresr_baseline_tokens": 32,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-discovery-required-tool
+    input:
+      - role: user
+        content: "Filter large tool catalog while keeping required PR review tool."
+    expected_output: |
+      {
+        "scenario": "tool-discovery-required-tool",
+        "tool_id": "compresr.tool.discovery",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.tools[7].name",
+            "expected": "github.pull_request.review_comments"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.selected[0]",
+            "expected": "github.pull_request.review_comments"
+          }
+        ],
+        "compresr_baseline_text": "Compresr tool discovery keeps github.pull_request.review_comments and defers unrelated tool schemas behind search.",
+        "compresr_baseline_tokens": 29,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-schema-compression-required-params
+    input:
+      - role: user
+        content: "Compress verbose tool schema while preserving required params."
+    expected_output: |
+      {
+        "scenario": "tool-schema-compression-required-params",
+        "tool_id": "compresr.tool.schema",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.input_schema.required[2]",
+            "expected": "pull_number"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.name",
+            "expected": "github.pull_request.review_comments"
+          }
+        ],
+        "compresr_baseline_text": "Compresr schema compression keeps tool name and required owner, repo, pull_number parameters.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: expand-context-shadow-ref
+    input:
+      - role: user
+        content: "Recover full compressed content through an expand-context reference."
+    expected_output: |
+      {
+        "scenario": "expand-context-shadow-ref",
+        "tool_id": "compresr.expand.context",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "[REF:ctx_9ab3]"
+          },
+          {
+            "kind": "literal",
+            "value": "raw-output-77"
+          }
+        ],
+        "compresr_baseline_text": "Compresr compressed block uses [REF:ctx_9ab3] and expand_context to recover raw-output-77.",
+        "compresr_baseline_tokens": 23,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: cost-aware-skip-cheap-model
+    input:
+      - role: user
+        content: "Skip expensive compression when target model is cheap."
+    expected_output: |
+      {
+        "scenario": "cost-aware-skip-cheap-model",
+        "tool_id": "compresr.cost.skip",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.decision",
+            "expected": "skip"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.reason",
+            "expected": "cheap-model"
+          }
+        ],
+        "compresr_baseline_text": "Compresr skips compression for cheap-model target unless bypass_cost_check is enabled, with skip metrics logged.",
+        "compresr_baseline_tokens": 28,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: format-gate-unsupported-binary
+    input:
+      - role: user
+        content: "Avoid semantic compression for unsupported binary output."
+    expected_output: |
+      {
+        "scenario": "format-gate-unsupported-binary",
+        "tool_id": "compresr.format.binary",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "format=binary"
+          },
+          {
+            "kind": "literal",
+            "value": "compression=skipped"
+          }
+        ],
+        "compresr_baseline_text": "Compresr skips unsupported binary formats and records format=binary skip reason.",
+        "compresr_baseline_tokens": 20,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: skip-tool-policy
+    input:
+      - role: user
+        content: "Respect configured skip_tools for security-sensitive tool output."
+    expected_output: |
+      {
+        "scenario": "skip-tool-policy",
+        "tool_id": "compresr.skip.tool",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.tool",
+            "expected": "secrets.dump"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.mapping_status",
+            "expected": "skipped_by_policy"
+          }
+        ],
+        "compresr_baseline_text": "Compresr skip_tools marks secrets.dump skipped_by_policy and avoids compression.",
+        "compresr_baseline_tokens": 20,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: already-compressed-ref-bypass
+    input:
+      - role: user
+        content: "Avoid recompressing content that already contains a shadow reference."
+    expected_output: |
+      {
+        "scenario": "already-compressed-ref-bypass",
+        "tool_id": "compresr.ref.bypass",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "already_compressed=true"
+          },
+          {
+            "kind": "literal",
+            "value": "[REF:abc123]"
+          }
+        ],
+        "compresr_baseline_text": "Compresr detects [REF:abc123] as already compressed and skips duplicate compression.",
+        "compresr_baseline_tokens": 21,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: structured-prefix-json
+    input:
+      - role: user
+        content: "Preserve JSON prefix while compressing trailing explanatory text."
+    expected_output: |
+      {
+        "scenario": "structured-prefix-json",
+        "tool_id": "compresr.prefix.json",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "\"status\":\"failed\""
+          },
+          {
+            "kind": "literal",
+            "value": "\"runId\":\"run-77\""
+          }
+        ],
+        "compresr_baseline_text": "Compresr preserves JSON prefix with status failed and runId run-77, compresses trailing explanation.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: structured-prefix-yaml
+    input:
+      - role: user
+        content: "Preserve YAML prefix with tool route metadata."
+    expected_output: |
+      {
+        "scenario": "structured-prefix-yaml",
+        "tool_id": "compresr.prefix.yaml",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "route: shell.git.diff"
+          },
+          {
+            "kind": "literal",
+            "value": "confidence: 0.95"
+          }
+        ],
+        "compresr_baseline_text": "Compresr preserves YAML route shell.git.diff and confidence 0.95 before compressing notes.",
+        "compresr_baseline_tokens": 23,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: placeholder-control-disabled
+    input:
+      - role: user
+        content: "Disable placeholders so required terms remain explicit."
+    expected_output: |
+      {
+        "scenario": "placeholder-control-disabled",
+        "tool_id": "compresr.placeholders.disabled",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "disable_placeholders=true"
+          },
+          {
+            "kind": "literal",
+            "value": "OPENAI_API_KEY=[REDACTED]"
+          }
+        ],
+        "compresr_baseline_text": "Compresr disable_placeholders keeps redacted API key and env path explicit.",
+        "compresr_baseline_tokens": 19,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: heuristic-chunking-boundary
+    input:
+      - role: user
+        content: "Chunk long text without splitting exact error string."
+    expected_output: |
+      {
+        "scenario": "heuristic-chunking-boundary",
+        "tool_id": "compresr.chunking.heuristic",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Cannot read directory \"../../../../..\": Access is denied."
+          },
+          {
+            "kind": "literal",
+            "value": "paragraph 6"
+          }
+        ],
+        "compresr_baseline_text": "Compresr heuristic chunking keeps exact Access is denied error and relevant paragraph boundary.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: coarse-paragraph-mode
+    input:
+      - role: user
+        content: "Coarse paragraph mode keeps whole selected paragraph."
+    expected_output: |
+      {
+        "scenario": "coarse-paragraph-mode",
+        "tool_id": "compresr.coarse.paragraph",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "PII for at most 30 days"
+          },
+          {
+            "kind": "literal",
+            "value": "EU regions"
+          }
+        ],
+        "compresr_baseline_text": "Compresr coarse mode retains whole privacy paragraph with 30-day EU PII retention.",
+        "compresr_baseline_tokens": 21,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-output-cache-hit
+    input:
+      - role: user
+        content: "Reuse compressed output for identical content hash."
+    expected_output: |
+      {
+        "scenario": "tool-output-cache-hit",
+        "tool_id": "compresr.cache.hit",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.cache_status",
+            "expected": "hit"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.compressed_ref",
+            "expected": "cmp-cache-77"
+          }
+        ],
+        "compresr_baseline_text": "Compresr cache hit for sha256 abc123 reuses compressed ref cmp-cache-77.",
+        "compresr_baseline_tokens": 18,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: shadow-ttl-expiry
+    input:
+      - role: user
+        content: "Handle expired shadow reference while preserving durable artifact path."
+    expected_output: |
+      {
+        "scenario": "shadow-ttl-expiry",
+        "tool_id": "compresr.shadow.ttl",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.ttl_state",
+            "expected": "expired"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.fallback",
+            "expected": ".utk/tools/shell.rg/observations/run-1/output.raw.txt"
+          }
+        ],
+        "compresr_baseline_text": "Compresr shadow ref ctx_expired can expire; UTK fallback artifact path remains durable.",
+        "compresr_baseline_tokens": 22,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: telemetry-jsonl-savings
+    input:
+      - role: user
+        content: "Record compression savings in JSONL telemetry."
+    expected_output: |
+      {
+        "scenario": "telemetry-jsonl-savings",
+        "tool_id": "compresr.telemetry",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.tokens_saved",
+            "expected": 7100
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.tool",
+            "expected": "shell.rg"
+          }
+        ],
+        "compresr_baseline_text": "Compresr telemetry logs original 8200 tokens, compressed 1100 tokens, 7100 saved for shell.rg.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: prompt-history-store
+    input:
+      - role: user
+        content: "Compress prompt history index while preserving session and model filters."
+    expected_output: |
+      {
+        "scenario": "prompt-history-store",
+        "tool_id": "compresr.prompt.history",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.fts",
+            "expected": true
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.session",
+            "expected": "sess-123"
+          }
+        ],
+        "compresr_baseline_text": "Compresr prompt history store supports FTS and filters by session, model, provider.",
+        "compresr_baseline_tokens": 21,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: provider-adapter-openai-tool-call
+    input:
+      - role: user
+        content: "Extract OpenAI tool call output from provider request shape."
+    expected_output: |
+      {
+        "scenario": "provider-adapter-openai-tool-call",
+        "tool_id": "compresr.adapter.openai",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.messages[0].tool_call_id",
+            "expected": "call_123"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.messages[0].role",
+            "expected": "tool"
+          }
+        ],
+        "compresr_baseline_text": "Compresr OpenAI adapter extracts tool_call_id call_123 and compresses tool-role content.",
+        "compresr_baseline_tokens": 22,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: provider-adapter-anthropic-blocks
+    input:
+      - role: user
+        content: "Extract Anthropic tool_result blocks while preserving tool_use_id."
+    expected_output: |
+      {
+        "scenario": "provider-adapter-anthropic-blocks",
+        "tool_id": "compresr.adapter.anthropic",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.content[0].type",
+            "expected": "tool_result"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.content[0].tool_use_id",
+            "expected": "toolu_456"
+          }
+        ],
+        "compresr_baseline_text": "Compresr Anthropic adapter extracts tool_result block with tool_use_id toolu_456.",
+        "compresr_baseline_tokens": 21,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: task-subagent-output
+    input:
+      - role: user
+        content: "Compress subagent task output while retaining task id and final blocker."
+    expected_output: |
+      {
+        "scenario": "task-subagent-output",
+        "tool_id": "compresr.task.output",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "task_id=worker-1"
+          },
+          {
+            "kind": "literal",
+            "value": "missing COMPRESR_API_KEY"
+          }
+        ],
+        "compresr_baseline_text": "Compresr task output compression keeps worker-1 task id and missing COMPRESR_API_KEY blocker.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: remote-api-key-missing-fail-open
+    input:
+      - role: user
+        content: "Fail open when Compresr API key is missing."
+    expected_output: |
+      {
+        "scenario": "remote-api-key-missing-fail-open",
+        "tool_id": "compresr.api-key.missing",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.apiKeyEnvVar",
+            "expected": "COMPRESR_API_KEY"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.behavior",
+            "expected": "fail-open-local"
+          }
+        ],
+        "compresr_baseline_text": "Compresr hosted API requires COMPRESR_API_KEY; UTK records fail-open-local behavior when missing.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: sdk-model-config
+    input:
+      - role: user
+        content: "Verify installed Compresr SDK models used by benchmark configuration."
+    expected_output: |
+      {
+        "scenario": "sdk-model-config",
+        "tool_id": "compresr.sdk.config",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.installedVersion",
+            "expected": "2.5.1"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.models[1]",
+            "expected": "latte_v1"
+          }
+        ],
+        "compresr_baseline_text": "Compresr SDK 2.5.1 exposes espresso_v1, latte_v1, and agentic model identifiers.",
+        "compresr_baseline_tokens": 20,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: on-prem-endpoint-config
+    input:
+      - role: user
+        content: "Configure alternate base URL for on-prem Compresr without changing artifact policy."
+    expected_output: |
+      {
+        "scenario": "on-prem-endpoint-config",
+        "tool_id": "compresr.onprem.config",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.base_url",
+            "expected": "https://compresr.internal.example"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.artifact_policy",
+            "expected": "project-local"
+          }
+        ],
+        "compresr_baseline_text": "Compresr can use on-prem base_url https://compresr.internal.example while UTK keeps project-local artifacts.",
+        "compresr_baseline_tokens": 27,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: vscode-markdown-backup
+    input:
+      - role: user
+        content: "Compress Markdown file with backup and preview workflow."
+    expected_output: |
+      {
+        "scenario": "vscode-markdown-backup",
+        "tool_id": "compresr.vscode.markdown",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.backup",
+            "expected": "docs/evals.md.bak"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.preview",
+            "expected": "side-by-side"
+          }
+        ],
+        "compresr_baseline_text": "Compresr VS Code extension compresses Markdown with side-by-side preview and docs/evals.md.bak backup.",
+        "compresr_baseline_tokens": 26,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-output-refusal-threshold
+    input:
+      - role: user
+        content: "Reject compression when savings do not clear refusal threshold."
+    expected_output: |
+      {
+        "scenario": "tool-output-refusal-threshold",
+        "tool_id": "compresr.refusal.threshold",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.savings",
+            "expected": 0.07
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.accepted",
+            "expected": false
+          }
+        ],
+        "compresr_baseline_text": "Compresr rejects compression when original 1000 tokens to compressed 930 tokens saves only 0.07, below refusal threshold 0.15, and records accepted=false mapping metadata.",
+        "compresr_baseline_tokens": 43,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-output-too-large-skip
+    input:
+      - role: user
+        content: "Skip too-large output while preserving reason and byte count."
+    expected_output: |
+      {
+        "scenario": "tool-output-too-large-skip",
+        "tool_id": "compresr.size.too-large",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.output_tokens",
+            "expected": 125000
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.mapping_status",
+            "expected": "skipped_too_large"
+          }
+        ],
+        "compresr_baseline_text": "Compresr skips too-large output at 125000 tokens over max 50000 and records skipped_too_large.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-output-too-small-skip
+    input:
+      - role: user
+        content: "Skip too-small output where compression overhead is wasteful."
+    expected_output: |
+      {
+        "scenario": "tool-output-too-small-skip",
+        "tool_id": "compresr.size.too-small",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.output_tokens",
+            "expected": 24
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.mapping_status",
+            "expected": "skipped_too_small"
+          }
+        ],
+        "compresr_baseline_text": "Compresr skips too-small output at 24 tokens below minimum 100 and records skipped_too_small.",
+        "compresr_baseline_tokens": 24,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: tool-discovery-search-result-compression
+    input:
+      - role: user
+        content: "Compress tool-search results while preserving selected tool names."
+    expected_output: |
+      {
+        "scenario": "tool-discovery-search-result-compression",
+        "tool_id": "compresr.tool.search-results",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.selected_names[0]",
+            "expected": "github.pull_request.review_comments"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.top_k",
+            "expected": 2
+          }
+        ],
+        "compresr_baseline_text": "Compresr tool discovery search returns github.pull_request.review_comments and github.pull_request.files as top 2.",
+        "compresr_baseline_tokens": 29,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: local-first-sensitive-code
+    input:
+      - role: user
+        content: "Avoid sending sensitive source code to hosted compressor."
+    expected_output: |
+      {
+        "scenario": "local-first-sensitive-code",
+        "tool_id": "compresr.privacy.code",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.remote_send",
+            "expected": false
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.reason",
+            "expected": "sensitive-code"
+          }
+        ],
+        "compresr_baseline_text": "Compresr hosted compression would require remote send; UTK marks sensitive-code remote_send=false.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: kv-cache-preservation
+    input:
+      - role: user
+        content: "Preserve stable compressed output across turns for KV-cache reuse."
+    expected_output: |
+      {
+        "scenario": "kv-cache-preservation",
+        "tool_id": "compresr.kv-cache",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.compact_fingerprint",
+            "expected": "sha256:stable-777"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.cache_preserved",
+            "expected": true
+          }
+        ],
+        "compresr_baseline_text": "Compresr preserves KV cache by reusing stable compressed output fingerprint sha256 stable-777 across turns.",
+        "compresr_baseline_tokens": 27,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: allowed-forbidden-format-policy
+    input:
+      - role: user
+        content: "Apply allowed and forbidden format lists to tool output."
+    expected_output: |
+      {
+        "scenario": "allowed-forbidden-format-policy",
+        "tool_id": "compresr.format.policy",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.selected_format",
+            "expected": "json"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.compression_allowed",
+            "expected": true
+          }
+        ],
+        "compresr_baseline_text": "Compresr format policy allows json/markdown, forbids binary, selected json compression_allowed true.",
+        "compresr_baseline_tokens": 25,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: agentic-tool-output-lingua
+    input:
+      - role: user
+        content: "Compare agentic_tool_output_lingua against UTK compact artifact."
+    expected_output: |
+      {
+        "scenario": "agentic-tool-output-lingua",
+        "tool_id": "compresr.agentic.lingua",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.model",
+            "expected": "agentic_tool_output_lingua"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.diagnostic",
+            "expected": "TS2345 schemaId may be undefined"
+          }
+        ],
+        "compresr_baseline_text": "Compresr agentic_tool_output_lingua keeps TS2345 diagnostic and router.ts line 87 path.",
+        "compresr_baseline_tokens": 22,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: agentic-history-lingua
+    input:
+      - role: user
+        content: "Compare agentic_history_lingua history compression with UTK blocks."
+    expected_output: |
+      {
+        "scenario": "agentic-history-lingua",
+        "tool_id": "compresr.agentic.history",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.model",
+            "expected": "agentic_history_lingua"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.current_user_untouched",
+            "expected": true
+          }
+        ],
+        "compresr_baseline_text": "Compresr agentic_history_lingua creates history block hist-block-42 and keeps current user untouched.",
+        "compresr_baseline_tokens": 26,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]
+  - id: agentic-tool-discovery-sat
+    input:
+      - role: user
+        content: "Compare agentic_tool_discovery_sat tool selection with UTK catalog."
+    expected_output: |
+      {
+        "scenario": "agentic-tool-discovery-sat",
+        "tool_id": "compresr.agentic.discovery",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.model",
+            "expected": "agentic_tool_discovery_sat"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.selected_tool",
+            "expected": "utk_expand_context"
+          }
+        ],
+        "compresr_baseline_text": "Compresr agentic_tool_discovery_sat selects utk_expand_context for artifact recovery.",
+        "compresr_baseline_tokens": 22,
+        "min_fact_score": 1,
+        "install_config": {
+          "pythonPackage": "compresr",
+          "installedVersion": "2.5.1",
+          "installCommand": "python -m pip install --user compresr==2.5.1",
+          "apiKeyEnvVar": "COMPRESR_API_KEY",
+          "liveApiMode": "disabled-without-api-key",
+          "baselineMode": "deterministic-installed-sdk-model-baselines",
+          "models": [
+            "espresso_v1",
+            "latte_v1",
+            "agentic_history_lingua",
+            "agentic_tool_output_gemfilter",
+            "agentic_tool_output_lingua",
+            "agentic_tool_discovery_sat"
+          ],
+          "endpoints": [
+            "/api/compress/question-agnostic/",
+            "/api/compress/question-specific/",
+            "/api/compress/question-agnostic/batch",
+            "/api/compress/question-specific/batch"
+          ]
+        }
+      }
+    assertions:
+      - name: compresr-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/compresrParityCodeGrader.js"]

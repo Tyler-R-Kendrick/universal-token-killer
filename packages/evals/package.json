@@ -8,9 +8,17 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:compresr-install": "python scripts/verify-compresr-install.py",
+    "bench:compresr": "npm run verify:compresr-install && vitest run evals/compresr-parity-metrics.test.ts",
+    "report:compresr": "npm run verify:compresr-install && npm run build && node dist/reports/compresrParityReport.js",
+    "bench:rtk": "vitest run evals/rtk-parity-metrics.test.ts",
+    "report:rtk": "npm run build && node dist/reports/rtkParityReport.js",
+    "bench:caveman": "vitest run evals/caveman-parity-metrics.test.ts",
+    "report:caveman": "npm run build && node dist/reports/cavemanParityReport.js"
   },
   "dependencies": {
-    "@toon-format/toon": "^2.2.0"
+    "@toon-format/toon": "^2.2.0",
+    "autoevals": "^0.0.132"
   }
 }

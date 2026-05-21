@@ -1,0 +1,2283 @@
+tests:
+  - id: ci-failure-triage
+    input:
+      - role: user
+        content: "Summarize a failed validation run with enough detail for the next fix."
+    expected_output: |
+      {
+        "scenario": "ci-failure-triage",
+        "caveman_baseline": "CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
+        "required_terms": [
+          "npm run typecheck",
+          "TS2345",
+          "packages/core/src/router/router.ts:87",
+          "schemaId",
+          "routeToSchema(schemaId)"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 48
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: review-finding
+    input:
+      - role: user
+        content: "Compress a code-review finding without dropping file, line, risk, or fix."
+    expected_output: |
+      {
+        "scenario": "review-finding",
+        "caveman_baseline": "`packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
+        "required_terms": [
+          "packages/model-proxy/src/proxy.ts:142",
+          "POST",
+          "partial body",
+          "duplicate side effects",
+          "idempotent"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 46
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: artifact-recovery
+    input:
+      - role: user
+        content: "Preserve recovery handles while shrinking a tool-output mediation summary."
+    expected_output: |
+      {
+        "scenario": "artifact-recovery",
+        "caveman_baseline": "Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
+        "required_terms": [
+          ".utk/tools/git.status/observations/run-9/output.raw.txt",
+          ".utk/tools/git.status/observations/run-9/output.compact.toon",
+          "shell.git-status.v1",
+          "0.97"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 53
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: implementation-status
+    input:
+      - role: user
+        content: "Report implementation status with validation proof and remaining blocker."
+    expected_output: |
+      {
+        "scenario": "implementation-status",
+        "caveman_baseline": "Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
+        "required_terms": [
+          "run checkpoint persistence",
+          "npm test --workspace @utk/evals",
+          "The token in default is invalid",
+          "C:/Users/conta/.codex/automations/tk39.diff"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 53
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: commit-message
+    input:
+      - role: user
+        content: "Compress a Conventional Commit message while preserving scope and behavior."
+    expected_output: |
+      {
+        "scenario": "commit-message",
+        "caveman_baseline": "test(evals): add caveman parity benchmarks and AgentV autoevals grader",
+        "required_terms": [
+          "test(evals)",
+          "caveman parity",
+          "autoevals"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: slash-command-help
+    input:
+      - role: user
+        content: "Explain a command switch compactly without losing mode names or stop phrase."
+    expected_output: |
+      {
+        "scenario": "slash-command-help",
+        "caveman_baseline": "`/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
+        "required_terms": [
+          "/caveman lite|full|ultra|wenyan",
+          "stop caveman",
+          "normal mode"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 25
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: security-auto-clarity
+    input:
+      - role: user
+        content: "Keep a security warning clear while still removing redundant prose."
+    expected_output: |
+      {
+        "scenario": "security-auto-clarity",
+        "caveman_baseline": "Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
+        "required_terms": [
+          "Warning",
+          "prod signing key",
+          "all sessions invalid",
+          "Backup old key",
+          "rollback plan"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 33
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: mcp-tool-metadata
+    input:
+      - role: user
+        content: "Shrink MCP tool metadata while preserving tool name, scope, and safety boundary."
+    expected_output: |
+      {
+        "scenario": "mcp-tool-metadata",
+        "caveman_baseline": "`detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
+        "required_terms": [
+          "detok",
+          "local",
+          "bulky natural language",
+          "secrets",
+          "private keys",
+          "code blocks",
+          "exact errors"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 32
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: benchmark-result
+    input:
+      - role: user
+        content: "Report benchmark result with pass counts, ratio, and next action."
+    expected_output: |
+      {
+        "scenario": "benchmark-result",
+        "caveman_baseline": "Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
+        "required_terms": [
+          "Caveman parity",
+          "11/11",
+          "0.89",
+          "publish report"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 24
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: incident-handoff
+    input:
+      - role: user
+        content: "Condense an incident handoff while preserving owner, severity, impact, and mitigation."
+    expected_output: |
+      {
+        "scenario": "incident-handoff",
+        "caveman_baseline": "SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
+        "required_terms": [
+          "SEV2",
+          "platform-oncall",
+          "12% 500s",
+          "/api/codex/chat",
+          "2026.05.20.4"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 27
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: api-contract-change
+    input:
+      - role: user
+        content: "Summarize an API contract change with endpoint, field, compatibility, and migration."
+    expected_output: |
+      {
+        "scenario": "api-contract-change",
+        "caveman_baseline": "`POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
+        "required_terms": [
+          "POST /api/codex/chat",
+          "providerOptions.reasoningEffort",
+          "optional",
+          "compatible",
+          "low|medium|high|xhigh"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 32
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: test-plan
+    input:
+      - role: user
+        content: "Compress a TDD plan while retaining red/green/refactor order and named gate."
+    expected_output: |
+      {
+        "scenario": "test-plan",
+        "caveman_baseline": "TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
+        "required_terms": [
+          "TDD",
+          "red",
+          "missing artifact refs",
+          "compact response",
+          "refactor after green",
+          "npm test --workspace @utk/evals"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 33
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: exact-error-string
+    input:
+      - role: user
+        content: "Compress a failure report while preserving exact quoted Windows error text."
+    expected_output: |
+      {
+        "scenario": "exact-error-string",
+        "caveman_baseline": "Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
+        "required_terms": [
+          "Publish blocked",
+          "Cannot read directory",
+          "Access is denied",
+          "Env blocker"
+        ],
+        "exact_terms": [
+          "Cannot read directory \"../../../../..\": Access is denied."
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 35
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: windows-paths
+    input:
+      - role: user
+        content: "Shrink a handoff containing Windows paths without normalizing separators."
+    expected_output: |
+      {
+        "scenario": "windows-paths",
+        "caveman_baseline": "Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
+        "required_terms": [
+          "Report",
+          "Fixture"
+        ],
+        "exact_terms": [
+          "C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md",
+          "C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 51
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: json-config-diff
+    input:
+      - role: user
+        content: "Summarize a config change while preserving JSON keys and numeric values exactly."
+    expected_output: |
+      {
+        "scenario": "json-config-diff",
+        "caveman_baseline": "Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
+        "required_terms": [
+          "max_context_tokens",
+          "3000",
+          "prompt_compression_min_tokens",
+          "1"
+        ],
+        "exact_terms": [
+          "\"max_context_tokens\": 5000 -> 3000",
+          "\"prompt_compression_min_tokens\": 10 -> 1"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 29
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: destructive-migration-warning
+    input:
+      - role: user
+        content: "Keep destructive database migration warning clear and ordered."
+    expected_output: |
+      {
+        "scenario": "destructive-migration-warning",
+        "caveman_baseline": "Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
+        "required_terms": [
+          "Warning",
+          "DROP legacy_events.payload",
+          "irreversible",
+          "backup",
+          "migrate",
+          "verify rows",
+          "delete backup"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "backup",
+          "migrate",
+          "verify rows",
+          "delete backup"
+        ],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 33
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: negative-review-result
+    input:
+      - role: user
+        content: "Report no findings without implying hidden defects."
+    expected_output: |
+      {
+        "scenario": "negative-review-result",
+        "caveman_baseline": "No actionable findings. Residual risk: browser visual smoke not run in this env.",
+        "required_terms": [
+          "No actionable findings",
+          "browser visual smoke",
+          "not run"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "bug",
+          "defect",
+          "failure"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: ordered-publish-steps
+    input:
+      - role: user
+        content: "Compress publish instructions where order matters."
+    expected_output: |
+      {
+        "scenario": "ordered-publish-steps",
+        "caveman_baseline": "Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
+        "required_terms": [
+          "rebase",
+          "origin/main",
+          "resolve conflicts",
+          "npm test",
+          "push",
+          "open PR"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "rebase",
+          "resolve conflicts",
+          "npm test",
+          "push",
+          "open PR"
+        ],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 25
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: secret-redaction
+    input:
+      - role: user
+        content: "Compress secret-leak finding while proving the secret is not repeated."
+    expected_output: |
+      {
+        "scenario": "secret-redaction",
+        "caveman_baseline": "Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
+        "required_terms": [
+          "Secret leak",
+          ".env.local",
+          "OPENAI_API_KEY",
+          "[REDACTED]",
+          "Rotate"
+        ],
+        "exact_terms": [
+          "OPENAI_API_KEY=[REDACTED]"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "sk-live-1234567890abcdef"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 27
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: latency-regression
+    input:
+      - role: user
+        content: "Report a performance regression with exact p95 and budget values."
+    expected_output: |
+      {
+        "scenario": "latency-regression",
+        "caveman_baseline": "Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
+        "required_terms": [
+          "p95 184ms",
+          "150ms",
+          "autoevals JSONDiff",
+          "report gen"
+        ],
+        "exact_terms": [
+          "p95 184ms > 150ms"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 27
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: timestamp-timezone
+    input:
+      - role: user
+        content: "Compress a scheduling note while preserving offset timestamp and local timezone."
+    expected_output: |
+      {
+        "scenario": "timestamp-timezone",
+        "caveman_baseline": "Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
+        "required_terms": [
+          "2026-05-21 14:03:22-05:00",
+          "America/Chicago",
+          "no UTC conversion"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "2026-05-21\\s+14:03:22-05:00\\s+America/Chicago"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: url-query-fragment
+    input:
+      - role: user
+        content: "Shrink a link handoff while preserving query params and fragment."
+    expected_output: |
+      {
+        "scenario": "url-query-fragment",
+        "caveman_baseline": "Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
+        "required_terms": [
+          "https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader",
+          "TS code-grader"
+        ],
+        "exact_terms": [
+          "https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 34
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: semver-range
+    input:
+      - role: user
+        content: "Compress dependency guidance while preserving a complex semver range."
+    expected_output: |
+      {
+        "scenario": "semver-range",
+        "caveman_baseline": "`autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
+        "required_terms": [
+          "autoevals",
+          "^0.0.132 || >=0.1.0 <0.2.0",
+          "no `latest`"
+        ],
+        "exact_terms": [
+          "^0.0.132 || >=0.1.0 <0.2.0"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "latest because"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 22
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: env-precedence
+    input:
+      - role: user
+        content: "Summarize config precedence without changing order."
+    expected_output: |
+      {
+        "scenario": "env-precedence",
+        "caveman_baseline": "Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
+        "required_terms": [
+          "CLI flag",
+          "UTK_CONFIG_PATH",
+          ".utk/config.toml",
+          "defaults"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "CLI flag",
+          "UTK_CONFIG_PATH",
+          ".utk/config.toml",
+          "defaults"
+        ],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 22
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: zero-failure-summary
+    input:
+      - role: user
+        content: "Report zero failures without accidentally implying a failure."
+    expected_output: |
+      {
+        "scenario": "zero-failure-summary",
+        "caveman_baseline": "Green: 312 passing, 0 failures, 0 skipped.",
+        "required_terms": [
+          "Green",
+          "312",
+          "0 fail",
+          "0 skip"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [
+          "failures|failed|failing"
+        ],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 11
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: percentage-delta
+    input:
+      - role: user
+        content: "Compress a benchmark delta with sign, decimal, and baseline preserved."
+    expected_output: |
+      {
+        "scenario": "percentage-delta",
+        "caveman_baseline": "Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
+        "required_terms": [
+          "8,192",
+          "7,168",
+          "-12.5%"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "8,192->7,168 \\(-12\\.5%\\)"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 11
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: table-row
+    input:
+      - role: user
+        content: "Compress a table row while preserving column-value associations."
+    expected_output: |
+      {
+        "scenario": "table-row",
+        "caveman_baseline": "Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
+        "required_terms": [
+          "core",
+          "pass",
+          "124",
+          "0.82"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "core/pass/124/0\\.82"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 14
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: stack-trace-top-frame
+    input:
+      - role: user
+        content: "Summarize stack trace by preserving top frame and error."
+    expected_output: |
+      {
+        "scenario": "stack-trace-top-frame",
+        "caveman_baseline": "`TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
+        "required_terms": [
+          "TypeError",
+          "Cannot read properties of undefined",
+          "parseConfig (src/config.ts:42:13)"
+        ],
+        "exact_terms": [
+          "parseConfig (src/config.ts:42:13)"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "loadConfig (src/config.ts:80:9)"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 28
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: shell-quote-command
+    input:
+      - role: user
+        content: "Compress shell guidance without changing quotes or spaces."
+    expected_output: |
+      {
+        "scenario": "shell-quote-command",
+        "caveman_baseline": "Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
+        "required_terms": [
+          "git commit",
+          "fix: handle spaces",
+          "keep quotes"
+        ],
+        "exact_terms": [
+          "git commit -m \"fix: handle spaces\""
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: sql-where-clause
+    input:
+      - role: user
+        content: "Summarize SQL filter change without losing tenant isolation."
+    expected_output: |
+      {
+        "scenario": "sql-where-clause",
+        "caveman_baseline": "SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
+        "required_terms": [
+          "WHERE tenant_id = $1 AND deleted_at IS NULL",
+          "before order"
+        ],
+        "exact_terms": [
+          "WHERE tenant_id = $1 AND deleted_at IS NULL"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [
+          "WHERE deleted_at IS NULL"
+        ],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 25
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: yaml-frontmatter
+    input:
+      - role: user
+        content: "Compress documentation metadata while preserving YAML booleans and tag list."
+    expected_output: |
+      {
+        "scenario": "yaml-frontmatter",
+        "caveman_baseline": "Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.",
+        "required_terms": [
+          "draft: false",
+          "tags: [evals, caveman, autoevals]"
+        ],
+        "exact_terms": [
+          "draft: false",
+          "tags: [evals, caveman, autoevals]"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: graph-edge-path
+    input:
+      - role: user
+        content: "Summarize graph traversal without inserting nonexistent nodes."
+    expected_output: |
+      {
+        "scenario": "graph-edge-path",
+        "caveman_baseline": "Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
+        "required_terms": [
+          "agent-browser",
+          "benchmarkModelRouting",
+          "sessionState"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "agent-browser",
+          "benchmarkModelRouting",
+          "sessionState"
+        ],
+        "forbidden_terms": [
+          "through SettingsPanel"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 23
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: wcag-contrast
+    input:
+      - role: user
+        content: "Compress accessibility finding with WCAG id, ratio, threshold, and fix."
+    expected_output: |
+      {
+        "scenario": "wcag-contrast",
+        "caveman_baseline": "A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
+        "required_terms": [
+          "WCAG 2.2 AA 1.4.3",
+          "3.9:1 < 4.5:1",
+          "Darken"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "3\\.9:1\\s+<\\s+4\\.5:1"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: icu-placeholder
+    input:
+      - role: user
+        content: "Shrink localization note while preserving ICU placeholder syntax."
+    expected_output: |
+      {
+        "scenario": "icu-placeholder",
+        "caveman_baseline": "Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
+        "required_terms": [
+          "{count, plural, one {# file} other {# files}}",
+          "parser"
+        ],
+        "exact_terms": [
+          "{count, plural, one {# file} other {# files}}"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 22
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: markdown-link
+    input:
+      - role: user
+        content: "Compress link guidance while preserving Markdown link target."
+    expected_output: |
+      {
+        "scenario": "markdown-link",
+        "caveman_baseline": "Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
+        "required_terms": [
+          "[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)",
+          "no duplicate"
+        ],
+        "exact_terms": [
+          "[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 28
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: sha256-checksum
+    input:
+      - role: user
+        content: "Report artifact checksum without truncation."
+    expected_output: |
+      {
+        "scenario": "sha256-checksum",
+        "caveman_baseline": "Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
+        "required_terms": [
+          "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef",
+          "42 MB"
+        ],
+        "exact_terms": [
+          "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "sha256:[0-9a-f]{64}"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 24
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: exit-code-signal
+    input:
+      - role: user
+        content: "Compress process failure with exit code and signal."
+    expected_output: |
+      {
+        "scenario": "exit-code-signal",
+        "caveman_baseline": "Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
+        "required_terms": [
+          "exit 137",
+          "SIGKILL",
+          "memory/external kill",
+          "not TS compile"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "TypeScript compile failure"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 23
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: partial-success
+    input:
+      - role: user
+        content: "Report mixed test result without flattening to pass/fail."
+    expected_output: |
+      {
+        "scenario": "partial-success",
+        "caveman_baseline": "Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
+        "required_terms": [
+          "3 pass",
+          "1 fail",
+          "2 skip",
+          "windows-node20"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "all green",
+          "fully passed"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: license-notice
+    input:
+      - role: user
+        content: "Compress license notice while preserving license, copyright holder, and year."
+    expected_output: |
+      {
+        "scenario": "license-notice",
+        "caveman_baseline": "Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
+        "required_terms": [
+          "MIT",
+          "Copyright 2026 Example Labs",
+          "NOTICE"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "Apache",
+          "GPL"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: retention-policy
+    input:
+      - role: user
+        content: "Summarize data-retention rule without weakening privacy terms."
+    expected_output: |
+      {
+        "scenario": "retention-policy",
+        "caveman_baseline": "Privacy: PII max 30 days, EU regions only, then delete records.",
+        "required_terms": [
+          "PII",
+          "max 30 days",
+          "EU",
+          "delete"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "forever",
+          "indefinite",
+          "US regions"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 16
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: currency-rounding
+    input:
+      - role: user
+        content: "Compress invoice delta while preserving cents and no-rounding instruction."
+    expected_output: |
+      {
+        "scenario": "currency-rounding",
+        "caveman_baseline": "Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
+        "required_terms": [
+          "$1,234.56",
+          "$1,199.99",
+          "-$34.57",
+          "no round"
+        ],
+        "exact_terms": [
+          "$1,234.56->$1,199.99",
+          "-$34.57"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "$1,200",
+          "$35"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: scientific-notation
+    input:
+      - role: user
+        content: "Preserve scientific notation and comparison direction."
+    expected_output: |
+      {
+        "scenario": "scientific-notation",
+        "caveman_baseline": "Epsilon `1.0e-7` < tolerance `2.5e-6`.",
+        "required_terms": [
+          "1.0e-7",
+          "2.5e-6"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "1\\.0e-7\\s+<\\s+2\\.5e-6"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 10
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: ipv6-cidr
+    input:
+      - role: user
+        content: "Compress firewall rule while preserving IPv6 CIDR."
+    expected_output: |
+      {
+        "scenario": "ipv6-cidr",
+        "caveman_baseline": "Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
+        "required_terms": [
+          "HTTPS",
+          "2001:db8:85a3::/64",
+          "deny"
+        ],
+        "exact_terms": [
+          "2001:db8:85a3::/64"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [
+          "\\b\\d+\\.\\d+\\.\\d+\\.\\d+\\b"
+        ],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: dns-cname-chain
+    input:
+      - role: user
+        content: "Summarize DNS routing while preserving CNAME chain order."
+    expected_output: |
+      {
+        "scenario": "dns-cname-chain",
+        "caveman_baseline": "DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
+        "required_terms": [
+          "app.example.com",
+          "edge.example.net",
+          "cdn.vendor.net",
+          "no app A"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "app.example.com",
+          "edge.example.net",
+          "cdn.vendor.net"
+        ],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: http-retry-after
+    input:
+      - role: user
+        content: "Compress HTTP throttle result while preserving status and Retry-After seconds."
+    expected_output: |
+      {
+        "scenario": "http-retry-after",
+        "caveman_baseline": "HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
+        "required_terms": [
+          "HTTP 429",
+          "Retry-After: 120",
+          "120s"
+        ],
+        "exact_terms": [
+          "Retry-After: 120"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: grpc-status
+    input:
+      - role: user
+        content: "Summarize gRPC failure while preserving canonical code and retryability."
+    expected_output: |
+      {
+        "scenario": "grpc-status",
+        "caveman_baseline": "gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
+        "required_terms": [
+          "gRPC",
+          "14",
+          "UNAVAILABLE",
+          "retry"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "gRPC\\s+14/UNAVAILABLE"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 15
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: otel-trace-span
+    input:
+      - role: user
+        content: "Compress trace handoff while preserving trace id and span id."
+    expected_output: |
+      {
+        "scenario": "otel-trace-span",
+        "caveman_baseline": "Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
+        "required_terms": [
+          "4bf92f3577b34da6a3ce929d0e0e4736",
+          "00f067aa0ba902b7"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "trace\\s+[0-9a-f]{32}",
+          "span\\s+[0-9a-f]{16}"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: jwt-redaction
+    input:
+      - role: user
+        content: "Compress JWT leak report while preserving header algorithm and redacting payload."
+    expected_output: |
+      {
+        "scenario": "jwt-redaction",
+        "caveman_baseline": "JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
+        "required_terms": [
+          "JWT leak",
+          "RS256",
+          "[REDACTED]"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [
+          "eyJ[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.signature"
+        ],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 16
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: email-redaction
+    input:
+      - role: user
+        content: "Summarize user report while redacting email local-part."
+    expected_output: |
+      {
+        "scenario": "email-redaction",
+        "caveman_baseline": "Affected account: `[REDACTED]@example.com`; full local-part redacted.",
+        "required_terms": [
+          "[REDACTED]@example.com"
+        ],
+        "exact_terms": [
+          "[REDACTED]@example.com"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "jane.doe+trial@example.com"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: csv-quoted-comma
+    input:
+      - role: user
+        content: "Compress CSV row while preserving a quoted comma field."
+    expected_output: |
+      {
+        "scenario": "csv-quoted-comma",
+        "caveman_baseline": "CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
+        "required_terms": [
+          "7",
+          "Smith, Ada",
+          "needs review"
+        ],
+        "exact_terms": [
+          "7,\"Smith, Ada\",\"needs review\""
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 15
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: glob-negation
+    input:
+      - role: user
+        content: "Summarize file filter while preserving include and negation globs."
+    expected_output: |
+      {
+        "scenario": "glob-negation",
+        "caveman_baseline": "Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
+        "required_terms": [
+          "**/*.test.ts",
+          "**/*.snap.ts"
+        ],
+        "exact_terms": [
+          "**/*.test.ts",
+          "**/*.snap.ts"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 12
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: regex-literal
+    input:
+      - role: user
+        content: "Compress regex guidance while preserving anchors and groups."
+    expected_output: |
+      {
+        "scenario": "regex-literal",
+        "caveman_baseline": "Use regex `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.",
+        "required_terms": [
+          "^(feat|fix|test)\\([^)]+\\): .+$",
+          "anchors"
+        ],
+        "exact_terms": [
+          "^(feat|fix|test)\\([^)]+\\): .+$"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 15
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: feature-flag-rollout
+    input:
+      - role: user
+        content: "Compress rollout status while preserving flag, cohort, and percentage."
+    expected_output: |
+      {
+        "scenario": "feature-flag-rollout",
+        "caveman_baseline": "Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
+        "required_terms": [
+          "agentv_caveman_bench",
+          "beta-users",
+          "25%",
+          "off"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 16
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: ab-cohort
+    input:
+      - role: user
+        content: "Report A/B split without swapping control and variant."
+    expected_output: |
+      {
+        "scenario": "ab-cohort",
+        "caveman_baseline": "`exp-17`: control 60%, variant B 40%.",
+        "required_terms": [
+          "exp-17",
+          "control=60%",
+          "B=40%"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "control=60%,\\s+B=40%"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 10
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: matrix-shape
+    input:
+      - role: user
+        content: "Summarize tensor shape and dtype without transposing dimensions."
+    expected_output: |
+      {
+        "scenario": "matrix-shape",
+        "caveman_baseline": "Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
+        "required_terms": [
+          "[2,3,768]",
+          "float16",
+          "no transpose"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "[3,2,768]"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 16
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: unit-preservation
+    input:
+      - role: user
+        content: "Compress measurement while preserving original units and no-conversion rule."
+    expected_output: |
+      {
+        "scenario": "unit-preservation",
+        "caveman_baseline": "Memory budget `512 MiB`; do not convert to MB.",
+        "required_terms": [
+          "512 MiB",
+          "no MB conversion"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "536 MB",
+          "512 MB"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 12
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: crlf-warning
+    input:
+      - role: user
+        content: "Summarize Git line-ending warning without changing LF/CRLF terms."
+    expected_output: |
+      {
+        "scenario": "crlf-warning",
+        "caveman_baseline": "Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
+        "required_terms": [
+          "LF will be replaced by CRLF",
+          "docs/evals.md"
+        ],
+        "exact_terms": [
+          "LF will be replaced by CRLF"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 17
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: escaped-json-string
+    input:
+      - role: user
+        content: "Compress JSON string note while preserving escaped newline."
+    expected_output: |
+      {
+        "scenario": "escaped-json-string",
+        "caveman_baseline": "JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
+        "required_terms": [
+          "message",
+          "line1\\nline2",
+          "`\\n`"
+        ],
+        "exact_terms": [
+          "line1\\nline2"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: xml-attribute
+    input:
+      - role: user
+        content: "Compress XML note while preserving namespace attribute."
+    expected_output: |
+      {
+        "scenario": "xml-attribute",
+        "caveman_baseline": "Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
+        "required_terms": [
+          "<x:tool id=\"detok\" enabled=\"true\" />",
+          "x:"
+        ],
+        "exact_terms": [
+          "<x:tool id=\"detok\" enabled=\"true\" />"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: docker-digest
+    input:
+      - role: user
+        content: "Summarize image pin while preserving digest."
+    expected_output: |
+      {
+        "scenario": "docker-digest",
+        "caveman_baseline": "Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
+        "required_terms": [
+          "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+          "no latest"
+        ],
+        "exact_terms": [
+          "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 28
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: k8s-resource-limit
+    input:
+      - role: user
+        content: "Compress Kubernetes limits without swapping requests and limits."
+    expected_output: |
+      {
+        "scenario": "k8s-resource-limit",
+        "caveman_baseline": "K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
+        "required_terms": [
+          "req.cpu=250m",
+          "limit.mem=512Mi"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "req\\.cpu=250m;\\s+limit\\.mem=512Mi"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 14
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: s3-uri
+    input:
+      - role: user
+        content: "Compress artifact location while preserving S3 URI and region."
+    expected_output: |
+      {
+        "scenario": "s3-uri",
+        "caveman_baseline": "Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
+        "required_terms": [
+          "s3://utk-evals/prod/reports/caveman.json",
+          "us-east-2"
+        ],
+        "exact_terms": [
+          "s3://utk-evals/prod/reports/caveman.json"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: azure-resource-id
+    input:
+      - role: user
+        content: "Summarize Azure resource without truncating resource id."
+    expected_output: |
+      {
+        "scenario": "azure-resource-id",
+        "caveman_baseline": "Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.",
+        "required_terms": [
+          "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
+        ],
+        "exact_terms": [
+          "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 30
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: git-refspec
+    input:
+      - role: user
+        content: "Compress push instruction while preserving refspec."
+    expected_output: |
+      {
+        "scenario": "git-refspec",
+        "caveman_baseline": "Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.",
+        "required_terms": [
+          "git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases"
+        ],
+        "exact_terms": [
+          "HEAD:refs/heads/codex/caveman-bench-edge-cases"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: scoped-package
+    input:
+      - role: user
+        content: "Compress workspace command while preserving scoped package."
+    expected_output: |
+      {
+        "scenario": "scoped-package",
+        "caveman_baseline": "Run `npm test --workspace @utk/evals`.",
+        "required_terms": [
+          "npm test",
+          "@utk/evals"
+        ],
+        "exact_terms": [
+          "@utk/evals"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 10
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: npm-audit-count
+    input:
+      - role: user
+        content: "Summarize npm audit result without hiding severity."
+    expected_output: |
+      {
+        "scenario": "npm-audit-count",
+        "caveman_baseline": "`npm audit`: 1 moderate, 0 critical vulnerabilities.",
+        "required_terms": [
+          "npm audit",
+          "moderate=1",
+          "critical=0"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "0 vulnerabilities",
+          "clean audit"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 13
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: node-options-memory
+    input:
+      - role: user
+        content: "Compress Node memory flag while preserving exact option."
+    expected_output: |
+      {
+        "scenario": "node-options-memory",
+        "caveman_baseline": "Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
+        "required_terms": [
+          "NODE_OPTIONS=--max-old-space-size=8192",
+          "verify:agent-browser"
+        ],
+        "exact_terms": [
+          "NODE_OPTIONS=--max-old-space-size=8192"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: tri-state-null
+    input:
+      - role: user
+        content: "Summarize tri-state field semantics without collapsing null and false."
+    expected_output: |
+      {
+        "scenario": "tri-state-null",
+        "caveman_baseline": "`consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
+        "required_terms": [
+          "true allowed",
+          "false denied",
+          "null unknown"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "null to false",
+          "boolean only"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 21
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: graphql-selection
+    input:
+      - role: user
+        content: "Compress GraphQL query note while preserving selected fields."
+    expected_output: |
+      {
+        "scenario": "graphql-selection",
+        "caveman_baseline": "GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.",
+        "required_terms": [
+          "repository",
+          "owner { login }",
+          "defaultBranchRef { name }"
+        ],
+        "exact_terms": [
+          "repository { name owner { login } defaultBranchRef { name } }"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 20
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: protobuf-field-number
+    input:
+      - role: user
+        content: "Summarize proto change while preserving field number and reserved range."
+    expected_output: |
+      {
+        "scenario": "protobuf-field-number",
+        "caveman_baseline": "Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
+        "required_terms": [
+          "string benchmark_id = 7",
+          "reserve 8-12",
+          "no 9 reuse"
+        ],
+        "exact_terms": [
+          "string benchmark_id = 7"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: cron-expression
+    input:
+      - role: user
+        content: "Compress schedule while preserving cron expression and timezone."
+    expected_output: |
+      {
+        "scenario": "cron-expression",
+        "caveman_baseline": "Cron `15 4 * * 1-5` UTC; weekdays 04:15.",
+        "required_terms": [
+          "15 4 * * 1-5",
+          "UTC",
+          "weekdays 04:15"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "15\\s+4\\s+\\*\\s+\\*\\s+1-5"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 10
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: rate-limit-window
+    input:
+      - role: user
+        content: "Summarize quota rule with limit and rolling window."
+    expected_output: |
+      {
+        "scenario": "rate-limit-window",
+        "caveman_baseline": "Rate limit: 600 requests / 5-minute rolling window / user.",
+        "required_terms": [
+          "600 req",
+          "5 min rolling",
+          "user"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 15
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: cache-control
+    input:
+      - role: user
+        content: "Compress cache policy while preserving directives."
+    expected_output: |
+      {
+        "scenario": "cache-control",
+        "caveman_baseline": "`Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
+        "required_terms": [
+          "Cache-Control",
+          "public",
+          "max-age=31536000",
+          "immutable"
+        ],
+        "exact_terms": [
+          "Cache-Control: public, max-age=31536000, immutable"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: csp-directive
+    input:
+      - role: user
+        content: "Summarize CSP update without weakening source list."
+    expected_output: |
+      {
+        "scenario": "csp-directive",
+        "caveman_baseline": "CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
+        "required_terms": [
+          "script-src 'self' https://cdn.example.com",
+          "no unsafe-inline"
+        ],
+        "exact_terms": [
+          "script-src 'self' https://cdn.example.com"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "'unsafe-inline' allowed"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 18
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: html-entity
+    input:
+      - role: user
+        content: "Compress HTML note while preserving escaped entity."
+    expected_output: |
+      {
+        "scenario": "html-entity",
+        "caveman_baseline": "Render `&lt;Admin&gt;`, not raw `<Admin>`.",
+        "required_terms": [
+          "&lt;Admin&gt;",
+          "not raw tag"
+        ],
+        "exact_terms": [
+          "&lt;Admin&gt;"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "<Admin>"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 11
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: markdown-table-alignment
+    input:
+      - role: user
+        content: "Summarize table alignment without losing colon markers."
+    expected_output: |
+      {
+        "scenario": "markdown-table-alignment",
+        "caveman_baseline": "Markdown align row: `| --- | ---: | :---: |`.",
+        "required_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "exact_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 12
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: algebra-boundary
+    input:
+      - role: user
+        content: "Compress boundary condition while preserving inclusive/exclusive operators."
+    expected_output: |
+      {
+        "scenario": "algebra-boundary",
+        "caveman_baseline": "Valid range: `0 <= score < 1`; includes 0, excludes 1.",
+        "required_terms": [
+          "0 <= score < 1",
+          "0 in",
+          "1 out"
+        ],
+        "exact_terms": [
+          "0 <= score < 1"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 14
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: git-diff-hunk
+    input:
+      - role: user
+        content: "Compress diff note while preserving plus/minus line meanings."
+    expected_output: |
+      {
+        "scenario": "git-diff-hunk",
+        "caveman_baseline": "Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
+        "required_terms": [
+          "- oldRoute();",
+          "+ newRoute();",
+          "removed",
+          "added"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [
+          "- oldRoute();",
+          "+ newRoute();"
+        ],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 16
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: binary-size
+    input:
+      - role: user
+        content: "Summarize binary size with IEC unit and byte count."
+    expected_output: |
+      {
+        "scenario": "binary-size",
+        "caveman_baseline": "Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
+        "required_terms": [
+          "1.5 MiB",
+          "1,572,864 bytes",
+          "not MB"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "1.5 MB"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 12
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: mimetype-charset
+    input:
+      - role: user
+        content: "Compress content-type guidance while preserving MIME type and charset."
+    expected_output: |
+      {
+        "scenario": "mimetype-charset",
+        "caveman_baseline": "Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
+        "required_terms": [
+          "application/json; charset=utf-8",
+          "no text/plain fallback"
+        ],
+        "exact_terms": [
+          "application/json; charset=utf-8"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [
+          "charset=ascii",
+          "application/javascript"
+        ],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]

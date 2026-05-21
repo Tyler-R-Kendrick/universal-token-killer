@@ -1,0 +1,1672 @@
+tests:
+  - id: shell-git-status
+    input:
+      - role: user
+        content: "Summarize dirty worktree state without losing modified and untracked files."
+    expected_output: |
+      {
+        "scenario": "shell-git-status",
+        "tool_id": "shell.git.status",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "M README.md"
+          },
+          {
+            "kind": "literal",
+            "value": "rtkParityFixtures.ts"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 81,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-git-diff
+    input:
+      - role: user
+        content: "Compress patch output while preserving added and removed lines."
+    expected_output: |
+      {
+        "scenario": "shell-git-diff",
+        "tool_id": "shell.git.diff",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "shell-git-diff comparative metrics"
+          },
+          {
+            "kind": "literal",
+            "value": "placeholder parity list"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 89,
+        "rtk_baseline_tokens": 23,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-gh-pr-list
+    input:
+      - role: user
+        content: "Summarize PR list output without losing titles or branch names."
+    expected_output: |
+      {
+        "scenario": "shell-gh-pr-list",
+        "tool_id": "shell.gh.pr.list",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Add comparative RTK metrics"
+          },
+          {
+            "kind": "literal",
+            "value": "codex/copilot-hook"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 74,
+        "rtk_baseline_tokens": 19,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-rg
+    input:
+      - role: user
+        content: "Compress code search hits while preserving relevant file names."
+    expected_output: |
+      {
+        "scenario": "shell-rg",
+        "tool_id": "shell.rg",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "toolMediator.ts"
+          },
+          {
+            "kind": "literal",
+            "value": "copilotHook.ts"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 69,
+        "rtk_baseline_tokens": 18,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-vitest
+    input:
+      - role: user
+        content: "Summarize passing test output with file and test counts."
+    expected_output: |
+      {
+        "scenario": "shell-vitest",
+        "tool_id": "shell.vitest",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Test Files 2 passed (2)"
+          },
+          {
+            "kind": "literal",
+            "value": "Tests 3 passed (3)"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 38,
+        "rtk_baseline_tokens": 10,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-tsc
+    input:
+      - role: user
+        content: "Represent clean TypeScript output without inventing diagnostics."
+    expected_output: |
+      {
+        "scenario": "shell-tsc",
+        "tool_id": "shell.tsc",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "@utk/evals@0.1.0 typecheck"
+          },
+          {
+            "kind": "literal",
+            "value": "tsc -p tsconfig.json --noEmit"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 84,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: large-json-object
+    input:
+      - role: user
+        content: "Compress large object payloads while retaining cursor and first record."
+    expected_output: |
+      {
+        "scenario": "large-json-object",
+        "tool_id": "tool.large-object",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.users[0].name",
+            "expected": "user-1"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.nextCursor",
+            "expected": "cursor-12"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 106,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: large-json-array
+    input:
+      - role: user
+        content: "Compress long arrays while retaining sentinel first and failed last events."
+    expected_output: |
+      {
+        "scenario": "large-json-array",
+        "tool_id": "tool.large-array",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "\"status\": \"failed\""
+          },
+          {
+            "kind": "literal",
+            "value": "\"eventId\": \"evt-0\""
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 377,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: deeply-nested-response
+    input:
+      - role: user
+        content: "Compress nested workflow data while preserving deep artifact reference."
+    expected_output: |
+      {
+        "scenario": "deeply-nested-response",
+        "tool_id": "tool.deep-response",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.repository.name",
+            "expected": "universal-token-killer"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.repository.workflows[0].runs[9].artifacts[0].name",
+            "expected": "coverage"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 207,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: repeated-text-logs
+    input:
+      - role: user
+        content: "Compress repeated log lines while retaining first and last batch facts."
+    expected_output: |
+      {
+        "scenario": "repeated-text-logs",
+        "tool_id": "tool.logs",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "worker-0 processed batch-0"
+          },
+          {
+            "kind": "literal",
+            "value": "processed batch-23 status=ok"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 137,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: tabular-text
+    input:
+      - role: user
+        content: "Compress text tables while preserving row associations."
+    expected_output: |
+      {
+        "scenario": "tabular-text",
+        "tool_id": "tool.table",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "core       pass"
+          },
+          {
+            "kind": "literal",
+            "value": "evals      pass"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 18,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: markdown-report
+    input:
+      - role: user
+        content: "Compress report prose while retaining findings."
+    expected_output: |
+      {
+        "scenario": "markdown-report",
+        "tool_id": "tool.markdown-report",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "TOON serializer is enabled by default"
+          },
+          {
+            "kind": "literal",
+            "value": "Copilot hook mediates observable tool output"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 10,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: arbitrary-structured-tool-output
+    input:
+      - role: user
+        content: "Compress arbitrary symbol index output while retaining entry path and symbol."
+    expected_output: |
+      {
+        "scenario": "arbitrary-structured-tool-output",
+        "tool_id": "tool.structured",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.result.entries[0].path",
+            "expected": "src/index.ts"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.result.entries[0].symbols[1]",
+            "expected": "loadUtkConfig"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 175,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: synthetic-copilot-tool-output
+    input:
+      - role: user
+        content: "Compress Copilot tool output while preserving call id and first symbol file."
+    expected_output: |
+      {
+        "scenario": "synthetic-copilot-tool-output",
+        "tool_id": "copilot.synthetic-tool",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.toolCallId",
+            "expected": "call-123"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.output.symbols[0].file",
+            "expected": "packages/copilot-hook/src/copilotHook.ts"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 105,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-npm-audit
+    input:
+      - role: user
+        content: "Compress npm audit output while preserving severity counts."
+    expected_output: |
+      {
+        "scenario": "shell-npm-audit",
+        "tool_id": "shell.npm.audit",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "1 moderate severity vulnerability"
+          },
+          {
+            "kind": "literal",
+            "value": "0 critical vulnerabilities"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 71,
+        "rtk_baseline_tokens": 18,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-pytest-failure
+    input:
+      - role: user
+        content: "Compress pytest failure output while retaining failing test and assertion."
+    expected_output: |
+      {
+        "scenario": "shell-pytest-failure",
+        "tool_id": "shell.pytest",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "tests/test_router.py::test_schema_route"
+          },
+          {
+            "kind": "literal",
+            "value": "expected schema shell.git-status.v1"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 83,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-docker-ps
+    input:
+      - role: user
+        content: "Compress docker ps table while preserving unhealthy container."
+    expected_output: |
+      {
+        "scenario": "shell-docker-ps",
+        "tool_id": "shell.docker.ps",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "utk-worker-1"
+          },
+          {
+            "kind": "literal",
+            "value": "unhealthy"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 50,
+        "rtk_baseline_tokens": 13,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-kubectl-pods
+    input:
+      - role: user
+        content: "Compress kubectl pod table while retaining restart count and CrashLoopBackOff."
+    expected_output: |
+      {
+        "scenario": "shell-kubectl-pods",
+        "tool_id": "shell.kubectl.get-pods",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "worker-6c44d9fbdf-9mxrs"
+          },
+          {
+            "kind": "literal",
+            "value": "CrashLoopBackOff   7"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 70,
+        "rtk_baseline_tokens": 18,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-curl-headers
+    input:
+      - role: user
+        content: "Compress curl headers while preserving throttle status and retry delay."
+    expected_output: |
+      {
+        "scenario": "shell-curl-headers",
+        "tool_id": "shell.curl.headers",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "HTTP/2 429"
+          },
+          {
+            "kind": "literal",
+            "value": "retry-after: 120"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 62,
+        "rtk_baseline_tokens": 16,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-du-sizes
+    input:
+      - role: user
+        content: "Compress du output while preserving largest directory size."
+    expected_output: |
+      {
+        "scenario": "shell-du-sizes",
+        "tool_id": "shell.du",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "184M\tnode_modules"
+          },
+          {
+            "kind": "literal",
+            "value": "2.4M\t.utk"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 50,
+        "rtk_baseline_tokens": 13,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-rg-json-lines
+    input:
+      - role: user
+        content: "Compress ripgrep JSON lines while retaining match path and line."
+    expected_output: |
+      {
+        "scenario": "shell-rg-json-lines",
+        "tool_id": "shell.rg.json",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "packages/evals/evals/rtk-parity-metrics.test.ts"
+          },
+          {
+            "kind": "literal",
+            "value": "\"line_number\":54"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 76,
+        "rtk_baseline_tokens": 19,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-git-log-oneline
+    input:
+      - role: user
+        content: "Compress git log output while preserving commit order and subjects."
+    expected_output: |
+      {
+        "scenario": "shell-git-log-oneline",
+        "tool_id": "shell.git.log",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "9f8e7d6 add caveman parity benchmarks"
+          },
+          {
+            "kind": "literal",
+            "value": "7c6b5a4 harden rtk metric helpers"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 80,
+        "rtk_baseline_tokens": 20,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: sarif-results
+    input:
+      - role: user
+        content: "Compress SARIF-like results while retaining rule id and affected file."
+    expected_output: |
+      {
+        "scenario": "sarif-results",
+        "tool_id": "tool.sarif",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.runs[0].results[0].ruleId",
+            "expected": "no-raw-leakage"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri",
+            "expected": "packages/core/src/validation/leakage.ts"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 42,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: junit-xml
+    input:
+      - role: user
+        content: "Compress JUnit XML while retaining failing testcase and message."
+    expected_output: |
+      {
+        "scenario": "junit-xml",
+        "tool_id": "tool.junit-xml",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "failures=\"1\""
+          },
+          {
+            "kind": "literal",
+            "value": "expected shell.git-status.v1"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 15,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: csv-export
+    input:
+      - role: user
+        content: "Compress CSV exports while retaining quoted fields."
+    expected_output: |
+      {
+        "scenario": "csv-export",
+        "tool_id": "tool.csv",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "1,\"Smith, Ada\",admin"
+          },
+          {
+            "kind": "literal",
+            "value": "3,\"Patel, Mira\",maintainer"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 7,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: graphql-response
+    input:
+      - role: user
+        content: "Compress GraphQL response while retaining typename and nested branch."
+    expected_output: |
+      {
+        "scenario": "graphql-response",
+        "tool_id": "tool.graphql",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.data.repository.__typename",
+            "expected": "Repository"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.data.repository.defaultBranchRef.name",
+            "expected": "main"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 20,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: openapi-fragment
+    input:
+      - role: user
+        content: "Compress OpenAPI fragments while retaining method and operation id."
+    expected_output: |
+      {
+        "scenario": "openapi-fragment",
+        "tool_id": "tool.openapi",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.paths./v1/mediate.post.operationId",
+            "expected": "mediateToolOutput"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.paths./v1/mediate.post.responses.200.description",
+            "expected": "Mediated response"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: secret-bearing-log
+    input:
+      - role: user
+        content: "Compress secret-bearing logs without leaking raw output in response."
+    expected_output: |
+      {
+        "scenario": "secret-bearing-log",
+        "tool_id": "tool.secret-log",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "OPENAI_API_KEY=sk-live-1234567890abcdef"
+          },
+          {
+            "kind": "literal",
+            "value": "rotate key and scrub .env.local"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 12,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-terraform-plan
+    input:
+      - role: user
+        content: "Compress Terraform plan output while preserving add/change/destroy counts."
+    expected_output: |
+      {
+        "scenario": "shell-terraform-plan",
+        "tool_id": "shell.terraform.plan",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Plan: 2 to add, 1 to change, 0 to destroy."
+          },
+          {
+            "kind": "literal",
+            "value": "azurerm_linux_web_app.api"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 72,
+        "rtk_baseline_tokens": 18,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-helm-status
+    input:
+      - role: user
+        content: "Compress Helm release status while preserving namespace, revision, and failed hook."
+    expected_output: |
+      {
+        "scenario": "shell-helm-status",
+        "tool_id": "shell.helm.status",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "NAMESPACE: prod"
+          },
+          {
+            "kind": "literal",
+            "value": "post-upgrade hook migrate-db failed"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 84,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-ps-memory
+    input:
+      - role: user
+        content: "Compress process table output while retaining PID and memory hotspot."
+    expected_output: |
+      {
+        "scenario": "shell-ps-memory",
+        "tool_id": "shell.ps.memory",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "4812    node           932144"
+          },
+          {
+            "kind": "literal",
+            "value": "postgres       331008"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 66,
+        "rtk_baseline_tokens": 17,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-netstat-listen
+    input:
+      - role: user
+        content: "Compress listening socket output while preserving bound address and owning process."
+    expected_output: |
+      {
+        "scenario": "shell-netstat-listen",
+        "tool_id": "shell.netstat.listen",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "0.0.0.0:3000"
+          },
+          {
+            "kind": "literal",
+            "value": "127.0.0.1:5432"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 90,
+        "rtk_baseline_tokens": 23,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-openssl-cert
+    input:
+      - role: user
+        content: "Compress certificate inspection while retaining expiry and SAN."
+    expected_output: |
+      {
+        "scenario": "shell-openssl-cert",
+        "tool_id": "shell.openssl.cert",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Not After : Aug 18 23:59:59 2026 GMT"
+          },
+          {
+            "kind": "literal",
+            "value": "DNS:api.internal.example.com"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 92,
+        "rtk_baseline_tokens": 23,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-pnpm-install
+    input:
+      - role: user
+        content: "Compress package-manager install output while preserving peer dependency warning."
+    expected_output: |
+      {
+        "scenario": "shell-pnpm-install",
+        "tool_id": "shell.pnpm.install",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Packages: +128 -4"
+          },
+          {
+            "kind": "literal",
+            "value": "unmet peer zod@^3.25.0"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 78,
+        "rtk_baseline_tokens": 20,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-go-test-race
+    input:
+      - role: user
+        content: "Compress Go race detector output while retaining race location."
+    expected_output: |
+      {
+        "scenario": "shell-go-test-race",
+        "tool_id": "shell.go.test",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "WARNING: DATA RACE"
+          },
+          {
+            "kind": "literal",
+            "value": "/src/router/cache.go:91"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 81,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-cargo-test
+    input:
+      - role: user
+        content: "Compress Cargo test output while retaining failing test and panic message."
+    expected_output: |
+      {
+        "scenario": "shell-cargo-test",
+        "tool_id": "shell.cargo.test",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "router::tests::preserves_schema_id"
+          },
+          {
+            "kind": "literal",
+            "value": "right: \"shell.git-status.v1\""
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 82,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-dotnet-test
+    input:
+      - role: user
+        content: "Compress dotnet test output while preserving failing test and duration."
+    expected_output: |
+      {
+        "scenario": "shell-dotnet-test",
+        "tool_id": "shell.dotnet.test",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "SerializesLargeObject [347 ms]"
+          },
+          {
+            "kind": "literal",
+            "value": "Expected token ratio below 0.35"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 92,
+        "rtk_baseline_tokens": 23,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-powershell-error
+    input:
+      - role: user
+        content: "Compress PowerShell error output while preserving FullyQualifiedErrorId."
+    expected_output: |
+      {
+        "scenario": "shell-powershell-error",
+        "tool_id": "shell.powershell.error",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "C:\\src\\utk\\missing.txt"
+          },
+          {
+            "kind": "literal",
+            "value": "PathNotFound,Microsoft.PowerShell.Commands.GetContentCommand"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 97,
+        "rtk_baseline_tokens": 25,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-azure-deployment
+    input:
+      - role: user
+        content: "Compress Azure deployment output while retaining failed resource and correlation id."
+    expected_output: |
+      {
+        "scenario": "shell-azure-deployment",
+        "tool_id": "shell.az.deployment",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "2d4b1a11-6d2a-4fd5-a0e3-6cfbaef67321"
+          },
+          {
+            "kind": "literal",
+            "value": "Microsoft.Web/sites/utk-api"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 108,
+        "rtk_baseline_tokens": 27,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-ffmpeg-progress
+    input:
+      - role: user
+        content: "Compress ffmpeg output while preserving codec error and timestamp."
+    expected_output: |
+      {
+        "scenario": "shell-ffmpeg-progress",
+        "tool_id": "shell.ffmpeg",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "error while decoding MB 12 34"
+          },
+          {
+            "kind": "literal",
+            "value": "time=00:00:10.42"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 61,
+        "rtk_baseline_tokens": 16,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-mysql-explain
+    input:
+      - role: user
+        content: "Compress SQL EXPLAIN table while preserving access type and rows estimate."
+    expected_output: |
+      {
+        "scenario": "shell-mysql-explain",
+        "tool_id": "shell.mysql.explain",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "|  1 | SIMPLE      | events | ref"
+          },
+          {
+            "kind": "literal",
+            "value": "98231 | Using where"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 88,
+        "rtk_baseline_tokens": 22,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-windows-dir
+    input:
+      - role: user
+        content: "Compress Windows dir output while preserving file size and timestamp."
+    expected_output: |
+      {
+        "scenario": "shell-windows-dir",
+        "tool_id": "shell.windows.dir",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "05/20/2026  10:14 PM             4,096 rtk-parity.md"
+          },
+          {
+            "kind": "literal",
+            "value": "<DIR>          internal"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 80,
+        "rtk_baseline_tokens": 20,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: shell-jq-filter
+    input:
+      - role: user
+        content: "Compress jq output while preserving selected id and null field."
+    expected_output: |
+      {
+        "scenario": "shell-jq-filter",
+        "tool_id": "shell.jq",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "{ \"id\": 992, \"conclusion\": null }"
+          },
+          {
+            "kind": "literal",
+            "value": "{ \"id\": 993, \"conclusion\": \"success\" }"
+          }
+        ],
+        "rtk_supported": true,
+        "rtk_baseline_bytes": 62,
+        "rtk_baseline_tokens": 16,
+        "rtk_notes": null
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: ndjson-event-stream
+    input:
+      - role: user
+        content: "Compress newline-delimited JSON while preserving first and last event ids."
+    expected_output: |
+      {
+        "scenario": "ndjson-event-stream",
+        "tool_id": "tool.ndjson",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "\"id\":\"evt-0\""
+          },
+          {
+            "kind": "literal",
+            "value": "\"kind\":\"deploy_failed\""
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 106,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: lcov-coverage-report
+    input:
+      - role: user
+        content: "Compress LCOV text while preserving uncovered line and file."
+    expected_output: |
+      {
+        "scenario": "lcov-coverage-report",
+        "tool_id": "tool.lcov",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "SF:packages/core/src/router/router.ts"
+          },
+          {
+            "kind": "literal",
+            "value": "DA:42,0"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 15,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: prometheus-metrics
+    input:
+      - role: user
+        content: "Compress Prometheus exposition while preserving metric labels and values."
+    expected_output: |
+      {
+        "scenario": "prometheus-metrics",
+        "tool_id": "tool.prometheus",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "utk_tool_mediation_seconds_sum{tool=\"shell.rg\"} 1.72"
+          },
+          {
+            "kind": "literal",
+            "value": "utk_tool_mediation_seconds_count{tool=\"shell.rg\"} 12"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 29,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: har-network-log
+    input:
+      - role: user
+        content: "Compress HAR-like network logs while preserving failing request status."
+    expected_output: |
+      {
+        "scenario": "har-network-log",
+        "tool_id": "tool.har",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.log.entries[1].request.url",
+            "expected": "https://app.example.test/api/runs"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.log.entries[1].response.status",
+            "expected": 503
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 42,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: playwright-trace-summary
+    input:
+      - role: user
+        content: "Compress browser trace summaries while retaining failed action and selector."
+    expected_output: |
+      {
+        "scenario": "playwright-trace-summary",
+        "tool_id": "tool.playwright.trace",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.steps[1].selector",
+            "expected": "button[data-testid=\"pay-now\"]"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.steps[1].error",
+            "expected": "element is disabled"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 32,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: package-lock-subtree
+    input:
+      - role: user
+        content: "Compress package-lock subtree while preserving resolved version and integrity."
+    expected_output: |
+      {
+        "scenario": "package-lock-subtree",
+        "tool_id": "tool.package-lock",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.packages.node_modules/autoevals.version",
+            "expected": "0.0.132"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.packages.node_modules/autoevals.integrity",
+            "expected": "sha512-abc123"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 24,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: tsserver-protocol-log
+    input:
+      - role: user
+        content: "Compress TypeScript server protocol logs while preserving request sequence."
+    expected_output: |
+      {
+        "scenario": "tsserver-protocol-log",
+        "tool_id": "tool.tsserver",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "\"seq\":17"
+          },
+          {
+            "kind": "literal",
+            "value": "\"command\":\"completionInfo\""
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 29,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: sqlite-query-result
+    input:
+      - role: user
+        content: "Compress SQLite query result rows while preserving tenant and deleted marker."
+    expected_output: |
+      {
+        "scenario": "sqlite-query-result",
+        "tool_id": "tool.sqlite.rows",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$[1].deleted_at",
+            "expected": "2026-05-20T22:00:00Z"
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$[2].tenant_id",
+            "expected": "tenant-b"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 28,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: rfc822-email
+    input:
+      - role: user
+        content: "Compress RFC822 message output while preserving Message-ID and subject."
+    expected_output: |
+      {
+        "scenario": "rfc822-email",
+        "tool_id": "tool.email",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "Message-ID: <20260520221500.12345@example.com>"
+          },
+          {
+            "kind": "literal",
+            "value": "Subject: [SEV2] UTK worker queue delayed"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 20,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: icalendar-event
+    input:
+      - role: user
+        content: "Compress iCalendar event output while preserving UID and timezone timestamp."
+    expected_output: |
+      {
+        "scenario": "icalendar-event",
+        "tool_id": "tool.ical",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "UID:deploy-20260521T140322@example.com"
+          },
+          {
+            "kind": "literal",
+            "value": "DTSTART;TZID=America/Chicago:20260521T140322"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 16,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: yaml-k8s-manifest
+    input:
+      - role: user
+        content: "Compress Kubernetes YAML while preserving image digest and replica count."
+    expected_output: |
+      {
+        "scenario": "yaml-k8s-manifest",
+        "tool_id": "tool.yaml.k8s",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "replicas: 3"
+          },
+          {
+            "kind": "literal",
+            "value": "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 21,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: toml-config-fragment
+    input:
+      - role: user
+        content: "Compress TOML config while preserving serializer override and boolean flag."
+    expected_output: |
+      {
+        "scenario": "toml-config-fragment",
+        "tool_id": "tool.toml",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "[tools.\"shell.git.diff\"]"
+          },
+          {
+            "kind": "literal",
+            "value": "include_raw_artifact = true"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 12,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: protobuf-json-diagnostic
+    input:
+      - role: user
+        content: "Compress protobuf JSON diagnostic output while preserving field number and reserved range."
+    expected_output: |
+      {
+        "scenario": "protobuf-json-diagnostic",
+        "tool_id": "tool.protobuf.json",
+        "required_facts": [
+          {
+            "kind": "jsonPath",
+            "path": "$.message.fields[1].number",
+            "expected": 7
+          },
+          {
+            "kind": "jsonPath",
+            "path": "$.message.reservedRanges[0].end",
+            "expected": 12
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 33,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: binary-png-header
+    input:
+      - role: user
+        content: "Compress binary-ish output while preserving raw artifact recovery for magic bytes."
+    expected_output: |
+      {
+        "scenario": "binary-png-header",
+        "tool_id": "tool.binary.png",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "magic=89504e47"
+          },
+          {
+            "kind": "literal",
+            "value": "width=1440 height=900"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 85,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: multipart-form-data
+    input:
+      - role: user
+        content: "Compress multipart payloads while preserving boundary and file field name."
+    expected_output: |
+      {
+        "scenario": "multipart-form-data",
+        "tool_id": "tool.multipart",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "------WebKitFormBoundary7MA4YWxkTrZu0gW"
+          },
+          {
+            "kind": "literal",
+            "value": "name=\"file\"; filename=\"report.json\""
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 31,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: ansi-colored-output
+    input:
+      - role: user
+        content: "Compress colored terminal output while preserving visible error after escape codes."
+    expected_output: |
+      {
+        "scenario": "ansi-colored-output",
+        "tool_id": "tool.ansi",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "schema fallback.v1 selected"
+          },
+          {
+            "kind": "literal",
+            "value": "expected shell.git-status.v1"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 13,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: unicode-width-table
+    input:
+      - role: user
+        content: "Compress wide Unicode table output while preserving emoji/status associations."
+    expected_output: |
+      {
+        "scenario": "unicode-width-table",
+        "tool_id": "tool.unicode.table",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "worker       eu-west-1    ❌ queue delayed"
+          },
+          {
+            "kind": "literal",
+            "value": "scheduler    ap-south-1   ⚠️ clock skew 320ms"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 13,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]
+  - id: patch-with-renames
+    input:
+      - role: user
+        content: "Compress patch metadata while preserving rename similarity and file paths."
+    expected_output: |
+      {
+        "scenario": "patch-with-renames",
+        "tool_id": "tool.patch.rename",
+        "required_facts": [
+          {
+            "kind": "literal",
+            "value": "similarity index 87%"
+          },
+          {
+            "kind": "literal",
+            "value": "rename to src/router/index.ts"
+          }
+        ],
+        "rtk_supported": false,
+        "rtk_baseline_bytes": 0,
+        "rtk_baseline_tokens": 22,
+        "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
+      }
+    assertions:
+      - name: rtk-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/rtkParityCodeGrader.js"]

@@ -14,8 +14,22 @@ Observed VS Code extension revision: `0cb4a60cb9fdf9b47e8c439ca71895e8ba61293c`
 
 ## Install And Configuration Status
 
-Compresr was researched from public web pages and temporary clones only. It was
-not installed or configured in this workspace.
+Compresr was later installed and configured for deterministic local evals in
+this workspace.
+
+Verified local install:
+
+```powershell
+python -m pip install --user compresr==2.5.1
+npm run verify:compresr-install --workspace @utk/evals
+```
+
+The Python SDK is installed at user scope and reports package version `2.5.1`.
+The eval configuration is checked in at
+`packages/evals/config/compresrConfig.ts`. Live hosted compression remains
+disabled unless `COMPRESR_API_KEY` is present; the deterministic benchmark uses
+installed SDK model/config metadata plus checked-in Compresr baselines so CI
+does not send tool outputs to `api.compresr.ai`.
 
 Documented public install paths:
 
