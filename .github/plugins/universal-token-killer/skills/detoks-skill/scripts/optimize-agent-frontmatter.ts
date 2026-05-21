@@ -12,7 +12,7 @@ export interface AgentFrontmatterOptimizationResult {
   reasonCodes: string[];
 }
 
-/** Build compact context about frontmatter while leaving declarations byte-for-byte intact. */
+/** Frontmatter context compact for prompts. Keep declarations byte-exact in SKILL.md. */
 export function optimizeAgentSkillFrontmatterForContext(skillText: string): AgentFrontmatterOptimizationResult {
   const match = /^(---\r?\n([\s\S]*?)\r?\n---)/u.exec(skillText);
   if (!match) throw new Error('Agent Skill must start with YAML frontmatter');

@@ -29,12 +29,16 @@ async function exists(file: string): Promise<boolean> {
 }
 
 function codeBlocks(text: string): string[] {
-  return Array.from(text.matchAll(/(`{3,})[\s\S]*?\1/gu)).map((match) => match[0]);
+  return Array.from(
+    text.matchAll(/(?:^|\r?\n)(`{3,})[^\r\n]*\r?\n[\s\S]*?\r?\n\1(?=\r?\n|$)/gu)
+  ).map((match) => match[0].replace(/^\r?\n/u, ''));
 }
 
 function hasRequiredFrontmatter(frontmatter: string | undefined): boolean {
   if (!frontmatter) return false;
-  return /^name:\s*\S.+$/imu.test(frontmatter) && /^description:\s*Use when\b.+$/imu.test(frontmatter);
+  const name = /^name:\s*(.+)$/imu.exec(frontmatter)?.[1]?.trim();
+  const description = /^description:\s*(.+)$/imu.exec(frontmatter)?.[1]?.trim().replace(/^["'](.*)["']$/u, '$1');
+  return Boolean(name) && Boolean(description?.startsWith('Use when'));
 }
 
 async function readAllMarkdown(root: string, current = root): Promise<string> {
@@ -50,7 +54,7 @@ async function readAllMarkdown(root: string, current = root): Promise<string> {
   return parts.join('\n');
 }
 
-/** Validate companion skill safety: declarations, references, ratio, fenced code preservation. */
+/** Companion validator check declarations references ratio code fences. Report failed invariant. */
 export async function validateOptimizedSkill(args: ValidateOptimizedSkillArgs): Promise<ValidationResult> {
   const sourceSkillPath = path.join(path.resolve(args.sourceSkillRoot), 'SKILL.md');
   const optimizedRoot = path.resolve(args.optimizedSkillRoot);

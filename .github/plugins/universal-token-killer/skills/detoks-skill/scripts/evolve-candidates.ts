@@ -163,7 +163,7 @@ function score(validation: ValidationResult, iteration: number): number {
   return passed * 100 + ratioScore * 25 - iteration;
 }
 
-/** Generate, score, and select optimized skill candidates through Trace or Agent Lightning. */
+/** Candidate set generate score select via Trace or Agent Lightning. Emit best companion to outputRoot. */
 export async function evolveCandidates(args: EvolveCandidatesArgs): Promise<EvolveCandidatesResult> {
   const backend = args.backend ?? 'trace';
   const python = args.python ?? 'python';

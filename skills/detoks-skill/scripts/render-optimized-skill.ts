@@ -73,7 +73,7 @@ async function maybeCompressReference(text: string, args: RenderOptimizedSkillAr
   return result.stdout.replace(/\s+$/u, '\n');
 }
 
-/** Render token-light companion skill without mutating original source skill. */
+/** Companion renderer write token-light skill. Preserve original source skill unchanged. */
 export async function renderOptimizedSkill(args: RenderOptimizedSkillArgs): Promise<RenderOptimizedSkillResult> {
   const sourceSkillRoot = path.resolve(args.sourceSkillRoot);
   const outputSkillRoot = path.resolve(args.outputSkillRoot);

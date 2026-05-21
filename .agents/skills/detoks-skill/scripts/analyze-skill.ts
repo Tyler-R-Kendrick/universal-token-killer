@@ -23,7 +23,7 @@ export interface SkillAnalysisReport {
   deterministicCandidates: DeterministicCandidate[];
 }
 
-/** Estimate LLM tokens cheaply for skill budget comparisons. */
+/** Token estimator compute skill budget quickly. Recalibrate with corpus benchmarks. */
 export function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.trim().split(/\s+/u).filter(Boolean).length * 1.33));
 }
@@ -69,7 +69,7 @@ function findDeterministicCandidates(relativePath: string, text: string): Determ
   return candidates;
 }
 
-/** Read markdown once, report token hotspots plus scriptable workflow candidates. */
+/** Markdown records read once for hotspots and script candidates. Reuse records for report assembly. */
 export async function analyzeSkill(skillRoot: string): Promise<SkillAnalysisReport> {
   const absoluteRoot = path.resolve(skillRoot);
   const markdown = await listMarkdown(absoluteRoot);
