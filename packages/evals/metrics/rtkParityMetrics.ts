@@ -1,4 +1,5 @@
 import { decode } from '@toon-format/toon';
+import { JSONDiff } from 'autoevals';
 import { estimateTokens } from '../assertions/tokenBudgets.js';
 import type { RequiredFact, RtkParityFixture } from '../fixtures/rtkParityFixtures.js';
 
@@ -34,6 +35,16 @@ export type RtkParityAssertion = {
   metrics: RtkParityMetrics;
 };
 
+export type RtkParityAutoevalsMetrics = RtkParityMetrics & {
+  autoevalsFactScore: number;
+};
+
+export type RtkParityAutoevalsAssertion = {
+  passed: boolean;
+  failures: string[];
+  metrics: RtkParityAutoevalsMetrics;
+};
+
 export function measureRtkParity(input: RtkParityMeasurementInput): RtkParityMetrics {
   const rawBytes = Buffer.byteLength(input.rawText);
   const rawTokens = estimateTokens(input.rawText);
@@ -56,6 +67,18 @@ export function measureRtkParity(input: RtkParityMeasurementInput): RtkParityMet
   };
 }
 
+export async function measureRtkParityWithAutoevals(input: RtkParityMeasurementInput): Promise<RtkParityAutoevalsMetrics> {
+  const metrics = measureRtkParity(input);
+  const autoevalsResult = await JSONDiff({
+    output: retainedFactVector(input.fixture.requiredFacts, [input.rawText, input.compactText, input.responseText]),
+    expected: Object.fromEntries(input.fixture.requiredFacts.map((fact) => [factKey(fact), true]))
+  });
+  return {
+    ...metrics,
+    autoevalsFactScore: autoevalsResult.score ?? 0
+  };
+}
+
 export function assertRtkParity(input: RtkParityMeasurementInput): RtkParityAssertion {
   const metrics = measureRtkParity(input);
   const failures: string[] = [];
@@ -74,10 +97,24 @@ export function assertRtkParity(input: RtkParityMeasurementInput): RtkParityAsse
   return { passed: failures.length === 0, failures, metrics };
 }
 
+export async function assertRtkParityWithAutoevals(input: RtkParityMeasurementInput): Promise<RtkParityAutoevalsAssertion> {
+  const base = assertRtkParity(input);
+  const metrics = await measureRtkParityWithAutoevals(input);
+  const failures = [...base.failures];
+  if (metrics.autoevalsFactScore !== 1) {
+    failures.push(`${metrics.name}: autoevalsFactScore=${metrics.autoevalsFactScore}`);
+  }
+  return { passed: failures.length === 0, failures, metrics };
+}
+
 export function factRetentionScore(facts: RequiredFact[], artifactTexts: string[]): number {
   if (facts.length === 0) return 1;
   const retained = facts.filter((fact) => factIsRetained(fact, artifactTexts)).length;
   return retained / facts.length;
+}
+
+export function retainedFactVector(facts: RequiredFact[], artifactTexts: string[]): Record<string, boolean> {
+  return Object.fromEntries(facts.map((fact) => [factKey(fact), factIsRetained(fact, artifactTexts)]));
 }
 
 export function recoverabilityScore(input: Pick<RtkParityMeasurementInput, 'rawArtifactExists' | 'compactArtifactExists' | 'responseText'>): number {
@@ -95,6 +132,10 @@ function factIsRetained(fact: RequiredFact, artifactTexts: string[]): boolean {
     const value = readJsonPath(parseArtifact(text), fact.path);
     return JSON.stringify(value) === JSON.stringify(fact.expected);
   });
+}
+
+function factKey(fact: RequiredFact): string {
+  return fact.kind === 'literal' ? `literal:${fact.value}` : `jsonPath:${fact.path}=${JSON.stringify(fact.expected)}`;
 }
 
 function parseArtifact(text: string): unknown {
@@ -120,11 +161,31 @@ function readJsonPath(value: unknown, path: string): unknown {
 
 function pathTokens(path: string): Array<string | number> {
   const tokens: Array<string | number> = [];
-  for (const part of path.slice(2).split('.').filter(Boolean)) {
-    const match = /^([^\[]+)(?:\[(\d+)\])?$/.exec(part);
-    if (!match) return [];
-    tokens.push(match[1] ?? '');
-    if (match[2] !== undefined) tokens.push(Number(match[2]));
+  if (!path.startsWith('$')) return tokens;
+  let cursor = 1;
+  while (cursor < path.length) {
+    if (path[cursor] === '.') {
+      cursor += 1;
+      const start = cursor;
+      while (cursor < path.length && path[cursor] !== '.' && path[cursor] !== '[') {
+        cursor += 1;
+      }
+      if (cursor === start) return [];
+      tokens.push(path.slice(start, cursor));
+      continue;
+    }
+
+    if (path[cursor] === '[') {
+      const end = path.indexOf(']', cursor);
+      if (end === -1) return [];
+      const index = Number(path.slice(cursor + 1, end));
+      if (!Number.isInteger(index)) return [];
+      tokens.push(index);
+      cursor = end + 1;
+      continue;
+    }
+
+    return [];
   }
   return tokens;
 }

@@ -18,7 +18,14 @@ UTK is not a public CLI or VS Code extension. Its primary mediation surface is t
 
 ## RTK Parity Stats
 
-The fixture-backed parity suite currently verifies that UTK beats RTK baselines for CLI-related tool calls:
+The fixture-backed parity suite currently verifies that UTK beats RTK baselines for CLI-related tool calls and exceeds RTK-style savings thresholds for generalized tool outputs:
+
+- Scenarios: `61`
+- RTK-supported shell scenarios: `29`
+- Generalized tool-output scenarios: `32`
+- Passed RTK/UTK thresholds: `61/61`
+- Average UTK/RTK token ratio for RTK-supported scenarios: `0.271`
+- Total estimated token savings vs RTK-supported baselines: `417`
 
 | Scenario | UTK tokens | RTK tokens | Delta | Ratio |
 | --- | ---: | ---: | ---: | ---: |
@@ -28,8 +35,44 @@ The fixture-backed parity suite currently verifies that UTK beats RTK baselines 
 | `shell-rg` | 5 | 18 | +13 | 0.28 |
 | `shell-vitest` | 5 | 10 | +5 | 0.50 |
 | `shell-tsc` | 5 | 21 | +16 | 0.24 |
+| `shell-npm-audit` | 5 | 18 | +13 | 0.28 |
+| `shell-pytest-failure` | 5 | 21 | +16 | 0.24 |
+| `shell-docker-ps` | 5 | 13 | +8 | 0.38 |
+| `shell-kubectl-pods` | 5 | 18 | +13 | 0.28 |
+| `shell-curl-headers` | 5 | 16 | +11 | 0.31 |
+| `shell-du-sizes` | 5 | 13 | +8 | 0.38 |
+| `shell-rg-json-lines` | 5 | 19 | +14 | 0.26 |
+| `shell-git-log-oneline` | 5 | 20 | +15 | 0.25 |
+| `shell-terraform-plan` | 5 | 18 | +13 | 0.28 |
+| `shell-helm-status` | 5 | 21 | +16 | 0.24 |
+| `shell-ps-memory` | 5 | 17 | +12 | 0.29 |
+| `shell-netstat-listen` | 5 | 23 | +18 | 0.22 |
+| `shell-openssl-cert` | 5 | 23 | +18 | 0.22 |
+| `shell-pnpm-install` | 5 | 20 | +15 | 0.25 |
+| `shell-go-test-race` | 5 | 21 | +16 | 0.24 |
+| `shell-cargo-test` | 5 | 21 | +16 | 0.24 |
+| `shell-dotnet-test` | 5 | 23 | +18 | 0.22 |
+| `shell-powershell-error` | 5 | 25 | +20 | 0.20 |
+| `shell-azure-deployment` | 5 | 27 | +22 | 0.19 |
+| `shell-ffmpeg-progress` | 5 | 16 | +11 | 0.31 |
+| `shell-mysql-explain` | 5 | 22 | +17 | 0.23 |
+| `shell-windows-dir` | 5 | 20 | +15 | 0.25 |
+| `shell-jq-filter` | 5 | 16 | +11 | 0.31 |
 
-Each scenario also requires `factRetentionScore === 1` and `recoverabilityScore === 1`.
+Each scenario also requires `factRetentionScore === 1`, `autoevalsFactScore === 1`, and `recoverabilityScore === 1`. Full report: `docs/internal/rtk-parity-benchmark-results.md`.
+
+## Compresr Parity Stats
+
+Compresr SDK `2.5.1` is installed for local verification and configured in `@utk/evals`. Live hosted compression is disabled unless `COMPRESR_API_KEY` is present; the benchmark uses deterministic installed-SDK model baselines so tool outputs stay local.
+
+- Scenarios: `39`
+- Passed Compresr/UTK thresholds: `39/39`
+- Average UTK/Compresr token ratio: `0.452`
+- Total estimated token savings vs Compresr baselines: `527`
+- Autoevals fact retention: `1.000`
+- Recoverability: `1.000`
+
+Full report: `docs/internal/compresr-parity-benchmark-results.md`.
 
 ## Example Usage
 
