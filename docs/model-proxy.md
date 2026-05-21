@@ -107,6 +107,9 @@ UTK v3 tracks these competitor-inspired capabilities:
 - Compresr: replace-with-summary-block history compaction, tool-output compaction, static/deferred tool discovery, expand-context recovery.
 - Headroom: route-specific compactors, observe-only cache volatility, CCR-like artifact recovery and dedupe/stale policies.
 - lean-ctx: line range/search/handle/block recovery, build-log route fixtures, stored compact/raw proof hashes.
+- LeanCTX Copilot: prompt-surface fact retention, post-tool key fact extraction, deferred schema discovery, and relevance/correctness/groundedness gates.
 - OpenSlimEdit: tool definition minimization, file-read/edit-loop compaction, line-range edit expansion.
 - Kompress/CaveGemma: optional provider registry and fail-open provider error taxonomy after protected-span extraction.
 - prompt-compression: pipe-index prompt assets with retrieval-led references.
+
+Current benchmark rollup: [internal benchmark summary](internal/benchmark-summary.md). LeanCTX Copilot details: [LeanCTX Copilot benchmark results](internal/leanctx-copilot-benchmark-results.md).

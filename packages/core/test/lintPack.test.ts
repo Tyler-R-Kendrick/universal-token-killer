@@ -295,6 +295,109 @@ describe('lintPack', () => {
     expect(report.ok).toBe(true);
   });
 
+  it('rejects serialization plugins that declare executable modules', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-plugin-module-'));
+    await buildPack(dir, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'module = "index.js"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
+      ].join('\n'),
+      'grammar/demo.lark': 'start: value\nvalue: /.+/\n',
+      'index.js': 'throw new Error("must not run");\n'
+    });
+
+    const report = await lintPack(dir);
+
+    expect(report.ok).toBe(false);
+    expect(report.findings.map((finding) => finding.code)).toContain('pack/plugins/module-not-supported');
+  });
+
+  it('lints serialization plugin symbols and package indexes without executing code', async () => {
+    const missingIndex = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-plugin-index-missing-'));
+    await buildPack(missingIndex, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
+      ].join('\n'),
+      'grammar/demo.lark': 'start: value\nvalue: /.+/\n'
+    });
+    const missingIndexReport = await lintPack(missingIndex);
+    expect(missingIndexReport.findings.map((finding) => finding.code)).toContain('pack/plugins/index-missing');
+
+    const badSymbol = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-plugin-bad-symbol-'));
+    await buildPack(badSymbol, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'symbol = "demoSerializer"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
+      ].join('\n'),
+      'grammar/demo.lark': 'start: value\nvalue: /.+/\n',
+      'index.ts': "export const demoSerializer = 'demo' as const;\n"
+    });
+    const badSymbolReport = await lintPack(badSymbol);
+    expect(badSymbolReport.findings.map((finding) => finding.code)).toContain('pack/plugins/invalid-symbol');
+
+    const missingExport = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-plugin-export-missing-'));
+    await buildPack(missingExport, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
+      ].join('\n'),
+      'grammar/demo.lark': 'start: value\nvalue: /.+/\n',
+      'index.ts': "export const OTHER_SERIALIZER = 'demo' as const;\n"
+    });
+    const missingExportReport = await lintPack(missingExport);
+    expect(missingExportReport.findings.map((finding) => finding.code)).toContain('pack/plugins/index-symbol-missing');
+
+    const executableIndex = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-plugin-index-exec-'));
+    const sideEffect = path.join(executableIndex, 'ran.txt');
+    await buildPack(executableIndex, {
+      'utk.pack.toml': [
+        manifest(),
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
+      ].join('\n'),
+      'grammar/demo.lark': 'start: value\nvalue: /.+/\n',
+      'index.ts': `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(sideEffect)}, 'ran');\nexport const DEMO_SERIALIZER = 'demo' as const;\n`
+    });
+    const executableReport = await lintPack(executableIndex);
+    expect(executableReport.findings.map((finding) => finding.code)).toContain('pack/plugins/index-executable');
+    await expect(import('node:fs/promises').then((fs) => fs.readFile(sideEffect, 'utf8'))).rejects.toThrow();
+  });
+
   it('detects template file-missing, duplicate id, language mismatch, and empty file', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'utk-lint-templates-'));
     await buildPack(dir, {

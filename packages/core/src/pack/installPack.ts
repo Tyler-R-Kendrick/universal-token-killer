@@ -10,7 +10,7 @@ import { loadPack } from './loadPack.js';
 import { readLockfile, writeLockfile } from './lockfile.js';
 import { addPackRegistryBlocks, removePackRegistryBlocks } from './registryRewrite.js';
 import { describePackSource } from './sources.js';
-import type { InstalledPack, LoadedPack, PackGrammarRecord, PackSource } from './types.js';
+import type { InstalledPack, LoadedPack, PackGrammarRecord, PackPluginRecord, PackSource } from './types.js';
 
 export type InstallPackOptions = {
   fetcher?: PackFetcher;
@@ -70,7 +70,8 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
         manifest: pack.manifest,
         tools: pack.tools.map((tool) => tool.source),
         grammars: pack.grammars.map((grammar) => ({ tool: grammar.tool, field: grammar.field, lark: grammar.lark })),
-        templates: pack.templates.map((template) => template.source)
+        templates: pack.templates.map((template) => template.source),
+        plugins: pack.plugins.map((plugin) => pluginContentForHash(plugin))
       }), 16),
       installedAt,
       tools: pack.tools.map((tool) => tool.entry.id),
@@ -79,7 +80,8 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
         tool: grammar.tool,
         field: grammar.field,
         larkHash: grammar.larkHash
-      }))
+      })),
+      plugins: pack.plugins.map((plugin) => pluginLockEntry(plugin))
     };
 
     const remaining = existing.filter((entry) => entry.name !== installed.name);
@@ -93,6 +95,28 @@ export async function installPack(workspaceRoot: string, source: PackSource, opt
     }
     throw error;
   }
+}
+
+function pluginContentForHash(plugin: PackPluginRecord): Record<string, unknown> {
+  if ('grammar' in plugin) {
+    return { entry: plugin.entry, lark: plugin.grammar.lark };
+  }
+  return { entry: plugin.entry };
+}
+
+function pluginLockEntry(plugin: PackPluginRecord): InstalledPack['plugins'][number] {
+  if ('grammar' in plugin) {
+    return {
+      type: 'serialization',
+      id: plugin.entry.id,
+      larkHash: plugin.grammar.larkHash
+    };
+  }
+  return {
+    type: 'agent',
+    id: plugin.entry.id,
+    target: plugin.entry.target
+  };
 }
 
 async function rollbackInstall(workspaceRoot: string, pack: LoadedPack): Promise<void> {

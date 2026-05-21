@@ -58,7 +58,7 @@ describe('tool mediation serialization', () => {
     expect(result.response).toContain('Serializer: tron');
   });
 
-  it('returns serializer metadata and persists serialized compressed JSON output', async () => {
+  it('returns serializer metadata and persists serialized json-compact output', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-mediate-compressed-json-'));
     await initializeWorkspaceStore(root);
     await mkdir(path.join(root, '.utk'), { recursive: true });
@@ -66,12 +66,12 @@ describe('tool mediation serialization', () => {
       path.join(root, '.utk', 'config.toml'),
       [
         '[serialization]',
-        'default = "compressed-json"',
+        'default = "json-compact"',
         '',
         '[serialization.providers.toon]',
         'enabled = true',
         '',
-        '[serialization.providers.compressed-json]',
+        '[serialization.providers.json-compact]',
         'enabled = true',
         '',
         '[serialization.providers.tron]',
@@ -88,39 +88,38 @@ describe('tool mediation serialization', () => {
       execute: async () => ({ users: [{ id: 1, name: 'Ada' }] })
     });
 
-    expect(result.serializerId).toBe('compressed-json');
+    expect(result.serializerId).toBe('json-compact');
     expect(result.serializedPath.endsWith('output.compact.json')).toBe(true);
     expect(await readFile(result.serializedPath, 'utf8')).toBe('{"k":"object","keys":["users"]}\n');
-    expect(result.response).toContain('Serializer: compressed-json');
+    expect(result.response).toContain('Serializer: json-compact');
   });
 
-  it('persists output through an auto-loaded plugin serializer', async () => {
+  it('persists output through a .utk serialization plugin folder', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-mediate-plugin-'));
     await initializeWorkspaceStore(root);
     await mkdir(path.join(root, '.utk'), { recursive: true });
-    await mkdir(path.join(root, 'node_modules', 'utk-serializer-demo'), { recursive: true });
-    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { 'utk-serializer-demo': '1.0.0' } }), 'utf8');
+    const pluginRoot = path.join(root, '.utk', 'plugins', 'serialization', 'demo');
+    await mkdir(path.join(pluginRoot, 'grammar'), { recursive: true });
     await writeFile(
-      path.join(root, 'node_modules', 'utk-serializer-demo', 'package.json'),
-      JSON.stringify({ name: 'utk-serializer-demo', version: '1.0.0', type: 'module', main: './index.js' }),
-      'utf8'
-    );
-    await writeFile(
-      path.join(root, 'node_modules', 'utk-serializer-demo', 'index.js'),
+      path.join(pluginRoot, 'utk.pack.toml'),
       [
-        'export function registerUtkSerializerPlugin(registry) {',
-        '  registry.register({',
-        '    id: "demo",',
-        '    extension: "demo",',
-        '    serialize(value) { return `demo:${JSON.stringify(value)}`; },',
-        '    deserialize(text) { return JSON.parse(text.slice(5)); },',
-        '    validate(value, text) { return text === `demo:${JSON.stringify(value)}` ? { valid: true, errors: [] } : { valid: false, errors: ["demo drift"] }; },',
-        '    estimateTokens(text) { return Math.ceil(text.length / 4); }',
-        '  });',
-        '}'
+        '[pack]',
+        'name = "demo"',
+        'version = "1.0.0"',
+        '',
+        '[[plugins]]',
+        'type = "serialization"',
+        'id = "demo"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
+        'grammar = "grammar/demo.lark"',
+        'extension = "demo"',
+        ''
       ].join('\n'),
       'utf8'
     );
+    await writeFile(path.join(pluginRoot, 'grammar', 'demo.lark'), jsonValueLark(), 'utf8');
+    await writeFile(path.join(pluginRoot, 'index.ts'), "export const DEMO_SERIALIZER = 'demo' as const;\n", 'utf8');
     await writeFile(
       path.join(root, '.utk', 'config.toml'),
       [
@@ -143,8 +142,33 @@ describe('tool mediation serialization', () => {
 
     expect(result.serializerId).toBe('demo');
     expect(result.serializedPath.endsWith('output.compact.demo')).toBe(true);
-    expect(await readFile(result.serializedPath, 'utf8')).toBe('demo:{"k":"object","keys":["users"]}\n');
+    expect(await readFile(result.serializedPath, 'utf8')).toBe('{"k":"object","keys":["users"]}\n');
     expect(JSON.parse(await readFile(path.join(path.dirname(result.serializedPath), 'output.compact.validation.json'), 'utf8'))).toMatchObject({ valid: true });
     expect(result.response).toContain('Serializer: demo');
   });
 });
+
+function jsonValueLark(): string {
+  return [
+    'start: value',
+    '',
+    '?value: object',
+    '      | array',
+    '      | string',
+    '      | SIGNED_NUMBER',
+    '      | "true"',
+    '      | "false"',
+    '      | "null"',
+    '',
+    'object: "{" [pair ("," pair)*] "}"',
+    'pair: string ":" value',
+    'array: "[" [value ("," value)*] "]"',
+    'string: ESCAPED_STRING',
+    '',
+    '%import common.ESCAPED_STRING',
+    '%import common.SIGNED_NUMBER',
+    '%import common.WS',
+    '%ignore WS',
+    ''
+  ].join('\n');
+}

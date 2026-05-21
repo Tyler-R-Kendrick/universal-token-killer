@@ -11,11 +11,14 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
+
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
 
 [routing]
 deterministic_confidence_threshold = 0.95
@@ -120,14 +123,14 @@ Override individual tools by exact id or trailing wildcard:
 ```toml
 [[serialization.overrides]]
 tool = "shell.git.diff"
-provider = "compressed-json"
+provider = "json-compact"
 
 [[serialization.overrides]]
 tool = "shell.gh.*"
 provider = "toon"
 ```
 
-Built-in providers are `toon`, `compressed-json`, and `tron`. Installed serializer plugin packages can add providers when their package name matches `utk-serializer-*` or `@utk/serializer-*` and exports `registerUtkSerializerPlugin(registry)`. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
+Built-in providers are `toon`, `json-compact`, and `tron`; `compressed-json` remains an alias for existing configs. Serialization plugins load from `packages/plugins/serialization` for maintained defaults, from `.utk/plugins/serialization/<plugin-name>` for workspace plugin packs, and from installed `.utk/packs/<pack-name>` roots. Each plugin pack must include `utk.pack.toml` with `symbol`, `semantics = "json-value-v1"`, a data-only index const export, and a valid `.lark` grammar. Serializer plugin code is never imported or executed. Core generates parser, serializer, linter, AST feedback, and provider surfaces. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
 
 ## Detok Hook Policy
 
@@ -290,7 +293,7 @@ default = "toon"
 
 [[serialization.overrides]]
 tool = "shell.git.diff"
-provider = "compressed-json"
+provider = "json-compact"
 ```
 
 Prefer JSON for all GitHub CLI output:
@@ -301,7 +304,7 @@ default = "toon"
 
 [[serialization.overrides]]
 tool = "shell.gh.*"
-provider = "compressed-json"
+provider = "json-compact"
 ```
 
 Prefer TRON globally, but use TOON for one tool family:

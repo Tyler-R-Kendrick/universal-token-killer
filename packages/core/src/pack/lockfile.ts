@@ -52,6 +52,13 @@ export function renderLockfile(packs: InstalledPack[]): string {
       lines.push(`field = ${tomlString(grammar.field)}`);
       lines.push(`lark_hash = ${tomlString(grammar.larkHash)}`);
     }
+    for (const plugin of pack.plugins) {
+      lines.push('[[packs.plugins]]');
+      lines.push(`type = ${tomlString(plugin.type)}`);
+      lines.push(`id = ${tomlString(plugin.id)}`);
+      if (plugin.target !== undefined) lines.push(`target = ${tomlString(plugin.target)}`);
+      if (plugin.larkHash !== undefined) lines.push(`lark_hash = ${tomlString(plugin.larkHash)}`);
+    }
   }
   return `${lines.join('\n')}\n`;
 }
@@ -62,6 +69,7 @@ function normalizeLockEntry(raw: unknown): InstalledPack {
   }
   const obj = raw as Record<string, unknown>;
   const grammarsRaw = Array.isArray(obj.grammars) ? obj.grammars : [];
+  const pluginsRaw = Array.isArray(obj.plugins) ? obj.plugins : [];
   return {
     name: readString(obj.name, 'name'),
     version: readString(obj.version, 'version'),
@@ -71,7 +79,8 @@ function normalizeLockEntry(raw: unknown): InstalledPack {
     installedAt: readString(obj.installed_at, 'installed_at'),
     tools: readStringArray(obj.tools),
     templates: readStringArray(obj.templates),
-    grammars: grammarsRaw.map((entry) => normalizeLockGrammar(entry))
+    grammars: grammarsRaw.map((entry) => normalizeLockGrammar(entry)),
+    plugins: pluginsRaw.map((entry) => normalizeLockPlugin(entry))
   };
 }
 
@@ -84,6 +93,23 @@ function normalizeLockGrammar(raw: unknown): InstalledPack['grammars'][number] {
     tool: readString(obj.tool, 'tool'),
     field: readString(obj.field, 'field'),
     larkHash: readString(obj.lark_hash, 'lark_hash')
+  };
+}
+
+function normalizeLockPlugin(raw: unknown): InstalledPack['plugins'][number] {
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('packs.lock.toml plugins entry must be a table');
+  }
+  const obj = raw as Record<string, unknown>;
+  const type = readString(obj.type, 'plugins.type');
+  if (type !== 'serialization' && type !== 'agent') {
+    throw new Error('packs.lock.toml plugins.type must be serialization or agent');
+  }
+  return {
+    type,
+    id: readString(obj.id, 'plugins.id'),
+    ...(obj.target !== undefined ? { target: readString(obj.target, 'plugins.target') } : {}),
+    ...(obj.lark_hash !== undefined ? { larkHash: readString(obj.lark_hash, 'plugins.lark_hash') } : {})
   };
 }
 

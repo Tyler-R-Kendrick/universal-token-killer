@@ -1,0 +1,11 @@
+{
+  "name": "@utk/serializer-tron",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./utk.pack.toml": "./utk.pack.toml"
+  },
+  "types": "./index.ts"
+}

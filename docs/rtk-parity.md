@@ -74,6 +74,8 @@ recoverabilityScore === 1
 
 Current generated report: [internal RTK parity benchmark results](internal/rtk-parity-benchmark-results.md).
 
+RTK is one row in the broader benchmark matrix. See [internal benchmark summary](internal/benchmark-summary.md) for RTK, Caveman, Compresr, and LeanCTX Copilot comparisons.
+
 ## Optional Live RTK Benchmark
 
 The internal benchmark runner is optional and skipped unless configured:

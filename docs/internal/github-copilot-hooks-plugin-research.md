@@ -14,8 +14,8 @@ This note records the source material used to validate UTK's Copilot hook and pl
 
 ## UTK Implementation Decisions
 
-- Repository hook: `.github/hooks/utk-detok-inputs.json` uses GitHub's command hook schema exactly.
-- Plugin hook: `.github/plugins/universal-token-killer/hooks/hooks.json` uses the same schema and points to a plugin-local fail-open wrapper.
+- Repository hook sample: `packages/plugins/agents/copilot/hooks/utk-detok-inputs.json` uses GitHub's command hook schema exactly.
+- Plugin hook: `packages/plugins/agents/copilot/plugins/utk-detoks/hooks/hooks.json` uses the same schema and points to a plugin-local fail-open wrapper.
 - Hook runner output: `processCopilotPreToolUsePayload` emits `{ "modifiedArgs": ... }` only when safe fields actually changed.
 - Payload support: the runner accepts both official `preToolUse` camelCase payloads and VS Code-compatible `PreToolUse` snake_case payloads.
-- Marketplace shape: `.github/plugin/marketplace.json`, plugin root `plugin.json`, mirrored `.github/plugin/plugin.json`, `agents/`, `skills/`, `.mcp.json`, and `hooks/hooks.json` are tested as package boundaries.
+- Marketplace shape: `.github/plugin/marketplace.json`, focused plugin roots under `packages/plugins/agents/copilot/plugins/*`, plugin root `plugin.json`, `agents/`, `skills/`, `.mcp.json`, and `hooks/hooks.json` are tested as package boundaries.

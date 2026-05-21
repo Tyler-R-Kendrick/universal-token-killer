@@ -6,7 +6,7 @@ UTK mediates Copilot tool-hook payloads when the event exposes enough data to be
 
 GitHub Copilot hook files use the official `version: 1` format with a top-level `hooks` object. Command hook entries must declare `type: "command"` and one of `bash`, `powershell`, or `command`.
 
-The repo-local hook is `.github/hooks/utk-detok-inputs.json`:
+The repo-local hook sample is `packages/plugins/agents/copilot/hooks/utk-detok-inputs.json`:
 
 ```json
 {
@@ -15,7 +15,7 @@ The repo-local hook is `.github/hooks/utk-detok-inputs.json`:
     "preToolUse": [
       {
         "type": "command",
-        "command": "node packages/copilot-hook/dist/detokPreToolUseHook.js",
+        "command": "node packages/plugins/agents/copilot/dist/detokPreToolUseHook.js",
         "cwd": ".",
         "env": {
           "UTK_WORKSPACE_ROOT": "${workspaceFolder}"
@@ -27,7 +27,7 @@ The repo-local hook is `.github/hooks/utk-detok-inputs.json`:
 }
 ```
 
-The Copilot plugin bundle also includes `hooks/hooks.json`, as supported by the Copilot CLI plugin layout. That plugin hook points at `hooks/detokPreToolUseHook.js`, a fail-open wrapper shipped inside the plugin. The wrapper delegates to the workspace UTK hook runner when this source repo is present and returns `{}` when it cannot find a runner.
+The `utk-detoks` Copilot plugin also includes `hooks/hooks.json`, as supported by the Copilot CLI plugin layout. That plugin hook points at `hooks/detokPreToolUseHook.js`, a fail-open wrapper shipped inside the plugin. The wrapper delegates to the workspace UTK hook runner when this source repo is present and returns `{}` when it cannot find a runner.
 
 ## Supported Payload Shapes
 
@@ -105,7 +105,7 @@ rewrite_fields = ["prompt", "instructions", "description", "question", "message"
 protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pattern", "regex", "glob", "patch", "diff", "content", "old_string", "new_string", "id"]
 ```
 
-The repo hook lives at `.github/hooks/utk-detok-inputs.json`. The Copilot plugin bundle also includes `hooks/hooks.json`. GitHub combines repository, user, and plugin hooks, so enable one path per workspace to avoid double compression.
+The repo hook sample lives at `packages/plugins/agents/copilot/hooks/utk-detok-inputs.json`. The `utk-detoks` Copilot plugin also includes `hooks/hooks.json`. GitHub combines repository, user, and plugin hooks, so enable one path per workspace to avoid double compression.
 
 ## Shell And Non-Shell Examples
 
@@ -129,7 +129,7 @@ Structured tool output:
     "symbols": [
       {
         "name": "processCopilotToolHookPayload",
-        "file": "packages/copilot-hook/src/copilotHook.ts"
+        "file": "packages/plugins/agents/copilot/src/copilotHook.ts"
       }
     ]
   }
@@ -137,3 +137,15 @@ Structured tool output:
 ```
 
 Both shapes are mediated when the output is observable. The compact response points to `.utk/` artifacts for recovery.
+
+## Benchmark Coverage
+
+Copilot-specific context behavior is covered by the LeanCTX Copilot benchmark:
+
+- 50 unique cases across prompt surfaces, tool output, and tool-schema discovery.
+- 10 repeated loops, 3 rounds per loop, 1,500 total evaluated cases.
+- 0 failed comparisons.
+- UTK token savings vs LeanCTX baseline: 55,230 tokens, 33.68%.
+- Minimum relevance, correctness, and groundedness: 1.000.
+
+Standalone report: [LeanCTX Copilot benchmark results](internal/leanctx-copilot-benchmark-results.md). Aggregate table: [benchmark summary](internal/benchmark-summary.md).

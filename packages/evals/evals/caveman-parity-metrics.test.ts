@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { CAVEMAN_PARITY_EVALS, CAVEMAN_PARITY_FIXTURES, cavemanParityExpectedPayload } from '../fixtures/cavemanParityFixtures.js';
+import { CAVEMAN_MODES, CAVEMAN_PARITY_EVALS, CAVEMAN_PARITY_FIXTURES, CAVEMAN_PARITY_MODE_EVALS, cavemanBaselineForMode, cavemanParityExpectedPayload } from '../fixtures/cavemanParityFixtures.js';
 import { assertCavemanParity, exactTermRetentionScore, forbiddenLeakageScore, forbiddenPatternScore, measureCavemanParity, orderedTermScore, requiredPatternScore, requiredTermRetentionScore } from '../metrics/cavemanParityMetrics.js';
 import { gradeCavemanParityCodeGraderInput } from '../graders/cavemanParityCodeGrader.js';
 import { buildCavemanParityReport, renderCavemanParityEvalYaml } from '../reports/cavemanParityReport.js';
@@ -62,6 +62,63 @@ describe('caveman parity metrics', () => {
     expect(CAVEMAN_PARITY_EVALS).toEqual(CAVEMAN_PARITY_FIXTURES.map((fixture) => fixture.name));
   });
 
+  it('declares every caveman compression mode as a benchmark dimension', () => {
+    expect(CAVEMAN_MODES).toEqual(['lite', 'full', 'ultra', 'wenyan']);
+    expect(CAVEMAN_PARITY_MODE_EVALS).toHaveLength(CAVEMAN_PARITY_FIXTURES.length * CAVEMAN_MODES.length);
+    expect(CAVEMAN_PARITY_MODE_EVALS).toContain(`${CAVEMAN_PARITY_FIXTURES[0]!.name}-lite`);
+    expect(CAVEMAN_PARITY_MODE_EVALS).toContain(`${CAVEMAN_PARITY_FIXTURES[0]!.name}-wenyan`);
+  });
+
+  it('keeps caveman mode baselines independent from UTK candidates', () => {
+    const violations: string[] = [];
+    for (const fixture of CAVEMAN_PARITY_FIXTURES) {
+      for (const mode of CAVEMAN_MODES) {
+        const baseline = cavemanBaselineForMode(fixture, mode);
+
+        if (baseline === fixture.utkCandidate) {
+          violations.push(`${fixture.name}/${mode}: equals utkCandidate`);
+        }
+        if (baseline.includes(fixture.utkCandidate)) {
+          violations.push(`${fixture.name}/${mode}: contains utkCandidate`);
+        }
+      }
+      if (cavemanBaselineForMode(fixture, 'ultra') === fixture.utkCandidate) {
+        violations.push(`${fixture.name}/ultra: equals utkCandidate`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('measures UTK output against every caveman mode with the same fact and edge gates', async () => {
+    for (const fixture of CAVEMAN_PARITY_FIXTURES) {
+      for (const mode of CAVEMAN_MODES) {
+        const baseline = cavemanBaselineForMode(fixture, mode);
+        const metrics = await measureCavemanParity({
+          scenario: `${fixture.name}-${mode}`,
+          cavemanBaseline: baseline,
+          candidate: fixture.utkCandidate,
+          requiredTerms: fixture.requiredTerms,
+          exactTerms: fixture.exactTerms ?? [],
+          orderedTerms: fixture.orderedTerms ?? [],
+          forbiddenTerms: fixture.forbiddenTerms ?? [],
+          requiredPatterns: fixture.requiredPatterns ?? [],
+          forbiddenPatterns: fixture.forbiddenPatterns ?? []
+        });
+
+        expect(metrics.cavemanTokens).toBeGreaterThan(0);
+        expect(metrics.candidateVsCavemanTokenDelta).toBeGreaterThan(0);
+        expect(metrics.autoevalsFactScore).toBe(1);
+        expect(metrics.requiredTermRetentionScore).toBe(1);
+        expect(metrics.exactTermRetentionScore).toBe(1);
+        expect(metrics.orderedTermScore).toBe(1);
+        expect(metrics.forbiddenLeakageScore).toBe(1);
+        expect(metrics.requiredPatternScore).toBe(1);
+        expect(metrics.forbiddenPatternScore).toBe(1);
+      }
+    }
+  });
+
   it('exposes AgentV code-grader output for autoevals-backed parity checks', async () => {
     const fixture = CAVEMAN_PARITY_FIXTURES[0]!;
     const result = await gradeCavemanParityCodeGraderInput({
@@ -88,9 +145,11 @@ describe('caveman parity metrics', () => {
   it('declares AgentV YAML code-grader scenarios for every caveman parity fixture', async () => {
     const yaml = normalizeLineEndings(await readFile(new URL('./caveman-parity.EVAL.yaml', import.meta.url), 'utf8'));
 
-    for (const name of CAVEMAN_PARITY_EVALS) {
+    for (const name of CAVEMAN_PARITY_MODE_EVALS) {
       expect(yaml).toContain(`id: ${name}`);
     }
+    expect(yaml).toContain('"caveman_mode": "lite"');
+    expect(yaml).toContain('"caveman_mode": "wenyan"');
     expect(yaml).toContain('type: code-grader');
     expect(yaml).toContain('cavemanParityCodeGrader.js');
     expect(yaml).toBe(renderCavemanParityEvalYaml());
@@ -117,10 +176,16 @@ describe('caveman parity metrics', () => {
     const report = await buildCavemanParityReport();
 
     expect(report.rows).toHaveLength(CAVEMAN_PARITY_FIXTURES.length);
+    expect(report.modeRows).toHaveLength(CAVEMAN_PARITY_FIXTURES.length * CAVEMAN_MODES.length);
     expect(report.markdown).toContain('## Findings');
+    expect(report.markdown).toContain('## Mode Results');
+    for (const mode of CAVEMAN_MODES) {
+      expect(report.markdown).toContain(`| ${mode} |`);
+    }
     expect(report.markdown).toContain('Caveman is strongest');
     expect(report.markdown).toContain('UTK outperforms');
     expect(report.rows.every((row) => row.metrics.candidateVsCavemanTokenDelta > 0)).toBe(true);
+    expect(report.modeRows.every((row) => row.metrics.autoevalsFactScore === 1)).toBe(true);
     expect(report.rows.every((row) => row.metrics.exactTermRetentionScore === 1)).toBe(true);
     expect(report.rows.every((row) => row.metrics.orderedTermScore === 1)).toBe(true);
     expect(report.rows.every((row) => row.metrics.forbiddenLeakageScore === 1)).toBe(true);

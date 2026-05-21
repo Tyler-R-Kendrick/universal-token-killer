@@ -1,0 +1,34 @@
+{
+  "name": "utk-detoks",
+  "description": "GitHub Copilot plugin for UTK detoks prompt compression, local detok MCP tools, and safe preToolUse rewriting.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tyler-R-Kendrick",
+    "url": "https://github.com/Tyler-R-Kendrick"
+  },
+  "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "license": "MIT",
+  "keywords": [
+    "github-copilot",
+    "agentskills",
+    "mcp",
+    "token-optimization",
+    "llmlingua",
+    "detok"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "copilot-cli",
+    "tool-hooks",
+    "detok",
+    "prompt-compression"
+  ],
+  "skills": [
+    "./skills/detoks",
+    "./skills/detoks-skill"
+  ],
+  "mcpServers": ".mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "strict": true
+}

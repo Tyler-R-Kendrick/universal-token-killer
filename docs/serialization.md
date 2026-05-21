@@ -2,62 +2,92 @@
 
 UTK separates raw persistence from compact serialization. Raw artifacts preserve the full tool output; compact artifacts are optimized for model context and routing summaries.
 
-## Built-In Serializer Plugins
+## Built-In Serialization Plugins
 
-UTK's built-in serializers use the same `registerUtkSerializerPlugin(registry)` contract as third-party packages. The registry core validates providers and loads plugins; serializer implementation code lives in plugin modules.
+UTK's built-in serializers are data-only packs. Core loads serialization plugins by scanning pack roots, reading `utk.pack.toml`, loading the plugin's `.lark` grammar, and generating trusted core parser, serializer, linter, and compatibility provider surfaces for the declared `json-value-v1` AST semantics. Serializer plugin folders are never imported or executed.
+
+Maintained plugins live under:
+
+- `packages/plugins/serialization/json-compact`
+- `packages/plugins/serialization/toon`
+- `packages/plugins/serialization/tron`
+
+User plugins live under `.utk/plugins/serialization/<plugin-name>` by default, or can be installed as normal packs under `.utk/packs/<pack-name>`.
 
 ## `toon`
 
-`toon` is the default provider and uses the official `@toon-format/toon` package.
+`toon` is the default provider. UTK's trusted codec emits and parses the TOON subset used for `json-value-v1` compact summaries.
 
-```ts
-import { encode, decode } from '@toon-format/toon';
-```
+## `json-compact`
 
-The provider validates compact output by decoding the TOON text and comparing it against the expected canonical value.
-
-## `compressed-json`
-
-`compressed-json` emits deterministic minified JSON with stable key ordering. It is useful for tools or downstream consumers that prefer JSON over TOON.
+`json-compact` emits deterministic minified JSON with stable key ordering. `compressed-json` remains a backward-compatible alias.
 
 ## `tron`
 
-`tron` uses the official `@tron-format/tron` package.
+`tron` uses the trusted `json-value-v1` codec and exposes a TRON-focused Lark grammar through `getSerializerGrammar('tron')` so llguidance-aware callers can attach grammar sidecars without executable plugin code.
 
-```ts
-import { TRON } from '@tron-format/tron';
-```
-
-The provider validates compact output by parsing the TRON text and comparing it against the expected canonical value. It also exposes a TRON-focused Lark grammar through `getSerializerGrammar('tron')` so llguidance-aware callers can attach grammar sidecars without replacing the official parser.
-
-The grammar source lives at `packages/core/grammars/tron.lark`.
+The grammar source lives at `packages/plugins/serialization/tron/grammar/tron.lark`.
 
 ## Third-Party Serializer Plugins
 
-UTK auto-loads installed serializer plugins from the workspace package manifest when their package name matches `utk-serializer-*` or `@utk/serializer-*`. A plugin must export `registerUtkSerializerPlugin(registry)` and call `registry.register(provider)`.
+UTK auto-loads serializer plugin folders from `.utk/plugins/serialization/<plugin-name>`. Add more roots with:
 
-```ts
-export function registerUtkSerializerPlugin(registry) {
-  registry.register({
-    id: 'example',
-    extension: 'example',
-    serialize(value) {
-      return JSON.stringify(value);
-    },
-    deserialize(text) {
-      return JSON.parse(text);
-    },
-    validate() {
-      return { valid: true, errors: [] };
-    },
-    estimateTokens(text) {
-      return Math.ceil(text.length / 4);
-    }
-  });
-}
+```toml
+[plugins]
+serialization_paths = [".utk/plugins/serialization", "vendor/utk-serializers"]
 ```
 
-Plugin loading executes installed package code. Treat package installation as the trust boundary.
+Each plugin pack needs only `utk.pack.toml` and a Lark grammar. The grammar targets `SerializationAst`, a JSON-compatible tree:
+
+```ts
+type SerializationAst = null | boolean | number | string | SerializationAst[] | { [key: string]: SerializationAst };
+```
+
+```toml
+[pack]
+name = "example"
+version = "1.0.0"
+
+[[plugins]]
+type = "serialization"
+id = "example"
+symbol = "EXAMPLE_SERIALIZER"
+semantics = "json-value-v1"
+grammar = "grammar/example.lark"
+extension = "example"
+canonical = true
+
+[plugins.config_fields.prefix]
+type = "string"
+default = ""
+```
+
+The package index must export a data-only const matching the manifest symbol and id:
+
+```ts
+export const EXAMPLE_SERIALIZER = 'example' as const;
+```
+
+The grammar file must be valid `.lark` with a `start:` rule. `module` is invalid for serialization plugins; executable serializer hooks are not supported. Core reads the index source text to verify the const export, but does not import it.
+
+## Generated Runtime Surface
+
+Loaded registries expose generated artifacts through the stable serializer id const:
+
+```ts
+import { TOON_SERIALIZER } from '@utk/serializer-toon';
+
+const registry = await loadSerializationRegistry(workspaceRoot);
+const toon = registry.serializers[TOON_SERIALIZER];
+
+const ast = toon.parser.parse(text);
+const canonical = toon.serializer.serialize(ast);
+const lint = toon.linter.lint(text);
+```
+
+`linter.lint(text)` returns `{ valid, ast?, diagnostics, regenerated?, feedback? }`. Diagnostics include `code`, `severity`, `message`, and optional `path`, `span`, `expected`, and `actual` fields. `linter.lintAst(value)` checks `json-value-v1` compatibility before serialization, including non-finite numbers, `undefined`, functions, symbols, bigint, and non-plain objects.
+
+Plugin loading reads local grammar files but does not execute local plugin code. Treat `.utk/plugins/serialization` and installed `.utk/packs` write access as the grammar trust boundary.
 
 ## Compact Summary Shape
 
@@ -92,7 +122,7 @@ k: object
 keys[2]: diagnostics,result
 ```
 
-Compressed JSON for the same object summary:
+JSON Compact for the same object summary:
 
 ```json
 {"k":"object","keys":["diagnostics","result"]}

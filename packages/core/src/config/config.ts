@@ -12,8 +12,11 @@ type SerializationRegistryLike = {
 export type UtkConfig = {
   serialization: {
     default: SerializerProviderId;
-    providers: Record<SerializerProviderId, { enabled: boolean }>;
+    providers: Record<SerializerProviderId, { enabled: boolean; config: Record<string, unknown> }>;
     overrides: Array<{ tool: string; provider: SerializerProviderId }>;
+  };
+  plugins: {
+    serialization_paths: string[];
   };
   routing: {
     deterministic_confidence_threshold: number;
@@ -121,7 +124,10 @@ export type UtkConfig = {
   };
 };
 
-export const SUPPORTED_SERIALIZERS = ['toon', 'compressed-json', 'tron'] as const;
+export const SUPPORTED_SERIALIZERS = ['json-compact', 'toon', 'tron'] as const;
+const SERIALIZER_ALIASES: Record<string, SerializerProviderId> = {
+  'compressed-json': 'json-compact'
+};
 
 export const DEFAULT_CONFIG_TOML = `[serialization]
 default = "toon"
@@ -129,11 +135,14 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
+
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
 
 [routing]
 deterministic_confidence_threshold = 0.95
@@ -230,7 +239,7 @@ export async function loadUtkConfig(workspaceRoot: string): Promise<UtkConfig> {
 
 export function resolveSerializerProviderId(config: UtkConfig, toolId: string, registry?: SerializationRegistryLike): SerializerProviderId {
   const override = resolveSerializerOverride(config.serialization.overrides, toolId);
-  const selected = override?.provider ?? config.serialization.default;
+  const selected = canonicalSerializerProviderId(override?.provider ?? config.serialization.default);
   const loaded = registry ? registry.list().map((provider) => provider.id).sort() : [...SUPPORTED_SERIALIZERS].sort();
   const isLoaded = registry ? Boolean(registry.get(selected)) : (SUPPORTED_SERIALIZERS as readonly string[]).includes(selected);
   if (!isLoaded) {
@@ -257,6 +266,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const serialization = readObject(raw.serialization, 'serialization');
   const routing = readOptionalObject(raw.routing);
   const persistence = readOptionalObject(raw.persistence);
+  const plugins = readOptionalObject(raw.plugins);
   const detok = readNamedOptionalObject(raw.detok, 'detok');
   const providers = readOptionalObject(serialization.providers);
   const tools = readOptionalObject(raw.tools);
@@ -272,6 +282,9 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
       default: defaultProvider,
       providers: normalizedProviders,
       overrides
+    },
+    plugins: {
+      serialization_paths: readStringArray(plugins.serialization_paths, ['.utk/plugins/serialization'], 'plugins.serialization_paths')
     },
     routing: {
       deterministic_confidence_threshold: readNumber(routing.deterministic_confidence_threshold, 0.95),
@@ -471,13 +484,13 @@ function normalizeDetokOverrides(value: unknown): UtkConfig['detok']['copilot_pr
   });
 }
 
-function normalizeProviders(providers: Record<string, unknown>): Record<string, { enabled: boolean }> {
-  const normalized: Record<string, { enabled: boolean }> = {};
+function normalizeProviders(providers: Record<string, unknown>): Record<string, { enabled: boolean; config: Record<string, unknown> }> {
+  const normalized: Record<string, { enabled: boolean; config: Record<string, unknown> }> = {};
   for (const providerId of SUPPORTED_SERIALIZERS) {
     normalized[providerId] = normalizeProvider(providers[providerId]);
   }
   for (const [providerId, value] of Object.entries(providers)) {
-    normalized[providerId] = normalizeProvider(value);
+    normalized[canonicalSerializerProviderId(providerId)] = normalizeProvider(value);
   }
   return normalized;
 }
@@ -486,9 +499,9 @@ function resolveSerializerOverride(overrides: Array<{ tool: string; provider: Se
   return overrides.find((item) => item.tool === toolId) ?? overrides.find((item) => toolMatches(item.tool, toolId));
 }
 
-function normalizeProvider(value: unknown): { enabled: boolean } {
+function normalizeProvider(value: unknown): { enabled: boolean; config: Record<string, unknown> } {
   const provider = readOptionalObject(value);
-  return { enabled: readBoolean(provider.enabled, true) };
+  return { enabled: readBoolean(provider.enabled, true), config: readOptionalObject(provider.config) };
 }
 
 function normalizeRegisteredTools(value: unknown): UtkConfig['tools']['registry'] {
@@ -540,8 +553,12 @@ function normalizeOverrides(value: unknown): Array<{ tool: string; provider: Ser
 }
 
 function readProvider(value: unknown): SerializerProviderId {
-  if (typeof value === 'string' && value.length > 0) return value;
+  if (typeof value === 'string' && value.length > 0) return canonicalSerializerProviderId(value);
   throw new Error(`Unsupported serialization provider: ${String(value)}`);
+}
+
+function canonicalSerializerProviderId(value: string): SerializerProviderId {
+  return SERIALIZER_ALIASES[value] ?? value;
 }
 
 function toolMatches(pattern: string, toolId: string): boolean {

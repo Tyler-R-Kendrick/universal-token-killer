@@ -1,0 +1,18 @@
+{
+  "name": "utk-model-proxy",
+  "description": "GitHub Copilot plugin for configuring and operating the UTK model proxy.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tyler-R-Kendrick",
+    "url": "https://github.com/Tyler-R-Kendrick"
+  },
+  "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "license": "MIT",
+  "keywords": ["github-copilot", "model-proxy", "context-compression", "token-optimization"],
+  "category": "developer-tools",
+  "tags": ["copilot-cli", "model-proxy", "context-runtime"],
+  "agents": ["./agents"],
+  "skills": ["./skills/model-proxy"],
+  "strict": true
+}

@@ -11,10 +11,21 @@ UTK is not a public CLI or VS Code extension. Its primary mediation surface is t
 - **Spend fewer tokens on tool output:** UTK returns compact summaries and artifact references instead of raw command dumps.
 - **Keep the facts recoverable:** raw outputs, compact artifacts, schemas, routes, and validation metadata are written to `.utk/`.
 - **Handle more than shell:** shell and non-shell tool calls use the same mediation path whenever Copilot exposes input/output.
-- **Stay configurable:** choose `toon` or `compressed-json` globally or per tool in `.utk/config.toml`.
+- **Stay configurable:** choose `toon` or `json-compact` globally or per tool in `.utk/config.toml`.
 - **Rewrite LLM-bound text locally:** `detok` uses LLMLingua-2 to simplify inputs and post-schema output text before it reaches a model.
 - **Reuse session-specific expertise:** `utk-init` can prepare `.utk/session-agents` and `.utk/session-skills` so repeated work becomes compact, discoverable project context.
-- **Stay measurable:** RTK parity tests assert fact retention, recoverability, savings, and strict CLI wins over checked-in RTK baselines.
+- **Stay measurable:** benchmark suites assert token savings plus fact retention, recoverability, relevance, correctness, groundedness, and strict wins over checked-in competitor baselines.
+
+## Benchmark Snapshot
+
+Current aggregate comparison: `docs/internal/benchmark-summary.md`.
+
+| Benchmark | Baseline | Cases | Passed | UTK/baseline ratio | Savings | Quality gates |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| RTK parity | RTK shell baselines | 61 | 61/61 | 0.271 on RTK-supported shell cases | 417 | Facts/autoevals/recovery 1.000 |
+| Caveman parity | Independent caveman terse prose plus lite/full/ultra/wenyan modes | 80 full; 320 mode evals | 80/80 full; 320/320 modes | 0.742 full; 0.642 mode avg | 404 full; 3,158 modes | Autoevals/edge gates 1.000 |
+| Compresr parity | Compresr deterministic SDK baselines | 39 | 39/39 | 0.452 | 527 | Autoevals/recovery 1.000 |
+| LeanCTX Copilot | LeanCTX context-runtime baseline | 50 unique; 1,500 evaluated | 1,500/1,500 | 0.663 | 55,230 | Relevance/correctness/groundedness 1.000 |
 
 ## RTK Parity Stats
 
@@ -74,6 +85,20 @@ Compresr SDK `2.5.1` is installed for local verification and configured in `@utk
 
 Full report: `docs/internal/compresr-parity-benchmark-results.md`.
 
+## LeanCTX Copilot Benchmark
+
+The LeanCTX Copilot suite compares UTK against a context-runtime baseline across Copilot prompt surfaces, post-tool output, and deferred tool-schema discovery. It runs 50 unique cases across 10 repeated improvement loops and 3 internal rounds per loop.
+
+- Total evaluated cases: `1,500`
+- Failed comparisons: `0`
+- UTK tokens: `108,750`
+- LeanCTX baseline tokens: `163,980`
+- Total estimated token savings vs LeanCTX: `55,230`
+- Savings vs LeanCTX: `33.68%`
+- Minimum relevance/correctness/groundedness: `1.000`
+
+Full report: `docs/internal/leanctx-copilot-benchmark-results.md`.
+
 ## Example Usage
 
 ### Discover The Skills With skills.sh
@@ -92,17 +117,19 @@ npx skills add . --skill utk-init
 
 ### Install The Copilot Plugin Bundle
 
-UTK also ships a GitHub Copilot CLI plugin marketplace at `.github/plugin/marketplace.json`, mirroring the official GitHub and Microsoft plugin layout. The plugin bundle exposes the UTK skills, a UTK operator agent, and the local `detok` MCP server configuration:
+UTK also ships a GitHub Copilot CLI plugin marketplace at `.github/plugin/marketplace.json`. The marketplace points to focused plugin roots under `packages/plugins/agents/copilot/plugins`:
 
 ```bash
 copilot plugin marketplace add .
-copilot plugin install universal-token-killer@universal-token-killer
+copilot plugin install utk-cli@universal-token-killer
+copilot plugin install utk-model-proxy@universal-token-killer
+copilot plugin install utk-detoks@universal-token-killer
 ```
 
 After local edits, reinstall the plugin so Copilot refreshes its cached copy:
 
 ```bash
-copilot plugin install ./.github/plugins/universal-token-killer
+copilot plugin install ./packages/plugins/agents/copilot/plugins/utk-detoks
 ```
 
 ### Initialize A Project With The Agent Skill
@@ -117,7 +144,7 @@ It also initializes dynamic reuse locations:
 Example prompt:
 
 ```text
-Use utk-init for this repo. Initialize all registered tools. For github.pull-request.list, expect JSON objects with number, title, author, state, labels, and url. For shell.git.diff, use compressed-json.
+Use utk-init for this repo. Initialize all registered tools. For github.pull-request.list, expect JSON objects with number, title, author, state, labels, and url. For shell.git.diff, use json-compact.
 ```
 
 ### Rewrite Text With Detok MCP
@@ -251,15 +278,18 @@ default = "toon"
 [serialization.providers.toon]
 enabled = true
 
-[serialization.providers.compressed-json]
+[serialization.providers.json-compact]
 enabled = true
 
 [serialization.providers.tron]
 enabled = true
 
+[plugins]
+serialization_paths = [".utk/plugins/serialization"]
+
 [[serialization.overrides]]
 tool = "shell.git.diff"
-provider = "compressed-json"
+provider = "json-compact"
 
 [routing]
 deterministic_confidence_threshold = 0.95
@@ -289,12 +319,12 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 registry = []
 ```
 
-Built-in serializers are `toon`, `compressed-json`, and `tron`. Installed packages named `utk-serializer-*` or `@utk/serializer-*` can register additional serializers through `registerUtkSerializerPlugin(registry)`.
+Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializers live in `packages/plugins/serialization`; workspace serializers load from `.utk/plugins/serialization/<plugin-name>` as data-only packs using `utk.pack.toml`, a `symbol` const name, an index const export, and `grammar/<id>.lark`. Installed serializer packs under `.utk/packs/<pack-name>` are loaded the same way. Serialization packs declare `semantics = "json-value-v1"` and cannot execute plugin-local code. Core generates parser, serializer, linter, AST feedback, and compatibility provider surfaces under `registry.serializers[PLUGIN_SERIALIZER]`.
 
 ## Packages
 
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
-- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls.
+- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
@@ -318,7 +348,7 @@ utk pack lint ./my-git-pack --strict  # treat warnings as errors (use in CI)
 
 `utk pack add` runs the linter and refuses to install packs with errors. Pass `--force` after re-checking the report if you need to override.
 
-The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, and records the install in `.utk/packs.lock.toml`.
+The installer writes the pack into `.utk/packs/<name>/`, merges its tool definitions into `tools.registry` in `.utk/config.toml` (with `# utk-pack-begin:` / `# utk-pack-end:` markers so uninstall is reversible), drops `.lark` grammars into `.utk/tools/<normalized-tool-id>/fields/<normalized-field>.lark` (both ids pass through `normalizeToolId` so dots and other punctuation become dashes on disk; **`.grammar.json` is not used** — UTK persists grammars as `.lark` only), caches template descriptors at `.utk/cache/templates/`, exposes declared `[[plugins]]` from the installed pack root, and records the install in `.utk/packs.lock.toml`.
 
 **Safety:**
 
@@ -330,11 +360,13 @@ Authoring a pack:
 
 ```text
 my-pack/
-├── utk.pack.toml             # manifest (name, version, tools, grammars, templates)
+├── utk.pack.toml             # manifest (name, version, tools, grammars, templates, plugins)
 ├── tools/<id>.toml           # bash-like or structured tool definitions
 ├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
 # .lark is the ONLY supported grammar artifact — no .grammar.json sidecars
-└── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+├── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
+├── index.ts                             # data-only serializer id const export
+└── grammar/<plugin>.lark                # data-only serialization plugin grammar for json-value-v1
 ```
 
 ## Reference Docs

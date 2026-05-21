@@ -803,7 +803,7 @@ type UtkRouteRecordV1 = {
   schemaId: string;
   routeId: string;
   confidence: number;
-  serializerId: "toon" | "compressed-json";
+  serializerId: "toon" | "json-compact";
   deterministic: boolean;
   constrainedFallback: "not-needed" | "used" | "unavailable" | "failed";
   reasonCode: string;
@@ -826,6 +826,10 @@ These names are optional, but the boundaries are important. lean-ctx's maturity
 comes from named contracts with tests, not just features.
 
 ## Research Questions To Revisit
+
+Current benchmark follow-up: `docs/internal/leanctx-copilot-benchmark-results.md`
+now tracks Copilot-specific LeanCTX comparisons, and
+`docs/internal/benchmark-summary.md` aggregates all benchmark families.
 
 1. How much of lean-ctx's shell pattern behavior is actually better than RTK on
    UTK's current parity fixtures?

@@ -1,0 +1,18 @@
+{
+  "name": "utk-cli",
+  "description": "GitHub Copilot plugin for operating UTK CLI workflows, schema seeding, artifact recovery, and token-saving audits.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tyler-R-Kendrick",
+    "url": "https://github.com/Tyler-R-Kendrick"
+  },
+  "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+  "license": "MIT",
+  "keywords": ["github-copilot", "agentskills", "token-optimization", "toon", "tron"],
+  "category": "developer-tools",
+  "tags": ["copilot-cli", "utk", "artifact-recovery"],
+  "agents": ["./agents"],
+  "skills": ["./skills/utk", "./skills/utk-init"],
+  "strict": true
+}
