@@ -1,0 +1,2 @@
+trace-opt==0.1.3.8
+agentlightning==0.3.0
