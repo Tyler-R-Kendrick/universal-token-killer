@@ -47,5 +47,6 @@ directories. UTK should not overwrite hand-maintained `.github/agents` or
 - Keep serializer validation artifacts when diagnosing drift.
 - Review generated session agents and skills before relying on them in a new
   workspace.
-- Enable either the repo Copilot hook or the plugin hook in a workspace, not
-  both, to avoid double compression.
+- Enable either the Copilot hook sample under
+  `packages/plugins/agents/copilot/hooks/` or the `utk-detoks` plugin hook in a
+  workspace, not both, to avoid double compression.

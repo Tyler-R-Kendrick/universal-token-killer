@@ -373,12 +373,12 @@ tests:
           {
             "kind": "jsonPath",
             "path": "$.output.symbols[0].file",
-            "expected": "packages/copilot-hook/src/copilotHook.ts"
+            "expected": "packages/plugins/agents/copilot/src/copilotHook.ts"
           }
         ],
         "rtk_supported": false,
         "rtk_baseline_bytes": 0,
-        "rtk_baseline_tokens": 105,
+        "rtk_baseline_tokens": 114,
         "rtk_notes": "No direct RTK equivalent; compare UTK compact output against raw-output savings threshold."
       }
     assertions:

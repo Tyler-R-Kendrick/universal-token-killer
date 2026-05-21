@@ -4,6 +4,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "utk-copilot-detok-pre-tool-use": "dist/detokPreToolUseHook.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",

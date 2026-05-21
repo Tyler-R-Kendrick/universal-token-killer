@@ -45,7 +45,7 @@ UTK also ships an automatic GitHub Copilot CLI `preToolUse` hook for safe tool-i
 - The hook only rewrites allowlisted long prose fields and leaves operational fields untouched.
 - GitHub's `userPromptSubmitted` hook can observe prompts but cannot replace the submitted prompt, so UTK does not use it for prompt rewriting.
 
-The repo hook is `.github/hooks/utk-detok-inputs.json`; the plugin hook is `.github/plugins/universal-token-killer/hooks/hooks.json`. Enable one registration path per workspace to avoid double compression.
+The repo-local hook sample is `packages/plugins/agents/copilot/hooks/utk-detok-inputs.json`; the plugin hook is `packages/plugins/agents/copilot/plugins/utk-detoks/hooks/hooks.json`. Enable one registration path per workspace to avoid double compression.
 
 ## Tool
 

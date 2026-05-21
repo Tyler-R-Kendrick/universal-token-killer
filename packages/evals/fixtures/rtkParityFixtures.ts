@@ -112,7 +112,7 @@ export const RTK_PARITY_FIXTURES: RtkParityFixture[] = [
     input: { command: 'rg mediateToolExecution packages' },
     rawOutput: [
       'packages/core/src/mediation/toolMediator.ts:export async function mediateToolExecution(params: {',
-      'packages/copilot-hook/src/copilotHook.ts:  const result = await mediateToolExecution({',
+      'packages/plugins/agents/copilot/src/copilotHook.ts:  const result = await mediateToolExecution({',
       'packages/core/test/toolMediator.serialization.test.ts:    const result = await mediateToolExecution({'
     ].join('\n'),
     requiredFacts: [
@@ -309,13 +309,13 @@ export const RTK_PARITY_FIXTURES: RtkParityFixture[] = [
       output: {
         symbols: Array.from({ length: 10 }, (_, index) => ({
           name: index === 0 ? 'processCopilotToolHookPayload' : `syntheticSymbol${index}`,
-          file: index === 0 ? 'packages/copilot-hook/src/copilotHook.ts' : `packages/copilot-hook/src/generated-${index}.ts`
+          file: index === 0 ? 'packages/plugins/agents/copilot/src/copilotHook.ts' : `packages/plugins/agents/copilot/src/generated-${index}.ts`
         }))
       }
     },
     requiredFacts: [
       { kind: 'jsonPath', path: '$.toolCallId', expected: 'call-123' },
-      { kind: 'jsonPath', path: '$.output.symbols[0].file', expected: 'packages/copilot-hook/src/copilotHook.ts' }
+      { kind: 'jsonPath', path: '$.output.symbols[0].file', expected: 'packages/plugins/agents/copilot/src/copilotHook.ts' }
     ]
   }),
   supportedFixture({

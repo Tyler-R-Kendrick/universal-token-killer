@@ -9,7 +9,7 @@ const pluginRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const workspaceRoot = process.env.UTK_WORKSPACE_ROOT || process.cwd();
 
 const candidates = [
-  join(workspaceRoot, 'packages', 'copilot-hook', 'dist', 'detokPreToolUseHook.js'),
+  join(workspaceRoot, 'packages', 'plugins', 'agents', 'copilot', 'dist', 'detokPreToolUseHook.js'),
   join(workspaceRoot, 'node_modules', '@utk', 'copilot-hook', 'dist', 'detokPreToolUseHook.js'),
   join(pluginRoot, 'node_modules', '@utk', 'copilot-hook', 'dist', 'detokPreToolUseHook.js')
 ];

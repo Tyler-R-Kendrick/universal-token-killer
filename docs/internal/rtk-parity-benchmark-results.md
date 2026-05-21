@@ -38,7 +38,7 @@ Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
 | tabular-text | Tables | generalized | 18 | 5 | 13 | 0.278 | 1.000 | 1.000 | 1.000 |
 | markdown-report | Markdown | generalized | 10 | 5 | 5 | 0.500 | 1.000 | 1.000 | 1.000 |
 | arbitrary-structured-tool-output | Structured tools | generalized | 175 | 10 | 165 | 0.057 | 1.000 | 1.000 | 1.000 |
-| synthetic-copilot-tool-output | Copilot tools | generalized | 105 | 10 | 95 | 0.095 | 1.000 | 1.000 | 1.000 |
+| synthetic-copilot-tool-output | Copilot tools | generalized | 114 | 10 | 104 | 0.088 | 1.000 | 1.000 | 1.000 |
 | shell-npm-audit | Security audit | RTK-supported | 18 | 5 | 13 | 0.278 | 1.000 | 1.000 | 1.000 |
 | shell-pytest-failure | Test failures | RTK-supported | 21 | 5 | 16 | 0.238 | 1.000 | 1.000 | 1.000 |
 | shell-docker-ps | Container status | RTK-supported | 13 | 5 | 8 | 0.385 | 1.000 | 1.000 | 1.000 |
@@ -576,4 +576,3 @@ Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
 - RTK good at: RTK summarizes diffs but can omit rename metadata.
 - UTK attempt: Persist full patch and expose compact text envelope.
 - Result: pass
-

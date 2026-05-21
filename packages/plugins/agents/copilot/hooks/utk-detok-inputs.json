@@ -4,7 +4,7 @@
     "preToolUse": [
       {
         "type": "command",
-        "command": "node packages/copilot-hook/dist/detokPreToolUseHook.js",
+        "command": "node packages/plugins/agents/copilot/dist/detokPreToolUseHook.js",
         "cwd": ".",
         "env": {
           "UTK_WORKSPACE_ROOT": "${workspaceFolder}"

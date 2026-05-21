@@ -6,7 +6,7 @@ UTK also includes a GitHub Copilot CLI `preToolUse` hook that can rewrite safe, 
 
 - CLI use preferred for prompts because file/stdin input avoids copying bulky prompt text to agent context.
 - MCP use is explicit and user/agent initiated.
-- The hook is automatic when registered through `.github/hooks/utk-detok-inputs.json` or the plugin `hooks/hooks.json`.
+- The hook is automatic when registered through `packages/plugins/agents/copilot/hooks/utk-detok-inputs.json` or the `utk-detoks` plugin `hooks/hooks.json`.
 - GitHub Copilot does not expose a prompt-replacement output for `userPromptSubmitted`, so the hook targets tool arguments, not raw user prompts.
 - Enable only one repo/plugin registration path per workspace to avoid double compression.
 

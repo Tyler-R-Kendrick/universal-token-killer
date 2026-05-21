@@ -2,14 +2,16 @@
 
 Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 
-Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
-
 ## Summary
 
 - Scenarios: 80
+- Mode evaluations: 320 (lite, full, ultra, wenyan)
 - Outperformed caveman token baseline: 80/80
+- Outperformed caveman mode baselines: 320/320
 - Average UTK/caveman token ratio: 0.756
 - Total estimated token savings vs caveman: 375
+- Average UTK/caveman mode token ratio: 0.736
+- Total estimated token savings vs caveman modes: 2019
 - Autoevals fact retention: 1.000 all scenarios
 - Exact/order/forbidden/pattern edge gates: 1.000 all scenarios
 
@@ -18,6 +20,16 @@ Aggregate benchmark table: `docs/internal/benchmark-summary.md`.
 - Caveman is strongest at terse human-facing prose: review comments, commit subjects, status notes, command help, and incident handoffs.
 - UTK outperforms when it uses structured field order, removes labels that syntax already implies, and treats exact commands, paths, ids, errors, and secrets as protected anchors.
 - Safety clarity remains special: UTK can be shorter than caveman only when the irreversible consequence and mitigation stay explicit.
+- Mode coverage now runs the same caveman suite across lite, full, ultra, and wenyan baselines so style compression cannot hide fact drift.
+
+## Mode Results
+
+| Mode | Cases | Caveman Tokens | UTK Tokens | Delta | Ratio | Facts | Edge Gates |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| lite | 80 | 2015 | 1366 | 649 | 0.678 | 1.000 | 1.000 |
+| full | 80 | 1741 | 1366 | 375 | 0.785 | 1.000 | 1.000 |
+| ultra | 80 | 1666 | 1366 | 300 | 0.820 | 1.000 | 1.000 |
+| wenyan | 80 | 2061 | 1366 | 695 | 0.663 | 1.000 | 1.000 |
 
 ## Results
 

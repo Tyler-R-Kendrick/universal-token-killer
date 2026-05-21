@@ -29,19 +29,20 @@ utk-init
 
 ## GitHub Copilot Plugin Marketplace
 
-UTK also exposes these skills through the GitHub Copilot CLI plugin marketplace convention:
+UTK also exposes these skills through focused GitHub Copilot CLI plugin marketplace bundles:
 
 - `.github/plugin/marketplace.json`: repository marketplace manifest.
-- `.github/plugins/universal-token-killer/.github/plugin/plugin.json`: plugin manifest.
-- `.github/plugins/universal-token-killer/skills/`: Copilot-installable copies of the UTK skills.
-- `.github/plugins/universal-token-killer/agents/`: custom Copilot agents.
-- `.github/plugins/universal-token-killer/.mcp.json`: plugin MCP server config for `detok`.
+- `packages/plugins/agents/copilot/plugins/utk-cli`: UTK CLI agent plus `utk` and `utk-init` skills.
+- `packages/plugins/agents/copilot/plugins/utk-model-proxy`: model-proxy agent and skill.
+- `packages/plugins/agents/copilot/plugins/utk-detoks`: detoks skills, hook config, and `detok` MCP config.
 
 Install from a local checkout:
 
 ```bash
 copilot plugin marketplace add .
-copilot plugin install universal-token-killer@universal-token-killer
+copilot plugin install utk-cli@universal-token-killer
+copilot plugin install utk-model-proxy@universal-token-killer
+copilot plugin install utk-detoks@universal-token-killer
 ```
 
 The plugin skill copies must stay byte-for-byte synchronized with `skills/`; package-boundary tests enforce this.
@@ -90,4 +91,4 @@ Use when an agent should compress bulky prompt text, consolidate `detoks-skill` 
 
 ## Synchronization Rules
 
-Canonical skill files under `skills/` are the source of truth. The Copilot plugin copies under `.github/plugins/universal-token-killer/skills/` must stay byte-for-byte synchronized with the canonical folders; package-boundary tests enforce this.
+Canonical skill files under `skills/` are the source of truth. The Copilot plugin copies under `packages/plugins/agents/copilot/plugins/*/skills/` must stay byte-for-byte synchronized with the canonical folders; package-boundary tests enforce this.

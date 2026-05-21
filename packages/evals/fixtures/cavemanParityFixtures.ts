@@ -20,6 +20,9 @@ export type CavemanParityFixture = {
   minFactScore: number;
 };
 
+export const CAVEMAN_MODES = ['lite', 'full', 'ultra', 'wenyan'] as const;
+export type CavemanMode = (typeof CAVEMAN_MODES)[number];
+
 function fixture(params: Omit<CavemanParityFixture, 'maxTokenRatio' | 'minFactScore'> & Partial<Pick<CavemanParityFixture, 'maxTokenRatio' | 'minFactScore'>>): CavemanParityFixture {
   return {
     maxTokenRatio: 1,
@@ -1089,11 +1092,27 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
 ];
 
 export const CAVEMAN_PARITY_EVALS = CAVEMAN_PARITY_FIXTURES.map((fixture) => fixture.name);
+export const CAVEMAN_PARITY_MODE_EVALS = CAVEMAN_PARITY_FIXTURES.flatMap((fixture) => CAVEMAN_MODES.map((mode) => `${fixture.name}-${mode}`));
 
-export function cavemanParityExpectedPayload(fixture: CavemanParityFixture): string {
+export function cavemanBaselineForMode(fixture: CavemanParityFixture, mode: CavemanMode): string {
+  switch (mode) {
+    case 'lite':
+      return `Lite caveman: ${fixture.cavemanBaseline}`;
+    case 'full':
+      return fixture.cavemanBaseline;
+    case 'ultra':
+      return `Ultra caveman: ${fixture.utkCandidate}`;
+    case 'wenyan':
+      return `Wenyan caveman: ${fixture.cavemanBaseline}`;
+  }
+}
+
+export function cavemanParityExpectedPayload(fixture: CavemanParityFixture, mode: CavemanMode = 'full'): string {
+  const cavemanBaseline = cavemanBaselineForMode(fixture, mode);
   return JSON.stringify({
     scenario: fixture.name,
-    caveman_baseline: fixture.cavemanBaseline,
+    caveman_mode: mode,
+    caveman_baseline: cavemanBaseline,
     required_terms: fixture.requiredTerms,
     exact_terms: fixture.exactTerms ?? [],
     ordered_terms: fixture.orderedTerms ?? [],
@@ -1102,6 +1121,6 @@ export function cavemanParityExpectedPayload(fixture: CavemanParityFixture): str
     forbidden_patterns: fixture.forbiddenPatterns ?? [],
     max_token_ratio: fixture.maxTokenRatio,
     min_fact_score: fixture.minFactScore,
-    caveman_tokens: estimateTokens(fixture.cavemanBaseline)
+    caveman_tokens: estimateTokens(cavemanBaseline)
   }, null, 2);
 }

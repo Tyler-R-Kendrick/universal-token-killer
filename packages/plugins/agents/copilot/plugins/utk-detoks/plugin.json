@@ -1,6 +1,6 @@
 {
-  "name": "universal-token-killer",
-  "description": "Hook-first token optimization for GitHub Copilot tool calls, with UTK skills, a UTK operator agent, and the local detok MCP server for LLMLingua2 compression.",
+  "name": "utk-detoks",
+  "description": "GitHub Copilot plugin for UTK detoks prompt compression, local detok MCP tools, and safe preToolUse rewriting.",
   "version": "0.1.0",
   "author": {
     "name": "Tyler-R-Kendrick",
@@ -15,22 +15,16 @@
     "mcp",
     "token-optimization",
     "llmlingua",
-    "toon",
-    "tron"
+    "detok"
   ],
   "category": "developer-tools",
   "tags": [
     "copilot-cli",
     "tool-hooks",
     "detok",
-    "rtk-parity"
-  ],
-  "agents": [
-    "./agents"
+    "prompt-compression"
   ],
   "skills": [
-    "./skills/utk",
-    "./skills/utk-init",
     "./skills/detoks",
     "./skills/detoks-skill"
   ],

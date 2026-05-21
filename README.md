@@ -23,7 +23,7 @@ Current aggregate comparison: `docs/internal/benchmark-summary.md`.
 | Benchmark | Baseline | Cases | Passed | UTK/baseline ratio | Savings | Quality gates |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | RTK parity | RTK shell baselines | 61 | 61/61 | 0.271 on RTK-supported shell cases | 417 | Facts/autoevals/recovery 1.000 |
-| Caveman parity | Caveman terse prose | 80 | 80/80 | 0.756 | 375 | Autoevals/edge gates 1.000 |
+| Caveman parity | Caveman terse prose plus lite/full/ultra/wenyan modes | 80 full; 320 mode evals | 80/80 full; 320/320 modes | 0.756 full; 0.736 mode avg | 375 full; 2,019 modes | Autoevals/edge gates 1.000 |
 | Compresr parity | Compresr deterministic SDK baselines | 39 | 39/39 | 0.452 | 527 | Autoevals/recovery 1.000 |
 | LeanCTX Copilot | LeanCTX context-runtime baseline | 50 unique; 1,500 evaluated | 1,500/1,500 | 0.663 | 55,230 | Relevance/correctness/groundedness 1.000 |
 
@@ -117,17 +117,19 @@ npx skills add . --skill utk-init
 
 ### Install The Copilot Plugin Bundle
 
-UTK also ships a GitHub Copilot CLI plugin marketplace at `.github/plugin/marketplace.json`, mirroring the official GitHub and Microsoft plugin layout. The plugin bundle exposes the UTK skills, a UTK operator agent, and the local `detok` MCP server configuration:
+UTK also ships a GitHub Copilot CLI plugin marketplace at `.github/plugin/marketplace.json`. The marketplace points to focused plugin roots under `packages/plugins/agents/copilot/plugins`:
 
 ```bash
 copilot plugin marketplace add .
-copilot plugin install universal-token-killer@universal-token-killer
+copilot plugin install utk-cli@universal-token-killer
+copilot plugin install utk-model-proxy@universal-token-killer
+copilot plugin install utk-detoks@universal-token-killer
 ```
 
 After local edits, reinstall the plugin so Copilot refreshes its cached copy:
 
 ```bash
-copilot plugin install ./.github/plugins/universal-token-killer
+copilot plugin install ./packages/plugins/agents/copilot/plugins/utk-detoks
 ```
 
 ### Initialize A Project With The Agent Skill
@@ -319,7 +321,7 @@ Built-in serializers are `toon`, `compressed-json`, and `tron`. Installed packag
 ## Packages
 
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
-- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls.
+- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
