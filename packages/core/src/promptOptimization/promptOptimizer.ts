@@ -109,24 +109,46 @@ export function measurePromptOptimization(text: string, optimizedText: string, p
 function optimizeBySurface(surface: PromptSurface, text: string, protectedSpans: ProtectedPromptSpan[], requiredTerms: string[]): string {
   const protectedLines = protectedSpans.map((span) => span.text);
   const frontmatter = protectedSpans.find((span) => span.kind === 'frontmatter')?.text;
+  const requiredLine = requiredTerms.length > 0 ? `facts=${requiredTerms.join('; ')}` : undefined;
+  const mandatoryLines = protectedSpans
+    .filter((span) => span.kind !== 'required-term' && (span.kind === 'security' || span.kind === 'priority' || span.kind === 'contract' || span.kind === 'path' || span.kind === 'tool'))
+    .map((span) => span.text);
   const core = compactLines(text)
     .filter((line) => !frontmatter || !frontmatter.includes(line))
     .filter((line) => !protectedLines.includes(line))
     .slice(0, surface === 'tool-definition' ? 1 : 4);
 
   if (surface === 'agent-skill') {
-    return uniqueLines([frontmatter, ...protectedLines.filter((line) => /Use when|default_prompt|references\//i.test(line)), ...core.slice(0, 2)]).join('\n');
+    return uniqueLines([frontmatter, requiredLine, ...protectedLines.filter((line) => /Use when|default_prompt|references\//i.test(line)), ...core.slice(0, 1)]).join('\n');
   }
 
   if (surface === 'ghcp-agent' || surface === 'session-agent') {
-    return uniqueLines([frontmatter, ...protectedLines.filter((line) => /grammar|tool|contract|\.utk|reason-with-lexicon|sketch-of-thought/i.test(line)), 'Visible output: concise, actionable; load sidecars for full guidance.']).join('\n');
+    if (requiredTerms.length > 0) {
+      return uniqueLines([
+        compactGhcpFrontmatter(frontmatter),
+        ...mandatoryLines,
+        requiredLine,
+        'Visible output: concise; recover via sidecar.'
+      ]).join('\n');
+    }
+    return uniqueLines([
+      requiredTerms.length > 0 ? compactGhcpFrontmatter(frontmatter) : frontmatter,
+      requiredLine,
+      ...mandatoryLines,
+      ...protectedLines.filter((line) => /grammar|tool|contract|\.utk|\.github|hook|mcp|reason-with-lexicon|sketch-of-thought|preToolUse|postToolUse/i.test(line)),
+      'Visible output: concise; load sidecars for full guidance.'
+    ]).join('\n');
   }
 
   if (surface === 'tool-definition' || surface === 'recovery-tool') {
-    return uniqueLines([...requiredTerms, ...protectedLines.map((line) => line.replace(/\s+/g, ' ')), ...core].filter(Boolean)).join(' ');
+    return uniqueLines([requiredLine, ...mandatoryLines.map((line) => line.replace(/\s+/g, ' ')), ...core].filter(Boolean)).join(' ');
   }
 
-  return uniqueLines([...protectedLines, 'UTK: preserve artifacts, schemas, routes, serializers, local recovery.']).join('\n');
+  return uniqueLines([
+    requiredLine,
+    ...mandatoryLines,
+    requiredLine ? undefined : 'UTK: preserve artifacts, schemas, routes, serializers, local recovery.'
+  ]).join('\n');
 }
 
 function compactLines(text: string): string[] {
@@ -160,6 +182,12 @@ function uniqueLines(lines: Array<string | undefined>): string[] {
     seen.add(clean);
     return true;
   });
+}
+
+function compactGhcpFrontmatter(frontmatter: string | undefined): string | undefined {
+  if (!frontmatter) return undefined;
+  const kept = frontmatter.split(/\r?\n/).filter((line) => /^---$/.test(line.trim()) || /^tools:/i.test(line.trim()) || /^name:/i.test(line.trim()));
+  return kept.length > 2 ? kept.join('\n') : undefined;
 }
 
 function estimateTokens(text: string): number {

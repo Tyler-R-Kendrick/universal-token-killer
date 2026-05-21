@@ -18,7 +18,7 @@ export function routeContentForProxy(content: string, query: string): ContentRou
   const compactObject = routeSpecificCompactObject(content, routeReason, query, protectedPreview);
   const serializerId: 'toon' | 'compressed-json' = routeReason.startsWith('structured-json') ? 'compressed-json' : 'toon';
   const serialized = serializerId === 'toon' ? encode(compactObject) : stableJson(compactObject);
-  const compactText = `${protectedPreview ? `${protectedPreview}\n` : ''}${serialized}`;
+  const compactText = serialized;
   return {
     routeReason,
     kind: routeReason,
@@ -32,6 +32,25 @@ export function routeContentForProxy(content: string, query: string): ContentRou
 
 export function shouldCompactContent(content: string, minTokens: number): boolean {
   return hasStructuredOrProtectedSignal(content) || estimateTokens(content) >= minTokens || content.length >= minTokens * 2;
+}
+
+export function compactCopilotToolOutput(content: string, query: string): ContentRoute {
+  const routeReason = classifyRouteReason(content, query);
+  const facts = extractKeyFactLines(content, query);
+  const compactText = [
+    `kind=${routeReason}`,
+    `facts=${facts.join('; ')}`,
+    'recover=utk_expand_context'
+  ].join('\n');
+  return {
+    routeReason,
+    kind: routeReason,
+    serializerId: 'toon',
+    compactText,
+    protectedPreview: facts.join('\n'),
+    rawTokens: estimateTokens(content),
+    compactTokens: estimateTokens(compactText)
+  };
 }
 
 function classifyRouteReason(content: string, query: string): string {
@@ -69,6 +88,7 @@ function routeSpecificCompactObject(content: string, routeReason: string, query:
     lines: content.split(/\r?\n/).length,
     chars: content.length,
     query: query.slice(0, 80) || undefined,
+    facts: extractKeyFactLines(content, query),
     protected: protectedPreview || undefined
   };
   if (routeReason === 'structured-json-array') return { ...base, ...compactJsonArray(content) };
@@ -78,6 +98,21 @@ function routeSpecificCompactObject(content: string, routeReason: string, query:
   if (routeReason === 'test-error' || routeReason === 'build-log') return { ...base, diagnostics: extractDiagnostics(content), summary: summarizeContent(content, routeReason, query) };
   if (routeReason === 'diff') return { ...base, hunks: extractDiffHunks(content), summary: summarizeContent(content, routeReason, query) };
   return { ...base, summary: summarizeContent(content, routeReason, query) };
+}
+
+function extractKeyFactLines(content: string, query: string): string[] {
+  const queryTokens = query.toLowerCase().split(/[^a-z0-9_./:-]+/).filter((token) => token.length > 2);
+  const lines = content.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !/^noise \d+:/.test(line) && !/^```/.test(line) && !/^<type>file<\/type>$/i.test(line) && !/^End of file$/i.test(line));
+  const factLines = lines.filter((line) => {
+    if (/^(command|cmd|path|file):/i.test(line)) return false;
+    const lower = line.toLowerCase();
+    return queryTokens.length === 0 || queryTokens.some((token) => lower.includes(token)) || /error|fail|ERR!|warning|denied|OK|OPEN|CLEAN|Plan:|diff --git|@@|<path>|End of file|rows|keys/i.test(line);
+  });
+  return unique([...factLines, ...factLines.slice(0, 6)])
+    .slice(0, 8)
+    .map((line) => line.slice(0, 220));
 }
 
 function compactJsonArray(content: string): Record<string, unknown> {
@@ -161,6 +196,15 @@ function extractProtectedPreview(content: string): string {
 
 function stableJson(value: unknown): string {
   return JSON.stringify(sortValue(value));
+}
+
+function unique(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((value) => {
+    if (seen.has(value)) return false;
+    seen.add(value);
+    return true;
+  });
 }
 
 function sortValue(value: unknown): unknown {
