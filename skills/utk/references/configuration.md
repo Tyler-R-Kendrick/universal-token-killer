@@ -31,4 +31,4 @@ raw_outputs = true
 storage_root = ".utk"
 ```
 
-Built-in serializer providers are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` with `utk.pack.toml`, `grammar/<id>.lark`, and `registerUtkSerializerPlugin(registry, context)`. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.
+Built-in serializer providers are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` with `utk.pack.toml`, `symbol`, a matching data-only index const export, `semantics = "json-value-v1"`, and `grammar/<id>.lark`; serializer code is not executed. Core generates parser, serializer, linter, AST feedback, and provider surfaces. Exact tool ids and trailing `*` prefixes are valid override patterns. An unsupported or disabled provider is a configuration error.

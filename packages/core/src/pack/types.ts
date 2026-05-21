@@ -24,10 +24,12 @@ export type PackTemplateEntry = {
 export type PackSerializationPluginEntry = {
   type: 'serialization';
   id: string;
-  module: string;
+  symbol: string;
+  semantics: 'json-value-v1';
   grammar: string;
   extension: string;
   aliases?: string[];
+  canonical?: boolean;
   config_fields?: Record<string, unknown>;
 };
 

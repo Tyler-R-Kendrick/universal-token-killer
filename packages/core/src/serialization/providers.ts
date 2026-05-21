@@ -1,12 +1,11 @@
-import { readdirSync, statSync } from 'node:fs';
-import { readdir, stat } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { contentHash } from '../artifact/canonical.js';
 import { loadUtkConfig, type UtkConfig } from '../config/config.js';
 import { loadPack, loadPackSync } from '../pack/loadPack.js';
 import type { LoadedPack, PackSerializationPluginRecord } from '../pack/types.js';
+import { generatedSerializerFromCompiledGrammar, type GeneratedSerializer } from './grammarCodec.js';
 
 export const BUILT_IN_SERIALIZER_IDS = ['json-compact', 'toon', 'tron'] as const;
 
@@ -28,11 +27,6 @@ export type SerializerGrammar = {
   llguidancePrefix?: string;
 };
 
-export type LarkGeneratedParser = {
-  grammar: SerializerGrammar;
-  parse<T>(text: string, parse: (text: string) => T): T;
-};
-
 export type SerializationProvider = {
   id: string;
   aliases?: string[];
@@ -45,7 +39,9 @@ export type SerializationProvider = {
 };
 
 export type SerializationRegistry = {
+  serializers: Record<string, GeneratedSerializer>;
   register(provider: SerializationProvider): void;
+  registerGenerated(serializer: GeneratedSerializer): void;
   get(id: string): SerializationProvider | undefined;
   require(id: string): SerializationProvider;
   list(): SerializationProvider[];
@@ -56,30 +52,16 @@ export type SerializationPluginManifest = {
   aliases?: string[];
   version: string;
   type: 'serialization';
-  module: string;
+  symbol: string;
+  semantics: 'json-value-v1';
   grammar: string;
   extension: string;
+  canonical: boolean;
   configFields: Record<string, unknown>;
-};
-
-export type UtkSerializerPluginContext = {
-  manifest: SerializationPluginManifest;
-  pluginRoot: string;
-  grammar: SerializerGrammar;
-  parser: LarkGeneratedParser;
-  config: Record<string, unknown>;
-};
-
-export type UtkSerializerPlugin = {
-  registerUtkSerializerPlugin(registry: SerializationRegistry, context: UtkSerializerPluginContext): void | Promise<void>;
 };
 
 export type SerializationRegistryOptions = {
   includeBuiltIns?: boolean;
-};
-
-type SerializerPluginModule = {
-  registerUtkSerializerPlugin?: unknown;
 };
 
 const globalRegistry = createSerializationRegistry();
@@ -87,7 +69,9 @@ const globalRegistry = createSerializationRegistry();
 export function createSerializationRegistry(options: SerializationRegistryOptions = {}): SerializationRegistry {
   const providers = new Map<string, SerializationProvider>();
   const aliases = new Map<string, string>();
+  const serializers: Record<string, GeneratedSerializer> = {};
   const registry: SerializationRegistry = {
+    serializers,
     register(provider) {
       assertValidProvider(provider);
       if (providers.has(provider.id) || aliases.has(provider.id)) {
@@ -99,6 +83,13 @@ export function createSerializationRegistry(options: SerializationRegistryOption
           throw new Error(`Serialization provider alias already registered: ${alias}`);
         }
         aliases.set(alias, provider.id);
+      }
+    },
+    registerGenerated(serializer) {
+      registry.register(serializer.provider);
+      serializers[serializer.id] = serializer;
+      for (const alias of serializer.aliases ?? []) {
+        serializers[alias] = serializer;
       }
     },
     get(id) {
@@ -125,7 +116,7 @@ export function createSerializationRegistry(options: SerializationRegistryOption
 
 export function registerBuiltInSerializerPlugins(registry: SerializationRegistry): void {
   for (const pluginRoot of listSerializationPluginRootsSync(builtInSerializationPluginDir())) {
-    registerSerializationPluginFromFolderSync(registry, pluginRoot, {});
+    registerSerializationPluginFromFolderSync(registry, pluginRoot);
   }
 }
 
@@ -156,7 +147,7 @@ export async function loadSerializationRegistry(workspaceRoot: string, config?: 
     for (const pluginRoot of await listSerializationPluginRoots(pluginDir)) {
       const resolved = path.resolve(pluginRoot);
       if (loadedRoots.has(resolved)) continue;
-      await registerSerializationPluginFromFolder(registry, pluginRoot, providerConfig(activeConfig, pluginRoot));
+      await registerSerializationPluginFromFolder(registry, pluginRoot);
       loadedRoots.add(resolved);
     }
   }
@@ -166,7 +157,7 @@ export async function loadSerializationRegistry(workspaceRoot: string, config?: 
     if (loadedRoots.has(resolved)) continue;
     const manifest = await maybeLoadSerializationPluginManifest(pluginRoot);
     if (!manifest) continue;
-    await registerSerializationPluginFromFolder(registry, pluginRoot, activeConfig.serialization.providers[manifest.id]?.config ?? {});
+    await registerSerializationPluginFromFolder(registry, pluginRoot);
     loadedRoots.add(resolved);
     }
 
@@ -180,54 +171,42 @@ export function serializedExtension(id: string, registry: SerializationRegistry 
 export async function loadSerializationPluginManifest(pluginRoot: string): Promise<SerializationPluginManifest> {
   const pack = await loadPack(pluginRoot);
   const plugin = requireSingleSerializationPlugin(pack);
-  return serializationManifestFromPack(pack, plugin);
+  const manifest = serializationManifestFromPack(pack, plugin);
+  await validateSerializationPluginIndex(pluginRoot, manifest);
+  return manifest;
 }
 
-function registerSerializationPluginFromFolderSync(registry: SerializationRegistry, pluginRoot: string, config: Record<string, unknown>): void {
+function registerSerializationPluginFromFolderSync(registry: SerializationRegistry, pluginRoot: string): void {
   const pack = loadPackSync(pluginRoot);
   const plugin = requireSingleSerializationPlugin(pack);
   const manifest = serializationManifestFromPack(pack, plugin);
+  validateSerializationPluginIndexSync(pluginRoot, manifest);
   const grammar = normalizeGrammar(manifest, path.join(pluginRoot, manifest.grammar), plugin.grammar.lark);
-  const modulePath = path.join(pluginRoot, plugin.entry.module);
-  const pluginModule = createRequire(import.meta.url)(modulePath) as SerializerPluginModule;
-  registerPluginModule(pluginModule, registry, pluginRoot, manifest, grammar, config);
+  registerCompiledSerializationPlugin(registry, manifest, grammar);
 }
 
-async function registerSerializationPluginFromFolder(registry: SerializationRegistry, pluginRoot: string, config: Record<string, unknown>): Promise<void> {
+async function registerSerializationPluginFromFolder(registry: SerializationRegistry, pluginRoot: string): Promise<void> {
   const pack = await loadPack(pluginRoot);
   const plugin = requireSingleSerializationPlugin(pack);
   const manifest = serializationManifestFromPack(pack, plugin);
+  await validateSerializationPluginIndex(pluginRoot, manifest);
   const grammar = normalizeGrammar(manifest, path.join(pluginRoot, manifest.grammar), plugin.grammar.lark);
-  const modulePath = path.join(pluginRoot, plugin.entry.module);
-  const pluginModule = await loadPluginModule(modulePath);
-  await registerPluginModule(pluginModule, registry, pluginRoot, manifest, grammar, config);
+  registerCompiledSerializationPlugin(registry, manifest, grammar);
 }
 
-async function loadPluginModule(modulePath: string): Promise<SerializerPluginModule> {
-  if (modulePath.endsWith('.cjs')) {
-    return createRequire(import.meta.url)(modulePath) as SerializerPluginModule;
-  }
-  return await import(pathToFileURL(modulePath).href) as SerializerPluginModule;
-}
-
-function registerPluginModule(
-  pluginModule: SerializerPluginModule,
+function registerCompiledSerializationPlugin(
   registry: SerializationRegistry,
-  pluginRoot: string,
   manifest: SerializationPluginManifest,
-  grammar: SerializerGrammar,
-  config: Record<string, unknown>
-): void | Promise<void> {
-  if (typeof pluginModule.registerUtkSerializerPlugin !== 'function') {
-    throw new Error(`Serializer plugin ${manifest.id} must export registerUtkSerializerPlugin`);
-  }
-  return pluginModule.registerUtkSerializerPlugin(registry, {
-    manifest,
-    pluginRoot,
+  grammar: SerializerGrammar
+): void {
+  registry.registerGenerated(generatedSerializerFromCompiledGrammar({
+    id: manifest.id,
+    symbol: manifest.symbol,
+    aliases: manifest.aliases,
+    extension: manifest.extension,
     grammar,
-    parser: createLarkGeneratedParser(grammar),
-    config
-  });
+    semantics: manifest.semantics
+  }));
 }
 
 function normalizeGrammar(manifest: SerializationPluginManifest, grammarPath: string, source: string): SerializerGrammar {
@@ -267,39 +246,70 @@ function serializationManifestFromPack(pack: LoadedPack, plugin: PackSerializati
     aliases: plugin.entry.aliases,
     version: pack.manifest.pack.version,
     type: 'serialization',
-    module: plugin.entry.module,
+    symbol: plugin.entry.symbol,
+    semantics: plugin.entry.semantics,
     grammar: plugin.entry.grammar,
     extension: plugin.entry.extension,
+    canonical: plugin.entry.canonical ?? true,
     configFields: plugin.entry.config_fields ?? {}
   };
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(manifest.id)) {
     throw new Error(`Serializer plugin pack ${pack.manifest.pack.name} has invalid id: ${manifest.id}`);
   }
+  if (!/^[A-Z][A-Z0-9_]*$/.test(manifest.symbol)) {
+    throw new Error(`Serializer plugin ${manifest.id} has invalid symbol: ${manifest.symbol}`);
+  }
   return manifest;
 }
 
-function createLarkGeneratedParser(grammar: SerializerGrammar): LarkGeneratedParser {
-  if (grammar.format !== 'lark' || !/\bstart\s*:/.test(grammar.source)) {
-    throw new Error('Cannot generate parser without valid Lark start rule');
-  }
-  return {
-    grammar,
-    parse(text, parse) {
-      if (typeof text !== 'string') throw new TypeError('Parser input must be a string');
-      return parse(text);
-    }
-  };
+async function validateSerializationPluginIndex(pluginRoot: string, manifest: SerializationPluginManifest): Promise<void> {
+  const source = await readSerializationPluginIndex(pluginRoot, manifest);
+  validateSerializationPluginIndexSource(source, manifest);
 }
 
-function providerConfig(config: UtkConfig, pluginRoot: string): Record<string, unknown> {
-  try {
-    const pack = loadPackSync(pluginRoot);
-    const plugin = requireSingleSerializationPlugin(pack);
-    const id = plugin.entry.id;
-    return config.serialization.providers[id]?.config ?? {};
-  } catch {
-    return {};
+function validateSerializationPluginIndexSync(pluginRoot: string, manifest: SerializationPluginManifest): void {
+  const source = readSerializationPluginIndexSync(pluginRoot, manifest);
+  validateSerializationPluginIndexSource(source, manifest);
+}
+
+async function readSerializationPluginIndex(pluginRoot: string, manifest: SerializationPluginManifest): Promise<string> {
+  for (const relative of serializationPluginIndexCandidates()) {
+    try {
+      return await readFile(path.join(pluginRoot, relative), 'utf8');
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
   }
+  throw new Error(`Serializer plugin ${manifest.id} index must export const ${manifest.symbol} = '${manifest.id}'`);
+}
+
+function readSerializationPluginIndexSync(pluginRoot: string, manifest: SerializationPluginManifest): string {
+  for (const relative of serializationPluginIndexCandidates()) {
+    const target = path.join(pluginRoot, relative);
+    if (existsSync(target)) return readFileSync(target, 'utf8');
+  }
+  throw new Error(`Serializer plugin ${manifest.id} index must export const ${manifest.symbol} = '${manifest.id}'`);
+}
+
+function validateSerializationPluginIndexSource(source: string, manifest: SerializationPluginManifest): void {
+  const exportPattern = /^\s*export\s+const\s+([A-Z][A-Z0-9_]*)\s*=\s*(['"])([^'"]+)\2\s*(?:as\s+const)?\s*;\s*$/;
+  let found = false;
+  for (const line of source.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0 || trimmed.startsWith('//')) continue;
+    const match = exportPattern.exec(line);
+    if (!match) {
+      throw new Error(`Serializer plugin ${manifest.id} index must be data-only const exports`);
+    }
+    if (match[1] === manifest.symbol && match[3] === manifest.id) found = true;
+  }
+  if (!found) {
+    throw new Error(`Serializer plugin ${manifest.id} index must export const ${manifest.symbol} = '${manifest.id}'`);
+  }
+}
+
+function serializationPluginIndexCandidates(): string[] {
+  return ['index.ts', 'index.js', 'index.mjs'];
 }
 
 async function maybeLoadSerializationPluginManifest(pluginRoot: string): Promise<SerializationPluginManifest | undefined> {

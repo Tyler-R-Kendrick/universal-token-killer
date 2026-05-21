@@ -21,12 +21,11 @@ Use this guide when extending UTK without breaking the hook-first architecture.
 
 Built-in serializers are maintained plugin packs under `packages/plugins/serialization`. User serializers load from `.utk/plugins/serialization/<plugin-name>`, extra TOML plugin paths, or installed pack roots in `.utk/packs/<pack-name>`.
 
-1. Create `utk.pack.toml` with `[pack]` metadata and a `[[plugins]]` entry whose `type = "serialization"` declares `id`, `module`, `grammar`, `extension`, optional `aliases`, and optional `config_fields`.
+1. Create `utk.pack.toml` with `[pack]` metadata and a `[[plugins]]` entry whose `type = "serialization"` declares `id`, `symbol`, `semantics = "json-value-v1"`, `grammar`, `extension`, optional `aliases`, optional `canonical`, and optional `config_fields`.
 2. Store grammar at `grammar/<id>.lark`; it must include a `start:` rule.
-3. Export `registerUtkSerializerPlugin(registry, context)` from the module.
-4. Call `registry.register()` with `id`, `extension`, `grammar: context.grammar`, `serialize`, `deserialize`, `validate`, and `estimateTokens`.
-5. Use `context.parser.parse(text, parserFn)` in deserialization or validation so the manifest grammar is part of the parser path.
-6. Add TOML tests for default selection, overrides, disabled providers, plugin config fields, and invalid manifests.
+3. Export the manifest symbol from `index.ts` as a data-only const, for example `export const EXAMPLE_SERIALIZER = 'example' as const;`.
+4. Do not ship `module` or registrar hooks; core generates parser, serializer, linter, AST feedback, and provider surfaces from the grammar and trusted `SerializationAst` codec.
+5. Add TOML tests for default selection, overrides, disabled providers, plugin config fields, invalid manifests, generated linter feedback, and no executable plugin loading.
 
 ## Add A Parity Scenario
 

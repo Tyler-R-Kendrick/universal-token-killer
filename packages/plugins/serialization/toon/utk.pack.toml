@@ -12,7 +12,8 @@ pack_spec = "2"
 [[plugins]]
 type = "serialization"
 id = "toon"
-module = "index.cjs"
+symbol = "TOON_SERIALIZER"
+semantics = "json-value-v1"
 grammar = "grammar/toon.lark"
 extension = "toon"
-
+canonical = true

@@ -130,7 +130,7 @@ tool = "shell.gh.*"
 provider = "toon"
 ```
 
-Built-in providers are `toon`, `json-compact`, and `tron`; `compressed-json` remains an alias for existing configs. Serialization plugins load from `packages/plugins/serialization` for maintained defaults, from `.utk/plugins/serialization/<plugin-name>` for workspace plugin packs, and from installed `.utk/packs/<pack-name>` roots. Each plugin pack must include `utk.pack.toml`, a valid `.lark` grammar, and a registrar module. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
+Built-in providers are `toon`, `json-compact`, and `tron`; `compressed-json` remains an alias for existing configs. Serialization plugins load from `packages/plugins/serialization` for maintained defaults, from `.utk/plugins/serialization/<plugin-name>` for workspace plugin packs, and from installed `.utk/packs/<pack-name>` roots. Each plugin pack must include `utk.pack.toml` with `symbol`, `semantics = "json-value-v1"`, a data-only index const export, and a valid `.lark` grammar. Serializer plugin code is never imported or executed. Core generates parser, serializer, linter, AST feedback, and provider surfaces. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
 
 ## Detok Hook Policy
 

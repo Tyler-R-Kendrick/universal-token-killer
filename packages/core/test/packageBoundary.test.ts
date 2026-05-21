@@ -203,16 +203,25 @@ describe('package boundary', () => {
 
     for (const plugin of pluginFolders) {
       const manifest = await loadPackManifest(path.join(serializationRoot, plugin));
+      const pluginPackage = await readJsonAtPath(path.join(serializationRoot, plugin, 'package.json'));
       const grammarName = plugin === 'json-compact' ? 'json-compact.lark' : `${plugin}.lark`;
       const grammar = await readFile(path.join(serializationRoot, plugin, 'grammar', grammarName), 'utf8');
 
       expect(manifest.pack.name).toBe(plugin);
+      expect(pluginPackage).toMatchObject({
+        private: true,
+        type: 'module',
+        exports: { '.': './index.ts' }
+      });
       expect(manifest.plugins?.[0]).toMatchObject({
         id: plugin,
         type: 'serialization',
-        module: 'index.cjs',
+        symbol: plugin === 'json-compact' ? 'JSON_COMPACT_SERIALIZER' : `${plugin.toUpperCase()}_SERIALIZER`,
+        semantics: 'json-value-v1',
         grammar: `grammar/${grammarName}`
       });
+      await expect(access(path.join(serializationRoot, plugin, 'index.cjs'))).rejects.toThrow();
+      await access(path.join(serializationRoot, plugin, 'index.ts'));
       expect(grammar).toContain('start:');
     }
   });

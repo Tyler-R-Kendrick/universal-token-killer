@@ -243,7 +243,8 @@ describe('loadPackManifest', () => {
         '[[plugins]]',
         'type = "serialization"',
         'id = "demo"',
-        'module = "index.js"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
         'grammar = "grammar/demo.lark"',
         'extension = "demo"',
         'aliases = ["demo-alt"]',
@@ -264,7 +265,6 @@ describe('loadPackManifest', () => {
       grammars: { 'grammar/demo.lark': 'start: value\nvalue: /.+/\n' },
       templates: {}
     });
-    await writeFile(path.join(dir, 'index.js'), 'export function registerUtkSerializerPlugin() {}\n', 'utf8');
     await writeFile(path.join(dir, 'plugin.json'), '{"name":"demo-agent"}\n', 'utf8');
 
     const pack = await loadPack(dir);
@@ -272,7 +272,8 @@ describe('loadPackManifest', () => {
     expect(pack.manifest.plugins?.[0]).toMatchObject({
       type: 'serialization',
       id: 'demo',
-      module: 'index.js',
+      symbol: 'DEMO_SERIALIZER',
+      semantics: 'json-value-v1',
       grammar: 'grammar/demo.lark',
       extension: 'demo',
       aliases: ['demo-alt'],
@@ -433,9 +434,21 @@ describe('loadPackManifest', () => {
     expect(() =>
       normalizeManifest({
         pack: { name: 'ok', version: '1.0.0' },
-        plugins: [{ type: 'serialization', id: 'demo', module: 'index.js', grammar: 'grammar/demo.lark', extension: 'demo' }]
+        plugins: [{ type: 'serialization', id: 'demo', symbol: 'DEMO_SERIALIZER', semantics: 'json-value-v1', grammar: 'grammar/demo.lark', extension: 'demo' }]
       })
     ).not.toThrow();
+    expect(() =>
+      normalizeManifest({
+        pack: { name: 'ok', version: '1.0.0' },
+        plugins: [{ type: 'serialization', id: 'demo', module: 'index.js', semantics: 'json-value-v1', grammar: 'grammar/demo.lark', extension: 'demo' }]
+      })
+    ).toThrow(/module is not supported/);
+    expect(() =>
+      normalizeManifest({
+        pack: { name: 'ok', version: '1.0.0' },
+        plugins: [{ type: 'serialization', id: 'demo', symbol: 'DEMO_SERIALIZER', semantics: 'raw-code', grammar: 'grammar/demo.lark', extension: 'demo' }]
+      })
+    ).toThrow(/semantics must be 'json-value-v1'/);
     expect(() =>
       normalizeManifest({
         pack: { name: 'ok', version: '1.0.0' },

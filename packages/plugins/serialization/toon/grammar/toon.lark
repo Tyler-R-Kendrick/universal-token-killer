@@ -1,7 +1,24 @@
-start: value
+start: document
 
-?value: document
-document: line+
-line: /[^\r\n]*/ NEWLINE?
+document: entry+
+entry: scalar_entry
+     | array_entry
+     | table_entry
 
+scalar_entry: NAME ":" scalar NEWLINE?
+array_entry: NAME "[" SIGNED_NUMBER "]" ":" [scalar ("," scalar)*] NEWLINE?
+table_entry: NAME "[" SIGNED_NUMBER "]" "{" NAME ("," NAME)* "}" ":" NEWLINE row+
+row: WS_INLINE+ scalar ("," scalar)* NEWLINE?
+
+?scalar: ESCAPED_STRING
+       | SIGNED_NUMBER
+       | "true"
+       | "false"
+       | "null"
+       | NAME
+
+%import common.CNAME -> NAME
+%import common.ESCAPED_STRING
+%import common.SIGNED_NUMBER
 %import common.NEWLINE
+%import common.WS_INLINE

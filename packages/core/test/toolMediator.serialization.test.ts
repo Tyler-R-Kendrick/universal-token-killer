@@ -110,31 +110,16 @@ describe('tool mediation serialization', () => {
         '[[plugins]]',
         'type = "serialization"',
         'id = "demo"',
-        'module = "index.js"',
+        'symbol = "DEMO_SERIALIZER"',
+        'semantics = "json-value-v1"',
         'grammar = "grammar/demo.lark"',
         'extension = "demo"',
         ''
       ].join('\n'),
       'utf8'
     );
-    await writeFile(path.join(pluginRoot, 'grammar', 'demo.lark'), 'start: value\nvalue: /.+/\n', 'utf8');
-    await writeFile(
-      path.join(pluginRoot, 'index.js'),
-      [
-        'export function registerUtkSerializerPlugin(registry, context) {',
-        '  registry.register({',
-        '    id: "demo",',
-        '    extension: "demo",',
-        '    grammar: context.grammar,',
-        '    serialize(value) { return `demo:${JSON.stringify(value)}`; },',
-        '    deserialize(text) { return context.parser.parse(text.slice(5), (body) => JSON.parse(body)); },',
-        '    validate(value, text) { return text === `demo:${JSON.stringify(value)}` ? { valid: true, errors: [] } : { valid: false, errors: ["demo drift"] }; },',
-        '    estimateTokens(text) { return Math.ceil(text.length / 4); }',
-        '  });',
-        '}'
-      ].join('\n'),
-      'utf8'
-    );
+    await writeFile(path.join(pluginRoot, 'grammar', 'demo.lark'), jsonValueLark(), 'utf8');
+    await writeFile(path.join(pluginRoot, 'index.ts'), "export const DEMO_SERIALIZER = 'demo' as const;\n", 'utf8');
     await writeFile(
       path.join(root, '.utk', 'config.toml'),
       [
@@ -157,8 +142,33 @@ describe('tool mediation serialization', () => {
 
     expect(result.serializerId).toBe('demo');
     expect(result.serializedPath.endsWith('output.compact.demo')).toBe(true);
-    expect(await readFile(result.serializedPath, 'utf8')).toBe('demo:{"k":"object","keys":["users"]}\n');
+    expect(await readFile(result.serializedPath, 'utf8')).toBe('{"k":"object","keys":["users"]}\n');
     expect(JSON.parse(await readFile(path.join(path.dirname(result.serializedPath), 'output.compact.validation.json'), 'utf8'))).toMatchObject({ valid: true });
     expect(result.response).toContain('Serializer: demo');
   });
 });
+
+function jsonValueLark(): string {
+  return [
+    'start: value',
+    '',
+    '?value: object',
+    '      | array',
+    '      | string',
+    '      | SIGNED_NUMBER',
+    '      | "true"',
+    '      | "false"',
+    '      | "null"',
+    '',
+    'object: "{" [pair ("," pair)*] "}"',
+    'pair: string ":" value',
+    'array: "[" [value ("," value)*] "]"',
+    'string: ESCAPED_STRING',
+    '',
+    '%import common.ESCAPED_STRING',
+    '%import common.SIGNED_NUMBER',
+    '%import common.WS',
+    '%ignore WS',
+    ''
+  ].join('\n');
+}

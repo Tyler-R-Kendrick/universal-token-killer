@@ -278,14 +278,23 @@ function normalizePluginEntry(value: unknown, index: number): PackPluginEntry {
   const obj = readObject(value, `plugins[${index}]`);
   const type = readString(obj.type, `plugins[${index}].type`);
   if (type === 'serialization') {
+    if (obj.module !== undefined) {
+      throw new Error(`plugins[${index}].module is not supported for serialization plugins`);
+    }
+    const semantics = readString(obj.semantics, `plugins[${index}].semantics`);
+    if (semantics !== 'json-value-v1') {
+      throw new Error(`plugins[${index}].semantics must be 'json-value-v1'`);
+    }
     const entry: PackPluginEntry = {
       type,
       id: readString(obj.id, `plugins[${index}].id`),
-      module: readString(obj.module, `plugins[${index}].module`),
+      symbol: readString(obj.symbol, `plugins[${index}].symbol`),
+      semantics,
       grammar: readString(obj.grammar, `plugins[${index}].grammar`),
       extension: readString(obj.extension, `plugins[${index}].extension`)
     };
     if (obj.aliases !== undefined) entry.aliases = readStringArray(obj.aliases, `plugins[${index}].aliases`);
+    if (obj.canonical !== undefined) entry.canonical = readBoolean(obj.canonical, `plugins[${index}].canonical`);
     if (obj.config_fields !== undefined) entry.config_fields = readObject(obj.config_fields, `plugins[${index}].config_fields`);
     return entry;
   }

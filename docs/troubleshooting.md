@@ -17,7 +17,7 @@ If config contains an unknown provider, UTK throws:
 Unsupported serialization provider: <value>. Loaded providers: json-compact, toon, tron
 ```
 
-Built-in values are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` when the folder is a pack with `utk.pack.toml`, a valid `.lark` grammar, and a registrar module.
+Built-in values are `toon`, `json-compact`, and `tron`. Workspace serializers load from `.utk/plugins/serialization/<plugin-name>` or installed `.utk/packs/<pack-name>` when the folder is a pack with `utk.pack.toml`, `symbol`, a matching data-only index const export, `semantics = "json-value-v1"`, and a valid `.lark` grammar. Serializer modules and registrar hooks are rejected. Generated serializers are available as `registry.serializers[PLUGIN_SERIALIZER]` with parser, serializer, and linter surfaces.
 
 ## Disabled Serializer
 

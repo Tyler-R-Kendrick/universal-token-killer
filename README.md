@@ -319,7 +319,7 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 registry = []
 ```
 
-Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializers live in `packages/plugins/serialization`; workspace serializers load from `.utk/plugins/serialization/<plugin-name>` as packs using `utk.pack.toml` plus `grammar/<id>.lark`. Installed serializer packs under `.utk/packs/<pack-name>` are loaded the same way.
+Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializers live in `packages/plugins/serialization`; workspace serializers load from `.utk/plugins/serialization/<plugin-name>` as data-only packs using `utk.pack.toml`, a `symbol` const name, an index const export, and `grammar/<id>.lark`. Installed serializer packs under `.utk/packs/<pack-name>` are loaded the same way. Serialization packs declare `semantics = "json-value-v1"` and cannot execute plugin-local code. Core generates parser, serializer, linter, AST feedback, and compatibility provider surfaces under `registry.serializers[PLUGIN_SERIALIZER]`.
 
 ## Packages
 
@@ -365,7 +365,8 @@ my-pack/
 ├── grammars/<tool>/<field>.lark         # llguidance-ready grammar
 # .lark is the ONLY supported grammar artifact — no .grammar.json sidecars
 ├── templates/<name>.template.ts         # prompt-template DSL (TS) — .py also supported
-└── grammar/<plugin>.lark                # serialization plugin grammar when [[plugins]] needs it
+├── index.ts                             # data-only serializer id const export
+└── grammar/<plugin>.lark                # data-only serialization plugin grammar for json-value-v1
 ```
 
 ## Reference Docs
