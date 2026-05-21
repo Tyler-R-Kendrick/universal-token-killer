@@ -1,4 +1,4 @@
 interface:
   display_name: "Detoks"
-  short_description: "Use the local detok MCP for LLMLingua2 compression"
-  default_prompt: "Use $detoks and the local detok MCP server to rewrite bulky LLM-bound text with LLMLingua2. Preserve raw UTK artifacts and only use compressed text for model-facing context."
+  short_description: "Compress prompts and refactor agent guidance"
+  default_prompt: "Use $detoks to compress bulky prompt or agent text, consolidate detoks skill guidance, and route AGENTS.md or GitHub Copilot custom-agent cleanup through focused references."

@@ -86,7 +86,7 @@ Generated session agents must require sketch-of-thought through `reason-with-lex
 
 ## `skills/detoks`
 
-Use when an agent should call the local `detok` MCP server for LLMLingua-2 compression before reading bulky text into LLM context. The skill explains when compression helps, when verbatim raw content is required, and how to choose rates and force tokens.
+Use when an agent should compress bulky prompt text, consolidate `detoks-skill` guidance into `detoks`, shrink AGENTS.md-style always-loaded files into memory and skills, or refactor GitHub Copilot custom agents into smaller subagents. The root skill routes to focused references for `detoks-prompt`, skill cleanup, AGENTS.md cleanup, GHCP subagent orchestration, and MCP details.
 
 ## Synchronization Rules
 
