@@ -94,7 +94,8 @@ export async function gradeRtkParityCodeGraderInput(input: AgentVCodeGraderInput
 function parseExpected(text: string): ExpectedPayload {
   try {
     const parsed = JSON.parse(text);
-    if (parsed && typeof parsed === 'object' && typeof parsed.scenario === 'string') {
+    if (parsed && typeof parsed === 'object') {
+      parsed.scenario = parsed.scenario ?? 'rtk-parity';
       return parsed as ExpectedPayload;
     }
     return { scenario: 'rtk-parity' };
@@ -106,7 +107,8 @@ function parseExpected(text: string): ExpectedPayload {
 function parseActual(text: string): ActualPayload {
   try {
     const parsed = JSON.parse(text);
-    if (parsed && typeof parsed === 'object' && typeof parsed.compact_text === 'string') {
+    if (parsed && typeof parsed === 'object') {
+      parsed.compact_text = parsed.compact_text ?? text;
       return parsed as ActualPayload;
     }
     return { compact_text: text };

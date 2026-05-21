@@ -96,7 +96,7 @@ export async function gradeCompresrParityCodeGraderInput(input: AgentVCodeGrader
 function parseExpected(text: string): ExpectedPayload {
   try {
     const parsed = JSON.parse(text);
-    if (parsed && typeof parsed === 'object' && parsed.scenario) {
+    if (parsed && typeof parsed === 'object') {
       return parsed as ExpectedPayload;
     }
     return { scenario: 'compresr-parity' };
@@ -108,7 +108,7 @@ function parseExpected(text: string): ExpectedPayload {
 function parseActual(text: string): ActualPayload {
   try {
     const parsed = JSON.parse(text);
-    if (parsed && typeof parsed === 'object' && parsed.raw_text !== undefined) {
+    if (parsed && typeof parsed === 'object') {
       return parsed as ActualPayload;
     }
     return { compact_text: text };
