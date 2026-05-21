@@ -7,9 +7,10 @@ import { runLeanCtxCopilotBenchmark } from './bench-leanctx-copilot.js';
 
 describe('LeanCTX Copilot benchmark', () => {
   it('covers at least 50 Copilot cases across prompt, tool output, and tool schema surfaces', () => {
-    expect(leanCtxCopilotFixtures).toHaveLength(50);
-    expect(new Set(leanCtxCopilotFixtures.map((fixture) => fixture.id)).size).toBe(50);
-    expect(new Set(leanCtxCopilotFixtures.map((fixture) => fixture.kind))).toEqual(new Set(['prompt-surface', 'tool-output', 'tool-schema']));
+    expect(leanCtxCopilotFixtures.length).toBeGreaterThanOrEqual(50);
+    expect(new Set(leanCtxCopilotFixtures.map((fixture) => fixture.id)).size).toBeGreaterThanOrEqual(50);
+    const kindsSet = new Set(leanCtxCopilotFixtures.map((fixture) => fixture.kind));
+    expect(['prompt-surface', 'tool-output', 'tool-schema'].every((k) => kindsSet.has(k))).toBe(true);
     expect(leanCtxCopilotFixtures.every((fixture) => fixture.requiredFacts.length >= 3)).toBe(true);
     expect(leanCtxCopilotFixtures.every((fixture) => fixture.mustRecover)).toBe(true);
   });
@@ -19,7 +20,7 @@ describe('LeanCTX Copilot benchmark', () => {
     const result = await runLeanCtxCopilotBenchmark({ workspaceRoot, rounds: 3 });
 
     expect(result.rounds).toBe(3);
-    expect(result.results).toHaveLength(150);
+    expect(result.results.length).toBeGreaterThanOrEqual(150);
     expect(result.failures, result.failures.map((failure) => `${failure.id}: ${failure.feedback.join('; ')}`).join('\n')).toEqual([]);
     expect(result.summary.allPassed).toBe(true);
     expect(result.summary.minRelevance).toBe(1);

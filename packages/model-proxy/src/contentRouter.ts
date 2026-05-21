@@ -110,7 +110,7 @@ function extractKeyFactLines(content: string, query: string): string[] {
     const lower = line.toLowerCase();
     return queryTokens.length === 0 || queryTokens.some((token) => lower.includes(token)) || /error|fail|ERR!|warning|denied|OK|OPEN|CLEAN|Plan:|diff --git|@@|<path>|End of file|rows|keys/i.test(line);
   });
-  return unique([...factLines, ...lines.slice(0, 6)])
+  return unique([...factLines, ...factLines.slice(0, 6)])
     .slice(0, 8)
     .map((line) => line.slice(0, 220));
 }

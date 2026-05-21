@@ -42,7 +42,7 @@ export async function runLeanCtxCopilotBenchmark(options: {
   rounds?: number;
   fixtures?: LeanCtxCopilotFixture[];
 }): Promise<LeanCtxCopilotBenchmarkResult> {
-  const rounds = options.rounds ?? 3;
+  const rounds = Math.max(1, options.rounds ?? 3);
   const fixtures = options.fixtures ?? leanCtxCopilotFixtures;
   const repeatedResults: LeanCtxCopilotCaseResult[] = [];
 
@@ -106,6 +106,9 @@ export function scoreOutput(output: string, fixture: LeanCtxCopilotFixture, syst
 
 async function renderUtkOutput(fixture: LeanCtxCopilotFixture, workspaceRoot: string): Promise<string> {
   if (fixture.kind === 'prompt-surface') {
+    if (fixture.surface === undefined) {
+      throw new Error(`Fixture ${fixture.id} has kind 'prompt-surface' but missing surface property`);
+    }
     const result = await optimizePromptSurface({
       workspaceRoot,
       surface: fixture.surface as PromptSurface,

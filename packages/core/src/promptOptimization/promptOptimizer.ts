@@ -126,6 +126,7 @@ function optimizeBySurface(surface: PromptSurface, text: string, protectedSpans:
     if (requiredTerms.length > 0) {
       return uniqueLines([
         compactGhcpFrontmatter(frontmatter),
+        ...mandatoryLines,
         requiredLine,
         'Visible output: concise; recover via sidecar.'
       ]).join('\n');
