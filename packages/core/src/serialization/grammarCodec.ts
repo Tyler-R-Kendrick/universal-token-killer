@@ -118,7 +118,13 @@ export function generatedSerializerFromCompiledGrammar(options: CompileSerializa
   };
   const serializer: GeneratedSerializationPrinter = {
     serialize(value) {
-      return compiled.codec.serialize(toSerializationAst(value));
+      const ast = toSerializationAst(value);
+      const validation = lintSerializationAst(ast);
+      if (!validation.valid) {
+        const messages = validation.diagnostics.map(d => d.message).join('; ');
+        throw new Error(`Invalid serialization value: ${messages}`);
+      }
+      return compiled.codec.serialize(ast);
     },
     canonicalize(value) {
       return toSerializationAst(value);
@@ -335,7 +341,10 @@ function deserializeToon(text: string): SerializationAst {
       const count = Number(countRaw);
       const rows: SerializationAst[] = [];
       for (let rowIndex = 0; rowIndex < count && index + 1 < lines.length; rowIndex += 1) {
-        const row = lines[++index]!.trim();
+        const nextLine = lines[index + 1]!;
+        if (!/^\s/.test(nextLine)) break;
+        index += 1;
+        const row = nextLine.trim();
         const cells = row.length > 0 ? row.split(',') : [];
         const item: Record<string, SerializationAst> = {};
         fields.forEach((field, fieldIndex) => {
@@ -357,6 +366,16 @@ function deserializeToon(text: string): SerializationAst {
     if (scalar) {
       const key = scalar[1]!;
       const valueRaw = scalar[2]!;
+      if (valueRaw.length === 0) {
+        const nestedLines: string[] = [];
+        while (index + 1 < lines.length && /^\s/.test(lines[index + 1]!)) {
+          nestedLines.push(lines[++index]!.replace(/^\s\s/, ''));
+        }
+        if (nestedLines.length > 0) {
+          result[key] = deserializeToon(nestedLines.join('\n'));
+          continue;
+        }
+      }
       result[key] = parseToonScalar(valueRaw);
     }
   }

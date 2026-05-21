@@ -331,8 +331,9 @@ async function listSerializationPluginRoots(pluginDir: string): Promise<string[]
       if ((await stat(fullPath)).isDirectory()) roots.push(fullPath);
     }
     return roots;
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
   }
 }
 
@@ -342,8 +343,9 @@ function listSerializationPluginRootsSync(pluginDir: string): string[] {
       .sort()
       .map((entry) => path.join(pluginDir, entry))
       .filter((entry) => statSync(entry).isDirectory());
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
   }
 }
 
