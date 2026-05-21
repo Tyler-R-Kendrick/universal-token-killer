@@ -1,47 +1,24 @@
 ---
 name: detoks
-description: Use when compressing prompts or artifacts before sending bulky text, recovered artifacts, logs, diffs, reports, or tool output to LLM context
+description: Use when compressing prompts, agent skills, AGENTS.md files, GitHub Copilot custom agents, subagent definitions, or bulky artifacts before sending text to LLM context; includes detoks-prompt CLI/MCP use, skill consolidation, AGENTS.md memory/skill extraction, and GHCP subagent/frontmatter orchestration
 ---
 
 # Detoks
 
-Use local `detoks-prompt` CLI flow for LLMLingua-2 prompt compression so bulky prompt text stays in files or stdin instead of agent context. Use detok MCP server for explicit tool workflows over loaded text. This skill does not replace UTK raw artifact persistence, schema inference, routing, or recovery.
+Orchestrate all detoks workflows through this skill. Keep `SKILL.md` as router only; load focused references before changing prompt, skill, AGENTS.md, or GitHub Copilot custom-agent content.
 
-## Decision Rules
+## Route
 
-Use `detoks-prompt` CLI when:
+- Prompt, reusable instruction, large prose artifact: read `references/detoks-prompt.md`.
+- Skill or old `detoks-skill` content: read `references/detoks-skill.md`.
+- AGENTS.md cleanup: read `references/detoks-agentsmd.md`, then `references/detoks-prompt.md`.
+- GitHub Copilot custom agent or subagent refactor: read `references/detoks-ghcp-subagent.md`, then `references/detoks-prompt.md`.
+- MCP tool details or rates: read `references/detok-mcp.md`.
 
-- target is prompt, instruction block, or reusable skill/agent text;
-- prompt text is large enough that pasting it into chat would waste context;
-- prompt text may contain fenced code, inline code, Markdown blockquotes, or quoted requirements that must remain unchanged.
+## Core Rules
 
-Use MCP `detok` when:
-
-- text is large enough to crowd model context;
-- the task needs gist-level reasoning over logs, diffs, markdown reports, or recovered raw artifacts;
-- the user asks to simplify, compress, reduce tokens, detokenize, or rewrite input before reasoning;
-- UTK already parsed templates/schemas and the next step would otherwise read a large text artifact into the LLM.
-
-Do not use `detok` when:
-
-- exact bytes, line numbers, patches, stack traces, legal text, or security evidence must remain verbatim;
-- schema inference, template parsing, routing, or fact retention still needs raw content;
-- the content is already compact enough to read directly;
-- compression would hide facts the user explicitly asked to inspect.
-
-The Copilot CLI `preToolUse` hook may run automatically for long, allowlisted prose fields such as `prompt`, `instructions`, `description`, `question`, `message`, `summary`, `notes`, or `body`. It must not rewrite commands, paths, patches, diffs, file contents, ids, or edit strings.
-
-## Workflow
-
-1. Preserve or locate the raw source first.
-2. If the content comes from UTK, prefer raw artifacts for recovery and schema facts.
-3. Write or locate prompt text in file, then run `node packages/cli/dist/utk.js detoks-prompt --file <path>`.
-4. For piped prompt text, run `Get-Content <path> -Raw | node packages/cli/dist/utk.js detoks-prompt --stdin`.
-5. Use MCP tool `detok` only for explicit LLM-bound reading copies where CLI file/stdin flow is not right fit.
-6. Use `rate: 0.33` by default; raise it for code, diffs, and dense technical output.
-7. Keep force tokens such as newlines, punctuation, paths, and issue markers when structure matters.
-8. State that reasoning used compressed text when final conclusions depend on compression.
-
-## Reference
-
-Read `references/detok-mcp.md` for tool arguments, examples, and common mistakes.
+1. Preserve raw source before compression or refactor.
+2. Use file/stdin CLI flow for large prompt text; avoid pasting bulky source into chat.
+3. Preserve code blocks, inline code, quoted requirements, frontmatter keys, tool names, file paths, links, and exact validation commands.
+4. Prefer references and extracted skills over one huge instruction file.
+5. State when conclusions depend on compressed text.
