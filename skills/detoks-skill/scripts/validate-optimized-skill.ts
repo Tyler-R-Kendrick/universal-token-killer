@@ -29,7 +29,12 @@ async function exists(file: string): Promise<boolean> {
 }
 
 function codeBlocks(text: string): string[] {
-  return Array.from(text.matchAll(/```[\s\S]*?```/gu)).map((match) => match[0]);
+  return Array.from(text.matchAll(/(`{3,})[\s\S]*?\1/gu)).map((match) => match[0]);
+}
+
+function hasRequiredFrontmatter(frontmatter: string | undefined): boolean {
+  if (!frontmatter) return false;
+  return /^name:\s*\S.+$/imu.test(frontmatter) && /^description:\s*Use when\b.+$/imu.test(frontmatter);
 }
 
 async function readAllMarkdown(root: string, current = root): Promise<string> {
@@ -45,6 +50,7 @@ async function readAllMarkdown(root: string, current = root): Promise<string> {
   return parts.join('\n');
 }
 
+/** Validate companion skill safety: declarations, references, ratio, fenced code preservation. */
 export async function validateOptimizedSkill(args: ValidateOptimizedSkillArgs): Promise<ValidationResult> {
   const sourceSkillPath = path.join(path.resolve(args.sourceSkillRoot), 'SKILL.md');
   const optimizedRoot = path.resolve(args.optimizedSkillRoot);
@@ -66,7 +72,7 @@ export async function validateOptimizedSkill(args: ValidateOptimizedSkillArgs): 
     },
     {
       name: 'frontmatter-valid',
-      ok: /^---\nname:\s*.+\ndescription:\s*Use when[\s\S]*?\n---/u.test(optimizedSkill),
+      ok: hasRequiredFrontmatter(optimizedFrontmatter),
       message: 'optimized SKILL.md must include name and Use when description frontmatter'
     },
     {

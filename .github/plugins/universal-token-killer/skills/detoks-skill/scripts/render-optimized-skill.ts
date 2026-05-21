@@ -28,9 +28,18 @@ function sha256(text: string): string {
   return createHash('sha256').update(text).digest('hex');
 }
 
+function fenceFor(text: string): string {
+  const longest = Math.max(2, ...Array.from(text.matchAll(/`+/gu)).map((match) => match[0].length));
+  return '`'.repeat(longest + 1);
+}
+
 function defaultSpawn(command: string, args: string[], input: string): Promise<{ code: number | null; stdout: string; stderr: string }> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`Command timed out: ${command} ${args.join(' ')}`));
+    }, 30_000);
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (chunk) => {
@@ -39,7 +48,14 @@ function defaultSpawn(command: string, args: string[], input: string): Promise<{
     child.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
     });
-    child.on('close', (code) => resolve({ code, stdout, stderr }));
+    child.once('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once('close', (code) => {
+      clearTimeout(timeout);
+      resolve({ code, stdout, stderr });
+    });
     child.stdin.end(input);
   });
 }
@@ -57,6 +73,7 @@ async function maybeCompressReference(text: string, args: RenderOptimizedSkillAr
   return result.stdout.replace(/\s+$/u, '\n');
 }
 
+/** Render token-light companion skill without mutating original source skill. */
 export async function renderOptimizedSkill(args: RenderOptimizedSkillArgs): Promise<RenderOptimizedSkillResult> {
   const sourceSkillRoot = path.resolve(args.sourceSkillRoot);
   const outputSkillRoot = path.resolve(args.outputSkillRoot);
@@ -73,20 +90,22 @@ export async function renderOptimizedSkill(args: RenderOptimizedSkillArgs): Prom
   await mkdir(path.join(outputSkillRoot, 'references'), { recursive: true });
   await mkdir(path.join(outputSkillRoot, 'scripts'), { recursive: true });
 
-  const root = `${frontmatter.originalFrontmatter}\n\n# ${optimizedName}\n\nToken-optimized companion. Original skill remains source of truth.\n\n## Load Map\n\n- \`references/workflow.md\`: preserved source, migration notes, validation checklist.\n- \`references/hotspots.md\`: token hotspots and deterministic script candidates.\n\n## Rules\n\n1. Read original skill first when exact behavior matters.\n2. Preserve code, commands, paths, URLs, and YAML exactly.\n3. Use scripts for repeatable checks before reporting success.\n`;
+  const root = `${frontmatter.originalFrontmatter}\n\n# ${optimizedName}\n\nToken-light companion. Original skill = source truth.\n\n## Load Map\n\n- \`references/workflow.md\`: source, migration, checks.\n- \`references/hotspots.md\`: token hotspots, script candidates.\n\n## Rules\n\n1. Exact behavior needed? Read original first.\n2. Preserve code, commands, paths, URLs, YAML exactly.\n3. Run scripts before success report.\n`;
 
   const hotspots = analysis.hotspots
-    .map((file) => `- ${file.relativePath}: ~${file.estimatedTokens} tokens, ${file.bytes} bytes`)
+    .map((file) => `- ${file.relativePath}: ~${file.estimatedTokens} tok, ${file.bytes} bytes`)
     .join('\n');
   const candidates =
     analysis.deterministicCandidates
       .map((candidate) => `- ${candidate.relativePath}: ${candidate.reason}\n\n  ${candidate.excerpt.replace(/\n/g, '\n  ')}`)
-      .join('\n') || '- No deterministic script candidates found.';
+      .join('\n') || '- No script candidates.';
 
-  const workflow = await maybeCompressReference(
-    `# Workflow\n\nGenerated companion for \`${sourceName}\`.\n\nSource SHA256: \`${sha256(sourceSkill)}\`\nCandidate: ${args.candidateLabel ?? 'default'}\n\n## Frontmatter Context Optimization\n\n${frontmatter.optimizedContext}\n\n## Validation\n\n- Source skill stays unchanged in \`${sourceSkillRoot}\`.\n- Optimized root token estimate: ${estimateTokens(root)}.\n- Source root token estimate: ${estimateTokens(sourceSkill)}.\n- Frontmatter declarations are copied exactly, not rewritten.\n- Code blocks below are copied exactly for preservation checks.\n\n## Preserved Source\n\n\`\`\`markdown\n${sourceSkill}\n\`\`\`\n`,
+  const workflowProse = await maybeCompressReference(
+    `# Workflow\n\nCompanion for \`${sourceName}\`.\n\nSource SHA256: \`${sha256(sourceSkill)}\`\nCandidate: ${args.candidateLabel ?? 'default'}\n\n## Frontmatter Context Optimization\n\n${frontmatter.optimizedContext}\n\n## Validation\n\n- Source skill unchanged: \`${sourceSkillRoot}\`.\n- Optimized root: ~${estimateTokens(root)} tok.\n- Source root: ~${estimateTokens(sourceSkill)} tok.\n- Frontmatter declarations copied exactly.\n- Code blocks below copied exactly.\n`,
     args
   );
+  const fence = fenceFor(sourceSkill);
+  const workflow = `${workflowProse}\n## Preserved Source\n\n${fence}markdown\n${sourceSkill}\n${fence}\n`;
 
   const hotspotReference = `# Hotspots\n\n## Token Hotspots\n\n${hotspots}\n\n## Script Candidates\n\n${candidates}\n`;
 

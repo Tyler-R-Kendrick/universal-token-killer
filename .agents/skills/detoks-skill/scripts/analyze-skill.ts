@@ -23,6 +23,7 @@ export interface SkillAnalysisReport {
   deterministicCandidates: DeterministicCandidate[];
 }
 
+/** Estimate LLM tokens cheaply for skill budget comparisons. */
 export function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.trim().split(/\s+/u).filter(Boolean).length * 1.33));
 }
@@ -68,30 +69,29 @@ function findDeterministicCandidates(relativePath: string, text: string): Determ
   return candidates;
 }
 
+/** Read markdown once, report token hotspots plus scriptable workflow candidates. */
 export async function analyzeSkill(skillRoot: string): Promise<SkillAnalysisReport> {
   const absoluteRoot = path.resolve(skillRoot);
   const markdown = await listMarkdown(absoluteRoot);
-  const files = await Promise.all(
+  const markdownRecords = await Promise.all(
     markdown.map(async (relativePath) => {
       const text = await readFile(path.join(absoluteRoot, relativePath), 'utf8');
+      return { relativePath, text };
+    })
+  );
+  const files = markdownRecords.map(({ relativePath, text }) => {
       return {
         relativePath,
         bytes: Buffer.byteLength(text, 'utf8'),
         estimatedTokens: estimateTokens(text),
         headings: Array.from(text.matchAll(/^#{1,6}\s+(.+)$/gmu)).map((match) => match[1]!.trim())
       };
-    })
-  );
+    });
 
-  const sourceSkill = await readFile(path.join(absoluteRoot, 'SKILL.md'), 'utf8');
-  const deterministicCandidates = (
-    await Promise.all(
-      markdown.map(async (relativePath) => {
-        const text = await readFile(path.join(absoluteRoot, relativePath), 'utf8');
-        return findDeterministicCandidates(relativePath, text);
-      })
-    )
-  ).flat();
+  const sourceSkill = markdownRecords.find((record) => record.relativePath === 'SKILL.md')?.text ?? '';
+  const deterministicCandidates = markdownRecords.flatMap(({ relativePath, text }) =>
+    findDeterministicCandidates(relativePath, text)
+  );
 
   return {
     skillName: parseSkillName(sourceSkill, path.basename(absoluteRoot)),

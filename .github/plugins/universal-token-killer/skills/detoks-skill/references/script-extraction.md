@@ -26,4 +26,4 @@ Keep prose when judgment is central:
 - Microsoft Trace via Python package `trace-opt` (`from opto import trace`);
 - Agent Lightning via Python package `agentlightning`.
 
-Use Trace for prompt/procedure/code-string optimization with feedback. Use Agent Lightning when optimizing from trajectory/span style rollouts or when a trainer/store workflow already exists. If framework packages are missing, fail with install commands instead of silently using a fake optimizer.
+Use Trace for prompt/procedure/code-string optimization with feedback. Use Agent Lightning when optimizing from trajectory/span-style rollouts or when a trainer/store workflow already exists. If framework packages are missing, fail with install commands instead of silently using a fake optimizer.

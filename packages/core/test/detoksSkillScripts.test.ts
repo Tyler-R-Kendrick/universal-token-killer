@@ -79,6 +79,8 @@ describe('detoks-skill scripts', () => {
     expect(optimized.length).toBeLessThan(original.length);
     expect(optimized).toContain('references/workflow.md');
     expect(workflow).toContain('Preserved Source');
+    expect(workflow).toContain(original);
+    expect(workflow).toContain('````markdown\n---\nname: verbose-skill');
   });
 
   it('validates optimized output and rejects unsafe code-block corruption', async () => {
@@ -99,6 +101,49 @@ describe('detoks-skill scripts', () => {
     const invalid = await validateOptimizedSkill({ sourceSkillRoot: skillRoot, optimizedSkillRoot: outputRoot });
     expect(invalid.ok).toBe(false);
     expect(invalid.checks.some((check) => check.name === 'code-blocks-preserved' && !check.ok)).toBe(true);
+  });
+
+  it('accepts CRLF frontmatter in any declaration order', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'detoks-skill-frontmatter-order-'));
+    const skillRoot = path.join(root, 'ordered-skill');
+    const outputRoot = path.join(root, 'ordered-skill-detoks');
+    await import('node:fs/promises').then(async ({ mkdir, writeFile }) => {
+      await mkdir(path.join(skillRoot, 'references'), { recursive: true });
+      await mkdir(path.join(outputRoot, 'references'), { recursive: true });
+      const source = [
+        '---',
+        'description: Use when declaration order differs',
+        'name: ordered-skill',
+        '---',
+        '',
+        '# Ordered Skill',
+        '',
+        '```sh',
+        'echo exact',
+        '```'
+      ].join('\r\n');
+      await writeFile(path.join(skillRoot, 'SKILL.md'), source, 'utf8');
+      await writeFile(
+        path.join(outputRoot, 'SKILL.md'),
+        [
+          '---',
+          'description: Use when declaration order differs',
+          'name: ordered-skill',
+          '---',
+          '',
+          '# ordered-skill',
+          '',
+          '- `references/workflow.md`: source.'
+        ].join('\r\n'),
+        'utf8'
+      );
+      await writeFile(path.join(outputRoot, 'references', 'workflow.md'), source, 'utf8');
+    });
+
+    const valid = await validateOptimizedSkill({ sourceSkillRoot: skillRoot, optimizedSkillRoot: outputRoot });
+
+    expect(valid.checks.some((check) => check.name === 'frontmatter-valid' && check.ok)).toBe(true);
+    expect(valid.checks.some((check) => check.name === 'frontmatter-declarations-preserved' && check.ok)).toBe(true);
   });
 
   it('optimizes frontmatter context without changing Agent Skill declarations', async () => {

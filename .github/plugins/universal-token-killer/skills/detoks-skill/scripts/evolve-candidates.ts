@@ -94,8 +94,12 @@ asyncio.run(main())
 }
 
 function defaultSpawn(command: string, args: string[], input: string): Promise<SpawnResult> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`Command timed out: ${command} ${args.join(' ')}`));
+    }, 30_000);
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (chunk) => {
@@ -104,7 +108,14 @@ function defaultSpawn(command: string, args: string[], input: string): Promise<S
     child.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
     });
-    child.on('close', (code) => resolve({ code, stdout, stderr }));
+    child.once('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once('close', (code) => {
+      clearTimeout(timeout);
+      resolve({ code, stdout, stderr });
+    });
     child.stdin.end(input);
   });
 }
@@ -152,6 +163,7 @@ function score(validation: ValidationResult, iteration: number): number {
   return passed * 100 + ratioScore * 25 - iteration;
 }
 
+/** Generate, score, and select optimized skill candidates through Trace or Agent Lightning. */
 export async function evolveCandidates(args: EvolveCandidatesArgs): Promise<EvolveCandidatesResult> {
   const backend = args.backend ?? 'trace';
   const python = args.python ?? 'python';
