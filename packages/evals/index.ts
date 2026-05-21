@@ -4,6 +4,7 @@ export * from './fixtures/modelProxyCompetitiveFixtures.js';
 export * from './fixtures/cavemanParityFixtures.js';
 export * from './fixtures/compresrParityFixtures.js';
 export * from './config/compresrConfig.js';
+export * from './fixtures/leanCtxCopilotFixtures.js';
 export * from './metrics/rtkParityMetrics.js';
 export * from './metrics/bashRewriteMetrics.js';
 export * from './metrics/cavemanParityMetrics.js';
