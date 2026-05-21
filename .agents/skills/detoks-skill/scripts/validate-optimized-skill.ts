@@ -37,7 +37,7 @@ function codeBlocks(text: string): string[] {
 function hasRequiredFrontmatter(frontmatter: string | undefined): boolean {
   if (!frontmatter) return false;
   const name = /^name:\s*(.+)$/imu.exec(frontmatter)?.[1]?.trim();
-  const description = /^description:\s*(.+)$/imu.exec(frontmatter)?.[1]?.trim().replace(/^["'](.*)["']$/u, '$1');
+  const description = /^description:\s*(.+)$/imu.exec(frontmatter)?.[1]?.trim()?.replace(/^["'](.*)["']$/u, '$1');
   return Boolean(name) && Boolean(description?.startsWith('Use when'));
 }
 

@@ -192,6 +192,28 @@ describe('detoks-skill scripts', () => {
     expect(valid.checks.some((check) => check.name === 'code-blocks-preserved' && check.ok)).toBe(true);
   });
 
+  it('rejects missing frontmatter description without throwing', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'detoks-skill-missing-description-'));
+    const skillRoot = path.join(root, 'missing-description');
+    const outputRoot = path.join(root, 'missing-description-detoks');
+    await import('node:fs/promises').then(async ({ mkdir, writeFile }) => {
+      await mkdir(path.join(skillRoot, 'references'), { recursive: true });
+      await mkdir(path.join(outputRoot, 'references'), { recursive: true });
+      const source = ['---', 'name: missing-description', '---', '', '# Missing Description'].join('\n');
+      await writeFile(path.join(skillRoot, 'SKILL.md'), source, 'utf8');
+      await writeFile(
+        path.join(outputRoot, 'SKILL.md'),
+        ['---', 'name: missing-description', '---', '', '# Missing Description', '', '- `references/workflow.md`: source.'].join('\n'),
+        'utf8'
+      );
+      await writeFile(path.join(outputRoot, 'references', 'workflow.md'), source, 'utf8');
+    });
+
+    const valid = await validateOptimizedSkill({ sourceSkillRoot: skillRoot, optimizedSkillRoot: outputRoot });
+
+    expect(valid.checks.some((check) => check.name === 'frontmatter-valid' && !check.ok)).toBe(true);
+  });
+
   it('optimizes frontmatter context without changing Agent Skill declarations', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'detoks-skill-frontmatter-'));
     const skillRoot = await writeSampleSkill(root);
