@@ -124,9 +124,10 @@ function optimizeBySurface(surface: PromptSurface, text: string, protectedSpans:
 
   if (surface === 'ghcp-agent' || surface === 'session-agent') {
     if (requiredTerms.length > 0) {
+      const uncoveredMandatoryLines = mandatoryLines.filter((line) => !requiredTerms.some((term) => line.includes(term)));
       return uniqueLines([
         compactGhcpFrontmatter(frontmatter),
-        ...mandatoryLines,
+        ...uncoveredMandatoryLines.slice(0, 1),
         requiredLine,
         'Visible output: concise; recover via sidecar.'
       ]).join('\n');
