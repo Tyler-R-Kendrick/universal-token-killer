@@ -69,6 +69,27 @@ describe('caveman parity metrics', () => {
     expect(CAVEMAN_PARITY_MODE_EVALS).toContain(`${CAVEMAN_PARITY_FIXTURES[0]!.name}-wenyan`);
   });
 
+  it('keeps caveman mode baselines independent from UTK candidates', () => {
+    const violations: string[] = [];
+    for (const fixture of CAVEMAN_PARITY_FIXTURES) {
+      for (const mode of CAVEMAN_MODES) {
+        const baseline = cavemanBaselineForMode(fixture, mode);
+
+        if (baseline === fixture.utkCandidate) {
+          violations.push(`${fixture.name}/${mode}: equals utkCandidate`);
+        }
+        if (baseline.includes(fixture.utkCandidate)) {
+          violations.push(`${fixture.name}/${mode}: contains utkCandidate`);
+        }
+      }
+      if (cavemanBaselineForMode(fixture, 'ultra') === fixture.utkCandidate) {
+        violations.push(`${fixture.name}/ultra: equals utkCandidate`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it('measures UTK output against every caveman mode with the same fact and edge gates', async () => {
     for (const fixture of CAVEMAN_PARITY_FIXTURES) {
       for (const mode of CAVEMAN_MODES) {

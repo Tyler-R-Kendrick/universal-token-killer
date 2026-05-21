@@ -128,7 +128,7 @@ function renderMarkdown(rows: CavemanParityReportRow[], modeRows: CavemanModeRep
     '- Caveman is strongest at terse human-facing prose: review comments, commit subjects, status notes, command help, and incident handoffs.',
     '- UTK outperforms when it uses structured field order, removes labels that syntax already implies, and treats exact commands, paths, ids, errors, and secrets as protected anchors.',
     '- Safety clarity remains special: UTK can be shorter than caveman only when the irreversible consequence and mitigation stay explicit.',
-    '- Mode coverage now runs the same caveman suite across lite, full, ultra, and wenyan baselines so style compression cannot hide fact drift.',
+    '- Mode coverage now runs the same caveman suite across independent lite, full, ultra, and wenyan competitor baselines so style compression cannot hide fact drift.',
     '',
     '## Mode Results',
     '',

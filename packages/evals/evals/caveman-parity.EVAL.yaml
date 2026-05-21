@@ -7,7 +7,7 @@ tests:
       {
         "scenario": "ci-failure-triage",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
+        "caveman_baseline": "Lite caveman competitor: CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
         "required_terms": [
           "npm run typecheck",
           "TS2345",
@@ -22,7 +22,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 52
+        "caveman_tokens": 55
       }
     assertions:
       - name: caveman-parity
@@ -65,7 +65,7 @@ tests:
       {
         "scenario": "ci-failure-triage",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: CI red. `npm run typecheck` fails: TS2345 `packages/core/src/router/router.ts:87`. `schemaId` may be undefined. Guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
+        "caveman_baseline": "Ultra caveman competitor: CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
         "required_terms": [
           "npm run typecheck",
           "TS2345",
@@ -80,7 +80,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 49
+        "caveman_tokens": 55
       }
     assertions:
       - name: caveman-parity
@@ -94,7 +94,7 @@ tests:
       {
         "scenario": "ci-failure-triage",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
+        "caveman_baseline": "Wenyan caveman competitor: CI red. `npm run typecheck` fails in `packages/core/src/router/router.ts:87`: TS2345. Cause: `schemaId` may be undefined. Fix guard before `routeToSchema(schemaId)`. Rerun `npm run typecheck`.",
         "required_terms": [
           "npm run typecheck",
           "TS2345",
@@ -109,7 +109,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 52
+        "caveman_tokens": 55
       }
     assertions:
       - name: caveman-parity
@@ -123,7 +123,7 @@ tests:
       {
         "scenario": "review-finding",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
+        "caveman_baseline": "Lite caveman competitor: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
         "required_terms": [
           "packages/model-proxy/src/proxy.ts:142",
           "POST",
@@ -138,7 +138,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 50
+        "caveman_tokens": 52
       }
     assertions:
       - name: caveman-parity
@@ -181,7 +181,7 @@ tests:
       {
         "scenario": "review-finding",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body. Duplicate side effects possible. Fix: retry only idempotent methods or pre-body failures.",
+        "caveman_baseline": "Ultra caveman competitor: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
         "required_terms": [
           "packages/model-proxy/src/proxy.ts:142",
           "POST",
@@ -196,7 +196,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 45
+        "caveman_tokens": 53
       }
     assertions:
       - name: caveman-parity
@@ -210,7 +210,7 @@ tests:
       {
         "scenario": "review-finding",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
+        "caveman_baseline": "Wenyan caveman competitor: `packages/model-proxy/src/proxy.ts:142` retries POST after partial body forwarded. Risk: duplicate side effects. Fix: retry only idempotent methods or failures before body forwarding.",
         "required_terms": [
           "packages/model-proxy/src/proxy.ts:142",
           "POST",
@@ -225,7 +225,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 50
+        "caveman_tokens": 53
       }
     assertions:
       - name: caveman-parity
@@ -239,7 +239,7 @@ tests:
       {
         "scenario": "artifact-recovery",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
+        "caveman_baseline": "Lite caveman competitor: Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
         "required_terms": [
           ".utk/tools/git.status/observations/run-9/output.raw.txt",
           ".utk/tools/git.status/observations/run-9/output.compact.toon",
@@ -253,7 +253,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 56
+        "caveman_tokens": 59
       }
     assertions:
       - name: caveman-parity
@@ -295,7 +295,7 @@ tests:
       {
         "scenario": "artifact-recovery",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Payload omitted. Raw `.utk/tools/git.status/observations/run-9/output.raw.txt`; compact `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`; confidence 0.97.",
+        "caveman_baseline": "Ultra caveman competitor: Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
         "required_terms": [
           ".utk/tools/git.status/observations/run-9/output.raw.txt",
           ".utk/tools/git.status/observations/run-9/output.compact.toon",
@@ -309,7 +309,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 54
+        "caveman_tokens": 59
       }
     assertions:
       - name: caveman-parity
@@ -323,7 +323,7 @@ tests:
       {
         "scenario": "artifact-recovery",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
+        "caveman_baseline": "Wenyan caveman competitor: Payload omitted from chat. Raw: `.utk/tools/git.status/observations/run-9/output.raw.txt`. Compact: `.utk/tools/git.status/observations/run-9/output.compact.toon`. Schema `shell.git-status.v1`, confidence 0.97.",
         "required_terms": [
           ".utk/tools/git.status/observations/run-9/output.raw.txt",
           ".utk/tools/git.status/observations/run-9/output.compact.toon",
@@ -337,7 +337,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 57
+        "caveman_tokens": 60
       }
     assertions:
       - name: caveman-parity
@@ -351,7 +351,7 @@ tests:
       {
         "scenario": "implementation-status",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
+        "caveman_baseline": "Lite caveman competitor: Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
         "required_terms": [
           "run checkpoint persistence",
           "npm test --workspace @utk/evals",
@@ -365,7 +365,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 56
+        "caveman_tokens": 59
       }
     assertions:
       - name: caveman-parity
@@ -407,7 +407,7 @@ tests:
       {
         "scenario": "implementation-status",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Run checkpoint persistence done. `npm test --workspace @utk/evals` passed. Publish blocked: `\"The token in default is invalid\"`. Diff `C:/Users/conta/.codex/automations/tk39.diff`.",
+        "caveman_baseline": "Ultra caveman competitor: Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
         "required_terms": [
           "run checkpoint persistence",
           "npm test --workspace @utk/evals",
@@ -421,7 +421,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 49
+        "caveman_tokens": 59
       }
     assertions:
       - name: caveman-parity
@@ -435,7 +435,7 @@ tests:
       {
         "scenario": "implementation-status",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
+        "caveman_baseline": "Wenyan caveman competitor: Implementation done: run checkpoint persistence. Validation passed: `npm test --workspace @utk/evals`. Publish blocked: `\"The token in default is invalid\"`. Diff: `C:/Users/conta/.codex/automations/tk39.diff`.",
         "required_terms": [
           "run checkpoint persistence",
           "npm test --workspace @utk/evals",
@@ -449,7 +449,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 57
+        "caveman_tokens": 59
       }
     assertions:
       - name: caveman-parity
@@ -463,7 +463,7 @@ tests:
       {
         "scenario": "commit-message",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: test(evals): add caveman parity benchmarks and AgentV autoevals grader",
+        "caveman_baseline": "Lite caveman competitor: test(evals): add caveman parity benchmarks and AgentV autoevals grader",
         "required_terms": [
           "test(evals)",
           "caveman parity",
@@ -476,7 +476,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -517,7 +517,7 @@ tests:
       {
         "scenario": "commit-message",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: test(evals): add caveman parity autoevals",
+        "caveman_baseline": "Ultra caveman competitor: test(evals): add caveman parity benchmarks and AgentV autoevals grader",
         "required_terms": [
           "test(evals)",
           "caveman parity",
@@ -530,7 +530,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -544,7 +544,7 @@ tests:
       {
         "scenario": "commit-message",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: test(evals): add caveman parity benchmarks and AgentV autoevals grader",
+        "caveman_baseline": "Wenyan caveman competitor: test(evals): add caveman parity benchmarks and AgentV autoevals grader",
         "required_terms": [
           "test(evals)",
           "caveman parity",
@@ -557,7 +557,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -571,7 +571,7 @@ tests:
       {
         "scenario": "slash-command-help",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
+        "caveman_baseline": "Lite caveman competitor: `/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
         "required_terms": [
           "/caveman lite|full|ultra|wenyan",
           "stop caveman",
@@ -584,7 +584,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 32
       }
     assertions:
       - name: caveman-parity
@@ -625,7 +625,7 @@ tests:
       {
         "scenario": "slash-command-help",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `/caveman lite|full|ultra|wenyan`; stop: `stop caveman` or `normal mode`.",
+        "caveman_baseline": "Ultra caveman competitor: `/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
         "required_terms": [
           "/caveman lite|full|ultra|wenyan",
           "stop caveman",
@@ -638,7 +638,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 32
       }
     assertions:
       - name: caveman-parity
@@ -652,7 +652,7 @@ tests:
       {
         "scenario": "slash-command-help",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
+        "caveman_baseline": "Wenyan caveman competitor: `/caveman lite|full|ultra|wenyan` sets compression level. Stop with `stop caveman` or `normal mode`.",
         "required_terms": [
           "/caveman lite|full|ultra|wenyan",
           "stop caveman",
@@ -665,7 +665,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 32
       }
     assertions:
       - name: caveman-parity
@@ -679,7 +679,7 @@ tests:
       {
         "scenario": "security-auto-clarity",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
+        "caveman_baseline": "Lite caveman competitor: Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
         "required_terms": [
           "Warning",
           "prod signing key",
@@ -694,7 +694,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 37
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -737,7 +737,7 @@ tests:
       {
         "scenario": "security-auto-clarity",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Warning: rotate prod signing key -> all sessions invalid. Backup old key; confirm rollback plan first.",
+        "caveman_baseline": "Ultra caveman competitor: Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
         "required_terms": [
           "Warning",
           "prod signing key",
@@ -752,7 +752,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 30
+        "caveman_tokens": 40
       }
     assertions:
       - name: caveman-parity
@@ -766,7 +766,7 @@ tests:
       {
         "scenario": "security-auto-clarity",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
+        "caveman_baseline": "Wenyan caveman competitor: Warning: rotating production signing key invalidates all active sessions. Backup old key and confirm rollback plan before applying.",
         "required_terms": [
           "Warning",
           "prod signing key",
@@ -781,7 +781,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 37
+        "caveman_tokens": 40
       }
     assertions:
       - name: caveman-parity
@@ -795,7 +795,7 @@ tests:
       {
         "scenario": "mcp-tool-metadata",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
+        "caveman_baseline": "Lite caveman competitor: `detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
         "required_terms": [
           "detok",
           "local",
@@ -812,7 +812,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 35
+        "caveman_tokens": 38
       }
     assertions:
       - name: caveman-parity
@@ -857,7 +857,7 @@ tests:
       {
         "scenario": "mcp-tool-metadata",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `detok`: local rewrite for bulky natural language. No secrets, private keys, code blocks, exact errors.",
+        "caveman_baseline": "Ultra caveman competitor: `detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
         "required_terms": [
           "detok",
           "local",
@@ -874,7 +874,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 30
+        "caveman_tokens": 38
       }
     assertions:
       - name: caveman-parity
@@ -888,7 +888,7 @@ tests:
       {
         "scenario": "mcp-tool-metadata",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
+        "caveman_baseline": "Wenyan caveman competitor: `detok` rewrites bulky natural-language text locally before model use. Avoid secrets, private keys, code blocks, exact errors.",
         "required_terms": [
           "detok",
           "local",
@@ -905,7 +905,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 36
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -919,7 +919,7 @@ tests:
       {
         "scenario": "benchmark-result",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
+        "caveman_baseline": "Lite caveman competitor: Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
         "required_terms": [
           "Caveman parity",
           "11/11",
@@ -933,7 +933,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -975,7 +975,7 @@ tests:
       {
         "scenario": "benchmark-result",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Caveman parity green: 11/11. Avg ratio 0.89. Next publish report.",
+        "caveman_baseline": "Ultra caveman competitor: Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
         "required_terms": [
           "Caveman parity",
           "11/11",
@@ -989,7 +989,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -1003,7 +1003,7 @@ tests:
       {
         "scenario": "benchmark-result",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
+        "caveman_baseline": "Wenyan caveman competitor: Caveman parity green: 11/11 tests. Avg candidate/caveman token ratio 0.89. Next: publish report.",
         "required_terms": [
           "Caveman parity",
           "11/11",
@@ -1017,7 +1017,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -1031,7 +1031,7 @@ tests:
       {
         "scenario": "incident-handoff",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
+        "caveman_baseline": "Lite caveman competitor: SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
         "required_terms": [
           "SEV2",
           "platform-oncall",
@@ -1046,7 +1046,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 33
       }
     assertions:
       - name: caveman-parity
@@ -1089,7 +1089,7 @@ tests:
       {
         "scenario": "incident-handoff",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: SEV2. `platform-oncall`. 12% 500s on `/api/codex/chat`. Roll back `2026.05.20.4`.",
+        "caveman_baseline": "Ultra caveman competitor: SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
         "required_terms": [
           "SEV2",
           "platform-oncall",
@@ -1104,7 +1104,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -1118,7 +1118,7 @@ tests:
       {
         "scenario": "incident-handoff",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
+        "caveman_baseline": "Wenyan caveman competitor: SEV2. Owner `platform-oncall`. Impact: 12% 500s on `/api/codex/chat`. Mitigation: roll back `2026.05.20.4`.",
         "required_terms": [
           "SEV2",
           "platform-oncall",
@@ -1133,7 +1133,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -1147,7 +1147,7 @@ tests:
       {
         "scenario": "api-contract-change",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
+        "caveman_baseline": "Lite caveman competitor: `POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
         "required_terms": [
           "POST /api/codex/chat",
           "providerOptions.reasoningEffort",
@@ -1162,7 +1162,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 35
+        "caveman_tokens": 38
       }
     assertions:
       - name: caveman-parity
@@ -1205,7 +1205,7 @@ tests:
       {
         "scenario": "api-contract-change",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `POST /api/codex/chat`: optional `providerOptions.reasoningEffort`; compatible. Values `low|medium|high|xhigh`.",
+        "caveman_baseline": "Ultra caveman competitor: `POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
         "required_terms": [
           "POST /api/codex/chat",
           "providerOptions.reasoningEffort",
@@ -1220,7 +1220,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 38
       }
     assertions:
       - name: caveman-parity
@@ -1234,7 +1234,7 @@ tests:
       {
         "scenario": "api-contract-change",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
+        "caveman_baseline": "Wenyan caveman competitor: `POST /api/codex/chat` adds optional `providerOptions.reasoningEffort`. Backward compatible. Values: `low|medium|high|xhigh`.",
         "required_terms": [
           "POST /api/codex/chat",
           "providerOptions.reasoningEffort",
@@ -1249,7 +1249,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 36
+        "caveman_tokens": 38
       }
     assertions:
       - name: caveman-parity
@@ -1263,7 +1263,7 @@ tests:
       {
         "scenario": "test-plan",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
+        "caveman_baseline": "Lite caveman competitor: TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
         "required_terms": [
           "TDD",
           "red",
@@ -1279,7 +1279,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 36
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -1323,7 +1323,7 @@ tests:
       {
         "scenario": "test-plan",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: TDD: red missing artifact refs -> fix compact response -> refactor after green. Gate `npm test --workspace @utk/evals`.",
+        "caveman_baseline": "Ultra caveman competitor: TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
         "required_terms": [
           "TDD",
           "red",
@@ -1339,7 +1339,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 34
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -1353,7 +1353,7 @@ tests:
       {
         "scenario": "test-plan",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
+        "caveman_baseline": "Wenyan caveman competitor: TDD: red test for missing artifact refs -> compact response fix -> refactor after green. Gate: `npm test --workspace @utk/evals`.",
         "required_terms": [
           "TDD",
           "red",
@@ -1369,7 +1369,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 37
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -1383,7 +1383,7 @@ tests:
       {
         "scenario": "exact-error-string",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
+        "caveman_baseline": "Lite caveman competitor: Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
         "required_terms": [
           "Publish blocked",
           "Cannot read directory",
@@ -1399,7 +1399,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 38
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -1443,7 +1443,7 @@ tests:
       {
         "scenario": "exact-error-string",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Publish blocked: `Cannot read directory \"../../../../..\": Access is denied.` Env blocker, not code failure.",
+        "caveman_baseline": "Ultra caveman competitor: Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
         "required_terms": [
           "Publish blocked",
           "Cannot read directory",
@@ -1459,7 +1459,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -1473,7 +1473,7 @@ tests:
       {
         "scenario": "exact-error-string",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
+        "caveman_baseline": "Wenyan caveman competitor: Publish blocked by env error: `Cannot read directory \"../../../../..\": Access is denied.` Treat as environment blocker, not code failure.",
         "required_terms": [
           "Publish blocked",
           "Cannot read directory",
@@ -1489,7 +1489,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 39
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -1503,7 +1503,7 @@ tests:
       {
         "scenario": "windows-paths",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
+        "caveman_baseline": "Lite caveman competitor: Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
         "required_terms": [
           "Report",
           "Fixture"
@@ -1518,7 +1518,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 55
+        "caveman_tokens": 57
       }
     assertions:
       - name: caveman-parity
@@ -1561,7 +1561,7 @@ tests:
       {
         "scenario": "windows-paths",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Report=C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md; Fixture=C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts",
+        "caveman_baseline": "Ultra caveman competitor: Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
         "required_terms": [
           "Report",
           "Fixture"
@@ -1576,7 +1576,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 53
+        "caveman_tokens": 58
       }
     assertions:
       - name: caveman-parity
@@ -1590,7 +1590,7 @@ tests:
       {
         "scenario": "windows-paths",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
+        "caveman_baseline": "Wenyan caveman competitor: Report: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\docs\\internal\\caveman-parity-benchmark-results.md`. Fixture: `C:\\Users\\conta\\.codex\\worktrees\\2f15\\utk\\packages\\evals\\fixtures\\cavemanParityFixtures.ts`.",
         "required_terms": [
           "Report",
           "Fixture"
@@ -1605,7 +1605,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 55
+        "caveman_tokens": 58
       }
     assertions:
       - name: caveman-parity
@@ -1619,7 +1619,7 @@ tests:
       {
         "scenario": "json-config-diff",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
+        "caveman_baseline": "Lite caveman competitor: Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
         "required_terms": [
           "max_context_tokens",
           "3000",
@@ -1636,7 +1636,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -1681,7 +1681,7 @@ tests:
       {
         "scenario": "json-config-diff",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Quoted keys kept.",
+        "caveman_baseline": "Ultra caveman competitor: Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
         "required_terms": [
           "max_context_tokens",
           "3000",
@@ -1698,7 +1698,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -1712,7 +1712,7 @@ tests:
       {
         "scenario": "json-config-diff",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
+        "caveman_baseline": "Wenyan caveman competitor: Config change: `\"max_context_tokens\": 5000 -> 3000`; `\"prompt_compression_min_tokens\": 10 -> 1`. Keep quoted keys.",
         "required_terms": [
           "max_context_tokens",
           "3000",
@@ -1729,7 +1729,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 33
+        "caveman_tokens": 36
       }
     assertions:
       - name: caveman-parity
@@ -1743,7 +1743,7 @@ tests:
       {
         "scenario": "destructive-migration-warning",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
+        "caveman_baseline": "Lite caveman competitor: Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
         "required_terms": [
           "Warning",
           "DROP legacy_events.payload",
@@ -1765,7 +1765,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 37
+        "caveman_tokens": 39
       }
     assertions:
       - name: caveman-parity
@@ -1815,7 +1815,7 @@ tests:
       {
         "scenario": "destructive-migration-warning",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Warning: `DROP legacy_events.payload` irreversible. Order: backup -> migrate -> verify rows -> delete backup.",
+        "caveman_baseline": "Ultra caveman competitor: Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
         "required_terms": [
           "Warning",
           "DROP legacy_events.payload",
@@ -1837,7 +1837,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 40
       }
     assertions:
       - name: caveman-parity
@@ -1851,7 +1851,7 @@ tests:
       {
         "scenario": "destructive-migration-warning",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
+        "caveman_baseline": "Wenyan caveman competitor: Warning: `DROP legacy_events.payload` irreversible after migration. Order: backup -> migrate -> verify row counts -> delete backup.",
         "required_terms": [
           "Warning",
           "DROP legacy_events.payload",
@@ -1873,7 +1873,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 37
+        "caveman_tokens": 40
       }
     assertions:
       - name: caveman-parity
@@ -1887,7 +1887,7 @@ tests:
       {
         "scenario": "negative-review-result",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: No actionable findings. Residual risk: browser visual smoke not run in this env.",
+        "caveman_baseline": "Lite caveman competitor: No actionable findings. Residual risk: browser visual smoke not run in this env.",
         "required_terms": [
           "No actionable findings",
           "browser visual smoke",
@@ -1904,7 +1904,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -1949,7 +1949,7 @@ tests:
       {
         "scenario": "negative-review-result",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: No actionable findings. Risk: browser visual smoke not run.",
+        "caveman_baseline": "Ultra caveman competitor: No actionable findings. Residual risk: browser visual smoke not run in this env.",
         "required_terms": [
           "No actionable findings",
           "browser visual smoke",
@@ -1966,7 +1966,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -1980,7 +1980,7 @@ tests:
       {
         "scenario": "negative-review-result",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: No actionable findings. Residual risk: browser visual smoke not run in this env.",
+        "caveman_baseline": "Wenyan caveman competitor: No actionable findings. Residual risk: browser visual smoke not run in this env.",
         "required_terms": [
           "No actionable findings",
           "browser visual smoke",
@@ -1997,7 +1997,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -2011,7 +2011,7 @@ tests:
       {
         "scenario": "ordered-publish-steps",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
+        "caveman_baseline": "Lite caveman competitor: Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
         "required_terms": [
           "rebase",
           "origin/main",
@@ -2033,7 +2033,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -2083,7 +2083,7 @@ tests:
       {
         "scenario": "ordered-publish-steps",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Publish: rebase `origin/main` -> resolve conflicts -> `npm test` -> push -> open PR.",
+        "caveman_baseline": "Ultra caveman competitor: Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
         "required_terms": [
           "rebase",
           "origin/main",
@@ -2105,7 +2105,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 25
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -2119,7 +2119,7 @@ tests:
       {
         "scenario": "ordered-publish-steps",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
+        "caveman_baseline": "Wenyan caveman competitor: Publish order: rebase `origin/main` -> resolve conflicts -> `npm test` -> push branch -> open PR.",
         "required_terms": [
           "rebase",
           "origin/main",
@@ -2141,7 +2141,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -2155,7 +2155,7 @@ tests:
       {
         "scenario": "secret-redaction",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
+        "caveman_baseline": "Lite caveman competitor: Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
         "required_terms": [
           "Secret leak",
           ".env.local",
@@ -2174,7 +2174,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 30
+        "caveman_tokens": 33
       }
     assertions:
       - name: caveman-parity
@@ -2221,7 +2221,7 @@ tests:
       {
         "scenario": "secret-redaction",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Secret leak `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate; remove. Do not echo.",
+        "caveman_baseline": "Ultra caveman competitor: Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
         "required_terms": [
           "Secret leak",
           ".env.local",
@@ -2240,7 +2240,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 25
+        "caveman_tokens": 33
       }
     assertions:
       - name: caveman-parity
@@ -2254,7 +2254,7 @@ tests:
       {
         "scenario": "secret-redaction",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
+        "caveman_baseline": "Wenyan caveman competitor: Secret leak in `.env.local`: `OPENAI_API_KEY=[REDACTED]`. Rotate key; remove from file. Do not echo value.",
         "required_terms": [
           "Secret leak",
           ".env.local",
@@ -2273,7 +2273,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -2287,7 +2287,7 @@ tests:
       {
         "scenario": "latency-regression",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
+        "caveman_baseline": "Lite caveman competitor: Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
         "required_terms": [
           "p95 184ms",
           "150ms",
@@ -2303,7 +2303,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -2347,7 +2347,7 @@ tests:
       {
         "scenario": "latency-regression",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Perf red: p95 184ms > 150ms. Culprit: autoevals JSONDiff setup in report gen.",
+        "caveman_baseline": "Ultra caveman competitor: Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
         "required_terms": [
           "p95 184ms",
           "150ms",
@@ -2363,7 +2363,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -2377,7 +2377,7 @@ tests:
       {
         "scenario": "latency-regression",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
+        "caveman_baseline": "Wenyan caveman competitor: Perf regression: p95 184ms > 150ms budget. Culprit likely autoevals JSONDiff setup during report generation.",
         "required_terms": [
           "p95 184ms",
           "150ms",
@@ -2393,7 +2393,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -2407,7 +2407,7 @@ tests:
       {
         "scenario": "timestamp-timezone",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
+        "caveman_baseline": "Lite caveman competitor: Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
         "required_terms": [
           "2026-05-21 14:03:22-05:00",
           "America/Chicago",
@@ -2422,7 +2422,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -2465,7 +2465,7 @@ tests:
       {
         "scenario": "timestamp-timezone",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Reminder `2026-05-21 14:03:22-05:00 America/Chicago`; no UTC conversion.",
+        "caveman_baseline": "Ultra caveman competitor: Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
         "required_terms": [
           "2026-05-21 14:03:22-05:00",
           "America/Chicago",
@@ -2480,7 +2480,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -2494,7 +2494,7 @@ tests:
       {
         "scenario": "timestamp-timezone",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
+        "caveman_baseline": "Wenyan caveman competitor: Reminder at `2026-05-21 14:03:22-05:00 America/Chicago`; do not convert to UTC.",
         "required_terms": [
           "2026-05-21 14:03:22-05:00",
           "America/Chicago",
@@ -2509,7 +2509,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -2523,7 +2523,7 @@ tests:
       {
         "scenario": "url-query-fragment",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
+        "caveman_baseline": "Lite caveman competitor: Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
         "required_terms": [
           "https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader",
           "TS code-grader"
@@ -2537,7 +2537,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 38
+        "caveman_tokens": 40
       }
     assertions:
       - name: caveman-parity
@@ -2579,7 +2579,7 @@ tests:
       {
         "scenario": "url-query-fragment",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Verify TS code-grader: https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader",
+        "caveman_baseline": "Ultra caveman competitor: Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
         "required_terms": [
           "https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader",
           "TS code-grader"
@@ -2593,7 +2593,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -2607,7 +2607,7 @@ tests:
       {
         "scenario": "url-query-fragment",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
+        "caveman_baseline": "Wenyan caveman competitor: Reviewer link: `https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader`; verify TS code-grader example.",
         "required_terms": [
           "https://agentv.dev/docs/integrations/autoevals-integration/?tab=typescript#code-grader",
           "TS code-grader"
@@ -2621,7 +2621,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 38
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -2635,7 +2635,7 @@ tests:
       {
         "scenario": "semver-range",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
+        "caveman_baseline": "Lite caveman competitor: `autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
         "required_terms": [
           "autoevals",
           "^0.0.132 || >=0.1.0 <0.2.0",
@@ -2652,7 +2652,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -2697,7 +2697,7 @@ tests:
       {
         "scenario": "semver-range",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `autoevals`: `^0.0.132 || >=0.1.0 <0.2.0`; no `latest`.",
+        "caveman_baseline": "Ultra caveman competitor: `autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
         "required_terms": [
           "autoevals",
           "^0.0.132 || >=0.1.0 <0.2.0",
@@ -2714,7 +2714,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -2728,7 +2728,7 @@ tests:
       {
         "scenario": "semver-range",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
+        "caveman_baseline": "Wenyan caveman competitor: `autoevals` range: `^0.0.132 || >=0.1.0 <0.2.0`. Do not use `latest`; CI deterministic.",
         "required_terms": [
           "autoevals",
           "^0.0.132 || >=0.1.0 <0.2.0",
@@ -2745,7 +2745,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -2759,7 +2759,7 @@ tests:
       {
         "scenario": "env-precedence",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
+        "caveman_baseline": "Lite caveman competitor: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
         "required_terms": [
           "CLI flag",
           "UTK_CONFIG_PATH",
@@ -2778,7 +2778,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 25
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -2825,7 +2825,7 @@ tests:
       {
         "scenario": "env-precedence",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> defaults.",
+        "caveman_baseline": "Ultra caveman competitor: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
         "required_terms": [
           "CLI flag",
           "UTK_CONFIG_PATH",
@@ -2844,7 +2844,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -2858,7 +2858,7 @@ tests:
       {
         "scenario": "env-precedence",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
+        "caveman_baseline": "Wenyan caveman competitor: Precedence: CLI flag -> `UTK_CONFIG_PATH` -> `.utk/config.toml` -> built-in defaults.",
         "required_terms": [
           "CLI flag",
           "UTK_CONFIG_PATH",
@@ -2877,7 +2877,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -2891,7 +2891,7 @@ tests:
       {
         "scenario": "zero-failure-summary",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Green: 312 passing, 0 failures, 0 skipped.",
+        "caveman_baseline": "Lite caveman competitor: Green: 312 passing, 0 failures, 0 skipped.",
         "required_terms": [
           "Green",
           "312",
@@ -2907,7 +2907,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -2951,7 +2951,7 @@ tests:
       {
         "scenario": "zero-failure-summary",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Green: 312 pass, 0 fail, 0 skip.",
+        "caveman_baseline": "Ultra caveman competitor: Green: 312 passing, 0 failures, 0 skipped.",
         "required_terms": [
           "Green",
           "312",
@@ -2967,7 +2967,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 12
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -2981,7 +2981,7 @@ tests:
       {
         "scenario": "zero-failure-summary",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Green: 312 passing, 0 failures, 0 skipped.",
+        "caveman_baseline": "Wenyan caveman competitor: Green: 312 passing, 0 failures, 0 skipped.",
         "required_terms": [
           "Green",
           "312",
@@ -2997,7 +2997,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -3011,7 +3011,7 @@ tests:
       {
         "scenario": "percentage-delta",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
+        "caveman_baseline": "Lite caveman competitor: Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
         "required_terms": [
           "8,192",
           "7,168",
@@ -3026,7 +3026,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -3069,7 +3069,7 @@ tests:
       {
         "scenario": "percentage-delta",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: 8,192->7,168 (-12.5%).",
+        "caveman_baseline": "Ultra caveman competitor: Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
         "required_terms": [
           "8,192",
           "7,168",
@@ -3084,7 +3084,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 10
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -3098,7 +3098,7 @@ tests:
       {
         "scenario": "percentage-delta",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
+        "caveman_baseline": "Wenyan caveman competitor: Prompt cost: 8,192 -> 7,168 tokens, -12.5%.",
         "required_terms": [
           "8,192",
           "7,168",
@@ -3113,7 +3113,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -3127,7 +3127,7 @@ tests:
       {
         "scenario": "table-row",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
+        "caveman_baseline": "Lite caveman competitor: Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
         "required_terms": [
           "core",
           "pass",
@@ -3143,7 +3143,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -3187,7 +3187,7 @@ tests:
       {
         "scenario": "table-row",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Row core/pass/124/0.82.",
+        "caveman_baseline": "Ultra caveman competitor: Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
         "required_terms": [
           "core",
           "pass",
@@ -3203,7 +3203,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 10
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -3217,7 +3217,7 @@ tests:
       {
         "scenario": "table-row",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
+        "caveman_baseline": "Wenyan caveman competitor: Table row: NAME=core STATUS=pass TOKENS=124 RATIO=0.82.",
         "required_terms": [
           "core",
           "pass",
@@ -3233,7 +3233,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -3247,7 +3247,7 @@ tests:
       {
         "scenario": "stack-trace-top-frame",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
+        "caveman_baseline": "Lite caveman competitor: `TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
         "required_terms": [
           "TypeError",
           "Cannot read properties of undefined",
@@ -3264,7 +3264,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -3309,7 +3309,7 @@ tests:
       {
         "scenario": "stack-trace-top-frame",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `TypeError: Cannot read properties of undefined` @ `parseConfig (src/config.ts:42:13)`.",
+        "caveman_baseline": "Ultra caveman competitor: `TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
         "required_terms": [
           "TypeError",
           "Cannot read properties of undefined",
@@ -3326,7 +3326,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -3340,7 +3340,7 @@ tests:
       {
         "scenario": "stack-trace-top-frame",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
+        "caveman_baseline": "Wenyan caveman competitor: `TypeError: Cannot read properties of undefined` at `parseConfig (src/config.ts:42:13)`. Lower frames omitted.",
         "required_terms": [
           "TypeError",
           "Cannot read properties of undefined",
@@ -3357,7 +3357,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -3371,7 +3371,7 @@ tests:
       {
         "scenario": "shell-quote-command",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
+        "caveman_baseline": "Lite caveman competitor: Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
         "required_terms": [
           "git commit",
           "fix: handle spaces",
@@ -3386,7 +3386,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -3429,7 +3429,7 @@ tests:
       {
         "scenario": "shell-quote-command",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `git commit -m \"fix: handle spaces\"` after staging; keep quotes.",
+        "caveman_baseline": "Ultra caveman competitor: Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
         "required_terms": [
           "git commit",
           "fix: handle spaces",
@@ -3444,7 +3444,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -3458,7 +3458,7 @@ tests:
       {
         "scenario": "shell-quote-command",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
+        "caveman_baseline": "Wenyan caveman competitor: Run `git commit -m \"fix: handle spaces\"` after staging. Keep quotes.",
         "required_terms": [
           "git commit",
           "fix: handle spaces",
@@ -3473,7 +3473,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -3487,7 +3487,7 @@ tests:
       {
         "scenario": "sql-where-clause",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
+        "caveman_baseline": "Lite caveman competitor: SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
         "required_terms": [
           "WHERE tenant_id = $1 AND deleted_at IS NULL",
           "before order"
@@ -3503,7 +3503,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -3547,7 +3547,7 @@ tests:
       {
         "scenario": "sql-where-clause",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: SQL: `WHERE tenant_id = $1 AND deleted_at IS NULL` before order.",
+        "caveman_baseline": "Ultra caveman competitor: SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
         "required_terms": [
           "WHERE tenant_id = $1 AND deleted_at IS NULL",
           "before order"
@@ -3563,7 +3563,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -3577,7 +3577,7 @@ tests:
       {
         "scenario": "sql-where-clause",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
+        "caveman_baseline": "Wenyan caveman competitor: SQL must include `WHERE tenant_id = $1 AND deleted_at IS NULL` before `ORDER BY created_at DESC`.",
         "required_terms": [
           "WHERE tenant_id = $1 AND deleted_at IS NULL",
           "before order"
@@ -3593,7 +3593,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -3607,7 +3607,36 @@ tests:
       {
         "scenario": "yaml-frontmatter",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.",
+        "caveman_baseline": "Lite caveman competitor: Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.",
+        "required_terms": [
+          "draft: false",
+          "tags: [evals, caveman, autoevals]"
+        ],
+        "exact_terms": [
+          "draft: false",
+          "tags: [evals, caveman, autoevals]"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 26
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: yaml-frontmatter-full
+    input:
+      - role: user
+        content: "Compress documentation metadata while preserving YAML booleans and tag list. Respond in caveman full mode."
+    expected_output: |
+      {
+        "scenario": "yaml-frontmatter",
+        "caveman_mode": "full",
+        "caveman_baseline": "Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.",
         "required_terms": [
           "draft: false",
           "tags: [evals, caveman, autoevals]"
@@ -3628,35 +3657,6 @@ tests:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: yaml-frontmatter-full
-    input:
-      - role: user
-        content: "Compress documentation metadata while preserving YAML booleans and tag list. Respond in caveman full mode."
-    expected_output: |
-      {
-        "scenario": "yaml-frontmatter",
-        "caveman_mode": "full",
-        "caveman_baseline": "Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.",
-        "required_terms": [
-          "draft: false",
-          "tags: [evals, caveman, autoevals]"
-        ],
-        "exact_terms": [
-          "draft: false",
-          "tags: [evals, caveman, autoevals]"
-        ],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 17
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
   - id: yaml-frontmatter-ultra
     input:
       - role: user
@@ -3665,7 +3665,7 @@ tests:
       {
         "scenario": "yaml-frontmatter",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `draft: false`; `tags: [evals, caveman, autoevals]`.",
+        "caveman_baseline": "Ultra caveman competitor: Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.",
         "required_terms": [
           "draft: false",
           "tags: [evals, caveman, autoevals]"
@@ -3680,7 +3680,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -3694,7 +3694,7 @@ tests:
       {
         "scenario": "yaml-frontmatter",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.",
+        "caveman_baseline": "Wenyan caveman competitor: Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.",
         "required_terms": [
           "draft: false",
           "tags: [evals, caveman, autoevals]"
@@ -3709,7 +3709,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -3723,7 +3723,7 @@ tests:
       {
         "scenario": "graph-edge-path",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
+        "caveman_baseline": "Lite caveman competitor: Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
         "required_terms": [
           "agent-browser",
           "benchmarkModelRouting",
@@ -3742,7 +3742,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 27
+        "caveman_tokens": 30
       }
     assertions:
       - name: caveman-parity
@@ -3789,7 +3789,7 @@ tests:
       {
         "scenario": "graph-edge-path",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `agent-browser -> benchmarkModelRouting -> sessionState`; no `SettingsPanel`.",
+        "caveman_baseline": "Ultra caveman competitor: Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
         "required_terms": [
           "agent-browser",
           "benchmarkModelRouting",
@@ -3808,7 +3808,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 30
       }
     assertions:
       - name: caveman-parity
@@ -3822,7 +3822,7 @@ tests:
       {
         "scenario": "graph-edge-path",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
+        "caveman_baseline": "Wenyan caveman competitor: Path: `agent-browser -> benchmarkModelRouting -> sessionState`. Not through `SettingsPanel`.",
         "required_terms": [
           "agent-browser",
           "benchmarkModelRouting",
@@ -3841,7 +3841,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 27
+        "caveman_tokens": 30
       }
     assertions:
       - name: caveman-parity
@@ -3855,7 +3855,7 @@ tests:
       {
         "scenario": "wcag-contrast",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
+        "caveman_baseline": "Lite caveman competitor: A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
         "required_terms": [
           "WCAG 2.2 AA 1.4.3",
           "3.9:1 < 4.5:1",
@@ -3870,7 +3870,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -3913,7 +3913,7 @@ tests:
       {
         "scenario": "wcag-contrast",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: A11y: WCAG 2.2 AA 1.4.3; 3.9:1 < 4.5:1. Darken fg.",
+        "caveman_baseline": "Ultra caveman competitor: A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
         "required_terms": [
           "WCAG 2.2 AA 1.4.3",
           "3.9:1 < 4.5:1",
@@ -3928,7 +3928,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -3942,7 +3942,7 @@ tests:
       {
         "scenario": "wcag-contrast",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
+        "caveman_baseline": "Wenyan caveman competitor: A11y fail: WCAG 2.2 AA 1.4.3, contrast 3.9:1 < 4.5:1. Fix: darken foreground.",
         "required_terms": [
           "WCAG 2.2 AA 1.4.3",
           "3.9:1 < 4.5:1",
@@ -3957,7 +3957,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -3971,7 +3971,7 @@ tests:
       {
         "scenario": "icu-placeholder",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
+        "caveman_baseline": "Lite caveman competitor: Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
         "required_terms": [
           "{count, plural, one {# file} other {# files}}",
           "parser"
@@ -3985,7 +3985,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4027,7 +4027,7 @@ tests:
       {
         "scenario": "icu-placeholder",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Keep ICU `{count, plural, one {# file} other {# files}}`; parser needs it.",
+        "caveman_baseline": "Ultra caveman competitor: Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
         "required_terms": [
           "{count, plural, one {# file} other {# files}}",
           "parser"
@@ -4041,7 +4041,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4055,7 +4055,7 @@ tests:
       {
         "scenario": "icu-placeholder",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
+        "caveman_baseline": "Wenyan caveman competitor: Keep ICU exactly: `{count, plural, one {# file} other {# files}}`; parser depends on it.",
         "required_terms": [
           "{count, plural, one {# file} other {# files}}",
           "parser"
@@ -4069,7 +4069,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4083,7 +4083,7 @@ tests:
       {
         "scenario": "markdown-link",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
+        "caveman_baseline": "Lite caveman competitor: Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
         "required_terms": [
           "[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)",
           "no duplicate"
@@ -4097,7 +4097,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 31
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -4139,7 +4139,7 @@ tests:
       {
         "scenario": "markdown-link",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Use [AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/); no duplicate.",
+        "caveman_baseline": "Ultra caveman competitor: Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
         "required_terms": [
           "[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)",
           "no duplicate"
@@ -4153,7 +4153,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -4167,7 +4167,7 @@ tests:
       {
         "scenario": "markdown-link",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
+        "caveman_baseline": "Wenyan caveman competitor: Use `[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)`; no bare URL duplicate.",
         "required_terms": [
           "[AgentV autoevals](https://agentv.dev/docs/integrations/autoevals-integration/)",
           "no duplicate"
@@ -4181,7 +4181,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -4195,7 +4195,7 @@ tests:
       {
         "scenario": "sha256-checksum",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
+        "caveman_baseline": "Lite caveman competitor: Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
         "required_terms": [
           "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef",
           "42 MB"
@@ -4211,7 +4211,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 30
       }
     assertions:
       - name: caveman-parity
@@ -4255,7 +4255,7 @@ tests:
       {
         "scenario": "sha256-checksum",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Archive sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef; 42 MB.",
+        "caveman_baseline": "Ultra caveman competitor: Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
         "required_terms": [
           "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef",
           "42 MB"
@@ -4271,7 +4271,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -4285,7 +4285,7 @@ tests:
       {
         "scenario": "sha256-checksum",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
+        "caveman_baseline": "Wenyan caveman competitor: Archive: `sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef`, size 42 MB.",
         "required_terms": [
           "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00123456789abcdef0123456789abcdef",
           "42 MB"
@@ -4301,7 +4301,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 28
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -4315,7 +4315,7 @@ tests:
       {
         "scenario": "exit-code-signal",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
+        "caveman_baseline": "Lite caveman competitor: Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
         "required_terms": [
           "exit 137",
           "SIGKILL",
@@ -4331,7 +4331,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 26
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4375,7 +4375,7 @@ tests:
       {
         "scenario": "exit-code-signal",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Worker exit 137/SIGKILL. Likely memory/external kill, not TS compile.",
+        "caveman_baseline": "Ultra caveman competitor: Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
         "required_terms": [
           "exit 137",
           "SIGKILL",
@@ -4391,7 +4391,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4405,7 +4405,7 @@ tests:
       {
         "scenario": "exit-code-signal",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
+        "caveman_baseline": "Wenyan caveman competitor: Worker exit 137 (`SIGKILL`). Likely memory/external kill, not TypeScript compile failure.",
         "required_terms": [
           "exit 137",
           "SIGKILL",
@@ -4421,7 +4421,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 27
+        "caveman_tokens": 29
       }
     assertions:
       - name: caveman-parity
@@ -4435,7 +4435,7 @@ tests:
       {
         "scenario": "partial-success",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
+        "caveman_baseline": "Lite caveman competitor: Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
         "required_terms": [
           "3 pass",
           "1 fail",
@@ -4452,7 +4452,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4497,7 +4497,7 @@ tests:
       {
         "scenario": "partial-success",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Batch 3 pass / 1 fail / 2 skip; failed `windows-node20`.",
+        "caveman_baseline": "Ultra caveman competitor: Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
         "required_terms": [
           "3 pass",
           "1 fail",
@@ -4514,7 +4514,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4528,7 +4528,7 @@ tests:
       {
         "scenario": "partial-success",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
+        "caveman_baseline": "Wenyan caveman competitor: Batch: 3 passed, 1 failed, 2 skipped. Failed shard: `windows-node20`.",
         "required_terms": [
           "3 pass",
           "1 fail",
@@ -4545,7 +4545,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4559,7 +4559,7 @@ tests:
       {
         "scenario": "license-notice",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
+        "caveman_baseline": "Lite caveman competitor: Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
         "required_terms": [
           "MIT",
           "Copyright 2026 Example Labs",
@@ -4575,7 +4575,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4619,7 +4619,7 @@ tests:
       {
         "scenario": "license-notice",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Snippet: MIT; Copyright 2026 Example Labs; keep NOTICE.",
+        "caveman_baseline": "Ultra caveman competitor: Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
         "required_terms": [
           "MIT",
           "Copyright 2026 Example Labs",
@@ -4635,7 +4635,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4649,7 +4649,7 @@ tests:
       {
         "scenario": "license-notice",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
+        "caveman_baseline": "Wenyan caveman competitor: Third-party snippet: MIT; Copyright 2026 Example Labs; retain NOTICE.",
         "required_terms": [
           "MIT",
           "Copyright 2026 Example Labs",
@@ -4665,7 +4665,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -4679,7 +4679,7 @@ tests:
       {
         "scenario": "retention-policy",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Privacy: PII max 30 days, EU regions only, then delete records.",
+        "caveman_baseline": "Lite caveman competitor: Privacy: PII max 30 days, EU regions only, then delete records.",
         "required_terms": [
           "PII",
           "max 30 days",
@@ -4697,7 +4697,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -4743,7 +4743,7 @@ tests:
       {
         "scenario": "retention-policy",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: PII: max 30 days; EU only; delete after.",
+        "caveman_baseline": "Ultra caveman competitor: Privacy: PII max 30 days, EU regions only, then delete records.",
         "required_terms": [
           "PII",
           "max 30 days",
@@ -4761,7 +4761,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -4775,7 +4775,7 @@ tests:
       {
         "scenario": "retention-policy",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Privacy: PII max 30 days, EU regions only, then delete records.",
+        "caveman_baseline": "Wenyan caveman competitor: Privacy: PII max 30 days, EU regions only, then delete records.",
         "required_terms": [
           "PII",
           "max 30 days",
@@ -4793,7 +4793,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -4807,7 +4807,7 @@ tests:
       {
         "scenario": "currency-rounding",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
+        "caveman_baseline": "Lite caveman competitor: Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
         "required_terms": [
           "$1,234.56",
           "$1,199.99",
@@ -4827,7 +4827,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -4875,7 +4875,7 @@ tests:
       {
         "scenario": "currency-rounding",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `$1,234.56->$1,199.99`; delta `-$34.57`; no round.",
+        "caveman_baseline": "Ultra caveman competitor: Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
         "required_terms": [
           "$1,234.56",
           "$1,199.99",
@@ -4895,7 +4895,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -4909,7 +4909,7 @@ tests:
       {
         "scenario": "currency-rounding",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
+        "caveman_baseline": "Wenyan caveman competitor: Invoice: `$1,234.56 -> $1,199.99`, delta `-$34.57`; do not round.",
         "required_terms": [
           "$1,234.56",
           "$1,199.99",
@@ -4929,7 +4929,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -4943,7 +4943,7 @@ tests:
       {
         "scenario": "scientific-notation",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Epsilon `1.0e-7` < tolerance `2.5e-6`.",
+        "caveman_baseline": "Lite caveman competitor: Epsilon `1.0e-7` < tolerance `2.5e-6`.",
         "required_terms": [
           "1.0e-7",
           "2.5e-6"
@@ -4957,7 +4957,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 13
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -4999,7 +4999,7 @@ tests:
       {
         "scenario": "scientific-notation",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `1.0e-7 < 2.5e-6`.",
+        "caveman_baseline": "Ultra caveman competitor: Epsilon `1.0e-7` < tolerance `2.5e-6`.",
         "required_terms": [
           "1.0e-7",
           "2.5e-6"
@@ -5013,7 +5013,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 9
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -5027,7 +5027,7 @@ tests:
       {
         "scenario": "scientific-notation",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Epsilon `1.0e-7` < tolerance `2.5e-6`.",
+        "caveman_baseline": "Wenyan caveman competitor: Epsilon `1.0e-7` < tolerance `2.5e-6`.",
         "required_terms": [
           "1.0e-7",
           "2.5e-6"
@@ -5041,7 +5041,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -5055,7 +5055,7 @@ tests:
       {
         "scenario": "ipv6-cidr",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
+        "caveman_baseline": "Lite caveman competitor: Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
         "required_terms": [
           "HTTPS",
           "2001:db8:85a3::/64",
@@ -5072,7 +5072,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -5117,7 +5117,7 @@ tests:
       {
         "scenario": "ipv6-cidr",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Allow HTTPS `2001:db8:85a3::/64`; deny rest.",
+        "caveman_baseline": "Ultra caveman competitor: Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
         "required_terms": [
           "HTTPS",
           "2001:db8:85a3::/64",
@@ -5134,7 +5134,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -5148,7 +5148,7 @@ tests:
       {
         "scenario": "ipv6-cidr",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
+        "caveman_baseline": "Wenyan caveman competitor: Firewall: allow HTTPS to `2001:db8:85a3::/64`; deny other egress.",
         "required_terms": [
           "HTTPS",
           "2001:db8:85a3::/64",
@@ -5165,7 +5165,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -5179,7 +5179,7 @@ tests:
       {
         "scenario": "dns-cname-chain",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
+        "caveman_baseline": "Lite caveman competitor: DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
         "required_terms": [
           "app.example.com",
           "edge.example.net",
@@ -5197,7 +5197,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -5243,7 +5243,7 @@ tests:
       {
         "scenario": "dns-cname-chain",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `app.example.com -> edge.example.net -> cdn.vendor.net`; no app A.",
+        "caveman_baseline": "Ultra caveman competitor: DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
         "required_terms": [
           "app.example.com",
           "edge.example.net",
@@ -5261,7 +5261,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -5275,7 +5275,7 @@ tests:
       {
         "scenario": "dns-cname-chain",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
+        "caveman_baseline": "Wenyan caveman competitor: DNS: `app.example.com -> edge.example.net -> cdn.vendor.net`; no A on app host.",
         "required_terms": [
           "app.example.com",
           "edge.example.net",
@@ -5293,7 +5293,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -5307,7 +5307,7 @@ tests:
       {
         "scenario": "http-retry-after",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
+        "caveman_baseline": "Lite caveman competitor: HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
         "required_terms": [
           "HTTP 429",
           "Retry-After: 120",
@@ -5322,7 +5322,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -5365,7 +5365,7 @@ tests:
       {
         "scenario": "http-retry-after",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: HTTP 429; `Retry-After: 120`; retry 120s.",
+        "caveman_baseline": "Ultra caveman competitor: HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
         "required_terms": [
           "HTTP 429",
           "Retry-After: 120",
@@ -5380,7 +5380,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -5394,7 +5394,7 @@ tests:
       {
         "scenario": "http-retry-after",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
+        "caveman_baseline": "Wenyan caveman competitor: HTTP 429 `Too Many Requests`; `Retry-After: 120`; retry after 120s.",
         "required_terms": [
           "HTTP 429",
           "Retry-After: 120",
@@ -5409,7 +5409,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -5423,7 +5423,7 @@ tests:
       {
         "scenario": "grpc-status",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
+        "caveman_baseline": "Lite caveman competitor: gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
         "required_terms": [
           "gRPC",
           "14",
@@ -5439,7 +5439,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -5483,7 +5483,7 @@ tests:
       {
         "scenario": "grpc-status",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: gRPC 14/UNAVAILABLE; retry with backoff.",
+        "caveman_baseline": "Ultra caveman competitor: gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
         "required_terms": [
           "gRPC",
           "14",
@@ -5499,7 +5499,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -5513,7 +5513,7 @@ tests:
       {
         "scenario": "grpc-status",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
+        "caveman_baseline": "Wenyan caveman competitor: gRPC `14 UNAVAILABLE`; retryable with exponential backoff.",
         "required_terms": [
           "gRPC",
           "14",
@@ -5529,7 +5529,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5543,7 +5543,7 @@ tests:
       {
         "scenario": "otel-trace-span",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
+        "caveman_baseline": "Lite caveman competitor: Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
         "required_terms": [
           "4bf92f3577b34da6a3ce929d0e0e4736",
           "00f067aa0ba902b7"
@@ -5558,7 +5558,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -5601,7 +5601,7 @@ tests:
       {
         "scenario": "otel-trace-span",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: trace 4bf92f3577b34da6a3ce929d0e0e4736; span 00f067aa0ba902b7.",
+        "caveman_baseline": "Ultra caveman competitor: Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
         "required_terms": [
           "4bf92f3577b34da6a3ce929d0e0e4736",
           "00f067aa0ba902b7"
@@ -5616,7 +5616,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -5630,7 +5630,7 @@ tests:
       {
         "scenario": "otel-trace-span",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
+        "caveman_baseline": "Wenyan caveman competitor: Investigate trace `4bf92f3577b34da6a3ce929d0e0e4736`, span `00f067aa0ba902b7`.",
         "required_terms": [
           "4bf92f3577b34da6a3ce929d0e0e4736",
           "00f067aa0ba902b7"
@@ -5645,7 +5645,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -5659,7 +5659,7 @@ tests:
       {
         "scenario": "jwt-redaction",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
+        "caveman_baseline": "Lite caveman competitor: JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
         "required_terms": [
           "JWT leak",
           "RS256",
@@ -5674,7 +5674,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5717,7 +5717,7 @@ tests:
       {
         "scenario": "jwt-redaction",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: JWT leak: alg RS256; token [REDACTED].",
+        "caveman_baseline": "Ultra caveman competitor: JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
         "required_terms": [
           "JWT leak",
           "RS256",
@@ -5732,7 +5732,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5746,7 +5746,7 @@ tests:
       {
         "scenario": "jwt-redaction",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
+        "caveman_baseline": "Wenyan caveman competitor: JWT leak: alg `RS256`; token `[REDACTED]`; do not echo token.",
         "required_terms": [
           "JWT leak",
           "RS256",
@@ -5761,7 +5761,7 @@ tests:
         ],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5775,7 +5775,7 @@ tests:
       {
         "scenario": "email-redaction",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Affected account: `[REDACTED]@example.com`; full local-part redacted.",
+        "caveman_baseline": "Lite caveman competitor: Affected account: `[REDACTED]@example.com`; full local-part redacted.",
         "required_terms": [
           "[REDACTED]@example.com"
         ],
@@ -5790,7 +5790,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -5833,7 +5833,7 @@ tests:
       {
         "scenario": "email-redaction",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Account `[REDACTED]@example.com`.",
+        "caveman_baseline": "Ultra caveman competitor: Affected account: `[REDACTED]@example.com`; full local-part redacted.",
         "required_terms": [
           "[REDACTED]@example.com"
         ],
@@ -5848,7 +5848,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 12
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -5862,7 +5862,7 @@ tests:
       {
         "scenario": "email-redaction",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Affected account: `[REDACTED]@example.com`; full local-part redacted.",
+        "caveman_baseline": "Wenyan caveman competitor: Affected account: `[REDACTED]@example.com`; full local-part redacted.",
         "required_terms": [
           "[REDACTED]@example.com"
         ],
@@ -5877,7 +5877,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -5891,7 +5891,7 @@ tests:
       {
         "scenario": "csv-quoted-comma",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
+        "caveman_baseline": "Lite caveman competitor: CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
         "required_terms": [
           "7",
           "Smith, Ada",
@@ -5906,7 +5906,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5949,7 +5949,7 @@ tests:
       {
         "scenario": "csv-quoted-comma",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `7,\"Smith, Ada\",\"needs review\"`.",
+        "caveman_baseline": "Ultra caveman competitor: CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
         "required_terms": [
           "7",
           "Smith, Ada",
@@ -5964,7 +5964,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 12
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -5978,7 +5978,7 @@ tests:
       {
         "scenario": "csv-quoted-comma",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
+        "caveman_baseline": "Wenyan caveman competitor: CSV row: `7,\"Smith, Ada\",\"needs review\"`; keep quoted comma.",
         "required_terms": [
           "7",
           "Smith, Ada",
@@ -5993,7 +5993,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -6007,7 +6007,7 @@ tests:
       {
         "scenario": "glob-negation",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
+        "caveman_baseline": "Lite caveman competitor: Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
         "required_terms": [
           "**/*.test.ts",
           "**/*.snap.ts"
@@ -6022,7 +6022,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -6065,7 +6065,7 @@ tests:
       {
         "scenario": "glob-negation",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `**/*.test.ts`; !`**/*.snap.ts`.",
+        "caveman_baseline": "Ultra caveman competitor: Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
         "required_terms": [
           "**/*.test.ts",
           "**/*.snap.ts"
@@ -6073,63 +6073,6 @@ tests:
         "exact_terms": [
           "**/*.test.ts",
           "**/*.snap.ts"
-        ],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 12
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: glob-negation-wenyan
-    input:
-      - role: user
-        content: "Summarize file filter while preserving include and negation globs. Respond in caveman wenyan mode."
-    expected_output: |
-      {
-        "scenario": "glob-negation",
-        "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
-        "required_terms": [
-          "**/*.test.ts",
-          "**/*.snap.ts"
-        ],
-        "exact_terms": [
-          "**/*.test.ts",
-          "**/*.snap.ts"
-        ],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 16
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: regex-literal-lite
-    input:
-      - role: user
-        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman lite mode."
-    expected_output: |
-      {
-        "scenario": "regex-literal",
-        "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Use regex `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.",
-        "required_terms": [
-          "^(feat|fix|test)\\([^)]+\\): .+$",
-          "anchors"
-        ],
-        "exact_terms": [
-          "^(feat|fix|test)\\([^)]+\\): .+$"
         ],
         "ordered_terms": [],
         "forbidden_terms": [],
@@ -6143,15 +6086,44 @@ tests:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: regex-literal-full
+  - id: glob-negation-wenyan
     input:
       - role: user
-        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman full mode."
+        content: "Summarize file filter while preserving include and negation globs. Respond in caveman wenyan mode."
+    expected_output: |
+      {
+        "scenario": "glob-negation",
+        "caveman_mode": "wenyan",
+        "caveman_baseline": "Wenyan caveman competitor: Search `**/*.test.ts`; exclude `**/*.snap.ts`.",
+        "required_terms": [
+          "**/*.test.ts",
+          "**/*.snap.ts"
+        ],
+        "exact_terms": [
+          "**/*.test.ts",
+          "**/*.snap.ts"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: regex-literal-lite
+    input:
+      - role: user
+        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman lite mode."
     expected_output: |
       {
         "scenario": "regex-literal",
-        "caveman_mode": "full",
-        "caveman_baseline": "Use regex `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.",
+        "caveman_mode": "lite",
+        "caveman_baseline": "Lite caveman competitor: Regex required: `^(feat|fix|test)\\([^)]+\\): .+$`; anchors stay.",
         "required_terms": [
           "^(feat|fix|test)\\([^)]+\\): .+$",
           "anchors"
@@ -6165,21 +6137,21 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: regex-literal-ultra
+  - id: regex-literal-full
     input:
       - role: user
-        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman ultra mode."
+        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman full mode."
     expected_output: |
       {
         "scenario": "regex-literal",
-        "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.",
+        "caveman_mode": "full",
+        "caveman_baseline": "Regex required: `^(feat|fix|test)\\([^)]+\\): .+$`; anchors stay.",
         "required_terms": [
           "^(feat|fix|test)\\([^)]+\\): .+$",
           "anchors"
@@ -6199,15 +6171,15 @@ tests:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: regex-literal-wenyan
+  - id: regex-literal-ultra
     input:
       - role: user
-        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman wenyan mode."
+        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman ultra mode."
     expected_output: |
       {
         "scenario": "regex-literal",
-        "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Use regex `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.",
+        "caveman_mode": "ultra",
+        "caveman_baseline": "Ultra caveman competitor: Regex required: `^(feat|fix|test)\\([^)]+\\): .+$`; anchors stay.",
         "required_terms": [
           "^(feat|fix|test)\\([^)]+\\): .+$",
           "anchors"
@@ -6221,7 +6193,35 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 23
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: regex-literal-wenyan
+    input:
+      - role: user
+        content: "Compress regex guidance while preserving anchors and groups. Respond in caveman wenyan mode."
+    expected_output: |
+      {
+        "scenario": "regex-literal",
+        "caveman_mode": "wenyan",
+        "caveman_baseline": "Wenyan caveman competitor: Regex required: `^(feat|fix|test)\\([^)]+\\): .+$`; anchors stay.",
+        "required_terms": [
+          "^(feat|fix|test)\\([^)]+\\): .+$",
+          "anchors"
+        ],
+        "exact_terms": [
+          "^(feat|fix|test)\\([^)]+\\): .+$"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6235,7 +6235,7 @@ tests:
       {
         "scenario": "feature-flag-rollout",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
+        "caveman_baseline": "Lite caveman competitor: Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
         "required_terms": [
           "agentv_caveman_bench",
           "beta-users",
@@ -6249,7 +6249,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -6291,7 +6291,7 @@ tests:
       {
         "scenario": "feature-flag-rollout",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `agentv_caveman_bench`: beta-users 25%; others off.",
+        "caveman_baseline": "Ultra caveman competitor: Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
         "required_terms": [
           "agentv_caveman_bench",
           "beta-users",
@@ -6305,7 +6305,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6319,7 +6319,7 @@ tests:
       {
         "scenario": "feature-flag-rollout",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
+        "caveman_baseline": "Wenyan caveman competitor: Flag `agentv_caveman_bench`: beta-users 25%, everyone else off.",
         "required_terms": [
           "agentv_caveman_bench",
           "beta-users",
@@ -6333,7 +6333,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6347,7 +6347,7 @@ tests:
       {
         "scenario": "ab-cohort",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `exp-17`: control 60%, variant B 40%.",
+        "caveman_baseline": "Lite caveman competitor: `exp-17`: control 60%, variant B 40%.",
         "required_terms": [
           "exp-17",
           "control=60%",
@@ -6362,7 +6362,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 13
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -6405,7 +6405,7 @@ tests:
       {
         "scenario": "ab-cohort",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `exp-17`: control=60%, B=40%.",
+        "caveman_baseline": "Ultra caveman competitor: `exp-17`: control 60%, variant B 40%.",
         "required_terms": [
           "exp-17",
           "control=60%",
@@ -6420,7 +6420,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 11
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -6434,7 +6434,7 @@ tests:
       {
         "scenario": "ab-cohort",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `exp-17`: control 60%, variant B 40%.",
+        "caveman_baseline": "Wenyan caveman competitor: `exp-17`: control 60%, variant B 40%.",
         "required_terms": [
           "exp-17",
           "control=60%",
@@ -6449,7 +6449,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -6463,7 +6463,7 @@ tests:
       {
         "scenario": "matrix-shape",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
+        "caveman_baseline": "Lite caveman competitor: Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
         "required_terms": [
           "[2,3,768]",
           "float16",
@@ -6478,7 +6478,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -6521,7 +6521,7 @@ tests:
       {
         "scenario": "matrix-shape",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Tensor [2,3,768] float16; no transpose.",
+        "caveman_baseline": "Ultra caveman competitor: Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
         "required_terms": [
           "[2,3,768]",
           "float16",
@@ -6536,7 +6536,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6550,7 +6550,7 @@ tests:
       {
         "scenario": "matrix-shape",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
+        "caveman_baseline": "Wenyan caveman competitor: Tensor: shape `[2, 3, 768]`, dtype `float16`; do not transpose.",
         "required_terms": [
           "[2,3,768]",
           "float16",
@@ -6565,7 +6565,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6579,7 +6579,7 @@ tests:
       {
         "scenario": "unit-preservation",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Memory budget `512 MiB`; do not convert to MB.",
+        "caveman_baseline": "Lite caveman competitor: Memory budget `512 MiB`; do not convert to MB.",
         "required_terms": [
           "512 MiB",
           "no MB conversion"
@@ -6594,7 +6594,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -6637,7 +6637,7 @@ tests:
       {
         "scenario": "unit-preservation",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `512 MiB`; no MB conversion.",
+        "caveman_baseline": "Ultra caveman competitor: Memory budget `512 MiB`; do not convert to MB.",
         "required_terms": [
           "512 MiB",
           "no MB conversion"
@@ -6652,7 +6652,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 11
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -6666,7 +6666,7 @@ tests:
       {
         "scenario": "unit-preservation",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Memory budget `512 MiB`; do not convert to MB.",
+        "caveman_baseline": "Wenyan caveman competitor: Memory budget `512 MiB`; do not convert to MB.",
         "required_terms": [
           "512 MiB",
           "no MB conversion"
@@ -6681,7 +6681,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 16
+        "caveman_tokens": 19
       }
     assertions:
       - name: caveman-parity
@@ -6695,7 +6695,7 @@ tests:
       {
         "scenario": "crlf-warning",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
+        "caveman_baseline": "Lite caveman competitor: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
         "required_terms": [
           "LF will be replaced by CRLF",
           "docs/evals.md"
@@ -6709,7 +6709,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6751,7 +6751,7 @@ tests:
       {
         "scenario": "crlf-warning",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `LF will be replaced by CRLF`; `docs/evals.md`.",
+        "caveman_baseline": "Ultra caveman competitor: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
         "required_terms": [
           "LF will be replaced by CRLF",
           "docs/evals.md"
@@ -6765,7 +6765,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 16
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6779,7 +6779,7 @@ tests:
       {
         "scenario": "crlf-warning",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
+        "caveman_baseline": "Wenyan caveman competitor: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.",
         "required_terms": [
           "LF will be replaced by CRLF",
           "docs/evals.md"
@@ -6793,7 +6793,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -6807,7 +6807,7 @@ tests:
       {
         "scenario": "escaped-json-string",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
+        "caveman_baseline": "Lite caveman competitor: JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
         "required_terms": [
           "message",
           "line1\\nline2",
@@ -6822,7 +6822,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -6865,7 +6865,7 @@ tests:
       {
         "scenario": "escaped-json-string",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `message=\"line1\\nline2\"`; literal `\\n`.",
+        "caveman_baseline": "Ultra caveman competitor: JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
         "required_terms": [
           "message",
           "line1\\nline2",
@@ -6880,7 +6880,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -6894,7 +6894,7 @@ tests:
       {
         "scenario": "escaped-json-string",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
+        "caveman_baseline": "Wenyan caveman competitor: JSON `message`: `\"line1\\nline2\"`; keep literal `\\n`, no real newline.",
         "required_terms": [
           "message",
           "line1\\nline2",
@@ -6909,7 +6909,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -6923,7 +6923,7 @@ tests:
       {
         "scenario": "xml-attribute",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
+        "caveman_baseline": "Lite caveman competitor: Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
         "required_terms": [
           "<x:tool id=\"detok\" enabled=\"true\" />",
           "x:"
@@ -6937,7 +6937,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -6979,7 +6979,7 @@ tests:
       {
         "scenario": "xml-attribute",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `<x:tool id=\"detok\" enabled=\"true\" />`; keep `x:`.",
+        "caveman_baseline": "Ultra caveman competitor: Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
         "required_terms": [
           "<x:tool id=\"detok\" enabled=\"true\" />",
           "x:"
@@ -6993,7 +6993,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -7007,7 +7007,7 @@ tests:
       {
         "scenario": "xml-attribute",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
+        "caveman_baseline": "Wenyan caveman competitor: Keep XML `<x:tool id=\"detok\" enabled=\"true\" />`; preserve `x:` and `enabled`.",
         "required_terms": [
           "<x:tool id=\"detok\" enabled=\"true\" />",
           "x:"
@@ -7021,7 +7021,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -7035,7 +7035,7 @@ tests:
       {
         "scenario": "docker-digest",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
+        "caveman_baseline": "Lite caveman competitor: Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
         "required_terms": [
           "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
           "no latest"
@@ -7049,7 +7049,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -7091,7 +7091,7 @@ tests:
       {
         "scenario": "docker-digest",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no latest.",
+        "caveman_baseline": "Ultra caveman competitor: Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
         "required_terms": [
           "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
           "no latest"
@@ -7105,7 +7105,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 30
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -7119,7 +7119,7 @@ tests:
       {
         "scenario": "docker-digest",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
+        "caveman_baseline": "Wenyan caveman competitor: Deploy `ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd`; no `latest`.",
         "required_terms": [
           "ghcr.io/acme/utk@sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
           "no latest"
@@ -7133,7 +7133,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 32
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -7147,7 +7147,7 @@ tests:
       {
         "scenario": "k8s-resource-limit",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
+        "caveman_baseline": "Lite caveman competitor: K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
         "required_terms": [
           "req.cpu=250m",
           "limit.mem=512Mi"
@@ -7161,7 +7161,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -7203,7 +7203,7 @@ tests:
       {
         "scenario": "k8s-resource-limit",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Worker: req.cpu=250m; limit.mem=512Mi.",
+        "caveman_baseline": "Ultra caveman competitor: K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
         "required_terms": [
           "req.cpu=250m",
           "limit.mem=512Mi"
@@ -7217,7 +7217,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -7231,7 +7231,7 @@ tests:
       {
         "scenario": "k8s-resource-limit",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
+        "caveman_baseline": "Wenyan caveman competitor: K8s worker: `requests.cpu=250m`; `limits.memory=512Mi`.",
         "required_terms": [
           "req.cpu=250m",
           "limit.mem=512Mi"
@@ -7245,7 +7245,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -7259,7 +7259,7 @@ tests:
       {
         "scenario": "s3-uri",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
+        "caveman_baseline": "Lite caveman competitor: Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
         "required_terms": [
           "s3://utk-evals/prod/reports/caveman.json",
           "us-east-2"
@@ -7273,7 +7273,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7315,7 +7315,7 @@ tests:
       {
         "scenario": "s3-uri",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: s3://utk-evals/prod/reports/caveman.json; us-east-2.",
+        "caveman_baseline": "Ultra caveman competitor: Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
         "required_terms": [
           "s3://utk-evals/prod/reports/caveman.json",
           "us-east-2"
@@ -7329,7 +7329,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7343,7 +7343,7 @@ tests:
       {
         "scenario": "s3-uri",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
+        "caveman_baseline": "Wenyan caveman competitor: Artifact: `s3://utk-evals/prod/reports/caveman.json`, region `us-east-2`.",
         "required_terms": [
           "s3://utk-evals/prod/reports/caveman.json",
           "us-east-2"
@@ -7357,7 +7357,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7371,7 +7371,7 @@ tests:
       {
         "scenario": "azure-resource-id",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.",
+        "caveman_baseline": "Lite caveman competitor: Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.",
         "required_terms": [
           "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
         ],
@@ -7384,7 +7384,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 33
+        "caveman_tokens": 41
       }
     assertions:
       - name: caveman-parity
@@ -7398,7 +7398,7 @@ tests:
       {
         "scenario": "azure-resource-id",
         "caveman_mode": "full",
-        "caveman_baseline": "Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.",
+        "caveman_baseline": "Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.",
         "required_terms": [
           "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
         ],
@@ -7411,7 +7411,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 30
+        "caveman_tokens": 35
       }
     assertions:
       - name: caveman-parity
@@ -7425,7 +7425,7 @@ tests:
       {
         "scenario": "azure-resource-id",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.",
+        "caveman_baseline": "Ultra caveman competitor: Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.",
         "required_terms": [
           "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
         ],
@@ -7438,7 +7438,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 29
+        "caveman_tokens": 42
       }
     assertions:
       - name: caveman-parity
@@ -7452,7 +7452,7 @@ tests:
       {
         "scenario": "azure-resource-id",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.",
+        "caveman_baseline": "Wenyan caveman competitor: Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.",
         "required_terms": [
           "/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod"
         ],
@@ -7465,7 +7465,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 34
+        "caveman_tokens": 42
       }
     assertions:
       - name: caveman-parity
@@ -7479,7 +7479,7 @@ tests:
       {
         "scenario": "git-refspec",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.",
+        "caveman_baseline": "Lite caveman competitor: Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.",
         "required_terms": [
           "git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases"
         ],
@@ -7492,7 +7492,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 30
       }
     assertions:
       - name: caveman-parity
@@ -7506,7 +7506,7 @@ tests:
       {
         "scenario": "git-refspec",
         "caveman_mode": "full",
-        "caveman_baseline": "Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.",
+        "caveman_baseline": "Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.",
         "required_terms": [
           "git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases"
         ],
@@ -7519,7 +7519,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -7533,7 +7533,7 @@ tests:
       {
         "scenario": "git-refspec",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.",
+        "caveman_baseline": "Ultra caveman competitor: Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.",
         "required_terms": [
           "git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases"
         ],
@@ -7546,7 +7546,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -7560,7 +7560,7 @@ tests:
       {
         "scenario": "git-refspec",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.",
+        "caveman_baseline": "Wenyan caveman competitor: Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.",
         "required_terms": [
           "git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases"
         ],
@@ -7573,7 +7573,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 31
       }
     assertions:
       - name: caveman-parity
@@ -7587,7 +7587,7 @@ tests:
       {
         "scenario": "scoped-package",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Run `npm test --workspace @utk/evals`.",
+        "caveman_baseline": "Lite caveman competitor: Run `npm test --workspace @utk/evals`.",
         "required_terms": [
           "npm test",
           "@utk/evals"
@@ -7601,7 +7601,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 13
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -7643,7 +7643,7 @@ tests:
       {
         "scenario": "scoped-package",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `npm test -w @utk/evals`.",
+        "caveman_baseline": "Ultra caveman competitor: Run `npm test --workspace @utk/evals`.",
         "required_terms": [
           "npm test",
           "@utk/evals"
@@ -7657,7 +7657,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 10
+        "caveman_tokens": 16
       }
     assertions:
       - name: caveman-parity
@@ -7671,7 +7671,7 @@ tests:
       {
         "scenario": "scoped-package",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Run `npm test --workspace @utk/evals`.",
+        "caveman_baseline": "Wenyan caveman competitor: Run `npm test --workspace @utk/evals`.",
         "required_terms": [
           "npm test",
           "@utk/evals"
@@ -7685,7 +7685,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -7699,7 +7699,7 @@ tests:
       {
         "scenario": "npm-audit-count",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `npm audit`: 1 moderate, 0 critical vulnerabilities.",
+        "caveman_baseline": "Lite caveman competitor: `npm audit`: 1 moderate, 0 critical vulnerabilities.",
         "required_terms": [
           "npm audit",
           "moderate=1",
@@ -7715,7 +7715,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -7759,7 +7759,7 @@ tests:
       {
         "scenario": "npm-audit-count",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `npm audit`: moderate=1, critical=0.",
+        "caveman_baseline": "Ultra caveman competitor: `npm audit`: 1 moderate, 0 critical vulnerabilities.",
         "required_terms": [
           "npm audit",
           "moderate=1",
@@ -7775,7 +7775,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 13
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -7789,7 +7789,7 @@ tests:
       {
         "scenario": "npm-audit-count",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `npm audit`: 1 moderate, 0 critical vulnerabilities.",
+        "caveman_baseline": "Wenyan caveman competitor: `npm audit`: 1 moderate, 0 critical vulnerabilities.",
         "required_terms": [
           "npm audit",
           "moderate=1",
@@ -7805,7 +7805,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -7819,7 +7819,7 @@ tests:
       {
         "scenario": "node-options-memory",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
+        "caveman_baseline": "Lite caveman competitor: Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
         "required_terms": [
           "NODE_OPTIONS=--max-old-space-size=8192",
           "verify:agent-browser"
@@ -7833,7 +7833,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7875,7 +7875,7 @@ tests:
       {
         "scenario": "node-options-memory",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `NODE_OPTIONS=--max-old-space-size=8192` -> `verify:agent-browser`.",
+        "caveman_baseline": "Ultra caveman competitor: Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
         "required_terms": [
           "NODE_OPTIONS=--max-old-space-size=8192",
           "verify:agent-browser"
@@ -7889,7 +7889,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7903,7 +7903,7 @@ tests:
       {
         "scenario": "node-options-memory",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
+        "caveman_baseline": "Wenyan caveman competitor: Set `NODE_OPTIONS=--max-old-space-size=8192`; run `verify:agent-browser`.",
         "required_terms": [
           "NODE_OPTIONS=--max-old-space-size=8192",
           "verify:agent-browser"
@@ -7917,7 +7917,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -7931,7 +7931,7 @@ tests:
       {
         "scenario": "tri-state-null",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
+        "caveman_baseline": "Lite caveman competitor: `consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
         "required_terms": [
           "true allowed",
           "false denied",
@@ -7947,7 +7947,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 25
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -7991,7 +7991,7 @@ tests:
       {
         "scenario": "tri-state-null",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `consent`: true allowed; false denied; null unknown.",
+        "caveman_baseline": "Ultra caveman competitor: `consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
         "required_terms": [
           "true allowed",
           "false denied",
@@ -8007,7 +8007,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -8021,7 +8021,7 @@ tests:
       {
         "scenario": "tri-state-null",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
+        "caveman_baseline": "Wenyan caveman competitor: `consent`: true=allowed, false=denied, null=unknown. Do not collapse null to false.",
         "required_terms": [
           "true allowed",
           "false denied",
@@ -8037,7 +8037,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 25
+        "caveman_tokens": 28
       }
     assertions:
       - name: caveman-parity
@@ -8051,7 +8051,7 @@ tests:
       {
         "scenario": "graphql-selection",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.",
+        "caveman_baseline": "Lite caveman competitor: GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.",
         "required_terms": [
           "repository",
           "owner { login }",
@@ -8066,7 +8066,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 33
       }
     assertions:
       - name: caveman-parity
@@ -8080,7 +8080,7 @@ tests:
       {
         "scenario": "graphql-selection",
         "caveman_mode": "full",
-        "caveman_baseline": "GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.",
+        "caveman_baseline": "GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.",
         "required_terms": [
           "repository",
           "owner { login }",
@@ -8095,7 +8095,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 27
       }
     assertions:
       - name: caveman-parity
@@ -8109,7 +8109,7 @@ tests:
       {
         "scenario": "graphql-selection",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `repository { name owner { login } defaultBranchRef { name } }`.",
+        "caveman_baseline": "Ultra caveman competitor: GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.",
         "required_terms": [
           "repository",
           "owner { login }",
@@ -8124,7 +8124,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -8138,7 +8138,7 @@ tests:
       {
         "scenario": "graphql-selection",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.",
+        "caveman_baseline": "Wenyan caveman competitor: GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.",
         "required_terms": [
           "repository",
           "owner { login }",
@@ -8153,7 +8153,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 24
+        "caveman_tokens": 34
       }
     assertions:
       - name: caveman-parity
@@ -8167,7 +8167,7 @@ tests:
       {
         "scenario": "protobuf-field-number",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
+        "caveman_baseline": "Lite caveman competitor: Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
         "required_terms": [
           "string benchmark_id = 7",
           "reserve 8-12",
@@ -8182,7 +8182,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -8225,7 +8225,7 @@ tests:
       {
         "scenario": "protobuf-field-number",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `string benchmark_id = 7`; reserve 8-12; no 9 reuse.",
+        "caveman_baseline": "Ultra caveman competitor: Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
         "required_terms": [
           "string benchmark_id = 7",
           "reserve 8-12",
@@ -8240,7 +8240,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -8254,7 +8254,7 @@ tests:
       {
         "scenario": "protobuf-field-number",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
+        "caveman_baseline": "Wenyan caveman competitor: Proto: add `string benchmark_id = 7`; reserve `8 to 12`; do not reuse 9.",
         "required_terms": [
           "string benchmark_id = 7",
           "reserve 8-12",
@@ -8269,7 +8269,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -8283,7 +8283,7 @@ tests:
       {
         "scenario": "cron-expression",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Cron `15 4 * * 1-5` UTC; weekdays 04:15.",
+        "caveman_baseline": "Lite caveman competitor: Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.",
         "required_terms": [
           "15 4 * * 1-5",
           "UTC",
@@ -8298,7 +8298,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 19
       }
     assertions:
       - name: caveman-parity
@@ -8312,36 +8312,7 @@ tests:
       {
         "scenario": "cron-expression",
         "caveman_mode": "full",
-        "caveman_baseline": "Cron `15 4 * * 1-5` UTC; weekdays 04:15.",
-        "required_terms": [
-          "15 4 * * 1-5",
-          "UTC",
-          "weekdays 04:15"
-        ],
-        "exact_terms": [],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [
-          "15\\s+4\\s+\\*\\s+\\*\\s+1-5"
-        ],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 10
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: cron-expression-ultra
-    input:
-      - role: user
-        content: "Compress schedule while preserving cron expression and timezone. Respond in caveman ultra mode."
-    expected_output: |
-      {
-        "scenario": "cron-expression",
-        "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `15 4 * * 1-5` UTC; weekdays 04:15.",
+        "caveman_baseline": "Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.",
         "required_terms": [
           "15 4 * * 1-5",
           "UTC",
@@ -8362,15 +8333,15 @@ tests:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: cron-expression-wenyan
+  - id: cron-expression-ultra
     input:
       - role: user
-        content: "Compress schedule while preserving cron expression and timezone. Respond in caveman wenyan mode."
+        content: "Compress schedule while preserving cron expression and timezone. Respond in caveman ultra mode."
     expected_output: |
       {
         "scenario": "cron-expression",
-        "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Cron `15 4 * * 1-5` UTC; weekdays 04:15.",
+        "caveman_mode": "ultra",
+        "caveman_baseline": "Ultra caveman competitor: Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.",
         "required_terms": [
           "15 4 * * 1-5",
           "UTC",
@@ -8385,7 +8356,36 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 19
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: cron-expression-wenyan
+    input:
+      - role: user
+        content: "Compress schedule while preserving cron expression and timezone. Respond in caveman wenyan mode."
+    expected_output: |
+      {
+        "scenario": "cron-expression",
+        "caveman_mode": "wenyan",
+        "caveman_baseline": "Wenyan caveman competitor: Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.",
+        "required_terms": [
+          "15 4 * * 1-5",
+          "UTC",
+          "weekdays 04:15"
+        ],
+        "exact_terms": [],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [
+          "15\\s+4\\s+\\*\\s+\\*\\s+1-5"
+        ],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 19
       }
     assertions:
       - name: caveman-parity
@@ -8399,7 +8399,7 @@ tests:
       {
         "scenario": "rate-limit-window",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Rate limit: 600 requests / 5-minute rolling window / user.",
+        "caveman_baseline": "Lite caveman competitor: Rate limit: 600 requests / 5-minute rolling window / user.",
         "required_terms": [
           "600 req",
           "5 min rolling",
@@ -8412,7 +8412,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -8453,7 +8453,7 @@ tests:
       {
         "scenario": "rate-limit-window",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Limit 600 req / 5 min rolling / user.",
+        "caveman_baseline": "Ultra caveman competitor: Rate limit: 600 requests / 5-minute rolling window / user.",
         "required_terms": [
           "600 req",
           "5 min rolling",
@@ -8466,7 +8466,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 13
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -8480,7 +8480,7 @@ tests:
       {
         "scenario": "rate-limit-window",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Rate limit: 600 requests / 5-minute rolling window / user.",
+        "caveman_baseline": "Wenyan caveman competitor: Rate limit: 600 requests / 5-minute rolling window / user.",
         "required_terms": [
           "600 req",
           "5 min rolling",
@@ -8493,7 +8493,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -8507,7 +8507,7 @@ tests:
       {
         "scenario": "cache-control",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: `Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
+        "caveman_baseline": "Lite caveman competitor: `Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
         "required_terms": [
           "Cache-Control",
           "public",
@@ -8523,7 +8523,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -8567,7 +8567,7 @@ tests:
       {
         "scenario": "cache-control",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `Cache-Control: public, max-age=31536000, immutable`.",
+        "caveman_baseline": "Ultra caveman competitor: `Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
         "required_terms": [
           "Cache-Control",
           "public",
@@ -8583,7 +8583,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -8597,7 +8597,7 @@ tests:
       {
         "scenario": "cache-control",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: `Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
+        "caveman_baseline": "Wenyan caveman competitor: `Cache-Control: public, max-age=31536000, immutable` for versioned assets.",
         "required_terms": [
           "Cache-Control",
           "public",
@@ -8613,7 +8613,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 26
       }
     assertions:
       - name: caveman-parity
@@ -8627,7 +8627,7 @@ tests:
       {
         "scenario": "csp-directive",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
+        "caveman_baseline": "Lite caveman competitor: CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
         "required_terms": [
           "script-src 'self' https://cdn.example.com",
           "no unsafe-inline"
@@ -8643,7 +8643,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 21
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -8687,7 +8687,7 @@ tests:
       {
         "scenario": "csp-directive",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `script-src 'self' https://cdn.example.com`; no unsafe-inline.",
+        "caveman_baseline": "Ultra caveman competitor: CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
         "required_terms": [
           "script-src 'self' https://cdn.example.com",
           "no unsafe-inline"
@@ -8703,7 +8703,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -8717,7 +8717,7 @@ tests:
       {
         "scenario": "csp-directive",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
+        "caveman_baseline": "Wenyan caveman competitor: CSP: `script-src 'self' https://cdn.example.com`; no `unsafe-inline`.",
         "required_terms": [
           "script-src 'self' https://cdn.example.com",
           "no unsafe-inline"
@@ -8733,7 +8733,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 24
       }
     assertions:
       - name: caveman-parity
@@ -8747,7 +8747,7 @@ tests:
       {
         "scenario": "html-entity",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Render `&lt;Admin&gt;`, not raw `<Admin>`.",
+        "caveman_baseline": "Lite caveman competitor: Render `&lt;Admin&gt;`, not raw `<Admin>`.",
         "required_terms": [
           "&lt;Admin&gt;",
           "not raw tag"
@@ -8763,7 +8763,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -8807,7 +8807,7 @@ tests:
       {
         "scenario": "html-entity",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `&lt;Admin&gt;`; not raw tag.",
+        "caveman_baseline": "Ultra caveman competitor: Render `&lt;Admin&gt;`, not raw `<Admin>`.",
         "required_terms": [
           "&lt;Admin&gt;",
           "not raw tag"
@@ -8823,7 +8823,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 11
+        "caveman_tokens": 17
       }
     assertions:
       - name: caveman-parity
@@ -8837,7 +8837,7 @@ tests:
       {
         "scenario": "html-entity",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Render `&lt;Admin&gt;`, not raw `<Admin>`.",
+        "caveman_baseline": "Wenyan caveman competitor: Render `&lt;Admin&gt;`, not raw `<Admin>`.",
         "required_terms": [
           "&lt;Admin&gt;",
           "not raw tag"
@@ -8853,7 +8853,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -8867,7 +8867,7 @@ tests:
       {
         "scenario": "markdown-table-alignment",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Markdown align row: `| --- | ---: | :---: |`.",
+        "caveman_baseline": "Lite caveman competitor: Markdown align markers: `| --- | ---: | :---: |`; keep colons.",
         "required_terms": [
           "| --- | ---: | :---: |"
         ],
@@ -8880,7 +8880,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 22
       }
     assertions:
       - name: caveman-parity
@@ -8894,61 +8894,7 @@ tests:
       {
         "scenario": "markdown-table-alignment",
         "caveman_mode": "full",
-        "caveman_baseline": "Markdown align row: `| --- | ---: | :---: |`.",
-        "required_terms": [
-          "| --- | ---: | :---: |"
-        ],
-        "exact_terms": [
-          "| --- | ---: | :---: |"
-        ],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 12
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: markdown-table-alignment-ultra
-    input:
-      - role: user
-        content: "Summarize table alignment without losing colon markers. Respond in caveman ultra mode."
-    expected_output: |
-      {
-        "scenario": "markdown-table-alignment",
-        "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `| --- | ---: | :---: |`.",
-        "required_terms": [
-          "| --- | ---: | :---: |"
-        ],
-        "exact_terms": [
-          "| --- | ---: | :---: |"
-        ],
-        "ordered_terms": [],
-        "forbidden_terms": [],
-        "required_patterns": [],
-        "forbidden_patterns": [],
-        "max_token_ratio": 1,
-        "min_fact_score": 1,
-        "caveman_tokens": 10
-      }
-    assertions:
-      - name: caveman-parity
-        type: code-grader
-        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
-  - id: markdown-table-alignment-wenyan
-    input:
-      - role: user
-        content: "Summarize table alignment without losing colon markers. Respond in caveman wenyan mode."
-    expected_output: |
-      {
-        "scenario": "markdown-table-alignment",
-        "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Markdown align row: `| --- | ---: | :---: |`.",
+        "caveman_baseline": "Markdown align markers: `| --- | ---: | :---: |`; keep colons.",
         "required_terms": [
           "| --- | ---: | :---: |"
         ],
@@ -8967,6 +8913,60 @@ tests:
       - name: caveman-parity
         type: code-grader
         command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: markdown-table-alignment-ultra
+    input:
+      - role: user
+        content: "Summarize table alignment without losing colon markers. Respond in caveman ultra mode."
+    expected_output: |
+      {
+        "scenario": "markdown-table-alignment",
+        "caveman_mode": "ultra",
+        "caveman_baseline": "Ultra caveman competitor: Markdown align markers: `| --- | ---: | :---: |`; keep colons.",
+        "required_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "exact_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 22
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
+  - id: markdown-table-alignment-wenyan
+    input:
+      - role: user
+        content: "Summarize table alignment without losing colon markers. Respond in caveman wenyan mode."
+    expected_output: |
+      {
+        "scenario": "markdown-table-alignment",
+        "caveman_mode": "wenyan",
+        "caveman_baseline": "Wenyan caveman competitor: Markdown align markers: `| --- | ---: | :---: |`; keep colons.",
+        "required_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "exact_terms": [
+          "| --- | ---: | :---: |"
+        ],
+        "ordered_terms": [],
+        "forbidden_terms": [],
+        "required_patterns": [],
+        "forbidden_patterns": [],
+        "max_token_ratio": 1,
+        "min_fact_score": 1,
+        "caveman_tokens": 23
+      }
+    assertions:
+      - name: caveman-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/cavemanParityCodeGrader.js"]
   - id: algebra-boundary-lite
     input:
       - role: user
@@ -8975,7 +8975,7 @@ tests:
       {
         "scenario": "algebra-boundary",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Valid range: `0 <= score < 1`; includes 0, excludes 1.",
+        "caveman_baseline": "Lite caveman competitor: Valid range: `0 <= score < 1`; includes 0, excludes 1.",
         "required_terms": [
           "0 <= score < 1",
           "0 in",
@@ -8990,7 +8990,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 17
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -9033,7 +9033,7 @@ tests:
       {
         "scenario": "algebra-boundary",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `0 <= score < 1`; 0 in, 1 out.",
+        "caveman_baseline": "Ultra caveman competitor: Valid range: `0 <= score < 1`; includes 0, excludes 1.",
         "required_terms": [
           "0 <= score < 1",
           "0 in",
@@ -9048,7 +9048,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 12
+        "caveman_tokens": 20
       }
     assertions:
       - name: caveman-parity
@@ -9062,7 +9062,7 @@ tests:
       {
         "scenario": "algebra-boundary",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Valid range: `0 <= score < 1`; includes 0, excludes 1.",
+        "caveman_baseline": "Wenyan caveman competitor: Valid range: `0 <= score < 1`; includes 0, excludes 1.",
         "required_terms": [
           "0 <= score < 1",
           "0 in",
@@ -9077,7 +9077,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 18
+        "caveman_tokens": 21
       }
     assertions:
       - name: caveman-parity
@@ -9091,7 +9091,7 @@ tests:
       {
         "scenario": "git-diff-hunk",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
+        "caveman_baseline": "Lite caveman competitor: Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
         "required_terms": [
           "- oldRoute();",
           "+ newRoute();",
@@ -9108,7 +9108,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -9153,7 +9153,7 @@ tests:
       {
         "scenario": "git-diff-hunk",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `- oldRoute();` removed; `+ newRoute();` added.",
+        "caveman_baseline": "Ultra caveman competitor: Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
         "required_terms": [
           "- oldRoute();",
           "+ newRoute();",
@@ -9170,7 +9170,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 16
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -9184,7 +9184,7 @@ tests:
       {
         "scenario": "git-diff-hunk",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
+        "caveman_baseline": "Wenyan caveman competitor: Diff: remove `- oldRoute();`; add `+ newRoute();`; signs matter.",
         "required_terms": [
           "- oldRoute();",
           "+ newRoute();",
@@ -9201,7 +9201,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 20
+        "caveman_tokens": 23
       }
     assertions:
       - name: caveman-parity
@@ -9215,7 +9215,7 @@ tests:
       {
         "scenario": "binary-size",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
+        "caveman_baseline": "Lite caveman competitor: Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
         "required_terms": [
           "1.5 MiB",
           "1,572,864 bytes",
@@ -9230,7 +9230,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 15
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -9273,7 +9273,7 @@ tests:
       {
         "scenario": "binary-size",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: Bundle 1.5 MiB / 1,572,864 bytes; not MB.",
+        "caveman_baseline": "Ultra caveman competitor: Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
         "required_terms": [
           "1.5 MiB",
           "1,572,864 bytes",
@@ -9288,7 +9288,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 14
+        "caveman_tokens": 18
       }
     assertions:
       - name: caveman-parity
@@ -9302,7 +9302,7 @@ tests:
       {
         "scenario": "binary-size",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
+        "caveman_baseline": "Wenyan caveman competitor: Bundle: 1.5 MiB = 1,572,864 bytes; not 1.5 MB.",
         "required_terms": [
           "1.5 MiB",
           "1,572,864 bytes",
@@ -9317,7 +9317,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 16
+        "caveman_tokens": 19
       }
     assertions:
       - name: caveman-parity
@@ -9331,7 +9331,7 @@ tests:
       {
         "scenario": "mimetype-charset",
         "caveman_mode": "lite",
-        "caveman_baseline": "Lite caveman: Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
+        "caveman_baseline": "Lite caveman competitor: Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
         "required_terms": [
           "application/json; charset=utf-8",
           "no text/plain fallback"
@@ -9348,7 +9348,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 22
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -9393,7 +9393,7 @@ tests:
       {
         "scenario": "mimetype-charset",
         "caveman_mode": "ultra",
-        "caveman_baseline": "Ultra caveman: `application/json; charset=utf-8`; no text/plain fallback.",
+        "caveman_baseline": "Ultra caveman competitor: Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
         "required_terms": [
           "application/json; charset=utf-8",
           "no text/plain fallback"
@@ -9410,7 +9410,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 19
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
@@ -9424,7 +9424,7 @@ tests:
       {
         "scenario": "mimetype-charset",
         "caveman_mode": "wenyan",
-        "caveman_baseline": "Wenyan caveman: Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
+        "caveman_baseline": "Wenyan caveman competitor: Content-Type `application/json; charset=utf-8`; no `text/plain` fallback.",
         "required_terms": [
           "application/json; charset=utf-8",
           "no text/plain fallback"
@@ -9441,7 +9441,7 @@ tests:
         "forbidden_patterns": [],
         "max_token_ratio": 1,
         "min_fact_score": 1,
-        "caveman_tokens": 23
+        "caveman_tokens": 25
       }
     assertions:
       - name: caveman-parity
