@@ -1101,7 +1101,7 @@ export function cavemanBaselineForMode(fixture: CavemanParityFixture, mode: Cave
     case 'full':
       return fixture.cavemanBaseline;
     case 'ultra':
-      return `Ultra caveman: ${fixture.utkCandidate}`;
+      return `Ultra caveman: ${fixture.cavemanBaseline}`;
     case 'wenyan':
       return `Wenyan caveman: ${fixture.cavemanBaseline}`;
   }
