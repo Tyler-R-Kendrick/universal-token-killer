@@ -1,9 +1,9 @@
 {
   "name": "universal-token-killer",
   "metadata": {
-    "description": "Universal Token Killer plugins, skills, agents, and local MCP configuration for GitHub Copilot.",
+    "description": "Universal Token Killer plugins, skills, agents, hooks, and local MCP configuration for GitHub Copilot.",
     "version": "0.1.0",
-    "pluginRoot": "./.github/plugins"
+    "pluginRoot": "./packages/plugins/agents/copilot/plugins"
   },
   "owner": {
     "name": "Tyler-R-Kendrick",
@@ -11,9 +11,9 @@
   },
   "plugins": [
     {
-      "name": "universal-token-killer",
-      "source": "./.github/plugins/universal-token-killer",
-      "description": "Hook-first token optimization for GitHub Copilot tool calls, with UTK skills, a UTK operator agent, and the local detok MCP server for LLMLingua2 compression.",
+      "name": "utk-cli",
+      "source": "./packages/plugins/agents/copilot/plugins/utk-cli",
+      "description": "GitHub Copilot plugin for operating UTK CLI workflows, schema seeding, artifact recovery, and token-saving audits.",
       "version": "0.1.0",
       "author": {
         "name": "Tyler-R-Kendrick",
@@ -22,23 +22,47 @@
       "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
       "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
       "license": "MIT",
-      "keywords": [
-        "github-copilot",
-        "agentskills",
-        "mcp",
-        "token-optimization",
-        "llmlingua",
-        "toon",
-        "tron"
-      ],
+      "keywords": ["github-copilot", "agentskills", "token-optimization", "toon", "tron"],
       "category": "developer-tools",
-      "tags": [
-        "copilot-cli",
-        "tool-hooks",
-        "detok",
-        "rtk-parity"
-      ],
+      "tags": ["copilot-cli", "utk", "artifact-recovery"],
       "agents": "./agents",
+      "skills": "./skills",
+      "strict": true
+    },
+    {
+      "name": "utk-model-proxy",
+      "source": "./packages/plugins/agents/copilot/plugins/utk-model-proxy",
+      "description": "GitHub Copilot plugin for configuring and operating the UTK model proxy.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Tyler-R-Kendrick",
+        "url": "https://github.com/Tyler-R-Kendrick"
+      },
+      "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+      "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+      "license": "MIT",
+      "keywords": ["github-copilot", "model-proxy", "context-compression", "token-optimization"],
+      "category": "developer-tools",
+      "tags": ["copilot-cli", "model-proxy", "context-runtime"],
+      "agents": "./agents",
+      "skills": "./skills",
+      "strict": true
+    },
+    {
+      "name": "utk-detoks",
+      "source": "./packages/plugins/agents/copilot/plugins/utk-detoks",
+      "description": "GitHub Copilot plugin for UTK detoks prompt compression, local detok MCP tools, and safe preToolUse rewriting.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Tyler-R-Kendrick",
+        "url": "https://github.com/Tyler-R-Kendrick"
+      },
+      "homepage": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+      "repository": "https://github.com/Tyler-R-Kendrick/universal-token-killer",
+      "license": "MIT",
+      "keywords": ["github-copilot", "agentskills", "mcp", "token-optimization", "llmlingua", "detok"],
+      "category": "developer-tools",
+      "tags": ["copilot-cli", "tool-hooks", "detok", "prompt-compression"],
       "skills": "./skills",
       "mcpServers": ".mcp.json",
       "hooks": "./hooks/hooks.json",

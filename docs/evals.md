@@ -15,6 +15,7 @@ The `@utk/evals` package contains deterministic tests for safety, compactness, a
 - installed-SDK Compresr parity benchmarks with deterministic local baselines;
 - bash-like invocation accuracy and token savings against RTK-style rewrite baselines;
 - caveman parity benchmarks for terse technical summaries using `autoevals` fact-retention scoring.
+- LeanCTX Copilot benchmarks for prompt surfaces, tool outputs, tool schemas, relevance, correctness, groundedness, and token savings.
 
 ## Fixture Source
 
@@ -47,6 +48,12 @@ Bash rewrite helpers live in `packages/evals/metrics/bashRewriteMetrics.ts` and 
 Caveman parity fixtures live in `packages/evals/fixtures/cavemanParityFixtures.ts`. They cover terse-output cases where caveman is a meaningful baseline: CI failure triage, review findings, artifact recovery handles, and implementation status reports. `packages/evals/metrics/cavemanParityMetrics.ts` uses Braintrust `autoevals` `JSONDiff` as the AgentV-compatible fact-retention scorer and separately gates token parity against each caveman baseline.
 
 The generated comparison report lives at `docs/internal/caveman-parity-benchmark-results.md`. It documents where caveman is strong, what UTK attempts instead, and the measured token/fact results.
+
+LeanCTX Copilot fixtures live in `packages/evals/fixtures/leanCtxCopilotFixtures.ts`. The benchmark runner lives in `scripts/bench-leanctx-copilot.ts` and is tested by `scripts/bench-leanctx-copilot.test.ts`. It compares UTK against a LeanCTX-style Copilot context-runtime baseline across 50 unique cases and requires UTK to meet or beat the baseline on relevance, correctness, groundedness, and token count. Current 10-loop performance is documented in `docs/internal/leanctx-copilot-benchmark-results.md`.
+
+Aggregate benchmark results across RTK, Caveman, Compresr, and LeanCTX live in `docs/internal/benchmark-summary.md`.
+
+Local documentation rules for future benchmark runs live in `packages/evals/AGENTS.md`.
 
 ## AgentEvals-Driven TDD
 
@@ -123,12 +130,19 @@ Generate the caveman comparison report:
 npm run report:caveman --workspace @utk/evals
 ```
 
+Run LeanCTX Copilot benchmarks:
+
+```bash
+npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose
+```
+
 AgentV can run the code-grader contract after building:
 
 ```bash
 npm run build --workspace @utk/evals
 agentv run packages/evals/evals/rtk-parity.EVAL.yaml
 agentv run packages/evals/evals/caveman-parity.EVAL.yaml
+agentv run packages/evals/evals/compresr-parity.EVAL.yaml
 ```
 
 Run the optional benchmark helper tests:

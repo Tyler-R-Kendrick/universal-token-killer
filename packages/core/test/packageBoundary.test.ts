@@ -1,6 +1,7 @@
 import { access, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { loadPackManifest } from '../src/pack/loadPack.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 
@@ -67,6 +68,7 @@ describe('package boundary', () => {
 
     expect(rootPackage).not.toHaveProperty('bin');
     expect(packages).not.toContain('mcp-server');
+    expect(packages).not.toContain('copilot-hook');
     expect(packages).toContain('detok-mcp');
     expect(packages).toContain('model-proxy');
 
@@ -169,34 +171,122 @@ describe('package boundary', () => {
     }
   });
 
-  it('exposes UTK as a GitHub Copilot plugin marketplace bundle', async () => {
+  it('keeps agent-specific implementations under packages/plugins/agents', async () => {
+    const agentsRoot = path.join(repoRoot, 'packages', 'plugins', 'agents');
+    const agentFolders = (await readdir(agentsRoot)).sort();
+    const copilotPackage = await readJson('packages/plugins/agents/copilot/package.json');
+    const opencodePack = await loadPackManifest(path.join(agentsRoot, 'opencode'));
+    const windsurfPack = await loadPackManifest(path.join(agentsRoot, 'windsurf'));
+
+    expect(agentFolders).toEqual(['copilot', 'opencode', 'windsurf']);
+    expect(copilotPackage).toMatchObject({
+      name: '@utk/copilot-hook',
+      bin: {
+        'utk-copilot-detok-pre-tool-use': 'dist/detokPreToolUseHook.js'
+      }
+    });
+    await access(path.join(agentsRoot, 'copilot', 'src', 'copilotHook.ts'));
+    await access(path.join(agentsRoot, 'copilot', 'plugins'));
+    await access(path.join(agentsRoot, 'opencode', 'extensions', 'README.md'));
+    await access(path.join(agentsRoot, 'windsurf', 'extensions', 'README.md'));
+    expect(opencodePack.plugins?.[0]).toMatchObject({ type: 'agent', target: 'opencode', path: 'extensions' });
+    expect(windsurfPack.plugins?.[0]).toMatchObject({ type: 'agent', target: 'windsurf', path: 'extensions' });
+  });
+
+  it('keeps maintained serialization plugins under packages/plugins/serialization', async () => {
+    const serializationRoot = path.join(repoRoot, 'packages', 'plugins', 'serialization');
+    const pluginFolders = (await readdir(serializationRoot)).sort();
+
+    expect(pluginFolders).toEqual(['json-compact', 'toon', 'tron']);
+    await expect(access(path.join(repoRoot, 'packages', 'core', 'src', 'serialization', 'plugins'))).rejects.toThrow();
+    await expect(access(path.join(repoRoot, 'packages', 'core', 'grammars', 'tron.lark'))).rejects.toThrow();
+
+    for (const plugin of pluginFolders) {
+      const manifest = await loadPackManifest(path.join(serializationRoot, plugin));
+      const pluginPackage = await readJsonAtPath(path.join(serializationRoot, plugin, 'package.json'));
+      const grammarName = plugin === 'json-compact' ? 'json-compact.lark' : `${plugin}.lark`;
+      const grammar = await readFile(path.join(serializationRoot, plugin, 'grammar', grammarName), 'utf8');
+
+      expect(manifest.pack.name).toBe(plugin);
+      expect(pluginPackage).toMatchObject({
+        private: true,
+        type: 'module',
+        exports: { '.': './index.ts' }
+      });
+      expect(manifest.plugins?.[0]).toMatchObject({
+        id: plugin,
+        type: 'serialization',
+        symbol: plugin === 'json-compact' ? 'JSON_COMPACT_SERIALIZER' : `${plugin.toUpperCase()}_SERIALIZER`,
+        semantics: 'json-value-v1',
+        grammar: `grammar/${grammarName}`
+      });
+      await expect(access(path.join(serializationRoot, plugin, 'index.cjs'))).rejects.toThrow();
+      await access(path.join(serializationRoot, plugin, 'index.ts'));
+      expect(grammar).toContain('start:');
+    }
+  });
+
+  it('exposes UTK as focused GitHub Copilot plugin marketplace bundles', async () => {
     const marketplace = await readJson('.github/plugin/marketplace.json');
     const plugins = marketplace.plugins as Array<Record<string, unknown>>;
-    const plugin = plugins.find((entry) => entry.name === 'universal-token-killer');
-    const pluginRoot = path.join(repoRoot, '.github', 'plugins', 'universal-token-killer');
-    const manifest = await readJsonAtPath(path.join(pluginRoot, 'plugin.json'));
-    const githubManifest = await readJsonAtPath(path.join(pluginRoot, '.github', 'plugin', 'plugin.json'));
-    const mcpConfig = await readJsonAtPath(path.join(pluginRoot, '.mcp.json'));
-    const hooksConfig = await readJsonAtPath(path.join(pluginRoot, 'hooks', 'hooks.json'));
-    const pluginHookRunner = await readFile(path.join(pluginRoot, 'hooks', 'detokPreToolUseHook.js'), 'utf8');
-    const agents = await readdir(path.join(pluginRoot, 'agents'));
+    const pluginNames = plugins.map((entry) => entry.name).sort();
+    const pluginRoot = path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins');
+    const cliManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-cli', 'plugin.json'));
+    const proxyManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-model-proxy', 'plugin.json'));
+    const detoksManifest = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', 'plugin.json'));
+    const cliPack = await loadPackManifest(path.join(pluginRoot, 'utk-cli'));
+    const proxyPack = await loadPackManifest(path.join(pluginRoot, 'utk-model-proxy'));
+    const detoksPack = await loadPackManifest(path.join(pluginRoot, 'utk-detoks'));
+    const mcpConfig = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', '.mcp.json'));
+    const hooksConfig = await readJsonAtPath(path.join(pluginRoot, 'utk-detoks', 'hooks', 'hooks.json'));
+    const pluginHookRunner = await readFile(path.join(pluginRoot, 'utk-detoks', 'hooks', 'detokPreToolUseHook.js'), 'utf8');
 
     expect(marketplace.name).toBe('universal-token-killer');
-    expect(plugin).toMatchObject({
-      source: './.github/plugins/universal-token-killer',
+    expect(pluginNames).toEqual(['utk-cli', 'utk-detoks', 'utk-model-proxy']);
+    expect(marketplace.metadata).toMatchObject({
+      pluginRoot: './packages/plugins/agents/copilot/plugins'
+    });
+    expect(plugins.find((entry) => entry.name === 'utk-cli')).toMatchObject({
+      source: './packages/plugins/agents/copilot/plugins/utk-cli',
       agents: './agents',
       skills: './skills',
-      mcpServers: '.mcp.json',
       strict: true
     });
-    expect(manifest).toMatchObject({
-      name: 'universal-token-killer',
+    expect(plugins.find((entry) => entry.name === 'utk-model-proxy')).toMatchObject({
+      source: './packages/plugins/agents/copilot/plugins/utk-model-proxy',
+      agents: './agents',
+      skills: './skills',
+      strict: true
+    });
+    expect(plugins.find((entry) => entry.name === 'utk-detoks')).toMatchObject({
+      source: './packages/plugins/agents/copilot/plugins/utk-detoks',
+      skills: './skills',
+      mcpServers: '.mcp.json',
+      hooks: './hooks/hooks.json',
+      strict: true
+    });
+    expect(cliManifest).toMatchObject({
+      name: 'utk-cli',
       agents: ['./agents'],
-      skills: ['./skills/utk', './skills/utk-init', './skills/detoks', './skills/detoks-skill'],
-      mcpServers: '.mcp.json',
+      skills: ['./skills/utk', './skills/utk-init'],
       strict: true
     });
-    expect(githubManifest).toEqual(manifest);
+    expect(proxyManifest).toMatchObject({
+      name: 'utk-model-proxy',
+      agents: ['./agents'],
+      skills: ['./skills/model-proxy'],
+      strict: true
+    });
+    expect(detoksManifest).toMatchObject({
+      name: 'utk-detoks',
+      skills: ['./skills/detoks', './skills/detoks-skill'],
+      mcpServers: '.mcp.json',
+      hooks: './hooks/hooks.json',
+      strict: true
+    });
+    expect(cliPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-cli', target: 'copilot', manifest: 'plugin.json' });
+    expect(proxyPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-model-proxy', target: 'copilot', manifest: 'plugin.json' });
+    expect(detoksPack.plugins?.[0]).toMatchObject({ type: 'agent', id: 'utk-detoks', target: 'copilot', manifest: 'plugin.json' });
     expect((mcpConfig.mcpServers as Record<string, unknown>).detok).toMatchObject({
       type: 'stdio',
       command: 'node',
@@ -204,26 +294,32 @@ describe('package boundary', () => {
     });
     assertCopilotHookConfig(hooksConfig);
     expect(JSON.stringify(hooksConfig)).toContain('hooks/detokPreToolUseHook.js');
-    expect(pluginHookRunner).toContain("packages', 'copilot-hook', 'dist', 'detokPreToolUseHook.js");
+    expect(pluginHookRunner).toContain("packages', 'plugins', 'agents', 'copilot', 'dist', 'detokPreToolUseHook.js");
     expect(pluginHookRunner).toContain("process.stdout.write('{}')");
-    expect(agents).toEqual(['utk-mediator.agent.md']);
+    await expect(access(path.join(repoRoot, '.github', 'plugins', 'universal-token-killer'))).rejects.toThrow();
   });
 
   it('registers a repo-local Copilot CLI detok preToolUse hook', async () => {
-    const hookConfig = await readJson('.github/hooks/utk-detok-inputs.json');
+    const hookConfig = await readJsonAtPath(path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'hooks', 'utk-detok-inputs.json'));
 
     assertCopilotHookConfig(hookConfig);
-    expect(JSON.stringify(hookConfig)).toContain('packages/copilot-hook/dist/detokPreToolUseHook.js');
+    expect(JSON.stringify(hookConfig)).toContain('packages/plugins/agents/copilot/dist/detokPreToolUseHook.js');
+    await expect(access(path.join(repoRoot, '.github', 'hooks', 'utk-detok-inputs.json'))).rejects.toThrow();
   });
 
   it('keeps Copilot plugin skill copies synchronized with canonical agent skills', async () => {
     const canonicalRoot = path.join(repoRoot, 'skills');
-    const pluginSkillsRoot = path.join(repoRoot, '.github', 'plugins', 'universal-token-killer', 'skills');
-    const skillNames = (await readdir(canonicalRoot)).sort();
+    const pluginSkillsByName: Record<string, string> = {
+      'detoks': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-detoks', 'skills', 'detoks'),
+      'detoks-skill': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-detoks', 'skills', 'detoks-skill'),
+      'utk': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-cli', 'skills', 'utk'),
+      'utk-init': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-cli', 'skills', 'utk-init')
+    };
 
-    for (const skillName of skillNames) {
+    expect(Object.keys(pluginSkillsByName).sort()).toEqual((await readdir(canonicalRoot)).sort());
+
+    for (const [skillName, pluginSkillRoot] of Object.entries(pluginSkillsByName)) {
       const canonicalSkillRoot = path.join(canonicalRoot, skillName);
-      const pluginSkillRoot = path.join(pluginSkillsRoot, skillName);
       const canonicalFiles = await listFiles(canonicalSkillRoot);
       const pluginFiles = await listFiles(pluginSkillRoot);
 

@@ -1,5 +1,9 @@
 import { estimateTokens } from '../assertions/tokenBudgets.js';
 
+export const CAVEMAN_MODES = ['lite', 'full', 'ultra', 'wenyan'] as const;
+export type CavemanMode = (typeof CAVEMAN_MODES)[number];
+export type CavemanModeBaselines = Record<CavemanMode, string>;
+
 export type CavemanParityFixture = {
   name: string;
   category: string;
@@ -9,6 +13,7 @@ export type CavemanParityFixture = {
   utkApproach: string;
   sourceText: string;
   cavemanBaseline: string;
+  cavemanBaselines: CavemanModeBaselines;
   utkCandidate: string;
   requiredTerms: string[];
   exactTerms?: string[];
@@ -20,11 +25,25 @@ export type CavemanParityFixture = {
   minFactScore: number;
 };
 
-function fixture(params: Omit<CavemanParityFixture, 'maxTokenRatio' | 'minFactScore'> & Partial<Pick<CavemanParityFixture, 'maxTokenRatio' | 'minFactScore'>>): CavemanParityFixture {
+type CavemanParityFixtureParams = Omit<CavemanParityFixture, 'cavemanBaselines' | 'maxTokenRatio' | 'minFactScore'> &
+  Partial<Pick<CavemanParityFixture, 'maxTokenRatio' | 'minFactScore'>> & {
+    cavemanBaselines?: Partial<CavemanModeBaselines>;
+  };
+
+function fixture(params: CavemanParityFixtureParams): CavemanParityFixture {
+  const full = params.cavemanBaselines?.full ?? params.cavemanBaseline;
+  const baselines = {
+    lite: params.cavemanBaselines?.lite ?? `Lite caveman competitor: ${full}`,
+    full,
+    ultra: params.cavemanBaselines?.ultra ?? `Ultra caveman competitor: ${full}`,
+    wenyan: params.cavemanBaselines?.wenyan ?? `Wenyan caveman competitor: ${full}`
+  };
   return {
     maxTokenRatio: 1,
     minFactScore: 1,
-    ...params
+    ...params,
+    cavemanBaseline: full,
+    cavemanBaselines: baselines
   };
 }
 
@@ -438,7 +457,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps metadata literals exact.',
     utkApproach: 'Inline YAML snippets only.',
     sourceText: 'The documentation frontmatter should set draft: false and tags: [evals, caveman, autoevals].',
-    cavemanBaseline: 'Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.',
+    cavemanBaseline: 'Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.',
     utkCandidate: '`draft: false`; `tags: [evals, caveman, autoevals]`.',
     requiredTerms: ['draft: false', 'tags: [evals, caveman, autoevals]'],
     exactTerms: ['draft: false', 'tags: [evals, caveman, autoevals]']
@@ -716,7 +735,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Preserves punctuation-heavy regex.',
     utkApproach: 'Regex-only note.',
     sourceText: 'Use the regex ^(feat|fix|test)\\([^)]+\\): .+$ for commit subjects. Do not drop the anchors.',
-    cavemanBaseline: 'Use regex `^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.',
+    cavemanBaseline: 'Regex required: `^(feat|fix|test)\\([^)]+\\): .+$`; anchors stay.',
     utkCandidate: '`^(feat|fix|test)\\([^)]+\\): .+$`; keep anchors.',
     requiredTerms: ['^(feat|fix|test)\\([^)]+\\): .+$', 'anchors'],
     exactTerms: ['^(feat|fix|test)\\([^)]+\\): .+$']
@@ -858,7 +877,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps long cloud ids intact.',
     utkApproach: 'ID-only summary.',
     sourceText: 'The resource id is /subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod.',
-    cavemanBaseline: 'Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.',
+    cavemanBaseline: 'Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.',
     utkCandidate: '`/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.',
     requiredTerms: ['/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod'],
     exactTerms: ['/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod']
@@ -871,7 +890,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps Git ref syntax safe.',
     utkApproach: 'Command fragment only.',
     sourceText: 'Push the branch with git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases.',
-    cavemanBaseline: 'Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.',
+    cavemanBaseline: 'Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.',
     utkCandidate: '`git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.',
     requiredTerms: ['git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases'],
     exactTerms: ['HEAD:refs/heads/codex/caveman-bench-edge-cases']
@@ -936,7 +955,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps selection syntax readable.',
     utkApproach: 'Selection-only summary.',
     sourceText: 'The GraphQL query should select repository { name owner { login } defaultBranchRef { name } }.',
-    cavemanBaseline: 'GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.',
+    cavemanBaseline: 'GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.',
     utkCandidate: '`repository { name owner { login } defaultBranchRef { name } }`.',
     requiredTerms: ['repository', 'owner { login }', 'defaultBranchRef { name }'],
     exactTerms: ['repository { name owner { login } defaultBranchRef { name } }']
@@ -962,7 +981,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps compact schedule syntax intact.',
     utkApproach: 'Cron plus timezone only.',
     sourceText: 'The job runs on cron 15 4 * * 1-5 in UTC, which means weekdays at 04:15 UTC.',
-    cavemanBaseline: 'Cron `15 4 * * 1-5` UTC; weekdays 04:15.',
+    cavemanBaseline: 'Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.',
     utkCandidate: '`15 4 * * 1-5` UTC; weekdays 04:15.',
     requiredTerms: ['15 4 * * 1-5', 'UTC', 'weekdays 04:15'],
     requiredPatterns: ['15\\s+4\\s+\\*\\s+\\*\\s+1-5']
@@ -1028,7 +1047,7 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
     cavemanStrength: 'Keeps markdown punctuation exact.',
     utkApproach: 'Alignment row literal only.',
     sourceText: 'The Markdown alignment row should be | --- | ---: | :---: | for left, right, and centered columns.',
-    cavemanBaseline: 'Markdown align row: `| --- | ---: | :---: |`.',
+    cavemanBaseline: 'Markdown align markers: `| --- | ---: | :---: |`; keep colons.',
     utkCandidate: '`| --- | ---: | :---: |`.',
     requiredTerms: ['| --- | ---: | :---: |'],
     exactTerms: ['| --- | ---: | :---: |']
@@ -1089,11 +1108,18 @@ export const CAVEMAN_PARITY_FIXTURES: CavemanParityFixture[] = [
 ];
 
 export const CAVEMAN_PARITY_EVALS = CAVEMAN_PARITY_FIXTURES.map((fixture) => fixture.name);
+export const CAVEMAN_PARITY_MODE_EVALS = CAVEMAN_PARITY_FIXTURES.flatMap((fixture) => CAVEMAN_MODES.map((mode) => `${fixture.name}-${mode}`));
 
-export function cavemanParityExpectedPayload(fixture: CavemanParityFixture): string {
+export function cavemanBaselineForMode(fixture: CavemanParityFixture, mode: CavemanMode): string {
+  return fixture.cavemanBaselines[mode];
+}
+
+export function cavemanParityExpectedPayload(fixture: CavemanParityFixture, mode: CavemanMode = 'full'): string {
+  const cavemanBaseline = cavemanBaselineForMode(fixture, mode);
   return JSON.stringify({
     scenario: fixture.name,
-    caveman_baseline: fixture.cavemanBaseline,
+    caveman_mode: mode,
+    caveman_baseline: cavemanBaseline,
     required_terms: fixture.requiredTerms,
     exact_terms: fixture.exactTerms ?? [],
     ordered_terms: fixture.orderedTerms ?? [],
@@ -1102,6 +1128,6 @@ export function cavemanParityExpectedPayload(fixture: CavemanParityFixture): str
     forbidden_patterns: fixture.forbiddenPatterns ?? [],
     max_token_ratio: fixture.maxTokenRatio,
     min_fact_score: fixture.minFactScore,
-    caveman_tokens: estimateTokens(fixture.cavemanBaseline)
+    caveman_tokens: estimateTokens(cavemanBaseline)
   }, null, 2);
 }

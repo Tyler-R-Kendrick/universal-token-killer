@@ -19,6 +19,7 @@ export * from './schema/inferSchema.js';
 export * from './schema/mergeSchema.js';
 export * from './security/pathSafety.js';
 export * from './serialization/providers.js';
+export * from './serialization/grammarCodec.js';
 export * from './skills/sessionSkills.js';
 export * from './store/artifactStore.js';
 export * from './store/workspaceStore.js';

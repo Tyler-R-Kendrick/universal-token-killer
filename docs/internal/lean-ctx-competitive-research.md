@@ -197,14 +197,22 @@ UTK's comparative RTK metrics should preserve this rigor but use UTK-specific
 success criteria: fact retention, recoverability, no raw leakage, route
 confidence, and compact token count versus RTK baselines.
 
+Current UTK benchmark coverage now includes a LeanCTX Copilot suite. The
+standalone report is `docs/internal/leanctx-copilot-benchmark-results.md`; the
+aggregate benchmark matrix is `docs/internal/benchmark-summary.md`. Current
+results: 50 unique Copilot cases, 1,500 evaluated cases across 10 loops, 0
+failures, 33.68% token savings vs LeanCTX baseline, and 1.000 minimum
+relevance/correctness/groundedness.
+
 ## Competitive Opportunities For UTK
 
 1. Build a command-template registry for UTK's bash-like tool that separates
    command intent, safe parameters, expected output schema, serializer, and
    llguidance grammar.
-2. Expand RTK parity fixtures with lean-ctx-like command families: git, gh,
-   npm/pnpm, cargo, docker, kubectl, terraform, rg, tsc, vitest, curl, and JSON
-   schema output.
+2. Keep expanding RTK/LeanCTX-inspired fixtures with command families and
+   Copilot surfaces: git, gh, npm/pnpm, cargo, docker, kubectl, terraform, rg,
+   tsc, vitest, curl, JSON schema output, prompt assets, post-tool output, and
+   deferred tool discovery.
 3. Add artifact range/search recovery for `.utk/` raw outputs, not only direct
    file paths.
 4. Keep non-shell tool calls first-class by applying the same capture,

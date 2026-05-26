@@ -5,9 +5,13 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 ## Summary
 
 - Scenarios: 80
+- Mode evaluations: 320 (lite, full, ultra, wenyan)
 - Outperformed caveman token baseline: 80/80
-- Average UTK/caveman token ratio: 0.756
-- Total estimated token savings vs caveman: 375
+- Outperformed caveman mode baselines: 320/320
+- Average UTK/caveman token ratio: 0.742
+- Total estimated token savings vs caveman: 404
+- Average UTK/caveman mode token ratio: 0.642
+- Total estimated token savings vs caveman modes: 3158
 - Autoevals fact retention: 1.000 all scenarios
 - Exact/order/forbidden/pattern edge gates: 1.000 all scenarios
 
@@ -16,6 +20,16 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Caveman is strongest at terse human-facing prose: review comments, commit subjects, status notes, command help, and incident handoffs.
 - UTK outperforms when it uses structured field order, removes labels that syntax already implies, and treats exact commands, paths, ids, errors, and secrets as protected anchors.
 - Safety clarity remains special: UTK can be shorter than caveman only when the irreversible consequence and mitigation stay explicit.
+- Mode coverage now runs the same caveman suite across independent lite, full, ultra, and wenyan competitor baselines so style compression cannot hide fact drift.
+
+## Mode Results
+
+| Mode | Cases | Caveman Tokens | UTK Tokens | Delta | Ratio | Facts | Edge Gates |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| lite | 80 | 2262 | 1366 | 896 | 0.604 | 1.000 | 1.000 |
+| full | 80 | 1770 | 1366 | 404 | 0.772 | 1.000 | 1.000 |
+| ultra | 80 | 2285 | 1366 | 919 | 0.598 | 1.000 | 1.000 |
+| wenyan | 80 | 2305 | 1366 | 939 | 0.593 | 1.000 | 1.000 |
 
 ## Results
 
@@ -51,7 +65,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 | stack-trace-top-frame | Stack traces | 28 | 22 | 6 | 0.786 | 1.000 | 1.000 |
 | shell-quote-command | Shell quoting | 17 | 16 | 1 | 0.941 | 1.000 | 1.000 |
 | sql-where-clause | SQL safety | 25 | 16 | 9 | 0.640 | 1.000 | 1.000 |
-| yaml-frontmatter | YAML metadata | 17 | 13 | 4 | 0.765 | 1.000 | 1.000 |
+| yaml-frontmatter | YAML metadata | 20 | 13 | 7 | 0.650 | 1.000 | 1.000 |
 | graph-edge-path | Graph state | 23 | 20 | 3 | 0.870 | 1.000 | 1.000 |
 | wcag-contrast | Accessibility | 20 | 13 | 7 | 0.650 | 1.000 | 1.000 |
 | icu-placeholder | Localization | 22 | 19 | 3 | 0.864 | 1.000 | 1.000 |
@@ -72,7 +86,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 | email-redaction | PII redaction | 18 | 9 | 9 | 0.500 | 1.000 | 1.000 |
 | csv-quoted-comma | CSV | 15 | 8 | 7 | 0.533 | 1.000 | 1.000 |
 | glob-negation | Glob patterns | 12 | 8 | 4 | 0.667 | 1.000 | 1.000 |
-| regex-literal | Regex | 15 | 12 | 3 | 0.800 | 1.000 | 1.000 |
+| regex-literal | Regex | 16 | 12 | 4 | 0.750 | 1.000 | 1.000 |
 | feature-flag-rollout | Feature flags | 16 | 13 | 3 | 0.813 | 1.000 | 1.000 |
 | ab-cohort | Experimentation | 10 | 8 | 2 | 0.800 | 1.000 | 1.000 |
 | matrix-shape | ML tensors | 16 | 10 | 6 | 0.625 | 1.000 | 1.000 |
@@ -83,20 +97,20 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 | docker-digest | Containers | 28 | 26 | 2 | 0.929 | 1.000 | 1.000 |
 | k8s-resource-limit | Kubernetes | 14 | 10 | 4 | 0.714 | 1.000 | 1.000 |
 | s3-uri | Cloud storage | 19 | 13 | 6 | 0.684 | 1.000 | 1.000 |
-| azure-resource-id | Cloud resource id | 30 | 26 | 4 | 0.867 | 1.000 | 1.000 |
-| git-refspec | Git | 18 | 17 | 1 | 0.944 | 1.000 | 1.000 |
+| azure-resource-id | Cloud resource id | 35 | 26 | 9 | 0.743 | 1.000 | 1.000 |
+| git-refspec | Git | 24 | 17 | 7 | 0.708 | 1.000 | 1.000 |
 | scoped-package | Package names | 10 | 7 | 3 | 0.700 | 1.000 | 1.000 |
 | npm-audit-count | Security counts | 13 | 9 | 4 | 0.692 | 1.000 | 1.000 |
 | node-options-memory | Runtime flags | 19 | 17 | 2 | 0.895 | 1.000 | 1.000 |
 | tri-state-null | Data modeling | 21 | 13 | 8 | 0.619 | 1.000 | 1.000 |
-| graphql-selection | GraphQL | 20 | 16 | 4 | 0.800 | 1.000 | 1.000 |
+| graphql-selection | GraphQL | 27 | 16 | 11 | 0.593 | 1.000 | 1.000 |
 | protobuf-field-number | Protobuf | 18 | 13 | 5 | 0.722 | 1.000 | 1.000 |
-| cron-expression | Scheduling | 10 | 9 | 1 | 0.900 | 1.000 | 1.000 |
+| cron-expression | Scheduling | 13 | 9 | 4 | 0.692 | 1.000 | 1.000 |
 | rate-limit-window | Rate limits | 15 | 10 | 5 | 0.667 | 1.000 | 1.000 |
 | cache-control | HTTP cache | 19 | 14 | 5 | 0.737 | 1.000 | 1.000 |
 | csp-directive | Browser security | 18 | 16 | 2 | 0.889 | 1.000 | 1.000 |
 | html-entity | HTML escaping | 11 | 8 | 3 | 0.727 | 1.000 | 1.000 |
-| markdown-table-alignment | Markdown table | 12 | 7 | 5 | 0.583 | 1.000 | 1.000 |
+| markdown-table-alignment | Markdown table | 16 | 7 | 9 | 0.438 | 1.000 | 1.000 |
 | algebra-boundary | Math | 14 | 8 | 6 | 0.571 | 1.000 | 1.000 |
 | git-diff-hunk | Patch syntax | 16 | 12 | 4 | 0.750 | 1.000 | 1.000 |
 | binary-size | Binary size | 12 | 11 | 1 | 0.917 | 1.000 | 1.000 |
@@ -380,7 +394,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Exact YAML key/value snippets retained.
 - Caveman good at: Keeps metadata literals exact.
 - UTK attempt: Inline YAML snippets only.
-- Caveman: Frontmatter: `draft: false`; `tags: [evals, caveman, autoevals]`.
+- Caveman: Frontmatter metadata: `draft: false`; tags list `[evals, caveman, autoevals]`.
 - UTK: `draft: false`; `tags: [evals, caveman, autoevals]`.
 
 ### graph-edge-path
@@ -569,7 +583,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Exact regex literal retention with forbidden unanchored variant.
 - Caveman good at: Preserves punctuation-heavy regex.
 - UTK attempt: Regex-only note.
-- Caveman: Use regex `^(feat|fix|test)\([^)]+\): .+$`; keep anchors.
+- Caveman: Regex required: `^(feat|fix|test)\([^)]+\): .+$`; anchors stay.
 - UTK: `^(feat|fix|test)\([^)]+\): .+$`; keep anchors.
 
 ### feature-flag-rollout
@@ -668,7 +682,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Azure resource id exactness with subscription segment.
 - Caveman good at: Keeps long cloud ids intact.
 - UTK attempt: ID-only summary.
-- Caveman: Azure resource: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.
+- Caveman: Azure resource id `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`; preserve full path.
 - UTK: `/subscriptions/0000/resourceGroups/rg-utk/providers/Microsoft.CognitiveServices/accounts/aoai-prod`.
 
 ### git-refspec
@@ -677,7 +691,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Exact refspec retention with branch namespace.
 - Caveman good at: Keeps Git ref syntax safe.
 - UTK attempt: Command fragment only.
-- Caveman: Push: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.
+- Caveman: Push refspec `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`; preserve branch.
 - UTK: `git push origin HEAD:refs/heads/codex/caveman-bench-edge-cases`.
 
 ### scoped-package
@@ -722,7 +736,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: GraphQL selection field set retention.
 - Caveman good at: Keeps selection syntax readable.
 - UTK attempt: Selection-only summary.
-- Caveman: GraphQL select `repository { name owner { login } defaultBranchRef { name } }`.
+- Caveman: GraphQL fields: `repository { name owner { login } defaultBranchRef { name } }`; keep owner/default branch.
 - UTK: `repository { name owner { login } defaultBranchRef { name } }`.
 
 ### protobuf-field-number
@@ -740,7 +754,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Cron field count and timezone exactness.
 - Caveman good at: Keeps compact schedule syntax intact.
 - UTK attempt: Cron plus timezone only.
-- Caveman: Cron `15 4 * * 1-5` UTC; weekdays 04:15.
+- Caveman: Cron schedule `15 4 * * 1-5` UTC, weekdays 04:15.
 - UTK: `15 4 * * 1-5` UTC; weekdays 04:15.
 
 ### rate-limit-window
@@ -785,7 +799,7 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Markdown alignment row exactness.
 - Caveman good at: Keeps markdown punctuation exact.
 - UTK attempt: Alignment row literal only.
-- Caveman: Markdown align row: `| --- | ---: | :---: |`.
+- Caveman: Markdown align markers: `| --- | ---: | :---: |`; keep colons.
 - UTK: `| --- | ---: | :---: |`.
 
 ### algebra-boundary

@@ -6,7 +6,8 @@
   "description": "UTK — Universal Token Killer",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/plugins/agents/*"
   ],
   "scripts": {
     "build": "npm run -ws build",

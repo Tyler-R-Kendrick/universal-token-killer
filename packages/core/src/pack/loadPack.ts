@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
@@ -8,6 +9,8 @@ import type {
   LoadedPack,
   PackGrammarEntry,
   PackGrammarRecord,
+  PackPluginEntry,
+  PackPluginRecord,
   PackTemplateEntry,
   PackTemplateRecord,
   PackToolDefinition,
@@ -34,12 +37,29 @@ export async function loadPackManifest(packDir: string, options: LoadPackOptions
   }
 }
 
+export function loadPackManifestSync(packDir: string): UtkPackManifest {
+  const manifestPath = safeJoin(packDir, 'utk.pack.toml');
+  const text = readFileSync(manifestPath, 'utf8');
+  const raw = parse(text) as Record<string, unknown>;
+  return normalizeManifest(raw);
+}
+
 export async function loadPack(packDir: string, options: LoadPackOptions = {}): Promise<LoadedPack> {
   const manifest = await loadPackManifest(packDir, options);
   const tools = await loadPackTools(packDir, manifest.tools ?? []);
   const grammars = await loadPackGrammars(packDir, manifest.grammars ?? []);
   const templates = await loadPackTemplates(packDir, manifest.templates ?? []);
-  return { manifest, rootDir: packDir, tools, grammars, templates };
+  const plugins = await loadPackPlugins(packDir, manifest.plugins ?? []);
+  return { manifest, rootDir: packDir, tools, grammars, templates, plugins };
+}
+
+export function loadPackSync(packDir: string): LoadedPack {
+  const manifest = loadPackManifestSync(packDir);
+  const tools = loadPackToolsSync(packDir, manifest.tools ?? []);
+  const grammars = loadPackGrammarsSync(packDir, manifest.grammars ?? []);
+  const templates = loadPackTemplatesSync(packDir, manifest.templates ?? []);
+  const plugins = loadPackPluginsSync(packDir, manifest.plugins ?? []);
+  return { manifest, rootDir: packDir, tools, grammars, templates, plugins };
 }
 
 export function normalizeManifest(raw: Record<string, unknown>): UtkPackManifest {
@@ -79,6 +99,9 @@ export function normalizeManifest(raw: Record<string, unknown>): UtkPackManifest
   if (raw.templates !== undefined) {
     manifest.templates = readArray(raw.templates, 'templates').map((entry, index) => normalizeTemplateEntry(entry, index));
   }
+  if (raw.plugins !== undefined) {
+    manifest.plugins = readArray(raw.plugins, 'plugins').map((entry, index) => normalizePluginEntry(entry, index));
+  }
   return manifest;
 }
 
@@ -87,6 +110,17 @@ async function loadPackTools(packDir: string, entries: PackToolEntry[]): Promise
   for (const entry of entries) {
     const filePath = safeJoin(packDir, entry.file ?? `tools/${entry.id}.toml`);
     const text = await readFile(filePath, 'utf8');
+    const parsed = parseToolFile(filePath, text);
+    results.push({ entry, source: parsed });
+  }
+  return results;
+}
+
+function loadPackToolsSync(packDir: string, entries: PackToolEntry[]): PackToolDefinition[] {
+  const results: PackToolDefinition[] = [];
+  for (const entry of entries) {
+    const filePath = safeJoin(packDir, entry.file ?? `tools/${entry.id}.toml`);
+    const text = readFileSync(filePath, 'utf8');
     const parsed = parseToolFile(filePath, text);
     results.push({ entry, source: parsed });
   }
@@ -118,12 +152,75 @@ async function loadPackGrammars(packDir: string, entries: PackGrammarEntry[]): P
   return results;
 }
 
+function loadPackGrammarsSync(packDir: string, entries: PackGrammarEntry[]): PackGrammarRecord[] {
+  const results: PackGrammarRecord[] = [];
+  for (const entry of entries) {
+    const larkPath = safeJoin(packDir, entry.lark ?? `grammars/${entry.tool}/${entry.field}.lark`);
+    const lark = readFileSync(larkPath, 'utf8');
+    results.push({
+      tool: entry.tool,
+      field: entry.field,
+      lark,
+      larkHash: contentHash(lark, 16)
+    });
+  }
+  return results;
+}
+
 async function loadPackTemplates(packDir: string, entries: PackTemplateEntry[]): Promise<PackTemplateRecord[]> {
   const results: PackTemplateRecord[] = [];
   for (const entry of entries) {
     const filePath = safeJoin(packDir, entry.file);
     const source = await readFile(filePath, 'utf8');
     results.push({ entry, source });
+  }
+  return results;
+}
+
+function loadPackTemplatesSync(packDir: string, entries: PackTemplateEntry[]): PackTemplateRecord[] {
+  const results: PackTemplateRecord[] = [];
+  for (const entry of entries) {
+    const filePath = safeJoin(packDir, entry.file);
+    const source = readFileSync(filePath, 'utf8');
+    results.push({ entry, source });
+  }
+  return results;
+}
+
+async function loadPackPlugins(packDir: string, entries: PackPluginEntry[]): Promise<PackPluginRecord[]> {
+  const results: PackPluginRecord[] = [];
+  for (const entry of entries) {
+    if (entry.type === 'serialization') {
+      const grammarPath = safeJoin(packDir, entry.grammar);
+      let lark: string;
+      try {
+        lark = await readFile(grammarPath, 'utf8');
+      } catch (error) {
+        throw new Error(`Serializer plugin ${entry.id} grammar missing: ${entry.grammar}: ${String(error)}`);
+      }
+      results.push({ entry, grammar: { lark, larkHash: contentHash(lark, 16) } });
+    } else {
+      results.push({ entry });
+    }
+  }
+  return results;
+}
+
+function loadPackPluginsSync(packDir: string, entries: PackPluginEntry[]): PackPluginRecord[] {
+  const results: PackPluginRecord[] = [];
+  for (const entry of entries) {
+    if (entry.type === 'serialization') {
+      const grammarPath = safeJoin(packDir, entry.grammar);
+      let lark: string;
+      try {
+        lark = readFileSync(grammarPath, 'utf8');
+      } catch (error) {
+        throw new Error(`Serializer plugin ${entry.id} grammar missing: ${entry.grammar}: ${String(error)}`);
+      }
+      results.push({ entry, grammar: { lark, larkHash: contentHash(lark, 16) } });
+    } else {
+      results.push({ entry });
+    }
   }
   return results;
 }
@@ -175,6 +272,43 @@ function normalizeTemplateEntry(value: unknown, index: number): PackTemplateEntr
   };
   if (obj.tool !== undefined) entry.tool = readString(obj.tool, `templates[${index}].tool`);
   return entry;
+}
+
+function normalizePluginEntry(value: unknown, index: number): PackPluginEntry {
+  const obj = readObject(value, `plugins[${index}]`);
+  const type = readString(obj.type, `plugins[${index}].type`);
+  if (type === 'serialization') {
+    if (obj.module !== undefined) {
+      throw new Error(`plugins[${index}].module is not supported for serialization plugins`);
+    }
+    const semantics = readString(obj.semantics, `plugins[${index}].semantics`);
+    if (semantics !== 'json-value-v1') {
+      throw new Error(`plugins[${index}].semantics must be 'json-value-v1'`);
+    }
+    const entry: PackPluginEntry = {
+      type,
+      id: readString(obj.id, `plugins[${index}].id`),
+      symbol: readString(obj.symbol, `plugins[${index}].symbol`),
+      semantics,
+      grammar: readString(obj.grammar, `plugins[${index}].grammar`),
+      extension: readString(obj.extension, `plugins[${index}].extension`)
+    };
+    if (obj.aliases !== undefined) entry.aliases = readStringArray(obj.aliases, `plugins[${index}].aliases`);
+    if (obj.canonical !== undefined) entry.canonical = readBoolean(obj.canonical, `plugins[${index}].canonical`);
+    if (obj.config_fields !== undefined) entry.config_fields = readObject(obj.config_fields, `plugins[${index}].config_fields`);
+    return entry;
+  }
+  if (type === 'agent') {
+    const entry: PackPluginEntry = {
+      type,
+      id: readString(obj.id, `plugins[${index}].id`),
+      target: readString(obj.target, `plugins[${index}].target`)
+    };
+    if (obj.path !== undefined) entry.path = readString(obj.path, `plugins[${index}].path`);
+    if (obj.manifest !== undefined) entry.manifest = readString(obj.manifest, `plugins[${index}].manifest`);
+    return entry;
+  }
+  throw new Error(`plugins[${index}].type must be 'serialization' or 'agent'`);
 }
 
 function readObject(value: unknown, name: string): Record<string, unknown> {

@@ -1,0 +1,19 @@
+[pack]
+name = "utk-detoks"
+version = "0.1.0"
+description = "GitHub Copilot plugin for UTK detoks compression and hooks."
+license = "MIT"
+homepage = "https://github.com/Tyler-R-Kendrick/universal-token-killer"
+keywords = ["github-copilot", "detok", "utk"]
+
+[compatibility]
+utk = ">=0.1.0"
+pack_spec = "2"
+
+[[plugins]]
+type = "agent"
+id = "utk-detoks"
+target = "copilot"
+path = "."
+manifest = "plugin.json"
+

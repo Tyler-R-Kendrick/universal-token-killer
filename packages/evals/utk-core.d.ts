@@ -79,7 +79,7 @@ declare module '@utk/core' {
       args: Record<string, string>;
     };
     templatePath: string;
-    serializerId: 'toon' | 'compressed-json';
+    serializerId: 'toon' | 'json-compact';
     confidence: number;
     missingRequired: string[];
     guidance: {
