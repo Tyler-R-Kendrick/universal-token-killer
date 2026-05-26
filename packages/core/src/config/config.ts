@@ -110,6 +110,13 @@ export type UtkConfig = {
     protected_file_patterns: string[];
     deny_tools: string[];
   };
+  code_graph: {
+    enabled_languages: Array<'typescript' | 'javascript'>;
+    ignored_globs: string[];
+    max_context_tokens: number;
+    storage_root: string;
+    engine_path: string;
+  };
   prompt_optimization: {
     enabled: boolean;
     surfaces: string[];
@@ -212,6 +219,13 @@ protected_tools = ["edit", "write", "apply_patch", "auth*", "secret*"]
 protected_file_patterns = [".env*", "*.pem", "*.key"]
 deny_tools = ["auth*", "secret*", "credential*"]
 
+[code_graph]
+enabled_languages = ["typescript", "javascript"]
+ignored_globs = []
+max_context_tokens = 1200
+storage_root = ".utk/code-graph"
+engine_path = ""
+
 [prompt_optimization]
 enabled = true
 surfaces = ["system-prompt", "ghcp-agent", "agent-skill", "tool-definition", "recovery-tool", "copilot-instructions", "session-agent", "session-skill"]
@@ -261,6 +275,7 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
   const providers = readOptionalObject(serialization.providers);
   const tools = readOptionalObject(raw.tools);
   const modelProxy = readNamedOptionalObject(raw.model_proxy, 'model_proxy');
+  const codeGraph = readNamedOptionalObject(raw.code_graph, 'code_graph');
   const promptOptimization = readNamedOptionalObject(raw.prompt_optimization, 'prompt_optimization');
 
   const defaultProvider = readProvider(serialization.default ?? 'toon');
@@ -291,8 +306,26 @@ function normalizeConfig(raw: Record<string, unknown>): UtkConfig {
     },
     tracing: normalizeTracing(raw.tracing),
     model_proxy: normalizeModelProxy(modelProxy),
+    code_graph: normalizeCodeGraph(codeGraph),
     prompt_optimization: normalizePromptOptimization(promptOptimization)
   };
+}
+
+function normalizeCodeGraph(value: Record<string, unknown>): UtkConfig['code_graph'] {
+  return {
+    enabled_languages: readCodeGraphLanguages(value.enabled_languages),
+    ignored_globs: readStringArray(value.ignored_globs, [], 'code_graph.ignored_globs'),
+    max_context_tokens: Math.max(1, Math.floor(readFiniteNumber(value.max_context_tokens, 1200, 'code_graph.max_context_tokens'))),
+    storage_root: readString(value.storage_root, '.utk/code-graph'),
+    engine_path: readString(value.engine_path, '')
+  };
+}
+
+function readCodeGraphLanguages(value: unknown): UtkConfig['code_graph']['enabled_languages'] {
+  const languages = readStringArray(value, ['typescript', 'javascript'], 'code_graph.enabled_languages');
+  const invalid = languages.find((language) => language !== 'typescript' && language !== 'javascript');
+  if (invalid) throw new Error(`Unsupported code_graph enabled language: ${invalid}`);
+  return languages as UtkConfig['code_graph']['enabled_languages'];
 }
 
 function normalizeModelProxy(proxy: Record<string, unknown>): UtkConfig['model_proxy'] {
