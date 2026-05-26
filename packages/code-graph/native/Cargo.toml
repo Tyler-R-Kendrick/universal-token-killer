@@ -1,0 +1,14 @@
+[package]
+name = "utk-code-graph-engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+stack-graphs = "0.14"
+tree-sitter-graph = "0.12"
+tree-sitter-stack-graphs = "0.10"
+tree-sitter-stack-graphs-javascript = "0.3"
+tree-sitter-stack-graphs-typescript = "0.4"

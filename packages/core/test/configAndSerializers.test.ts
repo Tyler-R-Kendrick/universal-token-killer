@@ -26,6 +26,9 @@ describe('UTK TOML config', () => {
     expect(resolveSerializerProviderId(config, 'tool.any')).toBe('toon');
     expect(await readFile(path.join(root, '.utk', 'config.toml'), 'utf8')).toContain('[serialization]');
     expect(config.serialization.providers.tron.enabled).toBe(true);
+    expect(config.code_graph.enabled_languages).toEqual(['typescript', 'javascript']);
+    expect(config.code_graph.storage_root).toBe('.utk/code-graph');
+    expect(config.code_graph.max_context_tokens).toBe(1200);
     expect(config.plugins.serialization_paths).toContain('.utk/plugins/serialization');
   });
 
@@ -178,6 +181,14 @@ describe('UTK TOML config', () => {
     await writeFile(path.join(badOverrides, '.utk', 'config.toml'), '[serialization]\ndefault = "toon"\noverrides = "bad"\n', 'utf8');
 
     await expect(loadUtkConfig(badOverrides)).rejects.toThrow('serialization.overrides must be an array');
+  });
+
+  it('fails explicitly for unsupported code graph languages', async () => {
+    const badCodeGraph = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-code-graph-'));
+    await mkdir(path.join(badCodeGraph, '.utk'), { recursive: true });
+    await writeFile(path.join(badCodeGraph, '.utk', 'config.toml'), '[serialization]\n[code_graph]\nenabled_languages = ["python"]\n', 'utf8');
+
+    await expect(loadUtkConfig(badCodeGraph)).rejects.toThrow('Unsupported code_graph enabled language: python');
   });
 
   it('uses fallback defaults for omitted optional settings', async () => {

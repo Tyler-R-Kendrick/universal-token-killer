@@ -1,4 +1,5 @@
 export * from './artifact/canonical.js';
+export * from './artifact/atomicWrite.js';
 export * from './artifact/manifest.js';
 export * from './agents/sessionAgents.js';
 export * from './cli/bashLikeTool.js';

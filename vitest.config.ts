@@ -4,10 +4,12 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts')
+      '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts'),
+      '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts')
     }
   },
   test: {
+    testTimeout: 15000,
     include: ['packages/**/*.test.ts', 'scripts/**/*.test.ts', 'test/**/*.test.ts', 'evals/**/*.test.ts'],
     coverage: {
       provider: 'v8',

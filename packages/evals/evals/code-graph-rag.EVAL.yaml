@@ -1,0 +1,2553 @@
+tests:
+  - id: barrel-export-definition
+    input:
+      - role: user
+        content: "Resolve a symbol through a public barrel export without returning raw source bodies."
+    expected_output: |
+      {
+        "scenario": "barrel-export-definition",
+        "query": "makeWidget",
+        "expected_symbol": {
+          "name": "makeWidget",
+          "filePath": "src/widgetService.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 160,
+        "forbidden_snippets": [
+          "return { id: config.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: aliased-import-definition
+    input:
+      - role: user
+        content: "Recover original definition when an import alias is used at call site."
+    expected_output: |
+      {
+        "scenario": "aliased-import-definition",
+        "query": "createWidget",
+        "expected_symbol": {
+          "name": "makeWidget",
+          "filePath": "src/widgetService.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 155,
+        "forbidden_snippets": [
+          "return { id: config.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: default-export-definition
+    input:
+      - role: user
+        content: "Find a named default-exported function and keep response compact."
+    expected_output: |
+      {
+        "scenario": "default-export-definition",
+        "query": "buildDefaultWidget",
+        "expected_symbol": {
+          "name": "buildDefaultWidget",
+          "filePath": "src/defaultWidget.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 140,
+        "forbidden_snippets": [
+          "defaulted: true"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: type-only-import-reference
+    input:
+      - role: user
+        content: "Preserve type-only import edges so context includes source type and consumer."
+    expected_output: |
+      {
+        "scenario": "type-only-import-reference",
+        "query": "WidgetConfig",
+        "expected_symbol": {
+          "name": "WidgetConfig",
+          "filePath": "src/widgetService.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 130,
+        "forbidden_snippets": [
+          "return config.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: class-method-reference
+    input:
+      - role: user
+        content: "Find class method entry points and references without dumping class body."
+    expected_output: |
+      {
+        "scenario": "class-method-reference",
+        "query": "save",
+        "expected_symbol": {
+          "name": "save",
+          "filePath": "src/widgetService.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 145,
+        "forbidden_snippets": [
+          "return makeWidget(config)"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: test-source-hop
+    input:
+      - role: user
+        content: "Rank implementation above test references while retaining test adjacency."
+    expected_output: |
+      {
+        "scenario": "test-source-hop",
+        "query": "makeWidget",
+        "expected_symbol": {
+          "name": "makeWidget",
+          "filePath": "src/widgetService.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 165,
+        "forbidden_snippets": [
+          "id: config.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for alpha module."
+    expected_output: |
+      {
+        "scenario": "alpha-direct-function",
+        "query": "makeAlphaWidget",
+        "expected_symbol": {
+          "name": "makeAlphaWidget",
+          "filePath": "src/alphaWidget/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "alpha-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-barrel-function
+    input:
+      - role: user
+        content: "Resolve alpha symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "alpha-barrel-function",
+        "query": "loadAlphaWidget",
+        "expected_symbol": {
+          "name": "loadAlphaWidget",
+          "filePath": "src/alphaWidget/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "alpha-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-aliased-import
+    input:
+      - role: user
+        content: "Recover original alpha definition through import alias."
+    expected_output: |
+      {
+        "scenario": "alpha-aliased-import",
+        "query": "buildAlphaWidget",
+        "expected_symbol": {
+          "name": "createAlphaWidget",
+          "filePath": "src/alphaWidget/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "alpha-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-default-export
+    input:
+      - role: user
+        content: "Find named default export for alpha."
+    expected_output: |
+      {
+        "scenario": "alpha-default-export",
+        "query": "defaultAlphaWidget",
+        "expected_symbol": {
+          "name": "defaultAlphaWidget",
+          "filePath": "src/alphaWidget/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "alpha-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-default-import-alias
+    input:
+      - role: user
+        content: "Resolve alpha default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "alpha-default-import-alias",
+        "query": "alphaWidgetRenderer",
+        "expected_symbol": {
+          "name": "renderAlphaWidget",
+          "filePath": "src/alphaWidget/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "alpha-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for alpha."
+    expected_output: |
+      {
+        "scenario": "alpha-type-only-interface",
+        "query": "AlphaWidgetShape",
+        "expected_symbol": {
+          "name": "AlphaWidgetShape",
+          "filePath": "src/alphaWidget/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-class-method
+    input:
+      - role: user
+        content: "Find alpha class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "alpha-class-method",
+        "query": "saveAlphaWidget",
+        "expected_symbol": {
+          "name": "saveAlphaWidget",
+          "filePath": "src/alphaWidget/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "alpha-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-interface-implementation
+    input:
+      - role: user
+        content: "Retain alpha interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "alpha-interface-implementation",
+        "query": "AlphaWidgetPort",
+        "expected_symbol": {
+          "name": "AlphaWidgetPort",
+          "filePath": "src/alphaWidget/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for alpha."
+    expected_output: |
+      {
+        "scenario": "alpha-const-export",
+        "query": "alphaWidgetDefaults",
+        "expected_symbol": {
+          "name": "alphaWidgetDefaults",
+          "filePath": "src/alphaWidget/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "alpha-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for alpha."
+    expected_output: |
+      {
+        "scenario": "alpha-type-alias",
+        "query": "AlphaWidgetPayload",
+        "expected_symbol": {
+          "name": "AlphaWidgetPayload",
+          "filePath": "src/alphaWidget/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "alpha-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: alpha-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for alpha."
+    expected_output: |
+      {
+        "scenario": "alpha-javascript-esm",
+        "query": "parseAlphaWidget",
+        "expected_symbol": {
+          "name": "parseAlphaWidget",
+          "filePath": "src/alphaWidget/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "alpha-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for bravo module."
+    expected_output: |
+      {
+        "scenario": "bravo-direct-function",
+        "query": "makeBravoInvoice",
+        "expected_symbol": {
+          "name": "makeBravoInvoice",
+          "filePath": "src/bravoInvoice/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "bravo-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-barrel-function
+    input:
+      - role: user
+        content: "Resolve bravo symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "bravo-barrel-function",
+        "query": "loadBravoInvoice",
+        "expected_symbol": {
+          "name": "loadBravoInvoice",
+          "filePath": "src/bravoInvoice/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "bravo-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-aliased-import
+    input:
+      - role: user
+        content: "Recover original bravo definition through import alias."
+    expected_output: |
+      {
+        "scenario": "bravo-aliased-import",
+        "query": "buildBravoInvoice",
+        "expected_symbol": {
+          "name": "createBravoInvoice",
+          "filePath": "src/bravoInvoice/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "bravo-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-default-export
+    input:
+      - role: user
+        content: "Find named default export for bravo."
+    expected_output: |
+      {
+        "scenario": "bravo-default-export",
+        "query": "defaultBravoInvoice",
+        "expected_symbol": {
+          "name": "defaultBravoInvoice",
+          "filePath": "src/bravoInvoice/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "bravo-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-default-import-alias
+    input:
+      - role: user
+        content: "Resolve bravo default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "bravo-default-import-alias",
+        "query": "bravoInvoiceRenderer",
+        "expected_symbol": {
+          "name": "renderBravoInvoice",
+          "filePath": "src/bravoInvoice/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "bravo-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for bravo."
+    expected_output: |
+      {
+        "scenario": "bravo-type-only-interface",
+        "query": "BravoInvoiceShape",
+        "expected_symbol": {
+          "name": "BravoInvoiceShape",
+          "filePath": "src/bravoInvoice/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-class-method
+    input:
+      - role: user
+        content: "Find bravo class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "bravo-class-method",
+        "query": "saveBravoInvoice",
+        "expected_symbol": {
+          "name": "saveBravoInvoice",
+          "filePath": "src/bravoInvoice/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "bravo-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-interface-implementation
+    input:
+      - role: user
+        content: "Retain bravo interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "bravo-interface-implementation",
+        "query": "BravoInvoicePort",
+        "expected_symbol": {
+          "name": "BravoInvoicePort",
+          "filePath": "src/bravoInvoice/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for bravo."
+    expected_output: |
+      {
+        "scenario": "bravo-const-export",
+        "query": "bravoInvoiceDefaults",
+        "expected_symbol": {
+          "name": "bravoInvoiceDefaults",
+          "filePath": "src/bravoInvoice/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "bravo-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for bravo."
+    expected_output: |
+      {
+        "scenario": "bravo-type-alias",
+        "query": "BravoInvoicePayload",
+        "expected_symbol": {
+          "name": "BravoInvoicePayload",
+          "filePath": "src/bravoInvoice/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "bravo-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: bravo-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for bravo."
+    expected_output: |
+      {
+        "scenario": "bravo-javascript-esm",
+        "query": "parseBravoInvoice",
+        "expected_symbol": {
+          "name": "parseBravoInvoice",
+          "filePath": "src/bravoInvoice/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "bravo-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for charlie module."
+    expected_output: |
+      {
+        "scenario": "charlie-direct-function",
+        "query": "makeCharlieSession",
+        "expected_symbol": {
+          "name": "makeCharlieSession",
+          "filePath": "src/charlieSession/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "charlie-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-barrel-function
+    input:
+      - role: user
+        content: "Resolve charlie symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "charlie-barrel-function",
+        "query": "loadCharlieSession",
+        "expected_symbol": {
+          "name": "loadCharlieSession",
+          "filePath": "src/charlieSession/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "charlie-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-aliased-import
+    input:
+      - role: user
+        content: "Recover original charlie definition through import alias."
+    expected_output: |
+      {
+        "scenario": "charlie-aliased-import",
+        "query": "buildCharlieSession",
+        "expected_symbol": {
+          "name": "createCharlieSession",
+          "filePath": "src/charlieSession/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "charlie-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-default-export
+    input:
+      - role: user
+        content: "Find named default export for charlie."
+    expected_output: |
+      {
+        "scenario": "charlie-default-export",
+        "query": "defaultCharlieSession",
+        "expected_symbol": {
+          "name": "defaultCharlieSession",
+          "filePath": "src/charlieSession/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "charlie-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-default-import-alias
+    input:
+      - role: user
+        content: "Resolve charlie default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "charlie-default-import-alias",
+        "query": "charlieSessionRenderer",
+        "expected_symbol": {
+          "name": "renderCharlieSession",
+          "filePath": "src/charlieSession/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "charlie-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for charlie."
+    expected_output: |
+      {
+        "scenario": "charlie-type-only-interface",
+        "query": "CharlieSessionShape",
+        "expected_symbol": {
+          "name": "CharlieSessionShape",
+          "filePath": "src/charlieSession/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-class-method
+    input:
+      - role: user
+        content: "Find charlie class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "charlie-class-method",
+        "query": "saveCharlieSession",
+        "expected_symbol": {
+          "name": "saveCharlieSession",
+          "filePath": "src/charlieSession/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "charlie-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-interface-implementation
+    input:
+      - role: user
+        content: "Retain charlie interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "charlie-interface-implementation",
+        "query": "CharlieSessionPort",
+        "expected_symbol": {
+          "name": "CharlieSessionPort",
+          "filePath": "src/charlieSession/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for charlie."
+    expected_output: |
+      {
+        "scenario": "charlie-const-export",
+        "query": "charlieSessionDefaults",
+        "expected_symbol": {
+          "name": "charlieSessionDefaults",
+          "filePath": "src/charlieSession/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "charlie-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for charlie."
+    expected_output: |
+      {
+        "scenario": "charlie-type-alias",
+        "query": "CharlieSessionPayload",
+        "expected_symbol": {
+          "name": "CharlieSessionPayload",
+          "filePath": "src/charlieSession/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "charlie-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: charlie-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for charlie."
+    expected_output: |
+      {
+        "scenario": "charlie-javascript-esm",
+        "query": "parseCharlieSession",
+        "expected_symbol": {
+          "name": "parseCharlieSession",
+          "filePath": "src/charlieSession/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "charlie-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for delta module."
+    expected_output: |
+      {
+        "scenario": "delta-direct-function",
+        "query": "makeDeltaRouter",
+        "expected_symbol": {
+          "name": "makeDeltaRouter",
+          "filePath": "src/deltaRouter/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "delta-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-barrel-function
+    input:
+      - role: user
+        content: "Resolve delta symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "delta-barrel-function",
+        "query": "loadDeltaRouter",
+        "expected_symbol": {
+          "name": "loadDeltaRouter",
+          "filePath": "src/deltaRouter/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "delta-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-aliased-import
+    input:
+      - role: user
+        content: "Recover original delta definition through import alias."
+    expected_output: |
+      {
+        "scenario": "delta-aliased-import",
+        "query": "buildDeltaRouter",
+        "expected_symbol": {
+          "name": "createDeltaRouter",
+          "filePath": "src/deltaRouter/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "delta-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-default-export
+    input:
+      - role: user
+        content: "Find named default export for delta."
+    expected_output: |
+      {
+        "scenario": "delta-default-export",
+        "query": "defaultDeltaRouter",
+        "expected_symbol": {
+          "name": "defaultDeltaRouter",
+          "filePath": "src/deltaRouter/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "delta-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-default-import-alias
+    input:
+      - role: user
+        content: "Resolve delta default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "delta-default-import-alias",
+        "query": "deltaRouterRenderer",
+        "expected_symbol": {
+          "name": "renderDeltaRouter",
+          "filePath": "src/deltaRouter/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "delta-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for delta."
+    expected_output: |
+      {
+        "scenario": "delta-type-only-interface",
+        "query": "DeltaRouterShape",
+        "expected_symbol": {
+          "name": "DeltaRouterShape",
+          "filePath": "src/deltaRouter/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-class-method
+    input:
+      - role: user
+        content: "Find delta class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "delta-class-method",
+        "query": "saveDeltaRouter",
+        "expected_symbol": {
+          "name": "saveDeltaRouter",
+          "filePath": "src/deltaRouter/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "delta-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-interface-implementation
+    input:
+      - role: user
+        content: "Retain delta interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "delta-interface-implementation",
+        "query": "DeltaRouterPort",
+        "expected_symbol": {
+          "name": "DeltaRouterPort",
+          "filePath": "src/deltaRouter/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for delta."
+    expected_output: |
+      {
+        "scenario": "delta-const-export",
+        "query": "deltaRouterDefaults",
+        "expected_symbol": {
+          "name": "deltaRouterDefaults",
+          "filePath": "src/deltaRouter/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "delta-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for delta."
+    expected_output: |
+      {
+        "scenario": "delta-type-alias",
+        "query": "DeltaRouterPayload",
+        "expected_symbol": {
+          "name": "DeltaRouterPayload",
+          "filePath": "src/deltaRouter/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "delta-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: delta-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for delta."
+    expected_output: |
+      {
+        "scenario": "delta-javascript-esm",
+        "query": "parseDeltaRouter",
+        "expected_symbol": {
+          "name": "parseDeltaRouter",
+          "filePath": "src/deltaRouter/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "delta-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for echo module."
+    expected_output: |
+      {
+        "scenario": "echo-direct-function",
+        "query": "makeEchoPolicy",
+        "expected_symbol": {
+          "name": "makeEchoPolicy",
+          "filePath": "src/echoPolicy/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "echo-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-barrel-function
+    input:
+      - role: user
+        content: "Resolve echo symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "echo-barrel-function",
+        "query": "loadEchoPolicy",
+        "expected_symbol": {
+          "name": "loadEchoPolicy",
+          "filePath": "src/echoPolicy/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "echo-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-aliased-import
+    input:
+      - role: user
+        content: "Recover original echo definition through import alias."
+    expected_output: |
+      {
+        "scenario": "echo-aliased-import",
+        "query": "buildEchoPolicy",
+        "expected_symbol": {
+          "name": "createEchoPolicy",
+          "filePath": "src/echoPolicy/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "echo-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-default-export
+    input:
+      - role: user
+        content: "Find named default export for echo."
+    expected_output: |
+      {
+        "scenario": "echo-default-export",
+        "query": "defaultEchoPolicy",
+        "expected_symbol": {
+          "name": "defaultEchoPolicy",
+          "filePath": "src/echoPolicy/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "echo-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-default-import-alias
+    input:
+      - role: user
+        content: "Resolve echo default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "echo-default-import-alias",
+        "query": "echoPolicyRenderer",
+        "expected_symbol": {
+          "name": "renderEchoPolicy",
+          "filePath": "src/echoPolicy/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "echo-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for echo."
+    expected_output: |
+      {
+        "scenario": "echo-type-only-interface",
+        "query": "EchoPolicyShape",
+        "expected_symbol": {
+          "name": "EchoPolicyShape",
+          "filePath": "src/echoPolicy/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-class-method
+    input:
+      - role: user
+        content: "Find echo class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "echo-class-method",
+        "query": "saveEchoPolicy",
+        "expected_symbol": {
+          "name": "saveEchoPolicy",
+          "filePath": "src/echoPolicy/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "echo-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-interface-implementation
+    input:
+      - role: user
+        content: "Retain echo interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "echo-interface-implementation",
+        "query": "EchoPolicyPort",
+        "expected_symbol": {
+          "name": "EchoPolicyPort",
+          "filePath": "src/echoPolicy/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for echo."
+    expected_output: |
+      {
+        "scenario": "echo-const-export",
+        "query": "echoPolicyDefaults",
+        "expected_symbol": {
+          "name": "echoPolicyDefaults",
+          "filePath": "src/echoPolicy/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "echo-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for echo."
+    expected_output: |
+      {
+        "scenario": "echo-type-alias",
+        "query": "EchoPolicyPayload",
+        "expected_symbol": {
+          "name": "EchoPolicyPayload",
+          "filePath": "src/echoPolicy/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "echo-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: echo-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for echo."
+    expected_output: |
+      {
+        "scenario": "echo-javascript-esm",
+        "query": "parseEchoPolicy",
+        "expected_symbol": {
+          "name": "parseEchoPolicy",
+          "filePath": "src/echoPolicy/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "echo-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for foxtrot module."
+    expected_output: |
+      {
+        "scenario": "foxtrot-direct-function",
+        "query": "makeFoxtrotLedger",
+        "expected_symbol": {
+          "name": "makeFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "foxtrot-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-barrel-function
+    input:
+      - role: user
+        content: "Resolve foxtrot symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "foxtrot-barrel-function",
+        "query": "loadFoxtrotLedger",
+        "expected_symbol": {
+          "name": "loadFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "foxtrot-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-aliased-import
+    input:
+      - role: user
+        content: "Recover original foxtrot definition through import alias."
+    expected_output: |
+      {
+        "scenario": "foxtrot-aliased-import",
+        "query": "buildFoxtrotLedger",
+        "expected_symbol": {
+          "name": "createFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "foxtrot-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-default-export
+    input:
+      - role: user
+        content: "Find named default export for foxtrot."
+    expected_output: |
+      {
+        "scenario": "foxtrot-default-export",
+        "query": "defaultFoxtrotLedger",
+        "expected_symbol": {
+          "name": "defaultFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "foxtrot-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-default-import-alias
+    input:
+      - role: user
+        content: "Resolve foxtrot default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "foxtrot-default-import-alias",
+        "query": "foxtrotLedgerRenderer",
+        "expected_symbol": {
+          "name": "renderFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "foxtrot-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for foxtrot."
+    expected_output: |
+      {
+        "scenario": "foxtrot-type-only-interface",
+        "query": "FoxtrotLedgerShape",
+        "expected_symbol": {
+          "name": "FoxtrotLedgerShape",
+          "filePath": "src/foxtrotLedger/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-class-method
+    input:
+      - role: user
+        content: "Find foxtrot class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "foxtrot-class-method",
+        "query": "saveFoxtrotLedger",
+        "expected_symbol": {
+          "name": "saveFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "foxtrot-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-interface-implementation
+    input:
+      - role: user
+        content: "Retain foxtrot interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "foxtrot-interface-implementation",
+        "query": "FoxtrotLedgerPort",
+        "expected_symbol": {
+          "name": "FoxtrotLedgerPort",
+          "filePath": "src/foxtrotLedger/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for foxtrot."
+    expected_output: |
+      {
+        "scenario": "foxtrot-const-export",
+        "query": "foxtrotLedgerDefaults",
+        "expected_symbol": {
+          "name": "foxtrotLedgerDefaults",
+          "filePath": "src/foxtrotLedger/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "foxtrot-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for foxtrot."
+    expected_output: |
+      {
+        "scenario": "foxtrot-type-alias",
+        "query": "FoxtrotLedgerPayload",
+        "expected_symbol": {
+          "name": "FoxtrotLedgerPayload",
+          "filePath": "src/foxtrotLedger/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "foxtrot-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: foxtrot-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for foxtrot."
+    expected_output: |
+      {
+        "scenario": "foxtrot-javascript-esm",
+        "query": "parseFoxtrotLedger",
+        "expected_symbol": {
+          "name": "parseFoxtrotLedger",
+          "filePath": "src/foxtrotLedger/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "foxtrot-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for golf module."
+    expected_output: |
+      {
+        "scenario": "golf-direct-function",
+        "query": "makeGolfEvent",
+        "expected_symbol": {
+          "name": "makeGolfEvent",
+          "filePath": "src/golfEvent/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "golf-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-barrel-function
+    input:
+      - role: user
+        content: "Resolve golf symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "golf-barrel-function",
+        "query": "loadGolfEvent",
+        "expected_symbol": {
+          "name": "loadGolfEvent",
+          "filePath": "src/golfEvent/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "golf-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-aliased-import
+    input:
+      - role: user
+        content: "Recover original golf definition through import alias."
+    expected_output: |
+      {
+        "scenario": "golf-aliased-import",
+        "query": "buildGolfEvent",
+        "expected_symbol": {
+          "name": "createGolfEvent",
+          "filePath": "src/golfEvent/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "golf-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-default-export
+    input:
+      - role: user
+        content: "Find named default export for golf."
+    expected_output: |
+      {
+        "scenario": "golf-default-export",
+        "query": "defaultGolfEvent",
+        "expected_symbol": {
+          "name": "defaultGolfEvent",
+          "filePath": "src/golfEvent/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "golf-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-default-import-alias
+    input:
+      - role: user
+        content: "Resolve golf default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "golf-default-import-alias",
+        "query": "golfEventRenderer",
+        "expected_symbol": {
+          "name": "renderGolfEvent",
+          "filePath": "src/golfEvent/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "golf-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for golf."
+    expected_output: |
+      {
+        "scenario": "golf-type-only-interface",
+        "query": "GolfEventShape",
+        "expected_symbol": {
+          "name": "GolfEventShape",
+          "filePath": "src/golfEvent/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-class-method
+    input:
+      - role: user
+        content: "Find golf class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "golf-class-method",
+        "query": "saveGolfEvent",
+        "expected_symbol": {
+          "name": "saveGolfEvent",
+          "filePath": "src/golfEvent/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "golf-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-interface-implementation
+    input:
+      - role: user
+        content: "Retain golf interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "golf-interface-implementation",
+        "query": "GolfEventPort",
+        "expected_symbol": {
+          "name": "GolfEventPort",
+          "filePath": "src/golfEvent/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for golf."
+    expected_output: |
+      {
+        "scenario": "golf-const-export",
+        "query": "golfEventDefaults",
+        "expected_symbol": {
+          "name": "golfEventDefaults",
+          "filePath": "src/golfEvent/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "golf-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for golf."
+    expected_output: |
+      {
+        "scenario": "golf-type-alias",
+        "query": "GolfEventPayload",
+        "expected_symbol": {
+          "name": "GolfEventPayload",
+          "filePath": "src/golfEvent/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "golf-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: golf-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for golf."
+    expected_output: |
+      {
+        "scenario": "golf-javascript-esm",
+        "query": "parseGolfEvent",
+        "expected_symbol": {
+          "name": "parseGolfEvent",
+          "filePath": "src/golfEvent/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "golf-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for hotel module."
+    expected_output: |
+      {
+        "scenario": "hotel-direct-function",
+        "query": "makeHotelReport",
+        "expected_symbol": {
+          "name": "makeHotelReport",
+          "filePath": "src/hotelReport/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "hotel-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-barrel-function
+    input:
+      - role: user
+        content: "Resolve hotel symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "hotel-barrel-function",
+        "query": "loadHotelReport",
+        "expected_symbol": {
+          "name": "loadHotelReport",
+          "filePath": "src/hotelReport/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "hotel-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-aliased-import
+    input:
+      - role: user
+        content: "Recover original hotel definition through import alias."
+    expected_output: |
+      {
+        "scenario": "hotel-aliased-import",
+        "query": "buildHotelReport",
+        "expected_symbol": {
+          "name": "createHotelReport",
+          "filePath": "src/hotelReport/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "hotel-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-default-export
+    input:
+      - role: user
+        content: "Find named default export for hotel."
+    expected_output: |
+      {
+        "scenario": "hotel-default-export",
+        "query": "defaultHotelReport",
+        "expected_symbol": {
+          "name": "defaultHotelReport",
+          "filePath": "src/hotelReport/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "hotel-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-default-import-alias
+    input:
+      - role: user
+        content: "Resolve hotel default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "hotel-default-import-alias",
+        "query": "hotelReportRenderer",
+        "expected_symbol": {
+          "name": "renderHotelReport",
+          "filePath": "src/hotelReport/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "hotel-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for hotel."
+    expected_output: |
+      {
+        "scenario": "hotel-type-only-interface",
+        "query": "HotelReportShape",
+        "expected_symbol": {
+          "name": "HotelReportShape",
+          "filePath": "src/hotelReport/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-class-method
+    input:
+      - role: user
+        content: "Find hotel class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "hotel-class-method",
+        "query": "saveHotelReport",
+        "expected_symbol": {
+          "name": "saveHotelReport",
+          "filePath": "src/hotelReport/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "hotel-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-interface-implementation
+    input:
+      - role: user
+        content: "Retain hotel interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "hotel-interface-implementation",
+        "query": "HotelReportPort",
+        "expected_symbol": {
+          "name": "HotelReportPort",
+          "filePath": "src/hotelReport/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for hotel."
+    expected_output: |
+      {
+        "scenario": "hotel-const-export",
+        "query": "hotelReportDefaults",
+        "expected_symbol": {
+          "name": "hotelReportDefaults",
+          "filePath": "src/hotelReport/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "hotel-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for hotel."
+    expected_output: |
+      {
+        "scenario": "hotel-type-alias",
+        "query": "HotelReportPayload",
+        "expected_symbol": {
+          "name": "HotelReportPayload",
+          "filePath": "src/hotelReport/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "hotel-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: hotel-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for hotel."
+    expected_output: |
+      {
+        "scenario": "hotel-javascript-esm",
+        "query": "parseHotelReport",
+        "expected_symbol": {
+          "name": "parseHotelReport",
+          "filePath": "src/hotelReport/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "hotel-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for india module."
+    expected_output: |
+      {
+        "scenario": "india-direct-function",
+        "query": "makeIndiaCatalog",
+        "expected_symbol": {
+          "name": "makeIndiaCatalog",
+          "filePath": "src/indiaCatalog/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "india-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-barrel-function
+    input:
+      - role: user
+        content: "Resolve india symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "india-barrel-function",
+        "query": "loadIndiaCatalog",
+        "expected_symbol": {
+          "name": "loadIndiaCatalog",
+          "filePath": "src/indiaCatalog/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "india-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-aliased-import
+    input:
+      - role: user
+        content: "Recover original india definition through import alias."
+    expected_output: |
+      {
+        "scenario": "india-aliased-import",
+        "query": "buildIndiaCatalog",
+        "expected_symbol": {
+          "name": "createIndiaCatalog",
+          "filePath": "src/indiaCatalog/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "india-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-default-export
+    input:
+      - role: user
+        content: "Find named default export for india."
+    expected_output: |
+      {
+        "scenario": "india-default-export",
+        "query": "defaultIndiaCatalog",
+        "expected_symbol": {
+          "name": "defaultIndiaCatalog",
+          "filePath": "src/indiaCatalog/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "india-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-default-import-alias
+    input:
+      - role: user
+        content: "Resolve india default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "india-default-import-alias",
+        "query": "indiaCatalogRenderer",
+        "expected_symbol": {
+          "name": "renderIndiaCatalog",
+          "filePath": "src/indiaCatalog/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "india-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for india."
+    expected_output: |
+      {
+        "scenario": "india-type-only-interface",
+        "query": "IndiaCatalogShape",
+        "expected_symbol": {
+          "name": "IndiaCatalogShape",
+          "filePath": "src/indiaCatalog/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-class-method
+    input:
+      - role: user
+        content: "Find india class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "india-class-method",
+        "query": "saveIndiaCatalog",
+        "expected_symbol": {
+          "name": "saveIndiaCatalog",
+          "filePath": "src/indiaCatalog/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "india-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-interface-implementation
+    input:
+      - role: user
+        content: "Retain india interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "india-interface-implementation",
+        "query": "IndiaCatalogPort",
+        "expected_symbol": {
+          "name": "IndiaCatalogPort",
+          "filePath": "src/indiaCatalog/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for india."
+    expected_output: |
+      {
+        "scenario": "india-const-export",
+        "query": "indiaCatalogDefaults",
+        "expected_symbol": {
+          "name": "indiaCatalogDefaults",
+          "filePath": "src/indiaCatalog/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "india-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for india."
+    expected_output: |
+      {
+        "scenario": "india-type-alias",
+        "query": "IndiaCatalogPayload",
+        "expected_symbol": {
+          "name": "IndiaCatalogPayload",
+          "filePath": "src/indiaCatalog/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "india-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: india-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for india."
+    expected_output: |
+      {
+        "scenario": "india-javascript-esm",
+        "query": "parseIndiaCatalog",
+        "expected_symbol": {
+          "name": "parseIndiaCatalog",
+          "filePath": "src/indiaCatalog/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "india-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-direct-function
+    input:
+      - role: user
+        content: "Resolve direct exported function for juliet module."
+    expected_output: |
+      {
+        "scenario": "juliet-direct-function",
+        "query": "makeJulietWorkflow",
+        "expected_symbol": {
+          "name": "makeJulietWorkflow",
+          "filePath": "src/julietWorkflow/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 190,
+        "forbidden_snippets": [
+          "juliet-direct-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-barrel-function
+    input:
+      - role: user
+        content: "Resolve juliet symbol through nested barrel export."
+    expected_output: |
+      {
+        "scenario": "juliet-barrel-function",
+        "query": "loadJulietWorkflow",
+        "expected_symbol": {
+          "name": "loadJulietWorkflow",
+          "filePath": "src/julietWorkflow/internal/service.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 210,
+        "forbidden_snippets": [
+          "juliet-barrel-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-aliased-import
+    input:
+      - role: user
+        content: "Recover original juliet definition through import alias."
+    expected_output: |
+      {
+        "scenario": "juliet-aliased-import",
+        "query": "buildJulietWorkflow",
+        "expected_symbol": {
+          "name": "createJulietWorkflow",
+          "filePath": "src/julietWorkflow/factory.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "juliet-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-default-export
+    input:
+      - role: user
+        content: "Find named default export for juliet."
+    expected_output: |
+      {
+        "scenario": "juliet-default-export",
+        "query": "defaultJulietWorkflow",
+        "expected_symbol": {
+          "name": "defaultJulietWorkflow",
+          "filePath": "src/julietWorkflow/default.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "juliet-default-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-default-import-alias
+    input:
+      - role: user
+        content: "Resolve juliet default import alias back to named default function."
+    expected_output: |
+      {
+        "scenario": "juliet-default-import-alias",
+        "query": "julietWorkflowRenderer",
+        "expected_symbol": {
+          "name": "renderJulietWorkflow",
+          "filePath": "src/julietWorkflow/renderer.ts",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 205,
+        "forbidden_snippets": [
+          "juliet-default-alias-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-type-only-interface
+    input:
+      - role: user
+        content: "Resolve type-only interface import for juliet."
+    expected_output: |
+      {
+        "scenario": "juliet-type-only-interface",
+        "query": "JulietWorkflowShape",
+        "expected_symbol": {
+          "name": "JulietWorkflowShape",
+          "filePath": "src/julietWorkflow/types.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "return value.id"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-class-method
+    input:
+      - role: user
+        content: "Find juliet class method without dumping class body."
+    expected_output: |
+      {
+        "scenario": "juliet-class-method",
+        "query": "saveJulietWorkflow",
+        "expected_symbol": {
+          "name": "saveJulietWorkflow",
+          "filePath": "src/julietWorkflow/store.ts",
+          "kind": "method"
+        },
+        "serena_baseline_tokens": 195,
+        "forbidden_snippets": [
+          "juliet-method-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-interface-implementation
+    input:
+      - role: user
+        content: "Retain juliet interface and implementation adjacency."
+    expected_output: |
+      {
+        "scenario": "juliet-interface-implementation",
+        "query": "JulietWorkflowPort",
+        "expected_symbol": {
+          "name": "JulietWorkflowPort",
+          "filePath": "src/julietWorkflow/ports.ts",
+          "kind": "interface"
+        },
+        "serena_baseline_tokens": 200,
+        "forbidden_snippets": [
+          "return id.toUpperCase()"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-const-export
+    input:
+      - role: user
+        content: "Find exported constant config for juliet."
+    expected_output: |
+      {
+        "scenario": "juliet-const-export",
+        "query": "julietWorkflowDefaults",
+        "expected_symbol": {
+          "name": "julietWorkflowDefaults",
+          "filePath": "src/julietWorkflow/constants.ts",
+          "kind": "const"
+        },
+        "serena_baseline_tokens": 170,
+        "forbidden_snippets": [
+          "juliet-const-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-type-alias
+    input:
+      - role: user
+        content: "Resolve exported type alias for juliet."
+    expected_output: |
+      {
+        "scenario": "juliet-type-alias",
+        "query": "JulietWorkflowPayload",
+        "expected_symbol": {
+          "name": "JulietWorkflowPayload",
+          "filePath": "src/julietWorkflow/payload.ts",
+          "kind": "type"
+        },
+        "serena_baseline_tokens": 175,
+        "forbidden_snippets": [
+          "juliet-type-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]
+  - id: juliet-javascript-esm
+    input:
+      - role: user
+        content: "Resolve JavaScript ESM export for juliet."
+    expected_output: |
+      {
+        "scenario": "juliet-javascript-esm",
+        "query": "parseJulietWorkflow",
+        "expected_symbol": {
+          "name": "parseJulietWorkflow",
+          "filePath": "src/julietWorkflow/parser.js",
+          "kind": "function"
+        },
+        "serena_baseline_tokens": 180,
+        "forbidden_snippets": [
+          "juliet-js-secret"
+        ]
+      }
+    assertions:
+      - name: code-graph-rag
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/codeGraphRagCodeGrader.js"]

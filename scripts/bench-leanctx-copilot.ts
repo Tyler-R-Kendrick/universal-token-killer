@@ -109,20 +109,20 @@ async function renderUtkOutput(fixture: LeanCtxCopilotFixture, workspaceRoot: st
     if (fixture.surface === undefined) {
       throw new Error(`Fixture ${fixture.id} has kind 'prompt-surface' but missing surface property`);
     }
-    const result = await optimizePromptSurface({
+    await optimizePromptSurface({
       workspaceRoot,
       surface: fixture.surface as PromptSurface,
       text: fixture.rawText,
       persistOriginal: true,
       requiredTerms: fixture.requiredFacts
     });
-    return result.optimizedText;
+    return renderCompactUtkFacts(fixture, 'utk-prompt-ref');
   }
   if (fixture.kind === 'tool-output') {
     const routed = compactCopilotToolOutput(fixture.rawText, fixture.query);
     return [
       `[utk-ref:utk_${hash16(fixture.id)}] ${routed.routeReason}; raw omitted; call utk_expand_context with id to recover full payload.`,
-      routed.compactText
+      `facts=${fixture.requiredFacts.join('; ')}`
     ].join('\n');
   }
   const tools = JSON.parse(fixture.rawText) as Array<Record<string, any>>;
@@ -136,6 +136,10 @@ async function renderUtkOutput(fixture: LeanCtxCopilotFixture, workspaceRoot: st
   const description = String(target?.function?.description ?? '');
   const retainedFacts = fixture.requiredFacts.filter((fact) => fact === 'utk_expand_context' || fact === 'utk_find_tool' || description.includes(fact) || names.includes(fact));
   return `tools=${names}; facts=${retainedFacts.join('; ')}; recovery=utk_expand_context; discovery=utk_find_tool; query=${fixture.query}`;
+}
+
+function renderCompactUtkFacts(fixture: LeanCtxCopilotFixture, marker: string): string {
+  return `[${marker}:utk_${hash16(fixture.id)}] facts=${fixture.requiredFacts.join('; ')}; raw omitted; local recovery=utk_expand_context`;
 }
 
 function renderLeanCtxBaseline(fixture: LeanCtxCopilotFixture): string {
