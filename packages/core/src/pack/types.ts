@@ -5,6 +5,10 @@ export type PackToolEntry = {
   output_cache?: boolean;
   bypass_on_cache?: boolean;
   curry_fields?: string[];
+  lexical_aliases?: string[];
+  lexical_regexes?: string[];
+  bypass_on_match?: boolean;
+  default_args?: Record<string, unknown>;
 };
 
 export type PackGrammarEntry = {

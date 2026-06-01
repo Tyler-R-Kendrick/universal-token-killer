@@ -1,0 +1,56 @@
+export type PromptCompressionSegmentKind = 'natural_language' | 'protected';
+
+export type PromptCompressionProtectedReason =
+  | 'fenced-code'
+  | 'frontmatter'
+  | 'blockquote'
+  | 'table'
+  | 'html'
+  | 'diff'
+  | 'stack-trace'
+  | 'list'
+  | 'math'
+  | 'data-literal'
+  | 'config'
+  | 'resource-id'
+  | 'admonition'
+  | 'definition-list'
+  | 'conflict'
+  | 'http'
+  | 'sql'
+  | 'graphql'
+  | 'cron'
+  | 'delimited-data'
+  | 'yaml'
+  | 'dockerfile'
+  | 'log'
+  | 'secret-format'
+  | 'network-id'
+  | 'selector'
+  | 'regex'
+  | 'version'
+  | 'expansion'
+  | 'keyboard'
+  | 'terminal'
+  | 'vcs-ref'
+  | 'indented-code'
+  | 'inline-code'
+  | 'quoted-string'
+  | 'template'
+  | 'markdown-link'
+  | 'reference-link'
+  | 'url'
+  | 'filepath'
+  | 'reference'
+  | 'command'
+  | 'package-name'
+  | 'model-id'
+  | 'hash'
+  | 'api-name'
+  | 'schema-reference';
+
+export type PromptCompressionRawSegment = {
+  kind: PromptCompressionSegmentKind;
+  text: string;
+  reason?: PromptCompressionProtectedReason;
+};

@@ -15,7 +15,9 @@
     "bench:rtk": "vitest run evals/rtk-parity-metrics.test.ts",
     "report:rtk": "npm run build && node dist/reports/rtkParityReport.js",
     "bench:caveman": "vitest run evals/caveman-parity-metrics.test.ts",
-    "report:caveman": "npm run build && node dist/reports/cavemanParityReport.js"
+    "report:caveman": "npm run build && node dist/reports/cavemanParityReport.js",
+    "bench:tool-bypass": "vitest run evals/tool-calling-bypass-metrics.test.ts",
+    "report:tool-bypass": "npm run build && node dist/reports/toolCallingBypassReport.js"
   },
   "dependencies": {
     "@toon-format/toon": "^2.2.0",

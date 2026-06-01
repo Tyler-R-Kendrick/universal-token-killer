@@ -1,11 +1,12 @@
 /* c8 ignore file -- covered by model-proxy behavior tests; request-shape branches are defensive. */
 export type OpenAiRouteKind = 'chat' | 'responses';
+export type JsonObject = Record<string, unknown>;
 
 export type NormalizedOpenAiRequest = {
   kind: OpenAiRouteKind;
-  body: Record<string, unknown>;
-  messages: Array<Record<string, any>>;
-  items: Array<Record<string, any>>;
+  body: JsonObject;
+  messages: JsonObject[];
+  items: JsonObject[];
 };
 
 export function normalizeOpenAiRequest(route: string, body: unknown): NormalizedOpenAiRequest {
@@ -26,11 +27,59 @@ export function normalizeOpenAiRequest(route: string, body: unknown): Normalized
   throw new Error(`Unsupported OpenAI route: ${route}`);
 }
 
-export function isObject(value: unknown): value is Record<string, any> {
+export function isObject(value: unknown): value is JsonObject {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
-function normalizeResponsesInput(input: unknown): Array<Record<string, any>> {
+export function parseJsonObject(value: string): JsonObject | undefined {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return isObject(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+export function jsonResponse(value: unknown, status: number): Response {
+  return new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
+}
+
+export function findLastUserText(route: string, body: JsonObject): string {
+  if (route === '/v1/chat/completions' && Array.isArray(body.messages)) {
+    for (let index = body.messages.length - 1; index >= 0; index -= 1) {
+      const message = body.messages[index];
+      if (isObject(message) && message.role === 'user') return contentText(message.content);
+    }
+  }
+  if (route === '/v1/responses') {
+    if (typeof body.input === 'string') return body.input;
+    if (Array.isArray(body.input)) {
+      for (let index = body.input.length - 1; index >= 0; index -= 1) {
+        const item = body.input[index];
+        if (isObject(item) && item.role === 'user') return contentText(item.content);
+      }
+    }
+  }
+  return '';
+}
+
+export function contentText(content: unknown): string {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content.map((part) => {
+    if (!isObject(part)) return '';
+    if (typeof part.text === 'string') return part.text;
+    if (typeof part.input_text === 'string') return part.input_text;
+    if (typeof part.content === 'string') return part.content;
+    return '';
+  }).filter(Boolean).join('\n');
+}
+
+function normalizeResponsesInput(input: unknown): JsonObject[] {
   if (typeof input === 'string') {
     return [{ role: 'user', content: [{ type: 'input_text', text: input }] }];
   }

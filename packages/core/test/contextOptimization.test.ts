@@ -211,24 +211,41 @@ describe('context optimization engine', () => {
     expect(result.routeReason).toBe('tool-discovery');
   });
 
-  it('dedupes repeated outputs and purges stale errors without touching protected tools', async () => {
+  it('observes and compacts repeated outputs and stale errors without touching protected tools', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-context-opt-dedupe-'));
     const ledger = createSessionContextLedger({ workspaceRoot, sessionId: 'session_b' });
     const first = await ledger.recordToolEvent({ toolName: 'git status', input: { cmd: 'git status' }, artifactId: 'utk_bbbbbbbbbbbbbbbb', artifactPath: path.join(workspaceRoot, 'a.txt'), routeId: 'tool-output', schemaId: 'tool.output', rawTokens: 100, compactTokens: 10, decision: 'tool-output', status: 'ok' });
     const second = await ledger.recordToolEvent({ toolName: 'git status', input: { cmd: 'git status' }, artifactId: 'utk_cccccccccccccccc', artifactPath: path.join(workspaceRoot, 'b.txt'), routeId: 'tool-output', schemaId: 'tool.output', rawTokens: 100, compactTokens: 10, decision: 'tool-output', status: 'ok' });
     const stale = await ledger.recordToolEvent({ toolName: 'rg', input: { pattern: 'missing' }, artifactId: 'utk_dddddddddddddddd', artifactPath: path.join(workspaceRoot, 'c.txt'), routeId: 'search-results', schemaId: 'tool.search', rawTokens: 80, compactTokens: 10, decision: 'tool-output', status: 'error', turn: 1 });
     const protectedEdit = await ledger.recordToolEvent({ toolName: 'edit', input: { path: 'src/app.ts' }, artifactId: 'utk_eeeeeeeeeeeeeeee', artifactPath: path.join(workspaceRoot, 'd.txt'), routeId: 'edit-loop', schemaId: 'tool.edit', rawTokens: 80, compactTokens: 10, decision: 'tool-output', status: 'error', turn: 1 });
+    const protectedAuth = await ledger.recordToolEvent({ toolName: 'auth.login', input: { user: 'a' }, artifactId: 'utk_9999999999999999', artifactPath: path.join(workspaceRoot, 'e.txt'), routeId: 'auth', schemaId: 'tool.auth', rawTokens: 80, compactTokens: 10, decision: 'tool-output', status: 'error', turn: 1 });
 
-    const policy = ledger.applyRetentionPolicy([first, second, stale, protectedEdit], {
+    const events = [first, second, stale, protectedEdit, protectedAuth];
+    const observed = ledger.applyRetentionPolicy(events, {
       currentTurn: 6,
       dedupePolicy: 'observe',
+      staleErrorPolicy: 'observe',
       purgeErrorAfterTurns: 4,
-      protectedToolNames: ['edit']
+      protectedToolNames: ['edit', 'auth*']
     });
 
-    expect(policy.deduped.map((item) => item.messageId)).toEqual(['m0001']);
-    expect(policy.purgedErrors.map((item) => item.messageId)).toEqual(['m0003']);
-    expect(policy.purgedErrors.map((item) => item.messageId)).not.toContain('m0004');
+    expect(observed.deduped.map((item) => item.messageId)).toEqual(['m0001']);
+    expect(observed.purgedErrors.map((item) => item.messageId)).toEqual(['m0003']);
+    expect(observed.retained.map((item) => item.messageId)).toEqual(['m0001', 'm0002', 'm0003', 'm0004', 'm0005']);
+
+    const compacted = ledger.applyRetentionPolicy(events, {
+      currentTurn: 6,
+      dedupePolicy: 'compact',
+      staleErrorPolicy: 'compact',
+      purgeErrorAfterTurns: 4,
+      protectedToolNames: ['edit', 'auth*']
+    });
+
+    expect(compacted.deduped.map((item) => item.messageId)).toEqual(['m0001']);
+    expect(compacted.purgedErrors.map((item) => item.messageId)).toEqual(['m0003']);
+    expect(compacted.retained.map((item) => item.messageId)).toEqual(['m0002', 'm0004', 'm0005']);
+    expect(compacted.purgedErrors.map((item) => item.messageId)).not.toContain('m0004');
+    expect(compacted.purgedErrors.map((item) => item.messageId)).not.toContain('m0005');
   });
 
   it('builds artifact search handles and context proofs', async () => {
@@ -314,22 +331,30 @@ describe('context optimization engine', () => {
         'protected_file_patterns = [".env*", "*.pem"]',
         'remote_compressors_enabled = true',
         'provider_strict_mode = true',
+        'provider_options = { acme-provider = { tenant = "enterprise" } }',
         ''
       ].join('\n'),
       'utf8'
     );
 
-    const policy = await resolveModelProxyPolicy(workspaceRoot, { UTK_MODEL_PROXY_TOOL_DISCOVERY_MODE: 'static-filter' }, { provider_strict_mode: false });
+    const policy = await resolveModelProxyPolicy(workspaceRoot, {
+      UTK_MODEL_PROXY_TOOL_DISCOVERY_MODE: 'static-filter',
+      UTK_MODEL_PROXY_UPSTREAM_PROVIDER: 'acme-provider',
+      UTK_MODEL_PROXY_PROMPT_COMPRESSION_PROVIDER: 'acme-compressor'
+    }, { provider_strict_mode: false });
 
     expect(policy).toMatchObject({
       tool_discovery_mode: 'static-filter',
+      upstream_provider: 'acme-provider',
+      prompt_compression_provider: 'acme-compressor',
       history_compaction_mode: 'replace-with-summary-block',
       dedupe_policy: 'compact',
       stale_error_policy: 'compact',
       session_id_header: 'x-session',
       deferred_tool_search_enabled: true,
       remote_compressors_enabled: true,
-      provider_strict_mode: false
+      provider_strict_mode: false,
+      provider_options: { 'acme-provider': { tenant: 'enterprise' } }
     });
     expect(policy.protected_tools).toEqual(['write', 'deploy*']);
     expect(policy.protected_file_patterns).toEqual(['.env*', '*.pem']);

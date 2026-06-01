@@ -175,8 +175,8 @@ describe('model proxy coverage paths', () => {
     expect((await fetch(`${proxy.url}/missing`)).status).toBe(404);
     expect((await fetch(`${proxy.url}/v1/utk/expand_context`, { method: 'POST', body: '{}' })).status).toBe(400);
     const internalError = await fetch(`${proxy.url}/v1/chat/completions`, { method: 'POST', body: '{' });
-    expect(internalError.status).toBe(500);
-    expect(await internalError.json()).toEqual({ error: 'Internal server error' });
+    expect(internalError.status).toBe(400);
+    expect(await internalError.json()).toEqual({ error: 'Request body must be valid JSON' });
     const tooLarge = await fetch(`${proxy.url}/v1/chat/completions`, { method: 'POST', body: 'x'.repeat(1024 * 1024 + 1) });
     expect(tooLarge.status).toBe(413);
     expect(await tooLarge.json()).toEqual({ error: 'Payload too large' });

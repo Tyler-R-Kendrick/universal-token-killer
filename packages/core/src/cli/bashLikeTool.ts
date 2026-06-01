@@ -1,51 +1,21 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { grm, select } from 'guidance-ts';
 import { canonicalJson, contentHash } from '../artifact/canonical.js';
 import { normalizeToolId } from '../artifact/manifest.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
 import { loadSerializationRegistry, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { buildBashLikeInvocationGrammar } from './bashLikeInvocationGrammar.js';
+import { planBashLikeInvocation, selectBashLikeTool, type PlannedBashLikeInvocation } from './bashLikeInvocationPlanner.js';
+import type { BashLikeInvocationResult, BashLikeToolDefinition } from './bashLikeToolTypes.js';
 
-export type BashLikeParameter = {
-  name: string;
-  kind: 'positional' | 'flag' | 'option';
-  flag?: string;
-  completions: string[];
-  required?: boolean;
-  description?: string;
-};
-
-export type BashLikeToolDefinition = {
-  toolId: string;
-  command: string;
-  description?: string;
-  parameters: BashLikeParameter[];
-};
-
-export type BashLikeInvocation = {
-  toolId: string;
-  command: string;
-  argv: string[];
-  parameters: Record<string, string>;
-};
-
-export type BashLikeInvocationResult = {
-  invocation: BashLikeInvocation;
-  templatePath: string;
-  serializerId: string;
-  confidence: number;
-  missingRequired: string[];
-  guidance: {
-    used: boolean;
-    available: boolean;
-    serializedGrammar: unknown;
-    errors: string[];
-  };
-};
-
-export type GuidanceGrammarNode = {
-  serialize(): unknown;
-};
+export { buildBashLikeInvocationGrammar } from './bashLikeInvocationGrammar.js';
+export type {
+  BashLikeInvocation,
+  BashLikeInvocationResult,
+  BashLikeParameter,
+  BashLikeToolDefinition,
+  GuidanceGrammarNode
+} from './bashLikeToolTypes.js';
 
 export async function completeBashLikeToolInvocation(params: {
   workspaceRoot: string;
@@ -58,13 +28,13 @@ export async function completeBashLikeToolInvocation(params: {
 
   const config = await loadUtkConfig(params.workspaceRoot);
   const registry = await loadSerializationRegistry(params.workspaceRoot);
-  const selectedTool = selectTool(params.request, params.tools);
+  const selectedTool = selectBashLikeTool(params.request, params.tools);
   const normalizedToolId = normalizeToolId(selectedTool.toolId);
   const serializerId = resolveSerializerProviderId(config, normalizedToolId, registry);
   const serializer = registry.require(serializerId);
   const grammar = buildBashLikeInvocationGrammar(params.tools);
-  const serializedGrammar = serializeGrammar(grammar);
-  const planned = planInvocation(params.request, selectedTool);
+  const serializedGrammar = grammar.serialize();
+  const planned = planBashLikeInvocation(params.request, selectedTool);
   const template = buildTemplate(selectedTool, planned, serializedGrammar);
   const serializedTemplate = serializer.serialize(template, { toolId: normalizedToolId });
   const templateDir = safeJoin(params.workspaceRoot, config.persistence.storage_root, 'tools', normalizedToolId, 'templates');
@@ -88,22 +58,7 @@ export async function completeBashLikeToolInvocation(params: {
   };
 }
 
-export function buildBashLikeInvocationGrammar(tools: BashLikeToolDefinition[]): GuidanceGrammarNode {
-  const toolChoices = nonEmptyChoices(tools.map((tool) => tool.toolId));
-  const commandChoices = nonEmptyChoices(tools.map((tool) => tool.command));
-  const completionChoices = nonEmptyChoices(
-    tools.flatMap((tool) =>
-      tool.parameters.flatMap((parameter) => [parameter.flag, ...parameter.completions].filter((item): item is string => Boolean(item)))
-    )
-  );
-  return grm`invoke{tool:"${select(...toolChoices)}",command:"${select(...commandChoices)}",arg:"${select(...completionChoices)}"}`;
-}
-
-function serializeGrammar(grammar: GuidanceGrammarNode): unknown {
-  return grammar.serialize();
-}
-
-function buildTemplate(tool: BashLikeToolDefinition, planned: PlannedInvocation, serializedGrammar: unknown): Record<string, unknown> {
+function buildTemplate(tool: BashLikeToolDefinition, planned: PlannedBashLikeInvocation, serializedGrammar: unknown): Record<string, unknown> {
   const grammarHash = contentHash(serializedGrammar, 8);
   const template: Record<string, unknown> = {
     toolId: tool.toolId,
@@ -126,87 +81,4 @@ function compactCompletions(tool: BashLikeToolDefinition): string[] {
       tool.parameters.flatMap((parameter) => [parameter.flag, ...parameter.completions].filter((item): item is string => Boolean(item)))
     )
   ];
-}
-
-type PlannedInvocation = {
-  invocation: BashLikeInvocation;
-  missingRequired: string[];
-};
-
-function planInvocation(request: string, tool: BashLikeToolDefinition): PlannedInvocation {
-  const argv = [tool.command];
-  const parameters: Record<string, string> = {};
-  const missingRequired: string[] = [];
-
-  for (const parameter of tool.parameters) {
-    const completion = chooseCompletion(request, parameter);
-    if (!completion) {
-      if (parameter.required) missingRequired.push(parameter.name);
-      continue;
-    }
-    parameters[parameter.name] = completion;
-    if (parameter.kind === 'positional') {
-      argv.push(completion);
-    } else if (parameter.kind === 'flag') {
-      if (parameter.flag && parameter.flag !== completion) argv.push(parameter.flag);
-      argv.push(completion);
-    } else {
-      if (!parameter.flag) {
-        if (parameter.required) missingRequired.push(parameter.name);
-        continue;
-      }
-      argv.push(parameter.flag, completion);
-    }
-  }
-
-  return {
-    invocation: {
-      toolId: tool.toolId,
-      command: argv.join(' '),
-      argv,
-      parameters
-    },
-    missingRequired
-  };
-}
-
-function selectTool(request: string, tools: BashLikeToolDefinition[]): BashLikeToolDefinition {
-  return [...tools].sort((left, right) => scoreTool(request, right) - scoreTool(request, left))[0]!;
-}
-
-function scoreTool(request: string, tool: BashLikeToolDefinition): number {
-  const haystack = normalizeText(request);
-  const terms = [
-    tool.toolId,
-    tool.command,
-    tool.description ?? '',
-    ...tool.parameters.flatMap((parameter) => [parameter.name, parameter.description ?? '', parameter.flag ?? '', ...parameter.completions])
-  ];
-  return terms.reduce((score, term) => score + (termMatches(haystack, term) ? 1 : 0), 0);
-}
-
-function chooseCompletion(request: string, parameter: BashLikeParameter): string | undefined {
-  const haystack = normalizeText(request);
-  const direct = parameter.completions.find((completion) => termMatches(haystack, completion));
-  if (direct) return direct;
-  if (parameter.flag && termMatches(haystack, parameter.flag)) return parameter.completions[0] ?? parameter.flag;
-  if (parameter.description && termMatches(haystack, parameter.description)) return parameter.completions[0] ?? parameter.flag;
-  if (parameter.completions.length === 1 && parameter.required) return parameter.completions[0];
-  return undefined;
-}
-
-function termMatches(haystack: string, term: string | undefined): boolean {
-  if (!term) return false;
-  const normalized = normalizeText(term);
-  if (!normalized) return false;
-  return haystack.includes(normalized);
-}
-
-function normalizeText(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9*._-]+/g, ' ').trim();
-}
-
-function nonEmptyChoices(values: string[]): [string, ...string[]] {
-  const unique = [...new Set(values.filter(Boolean))];
-  return unique.length === 0 ? [''] : (unique as [string, ...string[]]);
 }

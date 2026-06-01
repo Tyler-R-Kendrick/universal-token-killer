@@ -47,6 +47,29 @@ protected_fields = ["command", "cmd", "path", "file", "files", "cwd", "url", "pa
 [tools]
 registry = []
 
+[tool_matching]
+enabled = true
+level = "slash-commands"
+prefer_local_embeddings = true
+embedding_timeout_ms = 1000
+embedding_cache = true
+embedding_similarity_threshold = 0.78
+lexical_similarity_threshold = 0.50
+exact_similarity_threshold = 0.98
+winner_gap = 0.06
+providers = ["ollama", "llama-server", "openai-compatible-local"]
+
+[tool_matching.provider_options.ollama]
+base_url = "http://127.0.0.1:11434/v1"
+model = "nomic-embed-text"
+dimensions = 768
+
+[tool_matching.provider_options.llama-server]
+base_url = "http://127.0.0.1:8080/v1"
+model = ""
+dimensions = 768
+require_model = false
+
 [tracing]
 enabled = false
 capture_inputs = true
@@ -80,6 +103,7 @@ artifact_search_enabled = true
 context_proofs_enabled = true
 deferred_tool_search_enabled = true
 provider_strict_mode = false
+provider_options = {}
 prompt_asset_style = "pipe-index"
 remote_compressors_enabled = false
 prompt_compression_enabled = true
@@ -131,6 +155,22 @@ provider = "toon"
 ```
 
 Built-in providers are `toon`, `json-compact`, and `tron`; `compressed-json` remains an alias for existing configs. Serialization plugins load from `packages/plugins/serialization` for maintained defaults, from `.utk/plugins/serialization/<plugin-name>` for workspace plugin packs, and from installed `.utk/packs/<pack-name>` roots. Each plugin pack must include `utk.pack.toml` with `symbol`, `semantics = "json-value-v1"`, a data-only index const export, and a valid `.lark` grammar. Serializer plugin code is never imported or executed. Core generates parser, serializer, linter, AST feedback, and provider surfaces. Unsupported or disabled providers fail with explicit configuration errors that include loaded provider ids.
+
+## Tool Matching Providers
+
+`tool_matching.providers` is an ordered adapter id list, not a closed provider switch. Built-ins cover Ollama, llama.cpp server, and any configured local OpenAI-compatible embedding endpoint. Custom local embedding providers inject a `LocalToolEmbeddingProviderAdapter<TOptions>`; adapter code owns typed option hydration from `[tool_matching.provider_options.<id>]`.
+
+```toml
+[tool_matching]
+providers = ["custom-local"]
+
+[tool_matching.provider_options.custom-local]
+model = "custom-embedding"
+dimensions = 384
+tenant = "team-a"
+```
+
+Legacy top-level embedding keys such as `ollama_base_url` still load, but normalize into provider-owned options.
 
 ## Detok Hook Policy
 
@@ -246,6 +286,7 @@ $env:UTK_MODEL_PROXY_PORT = "8787"
 $env:UTK_MODEL_PROXY_UPSTREAM_PROVIDER = "github-models"
 $env:UTK_MODEL_PROXY_UPSTREAM_BASE_URL = "https://models.github.ai/inference"
 $env:UTK_MODEL_PROXY_UPSTREAM_API_KEY = $env:GITHUB_TOKEN
+$env:UTK_MODEL_PROXY_PROMPT_COMPRESSION_PROVIDER = "github-models"
 $env:UTK_MODEL_PROXY_WORKSPACE_ROOT = "<workspace path>"
 ```
 
@@ -266,6 +307,17 @@ Foundry OpenAI v1-compatible deployments:
 [model_proxy]
 upstream_provider = "azure-openai"
 upstream_base_url = "https://<resource>.openai.azure.com/openai/v1"
+```
+
+Custom providers use arbitrary non-empty provider ids in config or `UTK_MODEL_PROXY_UPSTREAM_PROVIDER`. Runtime code supplies the matching `UpstreamProviderAdapter`, so provider-specific URL, header, auth, and default behavior lives behind the adapter instead of core config switches.
+
+Use `provider_options` for adapter-owned settings. UTK stores the TOML table but does not interpret provider-specific keys:
+
+```toml
+[model_proxy]
+upstream_provider = "acme-provider"
+prompt_compression_provider = "acme-compressor"
+provider_options = { acme-provider = { tenant = "enterprise" }, acme-compressor = { region = "east" } }
 ```
 
 Prompt compression is model-backed when credentials are available. By default it calls GitHub Models with `prompt_compression_model = "openai/gpt-4.1"` and a bounded `prompt_compression_timeout_ms = 2500`, then intercepts system, developer, and user prompt text before the final upstream request. Tool outputs still use UTK routing, TOON/compressed JSON, `.utk` artifacts, and expansion refs before any model-backed compression.

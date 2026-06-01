@@ -41,6 +41,8 @@ export function renderPackRegistryBlock(packName: string, tool: PackToolDefiniti
   const outputCache = tool.entry.output_cache ?? false;
   const bypassOnCache = tool.entry.bypass_on_cache ?? false;
   const curryFields = tool.entry.curry_fields ?? [];
+  const lexicalAliases = tool.entry.lexical_aliases ?? [];
+  const lexicalRegexes = tool.entry.lexical_regexes ?? [];
   const structuredFields = readStructuredFields(tool.source.parameters);
 
   const lines: string[] = [];
@@ -52,6 +54,10 @@ export function renderPackRegistryBlock(packName: string, tool: PackToolDefiniti
   lines.push(`output_cache = ${outputCache}`);
   lines.push(`bypass_on_cache = ${bypassOnCache}`);
   lines.push(`curry_fields = ${tomlStringArray(curryFields)}`);
+  if (lexicalAliases.length > 0) lines.push(`lexical_aliases = ${tomlStringArray(lexicalAliases)}`);
+  if (lexicalRegexes.length > 0) lines.push(`lexical_regexes = ${tomlStringArray(lexicalRegexes)}`);
+  if (tool.entry.bypass_on_match !== undefined) lines.push(`bypass_on_match = ${tool.entry.bypass_on_match}`);
+  if (tool.entry.default_args !== undefined) lines.push(`default_args = ${tomlInlineTable(tool.entry.default_args)}`);
   for (const field of structuredFields) {
     lines.push('[[tools.registry.structured_fields]]');
     lines.push(`name = ${tomlString(field.name)}`);
@@ -131,4 +137,18 @@ function tomlString(value: string): string {
 
 function tomlStringArray(values: string[]): string {
   return `[${values.map(tomlString).join(', ')}]`;
+}
+
+function tomlInlineTable(value: Record<string, unknown>): string {
+  const entries = Object.entries(value).sort(([left], [right]) => left.localeCompare(right));
+  return `{ ${entries.map(([key, item]) => `${key} = ${tomlValue(item)}`).join(', ')} }`;
+}
+
+function tomlValue(value: unknown): string {
+  if (typeof value === 'string') return tomlString(value);
+  if (typeof value === 'boolean') return String(value);
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return tomlStringArray(value);
+  if (value && typeof value === 'object' && !Array.isArray(value)) return tomlInlineTable(value as Record<string, unknown>);
+  throw new Error(`Unsupported TOML value in pack default_args: ${String(value)}`);
 }

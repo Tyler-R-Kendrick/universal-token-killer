@@ -10,8 +10,10 @@ import {
   expandContextArtifact,
   expandEditRangesInRequest,
   normalizeOpenAiRequest,
-  proxyOpenAiRequest
+  proxyOpenAiRequest,
+  createMetricsStore
 } from '../src/index.js';
+import type { UpstreamProviderAdapter } from '../src/index.js';
 import { routeContentForProxy } from '../src/contentRouter.js';
 
 const openedServers: Array<{ close: () => Promise<void> }> = [];
@@ -65,6 +67,21 @@ describe('OpenAI-compatible model proxy', () => {
       { role: 'user', content: [{ type: 'input_text', text: 'plain Responses prompt' }] }
     ]);
     expect(stringInput.items[0]?.content[0]?.text).toBe('plain Responses prompt');
+  });
+
+  it('rejects malformed JSON request bodies at the HTTP boundary', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-bad-json-'));
+    const proxy = await createModelProxyServer({ workspaceRoot, port: 0 });
+    openedServers.push(proxy);
+
+    const response = await fetch(`${proxy.url}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{nope'
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({ error: 'Request body must be valid JSON' });
   });
 
   it('compacts tool context, minimizes tool schemas, injects recovery, and preserves protected spans in artifacts', async () => {
@@ -336,6 +353,113 @@ describe('OpenAI-compatible model proxy', () => {
     expect(proof.checks).toEqual(expect.arrayContaining([{ name: 'recovery', passed: true }]));
   });
 
+  it('honors disabled history compaction under context pressure', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-history-disabled-'));
+
+    const result = await applyModelProxyPolicy(
+      {
+        model: 'gpt-test',
+        max_context_tokens: 3000,
+        messages: [
+          { role: 'system', content: 'System priority: system > developer > user.' },
+          { role: 'tool', name: 'rg', content: 'src/app.ts:10: exact error TS2322\n'.repeat(500) },
+          { role: 'user', content: 'Current question must stay visible.' }
+        ]
+      },
+      {
+        route: '/v1/chat/completions',
+        workspaceRoot,
+        policyOverrides: {
+          history_compaction_enabled: false,
+          session_blocks_enabled: true
+        }
+      }
+    );
+
+    expect(result.metrics.routeReasons).not.toContain('history-summary');
+    expect(result.metrics.routeReasons).not.toContain('session-block');
+    expect(result.request.messages.map((message: any) => message.role)).toEqual(['system', 'tool', 'user']);
+    expect(JSON.stringify(result.request.messages)).not.toContain('[utk-block:');
+  });
+
+  it('applies dedupe retention to repeated compacted tool outputs', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-dedupe-retention-'));
+    const metricsStore = createMetricsStore(workspaceRoot);
+    const repeated = 'git status clean exact repeated fact\n'.repeat(900);
+
+    const result = await applyModelProxyPolicy(
+      {
+        model: 'gpt-test',
+        max_context_tokens: 3000,
+        messages: [
+          { role: 'system', content: 'System priority: system > developer > user.' },
+          { role: 'tool', name: 'git status', content: repeated },
+          { role: 'tool', name: 'git status', content: repeated },
+          { role: 'user', content: 'Current question must stay visible.' }
+        ]
+      },
+      {
+        route: '/v1/chat/completions',
+        workspaceRoot,
+        metricsStore,
+        policyOverrides: {
+          dedupe_policy: 'compact',
+          history_compaction_enabled: true,
+          session_blocks_enabled: true
+        }
+      }
+    );
+
+    const blockMessage = result.request.messages.find((message: any) => typeof message.content === 'string' && message.content.includes('[utk-block:'));
+    expect(blockMessage?.content).toContain('messages=m0002');
+    expect(blockMessage?.content).not.toContain('messages=m0001,m0002');
+    expect(result.metrics.routeReasons).toContain('dedupe');
+    expect(result.metrics.routeReasons).toContain('session-block');
+    await expect(metricsStore.snapshot()).resolves.toMatchObject({
+      dedupeCount: 1,
+      routeReasons: expect.arrayContaining(['dedupe', 'session-block'])
+    });
+  });
+
+  it('applies stale-error retention while preserving protected tools', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-stale-retention-'));
+    const metricsStore = createMetricsStore(workspaceRoot);
+
+    const result = await applyModelProxyPolicy(
+      {
+        model: 'gpt-test',
+        max_context_tokens: 3000,
+        messages: [
+          { role: 'system', content: 'System priority: system > developer > user.' },
+          { role: 'tool', name: 'rg', content: 'ERROR stale failure TS2322\n'.repeat(900) },
+          { role: 'tool', name: 'edit', content: 'ERROR protected edit failure\n'.repeat(900) },
+          { role: 'user', content: 'Current question must stay visible.' }
+        ]
+      },
+      {
+        route: '/v1/chat/completions',
+        workspaceRoot,
+        metricsStore,
+        policyOverrides: {
+          stale_error_policy: 'compact',
+          purge_error_after_turns: 1,
+          protected_tools: ['edit'],
+          history_compaction_enabled: true,
+          session_blocks_enabled: true
+        }
+      }
+    );
+
+    const blockMessage = result.request.messages.find((message: any) => typeof message.content === 'string' && message.content.includes('[utk-block:'));
+    expect(blockMessage?.content).toContain('messages=m0002');
+    expect(blockMessage?.content).not.toContain('messages=m0001,m0002');
+    expect(result.metrics.routeReasons).toContain('stale-error');
+    await expect(metricsStore.snapshot()).resolves.toMatchObject({
+      staleErrorCount: 1,
+      routeReasons: expect.arrayContaining(['stale-error', 'session-block'])
+    });
+  });
+
   it('performs one non-streaming recovery retry when upstream requests utk_expand_context', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-retry-'));
     const upstreamBodies: any[] = [];
@@ -435,6 +559,372 @@ describe('OpenAI-compatible model proxy', () => {
       content: expect.stringContaining('run_tests')
     });
     expect(upstreamBodies[1].messages.at(-1).content).not.toContain('send_email');
+  });
+
+  it('lets UTK emit slash-command tool calls without forwarding upstream', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('lexical-similarity');
+    const metricsStore = createMetricsStore(workspaceRoot);
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'should_not_happen' }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: '/run_tests --pattern unit' }],
+        tools: [tool('run_tests', 'Run vitest unit tests.', { pattern: { type: 'string' } })]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key', metricsStore }
+    );
+
+    const json = await response.json();
+    expect(json.choices[0].message.tool_calls[0].function).toMatchObject({
+      name: 'run_tests',
+      arguments: JSON.stringify({ pattern: 'unit' })
+    });
+    expect(upstreamBodies).toHaveLength(0);
+    await expect(metricsStore.snapshot()).resolves.toMatchObject({
+      toolBypassCount: 1,
+      routeReasons: expect.arrayContaining(['tool-bypass', 'tool-bypass-slash-command'])
+    });
+  });
+
+  it('executes a local lexical tool and forwards the tool result to the LLM once', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('lexical-similarity');
+    const metricsStore = createMetricsStore(workspaceRoot);
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'final_after_tool', choices: [{ message: { role: 'assistant', content: 'summarized tool result' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: 'run vitest tests --pattern unit' }],
+        tools: [tool('run_tests', 'Run vitest tests.', { pattern: { type: 'string' } })]
+      },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        upstreamApiKey: 'key',
+        metricsStore,
+        toolExecutor: async (call) => ({ ok: true, tool: call.toolName, args: call.args, output: 'unit tests passed' })
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'final_after_tool' });
+    expect(upstreamBodies).toHaveLength(1);
+    expect(upstreamBodies[0].messages.at(-2)).toMatchObject({
+      role: 'assistant',
+      content: null,
+      tool_calls: [expect.objectContaining({
+        type: 'function',
+        function: { name: 'run_tests', arguments: JSON.stringify({ pattern: 'unit' }) }
+      })]
+    });
+    expect(upstreamBodies[0].messages.at(-1)).toMatchObject({
+      role: 'tool',
+      name: 'run_tests',
+      content: expect.stringContaining('Tool result stored at:')
+    });
+    await expect(metricsStore.snapshot()).resolves.toMatchObject({
+      toolBypassCount: 1,
+      toolLocalExecutionCount: 1,
+      routeReasons: expect.arrayContaining(['tool-bypass', 'tool-bypass-local-execution'])
+    });
+  });
+
+  it('executes local tools for slash, exact, regex, and lexical-similarity matches', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('lexical-similarity');
+    const upstreamBodies: any[] = [];
+    const executorCalls: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: `final_${upstreamBodies.length}`, choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const cases = [
+      { input: '/run_tests --pattern slash', reason: 'slash-command', pattern: 'slash' },
+      { input: 'run tests --pattern exact', reason: 'exact-lexical-match', pattern: 'exact' },
+      { input: 'please run vitest tests --pattern regex', reason: 'regex-pattern', pattern: 'regex' },
+      { input: 'runn tests --pattern fuzzy', reason: 'lexical-similarity', pattern: 'fuzzy' }
+    ];
+
+    for (const item of cases) {
+      const response = await proxyOpenAiRequest(
+        '/v1/chat/completions',
+        {
+          model: 'gpt-test',
+          messages: [{ role: 'user', content: item.input }],
+          tools: [tool('run_tests', 'Run vitest tests.', { pattern: { type: 'string' } })]
+        },
+        {
+          workspaceRoot,
+          upstreamBaseUrl: upstream.url,
+          upstreamApiKey: 'key',
+          mediateLocalToolResults: false,
+          toolExecutor: async (call) => {
+            executorCalls.push(call);
+            return `passed ${String(call.args.pattern)}`;
+          }
+        }
+      );
+      expect(await response.json()).toMatchObject({ id: expect.stringMatching(/^final_/) });
+    }
+
+    expect(executorCalls.map((call) => call.reason)).toEqual(cases.map((item) => item.reason));
+    expect(executorCalls.map((call) => call.args.pattern)).toEqual(cases.map((item) => item.pattern));
+    expect(upstreamBodies).toHaveLength(4);
+    for (let index = 0; index < cases.length; index += 1) {
+      expect(upstreamBodies[index].messages.at(-1)).toMatchObject({
+        role: 'tool',
+        name: 'run_tests',
+        content: `passed ${cases[index]!.pattern}`
+      });
+    }
+  });
+
+  it('executes local Responses tools and forwards function_call_output to the LLM once', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('slash-commands');
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'resp_after_tool', output: [{ type: 'message', content: [{ type: 'output_text', text: 'done' }] }] }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/responses',
+      {
+        model: 'gpt-test',
+        input: [{ role: 'user', content: [{ type: 'input_text', text: '/run_tests --pattern smoke' }] }],
+        tools: [tool('run_tests', 'Run vitest tests.', { pattern: { type: 'string' } })]
+      },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        upstreamApiKey: 'key',
+        toolExecutor: async (call) => `executed ${call.toolName} ${String(call.args.pattern)}`
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'resp_after_tool' });
+    expect(upstreamBodies).toHaveLength(1);
+    expect(upstreamBodies[0].input.at(-2)).toMatchObject({
+      type: 'function_call',
+      name: 'run_tests',
+      arguments: JSON.stringify({ pattern: 'smoke' })
+    });
+    expect(upstreamBodies[0].input.at(-1)).toMatchObject({
+      type: 'function_call_output',
+      output: expect.stringContaining('Tool result stored at:')
+    });
+  });
+
+  it('bypasses upstream for strong lexical matches but forwards ambiguous matches', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('regex-patterns');
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'forwarded', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const bypass = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: 'run vitest tests' }],
+        tools: [tool('run_tests', 'Run vitest tests.'), tool('send_email', 'Send outbound email.')]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key' }
+    );
+    expect((await bypass.json()).choices[0].message.tool_calls[0].function.name).toBe('run_tests');
+    expect(upstreamBodies).toHaveLength(0);
+
+    const forwarded = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: 'search project' }],
+        tools: [tool('grep', 'Search local project files.'), tool('web_search', 'Search the public web.')]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key' }
+    );
+    expect(await forwarded.json()).toMatchObject({ id: 'forwarded' });
+    expect(upstreamBodies).toHaveLength(1);
+  });
+
+  it('bypasses using configured registry tools when request omits tool definitions', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('slash-commands', [
+      '',
+      '[[tools.registry]]',
+      'tool = "run_tests"',
+      'description = "Run vitest tests."',
+      'default_args = { pattern = "unit" }'
+    ].join('\n'));
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'should_not_happen' }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: '/run_tests' }]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key' }
+    );
+
+    const json = await response.json();
+    expect(json.choices[0].message.tool_calls[0].function).toMatchObject({
+      name: 'run_tests',
+      arguments: JSON.stringify({ pattern: 'unit' })
+    });
+    expect(upstreamBodies).toHaveLength(0);
+  });
+
+  it('lets local embedding choose the tool before lexical fallback', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('lexical-similarity', [
+      'prefer_local_embeddings = true',
+      'embedding_similarity_threshold = 0.75'
+    ].join('\n'));
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'should_not_happen' }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: 'search project files for TODO' }],
+        tools: [tool('grep', 'Search local project files.'), tool('send_email', 'Send outbound email.')]
+      },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        upstreamApiKey: 'key',
+        toolEmbeddingProvider: {
+          id: 'mock-local',
+          model: 'mock',
+          dimensions: 2,
+          async probe() {
+            return { available: true, reason: 'ok' };
+          },
+          async embed(texts: string[]) {
+            return texts.map((text) => text.includes('send_email') || !text.includes('grep') ? [1, 0] : [0, 1]);
+          }
+        }
+      }
+    );
+
+    expect((await response.json()).choices[0].message.tool_calls[0].function.name).toBe('send_email');
+    expect(upstreamBodies).toHaveLength(0);
+  });
+
+  it('returns local clarification for missing required slash args', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('slash-commands');
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'should_not_happen' }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: '/send_email' }],
+        tools: [tool('send_email', 'Send email.', { to: { type: 'string' }, subject: { type: 'string' } }, ['to'])]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key' }
+    );
+
+    const json = await response.json();
+    expect(json.choices[0].message.content).toContain('Missing required arguments for send_email: to');
+    expect(upstreamBodies).toHaveLength(0);
+  });
+
+  it('forwards denied natural matches upstream while recording policy fallback', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('regex-patterns', [
+      '',
+      '[model_proxy]',
+      'deny_tools = ["delete_file"]'
+    ].join('\n'));
+    const metricsStore = createMetricsStore(workspaceRoot);
+    const upstreamBodies: any[] = [];
+    const upstream = await startUpstream(async (_req, res, body) => {
+      upstreamBodies.push(JSON.parse(body));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'forwarded_denied', choices: [{ message: { role: 'assistant', content: 'blocked upstream' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      {
+        model: 'gpt-test',
+        messages: [{ role: 'user', content: 'delete file tmp.txt' }],
+        tools: [tool('delete_file', 'Delete a workspace file.', { path: { type: 'string' } })]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key', metricsStore }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'forwarded_denied' });
+    expect(upstreamBodies).toHaveLength(1);
+    await expect(metricsStore.snapshot()).resolves.toMatchObject({
+      toolBypassFallbackCount: 1,
+      routeReasons: expect.arrayContaining(['tool-bypass-denied'])
+    });
+  });
+
+  it('returns Responses API function_call items for local tool bypass', async () => {
+    const workspaceRoot = await writeToolMatchingConfig('slash-commands');
+    const upstream = await startUpstream(async (_req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'should_not_happen' }));
+    });
+    openedServers.push(upstream);
+
+    const response = await proxyOpenAiRequest(
+      '/v1/responses',
+      {
+        model: 'gpt-test',
+        input: [{ role: 'user', content: [{ type: 'input_text', text: '/run_tests --pattern unit' }] }],
+        tools: [tool('run_tests', 'Run vitest tests.', { pattern: { type: 'string' } })]
+      },
+      { workspaceRoot, upstreamBaseUrl: upstream.url, upstreamApiKey: 'key' }
+    );
+
+    const json = await response.json();
+    expect(json.output[0]).toMatchObject({
+      type: 'function_call',
+      name: 'run_tests',
+      arguments: JSON.stringify({ pattern: 'unit' })
+    });
   });
 
   it('replaces old compacted history spans instead of duplicating them when pressure trips', async () => {
@@ -582,6 +1072,146 @@ describe('OpenAI-compatible model proxy', () => {
     });
   });
 
+  it('routes through injected upstream provider adapters', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-provider-adapter-'));
+    const seen: any[] = [];
+    const upstream = await startUpstream(async (req, res, body) => {
+      seen.push({
+        url: req.url,
+        apiKey: req.headers['x-acme-api-key'],
+        apiVersion: req.headers['x-acme-api-version'],
+        tenant: req.headers['x-acme-tenant'],
+        body: JSON.parse(body)
+      });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'adapter_1', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const adapter: UpstreamProviderAdapter<{ tenant: string }> = {
+      id: 'acme-provider',
+      defaults: { baseUrl: upstream.url, apiVersion: 'acme-default-version' },
+      optionsFromConfig(options) {
+        return { tenant: typeof options.tenant === 'string' ? options.tenant : 'default-tenant' };
+      },
+      buildRequest(options) {
+        const base = options.baseUrl.replace(/\/$/, '');
+        return {
+          url: `${base}/custom${options.route.replace(/^\/v1/, '')}`,
+          headers: {
+            'content-type': 'application/json',
+            'x-acme-api-key': options.apiKey ?? '',
+            'x-acme-api-version': options.apiVersion ?? '',
+            'x-acme-tenant': options.providerOptions.tenant
+          }
+        };
+      }
+    };
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      { model: 'acme-model', messages: [{ role: 'user', content: 'hi' }] },
+      {
+        workspaceRoot,
+        upstreamProvider: 'acme-provider',
+        upstreamProviderAdapters: [adapter],
+        upstreamBaseUrl: upstream.url,
+        upstreamApiVersion: 'acme-2026-01-01',
+        upstreamApiKey: 'acme-key',
+        upstreamProviderOptions: { tenant: 'tenant-a' }
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'adapter_1' });
+    expect(seen[0]).toMatchObject({
+      url: '/custom/chat/completions',
+      apiKey: 'acme-key',
+      apiVersion: 'acme-2026-01-01',
+      tenant: 'tenant-a'
+    });
+  });
+
+  it('hydrates server upstream provider adapter options from config', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-provider-config-'));
+    await mkdir(path.join(workspaceRoot, '.utk'), { recursive: true });
+    const seen: any[] = [];
+    const upstream = await startUpstream(async (req, res, body) => {
+      seen.push({
+        url: req.url,
+        apiKey: req.headers['x-acme-api-key'],
+        apiVersion: req.headers['x-acme-api-version'],
+        tenant: req.headers['x-acme-tenant'],
+        body: JSON.parse(body)
+      });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'adapter_config', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    await writeFile(path.join(workspaceRoot, '.utk', 'config.toml'), [
+      '[serialization]',
+      'default = "toon"',
+      '',
+      '[model_proxy]',
+      'upstream_provider = "acme-provider"',
+      `upstream_base_url = "${upstream.url}"`,
+      'upstream_api_version = "acme-config-version"',
+      'provider_options = { acme-provider = { tenant = "tenant-from-config" } }'
+    ].join('\n'), 'utf8');
+
+    const adapter: UpstreamProviderAdapter<{ tenant: string }> = {
+      id: 'acme-provider',
+      defaults: { baseUrl: 'https://unused.example.invalid', apiVersion: 'unused-version' },
+      optionsFromConfig(options) {
+        return { tenant: typeof options.tenant === 'string' ? options.tenant : 'default-tenant' };
+      },
+      buildRequest(options) {
+        const base = options.baseUrl.replace(/\/$/, '');
+        return {
+          url: `${base}/custom${options.route.replace(/^\/v1/, '')}`,
+          headers: {
+            'content-type': 'application/json',
+            'x-acme-api-key': options.apiKey ?? '',
+            'x-acme-api-version': options.apiVersion ?? '',
+            'x-acme-tenant': options.providerOptions.tenant
+          }
+        };
+      }
+    };
+
+    const proxy = await createModelProxyServer({
+      workspaceRoot,
+      upstreamProviderAdapters: [adapter],
+      upstreamApiKey: 'config-key',
+      port: 0
+    });
+    openedServers.push(proxy);
+
+    const body = await fetchJson(`${proxy.url}/v1/chat/completions`, { model: 'acme-model', messages: [{ role: 'user', content: 'hi' }] });
+
+    expect(body).toMatchObject({ id: 'adapter_config' });
+    expect(seen[0]).toMatchObject({
+      url: '/custom/chat/completions',
+      apiKey: 'config-key',
+      apiVersion: 'acme-config-version',
+      tenant: 'tenant-from-config'
+    });
+  });
+
+  it('rejects unknown upstream provider ids without an adapter', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-provider-missing-'));
+
+    await expect(proxyOpenAiRequest(
+      '/v1/chat/completions',
+      { model: 'acme-model', messages: [{ role: 'user', content: 'hi' }] },
+      {
+        workspaceRoot,
+        upstreamProvider: 'acme-provider',
+        upstreamBaseUrl: 'https://example.invalid'
+      }
+    )).rejects.toThrow('Unsupported upstream provider adapter: acme-provider');
+  });
+
   it('uses a configured compression model across system, developer, and user prompts before forwarding', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-model-'));
     const compressionRequests: any[] = [];
@@ -631,6 +1261,76 @@ describe('OpenAI-compatible model proxy', () => {
       expect.stringContaining('COMPRESSED:'),
       expect.stringContaining('COMPRESSED:')
     ]);
+  });
+
+  it('routes prompt compression through injected provider adapters', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-provider-adapter-'));
+    const compressionCalls: any[] = [];
+    const compressor = await startUpstream(async (req, res, body) => {
+      compressionCalls.push({
+        url: req.url,
+        apiKey: req.headers['x-acme-compress-key'],
+        apiVersion: req.headers['x-acme-compress-version'],
+        region: req.headers['x-acme-region'],
+        body: JSON.parse(body)
+      });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'ACME COMPRESSED PROMPT' } }] }));
+    });
+    openedServers.push(compressor);
+    const upstream = await startUpstream(async (_req, res, body) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'adapter_compressed', body: JSON.parse(body), choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+    const adapter: UpstreamProviderAdapter<{ region: string }> = {
+      id: 'acme-compressor',
+      defaults: { baseUrl: compressor.url, apiVersion: 'acme-compress-default' },
+      optionsFromConfig(options) {
+        return { region: typeof options.region === 'string' ? options.region : 'default-region' };
+      },
+      buildRequest(options) {
+        return {
+          url: `${options.baseUrl.replace(/\/$/, '')}/compress${options.route.replace(/^\/v1/, '')}`,
+          headers: {
+            'content-type': 'application/json',
+            'x-acme-compress-key': options.apiKey ?? '',
+            'x-acme-compress-version': options.apiVersion ?? '',
+            'x-acme-region': options.providerOptions.region
+          }
+        };
+      }
+    };
+
+    const response = await proxyOpenAiRequest(
+      '/v1/chat/completions',
+      { model: 'gpt-test', messages: [{ role: 'user', content: 'Compress via adapter. ' + 'compress me '.repeat(20) }] },
+      {
+        workspaceRoot,
+        upstreamBaseUrl: upstream.url,
+        promptCompressionProviderAdapters: [adapter],
+        policyOverrides: {
+          prompt_compression_enabled: true,
+          prompt_compression_base_url: compressor.url,
+          prompt_compression_provider: 'acme-compressor',
+          prompt_compression_model: 'acme-model',
+          prompt_compression_api_key: 'compress-key',
+          prompt_compression_api_version: 'acme-v2',
+          prompt_compression_min_tokens: 1,
+          provider_options: {
+            'acme-compressor': { region: 'east' }
+          }
+        }
+      }
+    );
+
+    expect(await response.json()).toMatchObject({ id: 'adapter_compressed' });
+    expect(compressionCalls[0]).toMatchObject({
+      url: '/compress/chat/completions',
+      apiKey: 'compress-key',
+      apiVersion: 'acme-v2',
+      region: 'east'
+    });
   });
 
   it('fails open when prompt compression model times out', async () => {
@@ -740,13 +1440,42 @@ async function fetchJson(url: string, body: unknown): Promise<any> {
   return response.json();
 }
 
-function tool(name: string, description: string): Record<string, any> {
+async function writeToolMatchingConfig(level: string, extra = ''): Promise<string> {
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-tool-bypass-'));
+  await mkdir(path.join(workspaceRoot, '.utk'), { recursive: true });
+  await writeFile(
+    path.join(workspaceRoot, '.utk', 'config.toml'),
+    [
+      '[serialization]',
+      'default = "toon"',
+      '',
+      '[tool_matching]',
+      'enabled = true',
+      `level = "${level}"`,
+      ...defaultToolMatchingLines(extra),
+      extra,
+      ''
+    ].join('\n'),
+    'utf8'
+  );
+  return workspaceRoot;
+}
+
+function defaultToolMatchingLines(extra: string): string[] {
+  const lines: string[] = [];
+  if (!/\bprefer_local_embeddings\s*=/.test(extra)) lines.push('prefer_local_embeddings = false');
+  if (!/\blexical_similarity_threshold\s*=/.test(extra)) lines.push('lexical_similarity_threshold = 0.50');
+  if (!/\bwinner_gap\s*=/.test(extra)) lines.push('winner_gap = 0.06');
+  return lines;
+}
+
+function tool(name: string, description: string, properties: Record<string, unknown> = { path: { type: 'string' } }, required: string[] = []): Record<string, any> {
   return {
     type: 'function',
     function: {
       name,
       description,
-      parameters: { type: 'object', properties: { path: { type: 'string' } } }
+      parameters: { type: 'object', properties, required }
     }
   };
 }

@@ -86,6 +86,7 @@ Key defaults:
 - `prompt_compression_min_tokens = 64`
 - `prompt_compression_timeout_ms = 2500`
 - `provider_strict_mode = false`
+- `provider_options = {}`
 - `protected_tools = ["edit", "write", "apply_patch", "auth*", "secret*"]`
 - `protected_file_patterns = [".env*", "*.pem", "*.key"]`
 
@@ -95,6 +96,15 @@ Provider routing:
 - `azure-ai-inference`: `/v1/chat/completions` -> `/models/chat/completions?api-version=...`; uses `api-key` header for API keys.
 - `azure-openai`: uses Foundry/OpenAI v1-compatible base URLs such as `https://<resource>.openai.azure.com/openai/v1`.
 - `openai`: keeps normal OpenAI-compatible `/v1` routing.
+
+Provider ids are open-ended. Built-ins above ship defaults, while custom providers are injected as `UpstreamProviderAdapter` implementations that build requests and hydrate typed provider options from `provider_options`. Prompt compression can use the same adapter registry.
+
+```toml
+[model_proxy]
+upstream_provider = "acme-provider"
+prompt_compression_provider = "acme-compressor"
+provider_options = { acme-provider = { tenant = "enterprise" }, acme-compressor = { region = "east" } }
+```
 
 ## Metrics
 

@@ -22,6 +22,12 @@ export type ModelProxyMetricEvent = {
   staleErrorCount?: number;
   providerFailures?: number;
   providerId?: string;
+  toolBypassCount?: number;
+  toolEmbeddingMatchCount?: number;
+  toolBypassAmbiguousCount?: number;
+  toolBypassFallbackCount?: number;
+  toolLocalExecutionCount?: number;
+  toolLocalExecutionErrorCount?: number;
 };
 
 export type ModelProxyMetricSnapshot = {
@@ -41,6 +47,12 @@ export type ModelProxyMetricSnapshot = {
   staleErrorCount: number;
   providerFailures: number;
   providers: string[];
+  toolBypassCount: number;
+  toolEmbeddingMatchCount: number;
+  toolBypassAmbiguousCount: number;
+  toolBypassFallbackCount: number;
+  toolLocalExecutionCount: number;
+  toolLocalExecutionErrorCount: number;
 };
 
 export class ModelProxyMetricsStore {
@@ -61,6 +73,12 @@ export class ModelProxyMetricsStore {
   private staleErrorCount = 0;
   private providerFailures = 0;
   private providers = new Set<string>();
+  private toolBypassCount = 0;
+  private toolEmbeddingMatchCount = 0;
+  private toolBypassAmbiguousCount = 0;
+  private toolBypassFallbackCount = 0;
+  private toolLocalExecutionCount = 0;
+  private toolLocalExecutionErrorCount = 0;
 
   constructor(private readonly workspaceRoot: string) {}
 
@@ -85,6 +103,12 @@ export class ModelProxyMetricsStore {
     this.dedupeCount += event.dedupeCount ?? 0;
     this.staleErrorCount += event.staleErrorCount ?? 0;
     this.providerFailures += event.providerFailures ?? 0;
+    this.toolBypassCount += event.toolBypassCount ?? 0;
+    this.toolEmbeddingMatchCount += event.toolEmbeddingMatchCount ?? 0;
+    this.toolBypassAmbiguousCount += event.toolBypassAmbiguousCount ?? 0;
+    this.toolBypassFallbackCount += event.toolBypassFallbackCount ?? 0;
+    this.toolLocalExecutionCount += event.toolLocalExecutionCount ?? 0;
+    this.toolLocalExecutionErrorCount += event.toolLocalExecutionErrorCount ?? 0;
     if (event.providerId) this.providers.add(event.providerId);
     await this.append(event);
   }
@@ -106,7 +130,13 @@ export class ModelProxyMetricsStore {
       dedupeCount: this.dedupeCount,
       staleErrorCount: this.staleErrorCount,
       providerFailures: this.providerFailures,
-      providers: [...this.providers].sort()
+      providers: [...this.providers].sort(),
+      toolBypassCount: this.toolBypassCount,
+      toolEmbeddingMatchCount: this.toolEmbeddingMatchCount,
+      toolBypassAmbiguousCount: this.toolBypassAmbiguousCount,
+      toolBypassFallbackCount: this.toolBypassFallbackCount,
+      toolLocalExecutionCount: this.toolLocalExecutionCount,
+      toolLocalExecutionErrorCount: this.toolLocalExecutionErrorCount
     };
   }
 
