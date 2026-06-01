@@ -1,6 +1,7 @@
 /* c8 ignore file -- Edit range expansion fail-opens; behavior tests cover invalid hooks and symlink escapes. */
 import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { cloneJson, isObject, parseJsonObject, type JsonObject } from './openai.js';
 
 export type EditRangeExpansion = {
   path: string;
@@ -9,18 +10,19 @@ export type EditRangeExpansion = {
   lineEnd: number;
 };
 
-export async function expandEditRangesInRequest<T extends Record<string, any>>(
+export async function expandEditRangesInRequest<T extends JsonObject>(
   request: T,
   options: { workspaceRoot: string; enabled: boolean }
 ): Promise<T & { expansions: EditRangeExpansion[] }> {
-  const next = clone(request) as T & { expansions: EditRangeExpansion[] };
+  const next = cloneJson(request) as T & { expansions: EditRangeExpansion[] };
   next.expansions = [];
   if (!options.enabled || !Array.isArray(next.messages)) return next;
 
   for (const message of next.messages) {
+    if (!isObject(message)) continue;
     if (!Array.isArray(message.tool_calls)) continue;
     for (const call of message.tool_calls) {
-      const fn = call?.function;
+      const fn = isObject(call) && isObject(call.function) ? call.function : undefined;
       if (!fn || typeof fn.arguments !== 'string' || fn.name !== 'edit') continue;
       const args = parseJsonObject(fn.arguments);
       if (!args || typeof args.path !== 'string' || typeof args.oldString !== 'string') continue;
@@ -82,17 +84,4 @@ function splitLines(text: string): Array<{ text: string; eol: string }> {
     lines.push({ text: match[1] ?? '', eol: match[2] ?? '' });
   }
   return lines;
-}
-
-function parseJsonObject(value: string): Record<string, any> | undefined {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, any> : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
 }

@@ -24,7 +24,7 @@ export async function runAgentEvalsCli(args: RunAgentEvalsCliArgs): Promise<RunA
   const binary = args.binary ?? 'agentevals';
   const timeoutMs = args.timeoutMs ?? 30_000;
   const gracePeriodMs = args.killGraceMs ?? 2_000;
-  const spawn = args.spawnFn ?? (defaultSpawn as unknown as SpawnLike);
+  const spawn: SpawnLike = args.spawnFn ?? ((command, argv) => defaultSpawn(command, [...argv]));
   const argv = ['run', args.tracePath, '--eval-set', args.evalSetPath, '-m', args.metric];
   if (args.threshold !== undefined) {
     argv.push('--threshold', String(args.threshold));

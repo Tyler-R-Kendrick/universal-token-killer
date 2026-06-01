@@ -131,7 +131,7 @@ function buildToolOutput(query: string, requiredFacts: readonly string[], irrele
   ].join('\n');
 }
 
-function buildToolDefinitions(targetTool: string, irrelevantTool: string): Array<Record<string, any>> {
+function buildToolDefinitions(targetTool: string, irrelevantTool: string): Array<Record<string, unknown>> {
   return [
     {
       type: 'function',

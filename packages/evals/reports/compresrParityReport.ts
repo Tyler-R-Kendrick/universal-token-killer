@@ -6,6 +6,7 @@ import { mediateToolExecution } from '@utk/core';
 import { COMPRESR_INSTALL_CONFIG } from '../config/compresrConfig.js';
 import { COMPRESR_PARITY_FIXTURES, compresrParityExpectedPayload, type CompresrParityFixture } from '../fixtures/compresrParityFixtures.js';
 import { assertCompresrParity, type CompresrParityMetrics } from '../metrics/compresrParityMetrics.js';
+import { mapConcurrent } from './concurrency.js';
 
 export type CompresrParityReportRow = {
   fixture: CompresrParityFixture;
@@ -18,10 +19,7 @@ export type CompresrParityReportRow = {
 };
 
 export async function buildCompresrParityReport(): Promise<{ markdown: string; rows: CompresrParityReportRow[] }> {
-  const rows: CompresrParityReportRow[] = [];
-  for (const fixture of COMPRESR_PARITY_FIXTURES) {
-    rows.push(await runCompresrParityFixture(fixture));
-  }
+  const rows = await mapConcurrent(COMPRESR_PARITY_FIXTURES, 8, runCompresrParityFixture);
   return { rows, markdown: renderMarkdown(rows) };
 }
 

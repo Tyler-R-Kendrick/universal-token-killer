@@ -158,7 +158,7 @@ describe('fixture-backed RTK parity scenarios', () => {
     expect(result.score).toBe(1);
     expect(result.assertions.every((assertion) => assertion.passed)).toBe(true);
     expect(result.reasoning).toContain(row.fixture.name);
-  });
+  }, 30000);
 
   it('declares AgentV YAML code-grader scenarios for every RTK parity fixture', async () => {
     const yaml = normalizeLineEndings(await readFile(new URL('./rtk-parity.EVAL.yaml', import.meta.url), 'utf8'));

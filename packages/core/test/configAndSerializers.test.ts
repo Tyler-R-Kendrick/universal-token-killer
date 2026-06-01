@@ -30,6 +30,16 @@ describe('UTK TOML config', () => {
     expect(config.code_graph.storage_root).toBe('.utk/code-graph');
     expect(config.code_graph.max_context_tokens).toBe(1200);
     expect(config.plugins.serialization_paths).toContain('.utk/plugins/serialization');
+    expect(config.tool_matching.provider_options.ollama).toMatchObject({
+      base_url: 'http://127.0.0.1:11434/v1',
+      model: 'nomic-embed-text',
+      dimensions: 768
+    });
+    expect(config.tool_matching.provider_options['llama-server']).toMatchObject({
+      base_url: 'http://127.0.0.1:8080/v1',
+      dimensions: 768,
+      require_model: false
+    });
   });
 
   it('supports compressed-json default and per-tool provider overrides', async () => {
@@ -206,6 +216,8 @@ describe('UTK TOML config', () => {
     expect(config.detok.copilot_pre_tool_use.rewrite_fields).toContain('prompt');
     expect(config.detok.copilot_pre_tool_use.protected_fields).toContain('command');
     expect(config.tools.registry).toEqual([]);
+    expect(config.tool_matching.providers).toEqual(['ollama', 'llama-server', 'openai-compatible-local']);
+    expect(config.tool_matching.provider_options).toEqual({});
     expect(config.model_proxy.enabled).toBe(true);
     expect(config.model_proxy.host).toBe('127.0.0.1');
     expect(config.model_proxy.port).toBe(8787);
@@ -231,6 +243,7 @@ describe('UTK TOML config', () => {
     expect(config.model_proxy.context_proofs_enabled).toBe(true);
     expect(config.model_proxy.deferred_tool_search_enabled).toBe(true);
     expect(config.model_proxy.provider_strict_mode).toBe(false);
+    expect(config.model_proxy.provider_options).toEqual({});
     expect(config.model_proxy.prompt_asset_style).toBe('pipe-index');
     expect(config.model_proxy.remote_compressors_enabled).toBe(false);
     expect(config.model_proxy.prompt_compression_enabled).toBe(true);
@@ -251,6 +264,39 @@ describe('UTK TOML config', () => {
     expect(config.prompt_optimization.persist_originals).toBe(true);
     expect(config.prompt_optimization.cache_volatility).toBe('observe');
     expect(config.prompt_optimization.asset_style).toBe('pipe-index');
+  });
+
+  it('normalizes legacy embedding provider keys into adapter-owned options', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'utk-config-legacy-embedding-provider-'));
+    await mkdir(path.join(root, '.utk'), { recursive: true });
+    await writeFile(
+      path.join(root, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        '',
+        '[tool_matching]',
+        'providers = ["ollama", "openai-compatible-local"]',
+        'ollama_base_url = "http://localhost:11434/v1"',
+        'ollama_model = "bge-m3"',
+        'ollama_dimensions = 1024',
+        'openai_compatible_base_url = "http://localhost:9999/v1"',
+        'openai_compatible_model = "local-embed"',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+
+    const config = await loadUtkConfig(root);
+
+    expect(config.tool_matching.provider_options.ollama).toEqual({
+      base_url: 'http://localhost:11434/v1',
+      model: 'bge-m3',
+      dimensions: 1024
+    });
+    expect(config.tool_matching.provider_options['openai-compatible-local']).toEqual({
+      base_url: 'http://localhost:9999/v1',
+      model: 'local-embed'
+    });
   });
 
   it('supports registered tool field and cache annotations with wildcard fallback', async () => {
@@ -528,6 +574,7 @@ describe('UTK TOML config', () => {
       context_proofs_enabled: false,
       deferred_tool_search_enabled: false,
       provider_strict_mode: true,
+      provider_options: {},
       prompt_asset_style: 'pipe-index',
       remote_compressors_enabled: true,
       prompt_compression_enabled: true,
@@ -565,15 +612,41 @@ describe('UTK TOML config', () => {
     await writeFile(path.join(badDiscovery, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\ntool_discovery_mode = "all"\n', 'utf8');
     await expect(loadUtkConfig(badDiscovery)).rejects.toThrow('Unsupported model_proxy tool_discovery_mode: all');
 
-    const badUpstreamProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-upstream-provider-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badUpstreamProvider, '.utk'), { recursive: true }));
-    await writeFile(path.join(badUpstreamProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nupstream_provider = "bad"\n', 'utf8');
-    await expect(loadUtkConfig(badUpstreamProvider)).rejects.toThrow('Unsupported model_proxy upstream_provider: bad');
+    const customProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-custom-provider-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(customProvider, '.utk'), { recursive: true }));
+    await writeFile(
+      path.join(customProvider, '.utk', 'config.toml'),
+      [
+        '[serialization]',
+        '[model_proxy]',
+        'upstream_provider = "acme-provider"',
+        'prompt_compression_provider = "acme-compressor"',
+        'provider_options = { acme-provider = { tenant = "enterprise" }, acme-compressor = { region = "east" } }',
+        ''
+      ].join('\n'),
+      'utf8'
+    );
+    const custom = await loadUtkConfig(customProvider);
+    expect(custom.model_proxy.upstream_provider).toBe('acme-provider');
+    expect(custom.model_proxy.upstream_base_url).toBe('');
+    expect(custom.model_proxy.upstream_api_version).toBe('');
+    expect(custom.model_proxy.prompt_compression_provider).toBe('acme-compressor');
+    expect(custom.model_proxy.prompt_compression_base_url).toBe('');
+    expect(custom.model_proxy.prompt_compression_api_version).toBe('');
+    expect(custom.model_proxy.provider_options).toEqual({
+      'acme-provider': { tenant: 'enterprise' },
+      'acme-compressor': { region: 'east' }
+    });
 
-    const badPromptProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-prompt-provider-'));
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badPromptProvider, '.utk'), { recursive: true }));
-    await writeFile(path.join(badPromptProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nprompt_compression_provider = "bad"\n', 'utf8');
-    await expect(loadUtkConfig(badPromptProvider)).rejects.toThrow('Unsupported model_proxy prompt_compression_provider: bad');
+    const emptyUpstreamProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-empty-upstream-provider-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(emptyUpstreamProvider, '.utk'), { recursive: true }));
+    await writeFile(path.join(emptyUpstreamProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nupstream_provider = ""\n', 'utf8');
+    await expect(loadUtkConfig(emptyUpstreamProvider)).rejects.toThrow('model_proxy upstream_provider must be a non-empty string');
+
+    const emptyPromptProvider = await mkdtemp(path.join(os.tmpdir(), 'utk-config-empty-prompt-provider-'));
+    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(emptyPromptProvider, '.utk'), { recursive: true }));
+    await writeFile(path.join(emptyPromptProvider, '.utk', 'config.toml'), '[serialization]\n[model_proxy]\nprompt_compression_provider = ""\n', 'utf8');
+    await expect(loadUtkConfig(emptyPromptProvider)).rejects.toThrow('model_proxy prompt_compression_provider must be a non-empty string');
 
     const badVolatility = await mkdtemp(path.join(os.tmpdir(), 'utk-config-bad-proxy-volatility-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(badVolatility, '.utk'), { recursive: true }));

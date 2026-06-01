@@ -12,6 +12,7 @@ The `@utk/evals` package contains deterministic tests for safety, compactness, a
 - strict CLI wins over RTK baselines;
 - generalized non-shell tool-output savings;
 - autoevals-backed RTK fact-retention checks and AgentV code-grader YAML;
+- AgentV tool-calling bypass scenarios for slash commands, exact lexical matches, regex patterns, local embeddings, local execution, protected/denied tools, and fail-open ambiguity;
 - installed-SDK Compresr parity benchmarks with deterministic local baselines;
 - bash-like invocation accuracy and token savings against RTK-style rewrite baselines;
 - caveman parity benchmarks for terse technical summaries using `autoevals` fact-retention scoring.
@@ -48,6 +49,8 @@ Bash rewrite helpers live in `packages/evals/metrics/bashRewriteMetrics.ts` and 
 Caveman parity fixtures live in `packages/evals/fixtures/cavemanParityFixtures.ts`. They cover terse-output cases where caveman is a meaningful baseline: CI failure triage, review findings, artifact recovery handles, and implementation status reports. `packages/evals/metrics/cavemanParityMetrics.ts` uses Braintrust `autoevals` `JSONDiff` as the AgentV-compatible fact-retention scorer and separately gates token parity against each caveman baseline.
 
 The generated comparison report lives at `docs/internal/caveman-parity-benchmark-results.md`. It documents where caveman is strong, what UTK attempts instead, and the measured token/fact results.
+
+Tool-calling bypass fixtures live in `packages/evals/fixtures/toolCallingBypassFixtures.ts`. They cover the lexical matching enum levels (`slash-commands`, `exact-lexical-match`, `regex-patterns`, `lexical-similarity`), local embedding preference, argument capture, protected/denied tools, ambiguous fail-open cases, and the local execution path where UTK executes the tool before forwarding the tool result upstream. `packages/evals/metrics/toolCallingBypassMetrics.ts` provides the deterministic AgentV code-grader contract.
 
 LeanCTX Copilot fixtures live in `packages/evals/fixtures/leanCtxCopilotFixtures.ts`. The benchmark runner lives in `scripts/bench-leanctx-copilot.ts` and is tested by `scripts/bench-leanctx-copilot.test.ts`. It compares UTK against a LeanCTX-style Copilot context-runtime baseline across 50 unique cases and requires UTK to meet or beat the baseline on relevance, correctness, groundedness, and token count. Current 10-loop performance is documented in `docs/internal/leanctx-copilot-benchmark-results.md`.
 
@@ -130,6 +133,18 @@ Generate the caveman comparison report:
 npm run report:caveman --workspace @utk/evals
 ```
 
+Run tool-calling bypass eval scenarios:
+
+```bash
+npm run bench:tool-bypass --workspace @utk/evals
+```
+
+Generate the tool-calling bypass scenario report and AgentV YAML:
+
+```bash
+npm run report:tool-bypass --workspace @utk/evals
+```
+
 Run LeanCTX Copilot benchmarks:
 
 ```bash
@@ -143,6 +158,7 @@ npm run build --workspace @utk/evals
 agentv run packages/evals/evals/rtk-parity.EVAL.yaml
 agentv run packages/evals/evals/caveman-parity.EVAL.yaml
 agentv run packages/evals/evals/compresr-parity.EVAL.yaml
+agentv run packages/evals/evals/tool-calling-bypass.EVAL.yaml
 ```
 
 Run the optional benchmark helper tests:

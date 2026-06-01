@@ -1,5 +1,6 @@
 /* c8 ignore file -- Artifact recovery owns refs; expansion tests validate raw and compact paths. */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { ArtifactRecoveryIndex, expandArtifactReference, type ArtifactHandle } from '@utk/core';
 import { contentHash, safeJoin } from './utils.js';
 
 export type ContextArtifact = {
@@ -41,12 +42,11 @@ export async function persistCompactContextArtifact(workspaceRoot: string, artif
   return { ...artifact, compactPath, compactTokens: Math.max(1, Math.ceil(compactContent.length / 4)) };
 }
 
-export async function expandContextArtifact(workspaceRoot: string, id: string, options: { range?: string; query?: string; blockId?: string; handle?: Record<string, unknown> } = {}): Promise<{ id: string; content: string }> {
+export async function expandContextArtifact(workspaceRoot: string, id: string, options: { range?: string; query?: string; blockId?: string; handle?: ArtifactHandle } = {}): Promise<{ id: string; content: string }> {
   if (!/^utk_[a-f0-9]{16}$/.test(id)) {
     throw new Error('Invalid context artifact id');
   }
-  const core = await import('@utk/core') as any;
-  return core.expandArtifactReference(workspaceRoot, { id, ...options });
+  return expandArtifactReference(workspaceRoot, { id, ...options });
 }
 
 export function buildExpandContextTool(): Record<string, unknown> {
@@ -72,8 +72,7 @@ export function buildExpandContextTool(): Record<string, unknown> {
 }
 
 async function indexArtifact(workspaceRoot: string, artifact: { id: string; path: string; compactPath?: string; kind: string; rawTokens: number }): Promise<void> {
-  const core = await import('@utk/core') as any;
-  const index = new core.ArtifactRecoveryIndex(workspaceRoot);
+  const index = new ArtifactRecoveryIndex(workspaceRoot);
   await index.record({
     id: artifact.id,
     path: artifact.path,

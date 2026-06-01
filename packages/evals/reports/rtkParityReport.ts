@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { mediateToolExecution } from '@utk/core';
 import { RTK_PARITY_FIXTURES, rtkParityExpectedPayload, type RtkParityFixture } from '../fixtures/rtkParityFixtures.js';
 import { assertRtkParityWithAutoevals, type RtkParityAutoevalsMetrics } from '../metrics/rtkParityMetrics.js';
+import { mapConcurrent } from './concurrency.js';
 
 export type RtkParityReportRow = {
   fixture: RtkParityFixture;
@@ -17,10 +18,7 @@ export type RtkParityReportRow = {
 };
 
 export async function buildRtkParityReport(): Promise<{ markdown: string; rows: RtkParityReportRow[] }> {
-  const rows: RtkParityReportRow[] = [];
-  for (const fixture of RTK_PARITY_FIXTURES) {
-    rows.push(await runRtkParityFixture(fixture));
-  }
+  const rows = await mapConcurrent(RTK_PARITY_FIXTURES, 8, runRtkParityFixture);
   return { rows, markdown: renderMarkdown(rows) };
 }
 

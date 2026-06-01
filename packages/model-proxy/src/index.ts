@@ -7,3 +7,4 @@ export * from './proxy.js';
 export * from './recovery.js';
 export * from './server.js';
 export * from './toolSchema.js';
+export * from './upstreamProvider.js';

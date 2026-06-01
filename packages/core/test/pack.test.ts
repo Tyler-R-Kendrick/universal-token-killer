@@ -508,6 +508,24 @@ describe('registryRewrite', () => {
     expect(block).toContain('completions = ["x"]');
   });
 
+  it('renders lexical bypass registry fields from pack tools', () => {
+    const block = renderPackRegistryBlock('p', {
+      entry: {
+        id: 'foo',
+        kind: 'structured',
+        lexical_aliases: ['inspect foo'],
+        lexical_regexes: ['^foo (?<path>\\S+)$'],
+        bypass_on_match: true,
+        default_args: { path: 'README.md', dry_run: true }
+      },
+      source: { tool: {}, parameters: [] }
+    });
+    expect(block).toContain('lexical_aliases = ["inspect foo"]');
+    expect(block).toContain('lexical_regexes = ["^foo (?<path>\\\\S+)$"]');
+    expect(block).toContain('bypass_on_match = true');
+    expect(block).toContain('default_args = { dry_run = true, path = "README.md" }');
+  });
+
   it('skips non-object and unnamed parameter entries', () => {
     const block = renderPackRegistryBlock('p', {
       entry: { id: 'foo', kind: 'structured' },
