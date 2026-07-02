@@ -15,10 +15,11 @@ tokenization, multimodal pruning, provider/semantic caching, and local-model
 routing. Each entry is here to be tracked, not endorsed.
 
 Every technique below was checked against a primary source (arXiv abstract/HTML
-or an official repo/vendor doc) on the research date. Numbers are quoted with
-the benchmark they came from. Where a name in the source brief could not be
-pinned to a primary source, it is flagged explicitly in
-[Verification Status](#verification-status) rather than given invented details.
+or an official repo/vendor doc). Numbers are quoted with the benchmark they came
+from. All source-brief names are now pinned to a primary source; a few are
+**verified but differently scoped** than the brief implied (notably MATT and the
+KV-cache methods, which are not billable prompt-token reduction) — see
+[Verification Status](#verification-status) for those corrections.
 
 ## How UTK Should Read This
 
@@ -60,6 +61,8 @@ citing; do not cite a number without its benchmark.
 | TSCG | arXiv 2605.04107 | `SKZL-AI/tscg`; MIT |
 | TOON | toonformat.dev; `toon-format/toon` | benchmark arXiv 2603.03306 |
 | Notation Matters (TOON/TRON agentic bench) | arXiv 2605.29676 | — |
+| ONTO | arXiv 2604.17512 | — |
+| JTON | arXiv 2604.05865 | — |
 | AdaEdit / BlockDiff / FuncDiff | arXiv 2604.27296 | — |
 | JSON Whisperer | arXiv 2510.04717 | EMNLP 2025 Industry |
 | Chain of Draft (CoD) | arXiv 2502.18600 | Zoom |
@@ -70,9 +73,11 @@ citing; do not cite a number without its benchmark.
 | Answer Convergence | arXiv 2506.02536 | — |
 | ESTAR | arXiv 2602.10004 | — |
 | PUMA (Stop When Reasoning Converges) | arXiv 2605.17672 | — |
+| REFRAIN (Stop When Enough) | arXiv 2510.10103 | — |
 | Gist Tokens | arXiv 2304.08467 | NeurIPS 2023 |
 | ICAE | arXiv 2307.06945 | `getao/icae` |
 | xRAG | arXiv 2405.13792 | — |
+| PCC (Pretraining Context Compressor) | ACL 2025 long 1394 | Microsoft Research |
 | ACC-RAG | arXiv 2507.22931 | EMNLP 2025 Findings |
 | AttnComp | arXiv 2509.17486 | EMNLP 2025 Findings |
 | OSCAR | arXiv 2504.07109 | ICLR 2026 |
@@ -82,7 +87,11 @@ citing; do not cite a number without its benchmark.
 | SnapKV | arXiv 2404.14469 | `FasterDecoding/SnapKV` |
 | PyramidKV | arXiv 2406.02069 | — |
 | ChunkKV | arXiv 2502.00299 | — |
+| DynamicKV | arXiv 2412.14838 | — |
+| SentenceKV | arXiv 2504.00970 | — |
+| TurboQuant | arXiv 2504.19874 | — |
 | zip2zip | arXiv 2506.01084 | — |
+| MATT (Model-Aware Tokenizer Transfer) | arXiv 2510.21954 | tokenizer transfer, not compression |
 | VisionZip | arXiv 2412.04467 | `dvlab-research/VisionZip`; CVPR 2025 |
 | FastV | arXiv 2403.06764 | ECCV 2024 |
 | RouteLLM | arXiv 2406.18665 | `lm-sys/RouteLLM` |
@@ -198,9 +207,21 @@ caveats**, not the savings.
   multi-turn systems, **TRON is the safer drop-in for JSON**, while **TOON's
   stronger compression is offset by accuracy losses in multi-turn settings and is
   not safe as a default.**
-- **TRON / ONTO / JTON.** TRON is characterized in the agentic benchmark above.
-  ONTO and JTON appear in the source brief but were **not** individually pinned to
-  primary specs on the research date — track, do not cite specifics.
+- **TRON** (agentic benchmark above) is positioned as the safer JSON drop-in.
+- **ONTO** (arXiv 2604.17512, "A Token-Efficient Columnar Notation for LLM Input
+  Optimization"). Schema-once, pipe-delimited columnar rows (field names declared
+  once per entity). Verified: **46–51% token reduction vs JSON** and **5–10%
+  latency improvement** on Qwen2.5-7B synthetic operational-data benchmarks
+  (100–1,000 records).
+- **JTON** (arXiv 2604.05865, "A Token-Efficient JSON Superset with Zen Grid
+  Tabular Encoding"). JSON superset; "Zen Grid" factors column headers into one
+  row and encodes values with semicolons, preserving JSON's type system. Verified:
+  **15–60% token reduction vs compact JSON (28.5% avg; 32% with bare strings)**
+  across 7 domains, +0.3pp comprehension accuracy across 10 models, Rust/PyO3
+  parser ~1.4× faster than Python `json`.
+
+Both ONTO and JTON are **payload-format** optimizations (you must control the
+serialization), not general natural-language prompt compressors.
 
 UTK relevance: keep TOON as an **opt-in per-tool serializer for
 uniform-tabular reads**, not a global default, and gate it on UTK's fact-retention
@@ -264,7 +285,7 @@ stabilizes. Mostly inference-time, some training-free.
 | Answer Convergence | 2506.02536 | Models converge after ~60% of steps; **>40% token reduction on NaturalQuestions** with accuracy improvement | Inference-time (one variant learned) |
 | ESTAR | 2602.10004 | **~3.7× reasoning-length reduction** (4799→1290 tokens) at 74.9% vs 74.2% accuracy | SFT + stop-aware RL |
 | PUMA | 2605.17672 | **26.2% avg token reduction**, semantic-preserving early exit when steps stop adding novel progress | Inference-time |
-| REFRAIN | source brief | Training-free; claimed **20–55% token reduction** (arXiv id not pinned this pass) | Training-free |
+| REFRAIN | 2510.10103 | Reflective-Redundancy for Adaptive Inference; **20–55% token reduction** while maintaining/improving accuracy vs CoT | Training-free |
 
 UTK relevance: the training-free convergence detectors (ES-CoT, Answer
 Convergence, PUMA, REFRAIN) are the transferable ones — a UTK session-agent could
@@ -289,8 +310,13 @@ training-free UTK candidates.
   as a single "modality" token via a trainable bridge (retriever + LM frozen).
   Verified: **retrieved doc → one token**, **3.53× FLOPs reduction**, **>10% avg
   improvement across 6 knowledge-intensive tasks**.
-- **PCC.** In the source brief but **not pinned** to a specific primary paper this
-  pass — track, do not cite specifics.
+- **PCC — Pretraining Context Compressor** (ACL 2025 long, aclanthology
+  2025.acl-long.1394; Microsoft Research). Decoupled compressor→LLM framework,
+  pretrained on text reconstruction/completion, storing context as embedding-based
+  memory. Verified: **4× and 16× compression are the practical accuracy/speed
+  balance points** (256× keeps some useful context but loses more information);
+  outperforms baselines across 8 datasets / 3 domains, adaptable to different
+  downstream LLMs.
 
 UTK relevance: incompatible with UTK's training-free, model-agnostic hook (they
 require training the model or a bridge, and produce non-recoverable embeddings).
@@ -340,10 +366,9 @@ throughput, not to hook-path token wins. Kept compact.
 | SnapKV | 2404.14469 | Per-head clustered important-position selection | **3.6× gen speed, 8.2× memory** at 16K; up to 380K ctx on one A100-80GB |
 | PyramidKV | 2406.02069 | More cache in lower layers, less in higher | **Matches full cache retaining only 12% of KV** (LongBench); +20.5 acc on TREC at 0.7% |
 | ChunkKV | 2502.00299 | Semantic chunks as compression units + layer-wise index reuse | **+8.7% precision** over prior, **+26.5% throughput** |
-
-Also named in the source brief but **not individually verified this pass**:
-DynamicKV, SentenceKV, TurboQuant. Track as further KV-quantization/eviction
-entries; do not cite numbers.
+| DynamicKV | 2412.14838 | Task-aware per-layer token retention | **Retains 1.7% of KV cache at ~85% of full-KV LongBench**; +11% over SOTA on NIAH at 0.9% (Mistral-7B) |
+| SentenceKV | 2504.00970 | Sentence-level semantic KV: sentence vectors on GPU, per-token KV offloaded to CPU | Memory/latency reduction on PG-19, LongBench, NIAH (not a token-count metric) |
+| TurboQuant | 2504.19874 | Online vector quantization (data-oblivious) | KV quant: **quality-neutral at 3.5 bits/channel**, marginal degradation at 2.5 bits/channel |
 
 UTK relevance: reference-only. If UTK ever self-hosts models behind
 `@utk/model-proxy`, KIVI (quantization) + PyramidKV/SnapKV (eviction) are the
@@ -359,8 +384,13 @@ Attacks token count below the prompt layer.
   a runtime embedding layer handles them, and the model is trained (via PEFT,
   ~10 GPU-hours to convert an existing LLM) to operate on compressed sequences.
   Verified: **20–60% input/output sequence-length reduction**.
-- **MATT.** In the source brief as an adaptive-tokenization method but **not
-  pinned** to a primary source this pass — track, do not cite.
+- **MATT — Model-Aware Tokenizer Transfer** (arXiv 2510.21954). **Not
+  prompt-token compression** — it is tokenizer *transfer* / multilingual tokenizer
+  adaptation: an Attention Influence Modeling (AIM) objective distills inter-token
+  communication patterns from a source model into a target model with a new
+  tokenizer, recovering performance in "a few GPU hours." Track under
+  **tokenizer/model adaptation**, not the zip2zip / TokenSugar token-savings
+  class; it does not reduce prompt tokens for a fixed model.
 - **TokenSugar / Anka** — covered in depth in their own docs
   (`tokensugar-competitive-research.md`, `anka-competitive-research.md`); they
   attack the same below-the-prompt layer via code shorthand / LLM-native DSL.
@@ -490,22 +520,40 @@ Ranked by fit with UTK's hook-first, training-free, Copilot-centric core:
 
 ## Verification Status
 
-- **Verified against a primary source on 2026-07-02** (arXiv/repo/vendor doc):
-  SWE-Pruner, SpecAgent, RepoGraph, Aider repo-map, RAG-MCP, Semantic Tool
-  Discovery (vector MCP), TSCG, TOON + both TOON/TRON benchmark papers,
-  AdaEdit/BlockDiff/FuncDiff, JSON Whisperer, Chain-of-Draft, TALE, SelfBudgeter,
-  Draft-Thinking, ES-CoT, Answer Convergence, ESTAR, PUMA, Gist Tokens, ICAE,
-  xRAG, ACC-RAG, AttnComp, OSCAR, TeaRAG, H2O, KIVI, SnapKV, PyramidKV, ChunkKV,
-  zip2zip, VisionZip, FastV, RouteLLM, FrugalGPT, Local-Splitter, GPT Semantic
-  Cache, OpenAI/Anthropic/Gemini caching.
-- **Named in the source brief but NOT pinned to a primary source this pass**
-  (track, do not cite specifics): ONTO, JTON (notation); PCC (latent compression);
-  MATT (adaptive tokenization); DynamicKV, SentenceKV, TurboQuant (KV-cache);
-  REFRAIN (early stopping — described in secondary sources, arXiv id not
-  confirmed). Some source-brief numbers were rounded or attributed to a category
-  rather than one paper (e.g. TALE's headline is 68.64% avg reduction, not a
-  single named benchmark); numbers above are quoted from the primary source, so
-  they may differ slightly from the brief.
-- All metrics are as reported by the technique's own authors/vendors unless a
-  named independent benchmark is cited; they are not independently reproduced in
-  this workspace.
+The initial pass verified the bulk of the landscape (SWE-Pruner, SpecAgent,
+RepoGraph, Aider repo-map, RAG-MCP, vector MCP selection, TSCG, TOON + both
+TOON/TRON benchmark papers, AdaEdit/BlockDiff/FuncDiff, JSON Whisperer,
+Chain-of-Draft, TALE, SelfBudgeter, Draft-Thinking, ES-CoT, Answer Convergence,
+ESTAR, PUMA, Gist Tokens, ICAE, xRAG, ACC-RAG, AttnComp, OSCAR, TeaRAG, H2O,
+KIVI, SnapKV, PyramidKV, ChunkKV, zip2zip, VisionZip, FastV, RouteLLM, FrugalGPT,
+Local-Splitter, GPT Semantic Cache, OpenAI/Anthropic/Gemini caching) against a
+primary source on 2026-07-02.
+
+A follow-up pass pinned the remaining eight source-brief names to primary
+sources — so none are "unverified"; several are **verified but differently
+scoped** than the original brief implied (MATT and the KV-cache methods are moved
+out of billable prompt-token reduction):
+
+| Technique | Status | Primary source / correction |
+|---|---:|---|
+| **ONTO** | Verified | **arXiv:2604.17512**, "ONTO: A Token-Efficient Columnar Notation for LLM Input Optimization." **46–51% token reduction vs JSON**, **5–10% latency improvement** on Qwen2.5-7B synthetic operational-data benchmarks. |
+| **JTON** | Verified | **arXiv:2604.05865**, "JTON: A Token-Efficient JSON Superset with Zen Grid Tabular Encoding." **15–60% token reduction vs compact JSON** (28.5% avg; 32% with bare strings). |
+| **PCC** | Verified | ACL 2025 long, "Pretraining Context Compressor for Large Language Models with Embedding-Based Memory" (Microsoft Research). Implicit/embedding-based compressor; **4× and 16× are the practical balance points**, 256× loses more information. |
+| **MATT** | Verified, recategorized | **arXiv:2510.21954**, "Model-Aware Tokenizer Transfer." **Not** prompt-token compression — tokenizer transfer / multilingual adaptation via Attention Influence Modeling. Track under **tokenizer/model adaptation**. |
+| **DynamicKV** | Verified | **arXiv:2412.14838**. **KV-cache** compression, not billable tokens. Retains **1.7% KV cache at ~85% of full-KV LongBench**. |
+| **SentenceKV** | Verified | **arXiv:2504.00970**. Sentence-level semantic KV caching (sentence vectors on GPU, per-token KV offloaded to CPU). Runtime memory/latency, not token count. |
+| **TurboQuant** | Verified | **arXiv:2504.19874**, "Online Vector Quantization with Near-optimal Distortion Rate." KV-cache quantization: quality-neutral at 3.5 bits/channel. |
+| **REFRAIN** | Verified | **arXiv:2510.10103**, "Stop When Enough: Adaptive Early-Stopping for Chain-of-Thought Reasoning." Reflective-Redundancy for Adaptive Inference; **20–55% token reduction** vs CoT. |
+
+### Metric corrections
+
+| Technique | Correction |
+|---|---|
+| **TALE** | Phrase as **TALE / TALE-EP reduces token costs by 68.64% on average**, not a single-benchmark headline; the abstract describes dynamic budget estimation by reasoning complexity, and the 68.64% figure is in the reported results / ACL version. |
+| **MATT** | Do not present as "adaptive tokenization for token savings" alongside zip2zip; it is **model-aware tokenizer transfer** for adapting an LLM to a new tokenizer/language with less warm-up cost. |
+| **DynamicKV / SentenceKV / TurboQuant** | Reduce **KV-cache memory / inference overhead**, not billed input/output tokens; matter for self-hosted inference, long-context serving, and concurrency. |
+| **ONTO / JTON** | Structured-data **serialization** optimizations — reduce input tokens only when you control the payload format; not general natural-language prompt compressors. |
+
+All metrics are as reported by the technique's own authors/vendors unless a named
+independent benchmark is cited; they are not independently reproduced in this
+workspace.
