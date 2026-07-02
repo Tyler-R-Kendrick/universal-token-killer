@@ -5,6 +5,10 @@ competitive strategy becomes intentionally public.
 
 Research date: 2026-07-02
 
+See also: [`optimization-competitor-gap-analysis.md`](optimization-competitor-gap-analysis.md)
+maps UTK's *implemented* optimizations against this landscape and tracks the gaps
+that remain open.
+
 This is a **breadth-first watchlist**, not a deep single-technique dossier like
 `tokensugar-competitive-research.md` or `anka-competitive-research.md`. It maps
 the broader token-optimization landscape across the axes that matter more to
