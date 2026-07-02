@@ -9,3 +9,6 @@ export * from './languages/typescript.js';
 export * from './grammars/typescriptEmitGrammar.js';
 export * from './grammars/deriveMinGrammar.js';
 export * from './grammars/languageProfile.js';
+export * from './macros/defineMacro.js';
+export * from './macros/expandEmission.js';
+export * from './macros/ledger.js';

@@ -119,16 +119,46 @@ function renameIdentifiers(source: string, rename: (identifier: string) => strin
   return parts.join('');
 }
 
+export type ScannedTokenKind =
+  | 'identifier'
+  | 'open-paren'
+  | 'close-paren'
+  | 'open-brace'
+  | 'close-brace'
+  | 'open-bracket'
+  | 'close-bracket'
+  | 'comma'
+  | 'other';
+
+export type ScannedToken = {
+  kind: ScannedTokenKind;
+  text: string;
+  start: number;
+  end: number;
+};
+
+const TOKEN_KINDS = new Map<ts.SyntaxKind, ScannedTokenKind>([
+  [ts.SyntaxKind.Identifier, 'identifier'],
+  [ts.SyntaxKind.OpenParenToken, 'open-paren'],
+  [ts.SyntaxKind.CloseParenToken, 'close-paren'],
+  [ts.SyntaxKind.OpenBraceToken, 'open-brace'],
+  [ts.SyntaxKind.CloseBraceToken, 'close-brace'],
+  [ts.SyntaxKind.OpenBracketToken, 'open-bracket'],
+  [ts.SyntaxKind.CloseBracketToken, 'close-bracket'],
+  [ts.SyntaxKind.CommaToken, 'comma']
+]);
+
 /**
- * Token-level identifier walk. The standalone scanner does not re-scan
- * template continuations the way the parser does, so `}` tokens that close a
- * template substitution are re-scanned via `reScanTemplateToken` — tracked
- * with a brace-depth stack so object literals inside substitutions stay
- * ordinary braces.
+ * Token-level walk. The standalone scanner does not re-scan template
+ * continuations the way the parser does, so `}` tokens that close a template
+ * substitution are re-scanned via `reScanTemplateToken` — tracked with a
+ * brace-depth stack so object literals inside substitutions stay ordinary
+ * braces. Re-scanned template middles/tails are reported as `other`.
  */
-function scanIdentifiers(source: string, visit: (identifier: string, start: number, end: number) => void): void {
+export function scanTypeScriptTokens(source: string): ScannedToken[] {
   const scanner = ts.createScanner(ts.ScriptTarget.Latest, true, ts.LanguageVariant.Standard, source);
   const templateBraceDepths: number[] = [];
+  const tokens: ScannedToken[] = [];
   let braceDepth = 0;
   let token = scanner.scan();
   while (token !== ts.SyntaxKind.EndOfFileToken) {
@@ -141,15 +171,34 @@ function scanIdentifiers(source: string, visit: (identifier: string, start: numb
         if (token !== ts.SyntaxKind.TemplateMiddle) {
           templateBraceDepths.pop();
         }
+        tokens.push({
+          kind: 'other',
+          text: source.slice(scanner.getTokenStart(), scanner.getTokenEnd()),
+          start: scanner.getTokenStart(),
+          end: scanner.getTokenEnd()
+        });
         token = scanner.scan();
         continue;
       }
       braceDepth -= 1;
     } else if (token === ts.SyntaxKind.TemplateHead) {
       templateBraceDepths.push(braceDepth);
-    } else if (token === ts.SyntaxKind.Identifier) {
-      visit(source.slice(scanner.getTokenStart(), scanner.getTokenEnd()), scanner.getTokenStart(), scanner.getTokenEnd());
     }
+    tokens.push({
+      kind: TOKEN_KINDS.get(token) ?? 'other',
+      text: source.slice(scanner.getTokenStart(), scanner.getTokenEnd()),
+      start: scanner.getTokenStart(),
+      end: scanner.getTokenEnd()
+    });
     token = scanner.scan();
+  }
+  return tokens;
+}
+
+function scanIdentifiers(source: string, visit: (identifier: string, start: number, end: number) => void): void {
+  for (const token of scanTypeScriptTokens(source)) {
+    if (token.kind === 'identifier') {
+      visit(token.text, token.start, token.end);
+    }
   }
 }
