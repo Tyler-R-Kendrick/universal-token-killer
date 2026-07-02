@@ -67,8 +67,10 @@ Consequences for how UTK reads this landscape:
 | **Full ensembling** | Maximize quality, usually at higher token/cost | [`full-ensembling/`](full-ensembling/) | LLM-Blender, Mixture-of-Agents, Self-MoA |
 | **Batch-aware routing** | Amortize repeated system/tool prompt tokens across queries | [`batch-aware-routing/`](batch-aware-routing/) | Batch Prompting (anchor), RoBatch, batch-level robust routing |
 | **Decode-time routing** | Reduce self-hosted latency/compute, *not* API tokens | [`decode-time-routing/`](decode-time-routing/) | Speculative decoding (+ collaborative variants) |
+| **Compound & productized routers** | Shipped products that route/coordinate models behind one endpoint | [`compound-and-productized-routers/`](compound-and-productized-routers/) | Sakana Fugu, OpenRouter Auto/Pareto/Fusion, NotDiamond |
+| **Routing research (2nd-gen)** | Failure modes & controls basic routers miss | [`routing-research/`](routing-research/) | ParetoBandit, EquiRouter, RouteJudge, R2-Router |
 
-There is a seventh conceptual layer with no single paper family behind it:
+There is a further conceptual layer with no single paper family behind it:
 
 - **Agent-step routing** — route planning, retrieval, code-gen, review/judge,
   and summarization to *different* models/paths within one agent run. This is a

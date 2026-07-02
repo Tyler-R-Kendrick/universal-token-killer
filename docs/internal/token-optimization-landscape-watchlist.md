@@ -14,6 +14,13 @@ compression, RAG-time compression, KV/cache runtime optimization, adaptive
 tokenization, multimodal pruning, provider/semantic caching, and local-model
 routing. Each entry is here to be tracked, not endorsed.
 
+**See also:** the sink-based map in
+[`token-optimization-taxonomy.md`](token-optimization-taxonomy.md) (which lever for
+which sink), the model-level deep dives in [`models/`](models/README.md), input
+compression in [`prompt-compression/`](prompt-compression/README.md), and
+output/skill compression in
+[`agent-native-compression/`](agent-native-compression/README.md).
+
 Every technique below was checked against a primary source (arXiv abstract/HTML
 or an official repo/vendor doc). Numbers are quoted with the benchmark they came
 from. All source-brief names are now pinned to a primary source; a few are
