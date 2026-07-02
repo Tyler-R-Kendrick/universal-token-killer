@@ -2,6 +2,10 @@
 
 Internal note. Keep public docs focused on shipped UTK behavior, not competitor positioning.
 
+See also: [`optimization-competitor-gap-analysis.md`](optimization-competitor-gap-analysis.md)
+for the whole-product view across all four axes and the register of gaps that remain
+open — this matrix records the ones already closed.
+
 | Competitor area | UTK before v2 | v2 implementation | Eval fixture | Shipped reason |
 |---|---|---|---|---|
 | Compresr history compaction | Prompt/tool compaction only | `ContextBudgetManager` now drives recoverable `[utk-block:<id>]` replacement of eligible old history/tool spans | `gateway-session-block-compaction`, `gateway-v3-replace-history` | Needed for context-limit avoidance without duplicate context |
