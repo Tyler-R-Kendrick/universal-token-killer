@@ -1,0 +1,535 @@
+tests:
+  - id: fetch-json-retry-lite
+    input:
+      - role: user
+        content: "Add fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs) with abort timeout and status checks, plus a fetchJsonOrNull wrapper. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "fetch-json-retry",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}",
+        "verbose_baseline": "Sure! Here is a robust retry helper plus a null-safe wrapper. The helper wraps the native fetch API, adds an\nAbortSignal-based timeout so requests cannot hang forever, validates the HTTP status, and retries up to the\nconfigured number of attempts before surfacing the last error it saw.\n\nexport async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}\n\nYou can tune maxAttempts and timeoutMs per call site; the wrapper swallows the final error and returns null for\ncallers that prefer a soft failure.",
+        "expected_pretty": "export async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}",
+        "required_terms": [
+          "fetchJsonWithRetry",
+          "fetchJsonOrNull",
+          "requestUrl",
+          "maxAttempts",
+          "AbortSignal",
+          "fetch",
+          "json",
+          "lastError"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 185
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: fetch-json-retry-full
+    input:
+      - role: user
+        content: "Add fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs) with abort timeout and status checks, plus a fetchJsonOrNull wrapper. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "fetch-json-retry",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}",
+        "verbose_baseline": "Sure! Here is a robust retry helper plus a null-safe wrapper. The helper wraps the native fetch API, adds an\nAbortSignal-based timeout so requests cannot hang forever, validates the HTTP status, and retries up to the\nconfigured number of attempts before surfacing the last error it saw.\n\nexport async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}\n\nYou can tune maxAttempts and timeoutMs per call site; the wrapper swallows the final error and returns null for\ncallers that prefer a soft failure.",
+        "expected_pretty": "export async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}",
+        "required_terms": [
+          "fetchJsonWithRetry",
+          "fetchJsonOrNull",
+          "requestUrl",
+          "maxAttempts",
+          "AbortSignal",
+          "fetch",
+          "json",
+          "lastError"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 167
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: fetch-json-retry-ultra
+    input:
+      - role: user
+        content: "Add fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs) with abort timeout and status checks, plus a fetchJsonOrNull wrapper. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "fetch-json-retry",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (response.ok) return await response.json();\nlastError = new Error('retry request failed with status ' + response.status);\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nreturn fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs).catch(() => null);\n}",
+        "verbose_baseline": "Sure! Here is a robust retry helper plus a null-safe wrapper. The helper wraps the native fetch API, adds an\nAbortSignal-based timeout so requests cannot hang forever, validates the HTTP status, and retries up to the\nconfigured number of attempts before surfacing the last error it saw.\n\nexport async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}\n\nYou can tune maxAttempts and timeoutMs per call site; the wrapper swallows the final error and returns null for\ncallers that prefer a soft failure.",
+        "expected_pretty": "export async function fetchJsonWithRetry(requestUrl: string, maxAttempts: number, timeoutMs: number) {\nlet lastError: unknown;\nfor (let attempt = 0; attempt < maxAttempts; attempt += 1) {\ntry {\nconst response = await fetch(requestUrl, { signal: AbortSignal.timeout(timeoutMs) });\nif (!response.ok) {\nthrow new Error('retry request failed with status ' + response.status);\n}\nreturn await response.json();\n} catch (caught) {\nlastError = caught;\n}\n}\nthrow lastError;\n}\nexport async function fetchJsonOrNull(requestUrl: string, maxAttempts: number, timeoutMs: number) {\ntry {\nreturn await fetchJsonWithRetry(requestUrl, maxAttempts, timeoutMs);\n} catch {\nreturn null;\n}\n}",
+        "required_terms": [
+          "fetchJsonWithRetry",
+          "fetchJsonOrNull",
+          "requestUrl",
+          "maxAttempts",
+          "AbortSignal",
+          "fetch",
+          "json",
+          "lastError"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 163
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: widget-api-macro-helpers-lite
+    input:
+      - role: user
+        content: "Add loadWidgetList, loadWidgetDetail, and searchWidgets JSON helpers over a base URL. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "widget-api-macro-helpers",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "verbose_baseline": "Here are the three widget API helpers. Each one builds the endpoint URL from the base URL, performs the request\nwith the native fetch API, and parses the JSON body, so no HTTP client dependency is needed.\n\nexport const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());\n\nLet me know if you also want abort-signal timeouts wired through these helpers.",
+        "expected_pretty": "export const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "required_terms": [
+          "loadWidgetList",
+          "loadWidgetDetail",
+          "searchWidgets",
+          "baseUrl",
+          "fetch",
+          "json"
+        ],
+        "map_entries": [
+          {
+            "minId": "m1",
+            "pretty": "httpGetJson",
+            "kind": "macro",
+            "provenance": "new"
+          }
+        ],
+        "macro_names": [
+          "httpGetJson"
+        ],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 125
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: widget-api-macro-helpers-full
+    input:
+      - role: user
+        content: "Add loadWidgetList, loadWidgetDetail, and searchWidgets JSON helpers over a base URL. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "widget-api-macro-helpers",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "verbose_baseline": "Here are the three widget API helpers. Each one builds the endpoint URL from the base URL, performs the request\nwith the native fetch API, and parses the JSON body, so no HTTP client dependency is needed.\n\nexport const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());\n\nLet me know if you also want abort-signal timeouts wired through these helpers.",
+        "expected_pretty": "export const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "required_terms": [
+          "loadWidgetList",
+          "loadWidgetDetail",
+          "searchWidgets",
+          "baseUrl",
+          "fetch",
+          "json"
+        ],
+        "map_entries": [
+          {
+            "minId": "m1",
+            "pretty": "httpGetJson",
+            "kind": "macro",
+            "provenance": "new"
+          }
+        ],
+        "macro_names": [
+          "httpGetJson"
+        ],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 107
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: widget-api-macro-helpers-ultra
+    input:
+      - role: user
+        content: "Add loadWidgetList, loadWidgetDetail, and searchWidgets JSON helpers over a base URL. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "widget-api-macro-helpers",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "verbose_baseline": "Here are the three widget API helpers. Each one builds the endpoint URL from the base URL, performs the request\nwith the native fetch API, and parses the JSON body, so no HTTP client dependency is needed.\n\nexport const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());\n\nLet me know if you also want abort-signal timeouts wired through these helpers.",
+        "expected_pretty": "export const loadWidgetList = (baseUrl: string) => fetch(baseUrl + '/widgets').then((response) => response.json());\nexport const loadWidgetDetail = (baseUrl: string, resourcePath: string) => fetch(baseUrl + '/widgets/' + resourcePath).then((response) => response.json());\nexport const searchWidgets = (baseUrl: string, queryText: string) => fetch(baseUrl + '/widgets/search?q=' + queryText).then((response) => response.json());",
+        "required_terms": [
+          "loadWidgetList",
+          "loadWidgetDetail",
+          "searchWidgets",
+          "baseUrl",
+          "fetch",
+          "json"
+        ],
+        "map_entries": [
+          {
+            "minId": "m1",
+            "pretty": "httpGetJson",
+            "kind": "macro",
+            "provenance": "new"
+          }
+        ],
+        "macro_names": [
+          "httpGetJson"
+        ],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 107
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: service-config-loader-lite
+    input:
+      - role: user
+        content: "Add loadServiceConfig(environmentSource) with SERVICE_NAME, SERVICE_PORT, REQUEST_TIMEOUT_MS, VERBOSE_LOGGING and validation. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "service-config-loader",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "verbose_baseline": "This config loader pulls the four service settings from the provided environment map, applies sensible defaults,\nvalidates the numeric values, and throws descriptive errors when a value is unusable so misconfiguration fails fast.\n\nexport function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}\n\nThe defaults keep local development working without any environment setup.",
+        "expected_pretty": "export function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "required_terms": [
+          "loadServiceConfig",
+          "SERVICE_NAME",
+          "SERVICE_PORT",
+          "REQUEST_TIMEOUT_MS",
+          "VERBOSE_LOGGING",
+          "servicePort"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 196
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: service-config-loader-full
+    input:
+      - role: user
+        content: "Add loadServiceConfig(environmentSource) with SERVICE_NAME, SERVICE_PORT, REQUEST_TIMEOUT_MS, VERBOSE_LOGGING and validation. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "service-config-loader",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "verbose_baseline": "This config loader pulls the four service settings from the provided environment map, applies sensible defaults,\nvalidates the numeric values, and throws descriptive errors when a value is unusable so misconfiguration fails fast.\n\nexport function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}\n\nThe defaults keep local development working without any environment setup.",
+        "expected_pretty": "export function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "required_terms": [
+          "loadServiceConfig",
+          "SERVICE_NAME",
+          "SERVICE_PORT",
+          "REQUEST_TIMEOUT_MS",
+          "VERBOSE_LOGGING",
+          "servicePort"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 178
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: service-config-loader-ultra
+    input:
+      - role: user
+        content: "Add loadServiceConfig(environmentSource) with SERVICE_NAME, SERVICE_PORT, REQUEST_TIMEOUT_MS, VERBOSE_LOGGING and validation. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "service-config-loader",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "verbose_baseline": "This config loader pulls the four service settings from the provided environment map, applies sensible defaults,\nvalidates the numeric values, and throws descriptive errors when a value is unusable so misconfiguration fails fast.\n\nexport function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}\n\nThe defaults keep local development working without any environment setup.",
+        "expected_pretty": "export function loadServiceConfig(environmentSource: Record<string, string | undefined>) {\nconst serviceName = environmentSource['SERVICE_NAME'] ?? 'utk-service';\nconst servicePort = Number(environmentSource['SERVICE_PORT'] ?? '8080');\nconst requestTimeoutMs = Number(environmentSource['REQUEST_TIMEOUT_MS'] ?? '5000');\nconst verboseLogging = environmentSource['VERBOSE_LOGGING'] === 'true';\nif (Number.isNaN(servicePort) || servicePort <= 0) {\nthrow new Error('invalid SERVICE_PORT for ' + serviceName);\n}\nif (Number.isNaN(requestTimeoutMs) || requestTimeoutMs <= 0) {\nthrow new Error('invalid REQUEST_TIMEOUT_MS for ' + serviceName);\n}\nreturn { serviceName, servicePort, requestTimeoutMs, verboseLogging };\n}",
+        "required_terms": [
+          "loadServiceConfig",
+          "SERVICE_NAME",
+          "SERVICE_PORT",
+          "REQUEST_TIMEOUT_MS",
+          "VERBOSE_LOGGING",
+          "servicePort"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 178
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: memoize-async-lookup-lite
+    input:
+      - role: user
+        content: "Add memoizeAsyncLookup(computeValue) that caches promises by lookup key. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "memoize-async-lookup",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "verbose_baseline": "The wrapper below memoizes an async lookup function. It stores the promise itself, so concurrent callers share\none in-flight request instead of racing duplicate work, and settled promises stay cached for later calls.\n\nexport function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}\n\nPass any keyed async loader; the Map keeps one promise per key.",
+        "expected_pretty": "export function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "required_terms": [
+          "memoizeAsyncLookup",
+          "computeValue",
+          "lookupKey",
+          "cachedResults",
+          "Map",
+          "Promise"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 122
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: memoize-async-lookup-full
+    input:
+      - role: user
+        content: "Add memoizeAsyncLookup(computeValue) that caches promises by lookup key. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "memoize-async-lookup",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "verbose_baseline": "The wrapper below memoizes an async lookup function. It stores the promise itself, so concurrent callers share\none in-flight request instead of racing duplicate work, and settled promises stay cached for later calls.\n\nexport function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}\n\nPass any keyed async loader; the Map keeps one promise per key.",
+        "expected_pretty": "export function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "required_terms": [
+          "memoizeAsyncLookup",
+          "computeValue",
+          "lookupKey",
+          "cachedResults",
+          "Map",
+          "Promise"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 104
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: memoize-async-lookup-ultra
+    input:
+      - role: user
+        content: "Add memoizeAsyncLookup(computeValue) that caches promises by lookup key. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "memoize-async-lookup",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "verbose_baseline": "The wrapper below memoizes an async lookup function. It stores the promise itself, so concurrent callers share\none in-flight request instead of racing duplicate work, and settled promises stay cached for later calls.\n\nexport function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}\n\nPass any keyed async loader; the Map keeps one promise per key.",
+        "expected_pretty": "export function memoizeAsyncLookup(computeValue: (lookupKey: string) => Promise<string>) {\nconst cachedResults = new Map<string, Promise<string>>();\nreturn (lookupKey: string) => {\nconst existingResult = cachedResults.get(lookupKey);\nif (existingResult !== undefined) {\nreturn existingResult;\n}\nconst pendingResult = computeValue(lookupKey);\ncachedResults.set(lookupKey, pendingResult);\nreturn pendingResult;\n};\n}",
+        "required_terms": [
+          "memoizeAsyncLookup",
+          "computeValue",
+          "lookupKey",
+          "cachedResults",
+          "Map",
+          "Promise"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 104
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: group-records-by-key-lite
+    input:
+      - role: user
+        content: "Add groupRecordsByKey(recordList, groupKeyName) that buckets records and defaults missing keys to unknown. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "group-records-by-key",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "verbose_baseline": "This utility groups a list of string records under the value they carry for the chosen key. Records that do not\ncarry the key are grouped under the \"unknown\" bucket so no record is silently dropped.\n\nexport function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}\n\nThe accumulator is a plain object so the result serializes directly to JSON.",
+        "expected_pretty": "export function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "required_terms": [
+          "groupRecordsByKey",
+          "recordList",
+          "groupKeyName",
+          "groupedRecords",
+          "unknown"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 125
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: group-records-by-key-full
+    input:
+      - role: user
+        content: "Add groupRecordsByKey(recordList, groupKeyName) that buckets records and defaults missing keys to unknown. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "group-records-by-key",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "verbose_baseline": "This utility groups a list of string records under the value they carry for the chosen key. Records that do not\ncarry the key are grouped under the \"unknown\" bucket so no record is silently dropped.\n\nexport function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}\n\nThe accumulator is a plain object so the result serializes directly to JSON.",
+        "expected_pretty": "export function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "required_terms": [
+          "groupRecordsByKey",
+          "recordList",
+          "groupKeyName",
+          "groupedRecords",
+          "unknown"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 107
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: group-records-by-key-ultra
+    input:
+      - role: user
+        content: "Add groupRecordsByKey(recordList, groupKeyName) that buckets records and defaults missing keys to unknown. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "group-records-by-key",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "verbose_baseline": "This utility groups a list of string records under the value they carry for the chosen key. Records that do not\ncarry the key are grouped under the \"unknown\" bucket so no record is silently dropped.\n\nexport function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}\n\nThe accumulator is a plain object so the result serializes directly to JSON.",
+        "expected_pretty": "export function groupRecordsByKey(recordList: Array<Record<string, string>>, groupKeyName: string) {\nconst groupedRecords: Record<string, Array<Record<string, string>>> = {};\nfor (const currentRecord of recordList) {\nconst groupLabel = currentRecord[groupKeyName] ?? 'unknown';\nconst existingBucket = groupedRecords[groupLabel] ?? [];\ngroupedRecords[groupLabel] = [...existingBucket, currentRecord];\n}\nreturn groupedRecords;\n}",
+        "required_terms": [
+          "groupRecordsByKey",
+          "recordList",
+          "groupKeyName",
+          "groupedRecords",
+          "unknown"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 107
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: paginate-entries-lite
+    input:
+      - role: user
+        content: "Add paginateEntries(entryList, pageSize, pageIndex) returning pagedEntries and totalPages. Emit a UTK min emission (@minmap patch plus min code) against the ponytail lite arm."
+    expected_output: |
+      {
+        "scenario": "paginate-entries",
+        "ponytail_mode": "lite",
+        "ponytail_baseline": "// Reviewed the request; this is the simplest sufficient implementation.\nexport function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "verbose_baseline": "The pagination helper clamps the page size to at least one, slices out the requested page, and reports the total\npage count so callers can render pagination controls without recomputing anything.\n\nexport function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}\n\nOut-of-range page indexes simply return an empty page, which keeps the caller logic simple.",
+        "expected_pretty": "export function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "required_terms": [
+          "paginateEntries",
+          "entryList",
+          "pageSize",
+          "pageIndex",
+          "pagedEntries",
+          "totalPages"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 111
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: paginate-entries-full
+    input:
+      - role: user
+        content: "Add paginateEntries(entryList, pageSize, pageIndex) returning pagedEntries and totalPages. Emit a UTK min emission (@minmap patch plus min code) against the ponytail full arm."
+    expected_output: |
+      {
+        "scenario": "paginate-entries",
+        "ponytail_mode": "full",
+        "ponytail_baseline": "export function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "verbose_baseline": "The pagination helper clamps the page size to at least one, slices out the requested page, and reports the total\npage count so callers can render pagination controls without recomputing anything.\n\nexport function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}\n\nOut-of-range page indexes simply return an empty page, which keeps the caller logic simple.",
+        "expected_pretty": "export function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "required_terms": [
+          "paginateEntries",
+          "entryList",
+          "pageSize",
+          "pageIndex",
+          "pagedEntries",
+          "totalPages"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 93
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]
+  - id: paginate-entries-ultra
+    input:
+      - role: user
+        content: "Add paginateEntries(entryList, pageSize, pageIndex) returning pagedEntries and totalPages. Emit a UTK min emission (@minmap patch plus min code) against the ponytail ultra arm."
+    expected_output: |
+      {
+        "scenario": "paginate-entries",
+        "ponytail_mode": "ultra",
+        "ponytail_baseline": "export function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "verbose_baseline": "The pagination helper clamps the page size to at least one, slices out the requested page, and reports the total\npage count so callers can render pagination controls without recomputing anything.\n\nexport function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}\n\nOut-of-range page indexes simply return an empty page, which keeps the caller logic simple.",
+        "expected_pretty": "export function paginateEntries(entryList: string[], pageSize: number, pageIndex: number) {\nconst boundedSize = Math.max(1, pageSize);\nconst startOffset = pageIndex * boundedSize;\nconst pagedEntries = entryList.slice(startOffset, startOffset + boundedSize);\nconst totalPages = Math.ceil(entryList.length / boundedSize);\nreturn { pagedEntries, totalPages, pageIndex };\n}",
+        "required_terms": [
+          "paginateEntries",
+          "entryList",
+          "pageSize",
+          "pageIndex",
+          "pagedEntries",
+          "totalPages"
+        ],
+        "map_entries": [],
+        "macro_names": [],
+        "max_token_ratio": 1,
+        "ponytail_tokens": 93
+      }
+    assertions:
+      - name: ponytail-parity
+        type: code-grader
+        command: ["node", "packages/evals/dist/graders/ponytailParityCodeGrader.js"]

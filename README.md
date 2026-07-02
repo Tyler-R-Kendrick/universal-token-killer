@@ -26,6 +26,7 @@ Current aggregate comparison: `docs/internal/benchmark-summary.md`.
 | Caveman parity | Independent caveman terse prose plus lite/full/ultra/wenyan modes | 80 full; 320 mode evals | 80/80 full; 320/320 modes | 0.742 full; 0.642 mode avg | 404 full; 3,158 modes | Autoevals/edge gates 1.000 |
 | Compresr parity | Compresr deterministic SDK baselines | 39 | 39/39 | 0.452 | 527 | Autoevals/recovery 1.000 |
 | LeanCTX Copilot | LeanCTX context-runtime baseline | 50 unique; 1,500 evaluated | 1,500/1,500 | 0.663 | 55,230 | Relevance/correctness/groundedness 1.000 |
+| Ponytail parity | Ponytail lazy-dev code arms plus lite/full/ultra modes | 6 emission; 18 mode evals; 6 ladder | 6/6; 18/18; 6/6 | 0.811 full; 0.781 mode avg | 141 full; 527 modes | Round-trip/parse/leakage/facts/ladder 1.000 |
 
 ## RTK Parity Stats
 
@@ -98,6 +99,19 @@ The LeanCTX Copilot suite compares UTK against a context-runtime baseline across
 - Minimum relevance/correctness/groundedness: `1.000`
 
 Full report: `docs/internal/leanctx-copilot-benchmark-results.md`.
+
+## Ponytail Parity Stats
+
+The ponytail parity suite measures the code-authoring axis: the UTK arm is a grammar-grounded **min emission** — a `@minmap` declare-before-use patch plus minified code constrained by the derived min-grammar — that expands deterministically into the pretty form users see. Token counts include the patch overhead.
+
+- Emission scenarios: `6` (plus `18` mode evaluations across independent lite/full/ultra arms)
+- Ladder scenarios: `6` (formalized YAGNI → reuse → stdlib → platform → dependency → macro → MVP decisions)
+- Passed: `6/6` emission, `18/18` modes, `6/6` ladder
+- Average UTK-min/ponytail token ratio: `0.811` full arm (`0.781` mode average)
+- Average UTK-min/verbose-assistant token ratio: `0.496`
+- Round-trip fidelity, parse validity, min leakage, fact retention, ladder correctness: `1.000`
+
+Full report: `docs/internal/ponytail-parity-benchmark-results.md`.
 
 ## Example Usage
 
@@ -326,6 +340,7 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
+- `@utk/emission`: grammar-grounded emission — min maps with declare-before-use patches, deterministic min↔pretty TypeScript conversion, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, and constrained emission with honest fallback.
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
 - `@utk/evals`: RTK parity fixtures, metrics, assertions, and AgentV-style eval definitions.

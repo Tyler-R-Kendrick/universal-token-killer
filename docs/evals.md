@@ -17,6 +17,7 @@ The `@utk/evals` package contains deterministic tests for safety, compactness, a
 - bash-like invocation accuracy and token savings against RTK-style rewrite baselines;
 - caveman parity benchmarks for terse technical summaries using `autoevals` fact-retention scoring.
 - LeanCTX Copilot benchmarks for prompt surfaces, tool outputs, tool schemas, relevance, correctness, groundedness, and token savings.
+- ponytail parity benchmarks for grammar-grounded min emission on code-authoring tasks, gated on round-trip fidelity, parse validity, min leakage, fact retention, and formalized decision-ladder correctness.
 
 ## Fixture Source
 
@@ -54,7 +55,9 @@ Tool-calling bypass fixtures live in `packages/evals/fixtures/toolCallingBypassF
 
 LeanCTX Copilot fixtures live in `packages/evals/fixtures/leanCtxCopilotFixtures.ts`. The benchmark runner lives in `scripts/bench-leanctx-copilot.ts` and is tested by `scripts/bench-leanctx-copilot.test.ts`. It compares UTK against a LeanCTX-style Copilot context-runtime baseline across 50 unique cases and requires UTK to meet or beat the baseline on relevance, correctness, groundedness, and token count. Current 10-loop performance is documented in `docs/internal/leanctx-copilot-benchmark-results.md`.
 
-Aggregate benchmark results across RTK, Caveman, Compresr, and LeanCTX live in `docs/internal/benchmark-summary.md`.
+Ponytail parity fixtures live in `packages/evals/fixtures/ponytailParityFixtures.ts`. Each emission scenario carries three committed deterministic arms — a verbose assistant baseline, hand-authored ponytail lazy-dev arms per lite/full/ultra mode, and the UTK arm: a grammar-grounded min emission (a `@minmap` declare-before-use patch plus minified code) that `packages/evals/metrics/ponytailParityMetrics.ts` expands through the real `@utk/emission` engine. Token wins are measured including the patch overhead and only count when round-trip fidelity, parse validity, min leakage, and `autoevals` fact retention are all 1.0. A companion ladder suite checks that `planEmission` stops at the expected rung (reuse, stdlib, platform, dependency, macro, MVP) on fixture workspaces. The generated report lives at `docs/internal/ponytail-parity-benchmark-results.md`.
+
+Aggregate benchmark results across RTK, Caveman, Compresr, LeanCTX, and Ponytail live in `docs/internal/benchmark-summary.md`.
 
 Local documentation rules for future benchmark runs live in `packages/evals/AGENTS.md`.
 
@@ -143,6 +146,18 @@ Generate the tool-calling bypass scenario report and AgentV YAML:
 
 ```bash
 npm run report:tool-bypass --workspace @utk/evals
+```
+
+Run ponytail parity benchmarks:
+
+```bash
+npm run bench:ponytail --workspace @utk/evals
+```
+
+Generate the ponytail comparison report and AgentV YAML:
+
+```bash
+npm run report:ponytail --workspace @utk/evals
 ```
 
 Run LeanCTX Copilot benchmarks:

@@ -17,10 +17,13 @@
     "bench:caveman": "vitest run evals/caveman-parity-metrics.test.ts",
     "report:caveman": "npm run build && node dist/reports/cavemanParityReport.js",
     "bench:tool-bypass": "vitest run evals/tool-calling-bypass-metrics.test.ts",
-    "report:tool-bypass": "npm run build && node dist/reports/toolCallingBypassReport.js"
+    "report:tool-bypass": "npm run build && node dist/reports/toolCallingBypassReport.js",
+    "bench:ponytail": "vitest run evals/ponytail-parity-metrics.test.ts",
+    "report:ponytail": "npm run build && node dist/reports/ponytailParityReport.js"
   },
   "dependencies": {
     "@toon-format/toon": "^2.2.0",
+    "@utk/emission": "0.1.0",
     "autoevals": "^0.0.132"
   }
 }
