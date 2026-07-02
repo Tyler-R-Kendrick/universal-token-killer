@@ -81,7 +81,7 @@ export function parseMinMap(text: string): MinMap {
   }
   let map = createMinMap(candidate.language);
   for (const entry of candidate.entries) {
-    if (!entry || typeof entry !== 'object') {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
       throw new Error('Min map entry must be an object');
     }
     map = addMinMapEntry(map, entry as MinMapEntry);
