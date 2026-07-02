@@ -13,6 +13,15 @@ describe('typescript emission grammar profile', () => {
     expect(TYPESCRIPT_EMIT_LARK).toContain('%ignore');
   });
 
+  it('ships every grammar as a committed .lark file, never as escaped source strings', async () => {
+    for (const fileName of ['typescript.emit.lark', 'typescript.emit.min.lark', 'minmap-patch.lark', 'minmap-patch-block.lark', 'macro-arg.lark']) {
+      const content = await readFile(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
+      expect(content.length, fileName).toBeGreaterThan(0);
+      expect(content.endsWith('\n'), fileName).toBe(true);
+    }
+    expect(TYPESCRIPT_EMIT_LARK).toBe(await readFile(new URL('../grammars/typescript.emit.lark', import.meta.url), 'utf8'));
+  });
+
   it('covers the emission profile constructs the plan commits to', () => {
     for (const construct of ['import_decl', 'const_decl', 'function_decl', 'class_decl', 'return_stmt', 'arrow_fn']) {
       expect(TYPESCRIPT_EMIT_LARK).toContain(construct);

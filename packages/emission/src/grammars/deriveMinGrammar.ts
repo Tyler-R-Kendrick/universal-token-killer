@@ -1,4 +1,5 @@
 import { MIN_ID_PATTERN } from '../minmap/format.js';
+import { readPackagedGrammar } from './grammarFiles.js';
 
 export type DeriveMinGrammarOptions = {
   /** Min-map macro ids to expose as single-token macro-call productions. */
@@ -7,15 +8,10 @@ export type DeriveMinGrammarOptions = {
 
 const MIN_IDENT_TERMINAL = 'IDENT: /[A-Za-z][A-Za-z0-9]{0,2}/';
 
-const PATCH_PRODUCTIONS = [
-  'patch_block: "@minmap" patch_line+ "@end"',
-  'patch_line: patch_add | patch_remove | patch_rename',
-  'patch_add: "+" IDENT PRETTY patch_kind?',
-  'patch_remove: "-" IDENT',
-  'patch_rename: "~" IDENT PRETTY',
-  'patch_kind: "@ident" | "@macro" | "@keyword"',
-  'PRETTY: /[A-Za-z_$][A-Za-z0-9_$]*/'
-];
+const PATCH_PRODUCTIONS = readPackagedGrammar('minmap-patch-block.lark')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.length > 0);
 
 /**
  * Deterministically derive the token-optimized min-grammar from a base

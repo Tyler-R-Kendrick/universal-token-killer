@@ -6,6 +6,7 @@ export * from './minmap/patchGrammar.js';
 export * from './minmap/journal.js';
 export * from './languages/adapter.js';
 export * from './languages/typescript.js';
+export * from './grammars/grammarFiles.js';
 export * from './grammars/typescriptEmitGrammar.js';
 export * from './grammars/deriveMinGrammar.js';
 export * from './grammars/languageProfile.js';

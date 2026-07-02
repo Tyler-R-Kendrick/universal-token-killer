@@ -1,4 +1,5 @@
 import { defineTemplate, extractSlotReferences, inlineGrammarSlot, renderTemplate } from '@utk/core';
+import { readPackagedGrammar } from '../grammars/grammarFiles.js';
 import { allocateEntry } from '../minmap/allocator.js';
 import type { MinMap, MinMapEntry } from '../minmap/format.js';
 
@@ -17,7 +18,7 @@ export type RegisteredMacro = {
 };
 
 const IDENT_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-const MACRO_ARG_LARK = 'start: ARG\nARG: /.+/\n';
+const MACRO_ARG_LARK = readPackagedGrammar('macro-arg.lark');
 
 export function defineMacro(descriptor: MacroDescriptor): MacroDescriptor {
   if (typeof descriptor.name !== 'string' || !IDENT_PATTERN.test(descriptor.name)) {

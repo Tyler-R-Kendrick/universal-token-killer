@@ -1,0 +1,7 @@
+patch_block: "@minmap" patch_line+ "@end"
+patch_line: patch_add | patch_remove | patch_rename
+patch_add: "+" IDENT PRETTY patch_kind?
+patch_remove: "-" IDENT
+patch_rename: "~" IDENT PRETTY
+patch_kind: "@ident" | "@macro" | "@keyword"
+PRETTY: /[A-Za-z_$][A-Za-z0-9_$]*/
