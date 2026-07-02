@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { contentHash } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { estimateTokens } from '../tokens.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -140,9 +141,6 @@ function hasTokenOverlap(intentTokens: Set<string>, token: string): boolean {
   return false;
 }
 
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
-}
 
 function buildFindToolDefinition(): JsonObject {
   return {

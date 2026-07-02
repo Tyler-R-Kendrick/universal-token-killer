@@ -1,6 +1,6 @@
 /* c8 ignore file -- Artifact recovery owns refs; expansion tests validate raw and compact paths. */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { ArtifactRecoveryIndex, expandArtifactReference, type ArtifactHandle } from '@utk/core';
+import { ArtifactRecoveryIndex, estimateTokens, expandArtifactReference, type ArtifactHandle } from '@utk/core';
 import { contentHash, safeJoin } from './utils.js';
 
 export type ContextArtifact = {
@@ -39,7 +39,7 @@ export async function persistCompactContextArtifact(workspaceRoot: string, artif
   const compactPath = safeJoin(root, `${artifact.id}.compact.txt`);
   await writeFile(compactPath, compactContent, 'utf8');
   await indexArtifact(workspaceRoot, { id: artifact.id, path: artifact.path, compactPath, kind: artifact.kind, rawTokens: artifact.rawTokens });
-  return { ...artifact, compactPath, compactTokens: Math.max(1, Math.ceil(compactContent.length / 4)) };
+  return { ...artifact, compactPath, compactTokens: estimateTokens(compactContent) };
 }
 
 export async function expandContextArtifact(workspaceRoot: string, id: string, options: { range?: string; query?: string; blockId?: string; handle?: ArtifactHandle } = {}): Promise<{ id: string; content: string }> {

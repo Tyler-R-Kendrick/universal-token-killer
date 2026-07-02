@@ -30,6 +30,7 @@ export * from './templates/defineTemplate.js';
 export * from './templates/templateRuntime.js';
 export * from './tools/copilotToolHook.js';
 export * from './tools/structuredTooling.js';
+export * from './tokens.js';
 export * from './tracing/index.js';
 export * from './toon/toon.js';
 export * from './toon/validate.js';

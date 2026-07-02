@@ -2,6 +2,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { contentHash } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { estimateTokens } from '../tokens.js';
 
 export type PromptSurface =
   | 'system-prompt'
@@ -189,8 +190,4 @@ function compactGhcpFrontmatter(frontmatter: string | undefined): string | undef
   if (!frontmatter) return undefined;
   const kept = frontmatter.split(/\r?\n/).filter((line) => /^---$/.test(line.trim()) || /^tools:/i.test(line.trim()) || /^name:/i.test(line.trim()));
   return kept.length > 2 ? kept.join('\n') : undefined;
-}
-
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
 }

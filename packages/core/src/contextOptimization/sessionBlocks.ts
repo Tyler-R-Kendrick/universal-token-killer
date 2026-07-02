@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { safeJoin } from '../security/pathSafety.js';
+import { estimateTokens } from '../tokens.js';
 import { ensureInside, readArtifactRecords } from './artifactRecovery.js';
 import { idNumber, nextId, type SessionContextLedgerEvent } from './sessionLedger.js';
 
@@ -175,6 +176,3 @@ function unique(values: Array<string | undefined>): string[] {
   });
 }
 
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
-}

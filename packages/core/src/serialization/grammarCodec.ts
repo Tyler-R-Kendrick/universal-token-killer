@@ -1,4 +1,5 @@
 import { canonicalJson } from '../artifact/canonical.js';
+import { estimateTokens as estimateTokenCount } from '../tokens.js';
 import type {
   CompiledSerializationGrammar,
   GeneratedSerializationLinter,
@@ -148,7 +149,7 @@ export function generatedSerializerFromCompiledGrammar(options: CompileSerializa
       }
     },
     estimateTokens(text) {
-      return Math.ceil(text.length / 4);
+      return estimateTokenCount(text);
     }
   };
   return {

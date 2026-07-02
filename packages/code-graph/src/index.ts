@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { Dirent } from 'node:fs';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile, buildCompactResponse, canonicalJson, safeJoin } from '@utk/core';
+import { atomicWriteFile, buildCompactResponse, canonicalJson, estimateTokens, safeJoin } from '@utk/core';
 import ts from 'typescript';
 
 export type CodeGraphLanguage = 'typescript' | 'javascript';
@@ -1017,10 +1017,6 @@ function symbolScore(symbol: CodeGraphSymbol, query: string): number {
   const exported = symbol.exported ? 0 : 5;
   const methodPenalty = symbol.kind === 'method' ? 10 : 0;
   return exact + exported + methodPenalty + symbol.filePath.length / 1000;
-}
-
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
 }
 
 function hashText(text: string, length = 10): string {
