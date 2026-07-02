@@ -1,7 +1,7 @@
 node_modules/
 packages/*/node_modules/
 packages/*/dist/
-packages/plugins/agents/*/dist/
+packages/plugins/*/*/dist/
 coverage/
 packages/*/coverage/
 *.tsbuildinfo
