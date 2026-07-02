@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { contentHash } from '../artifact/canonical.js';
 import { safeJoin } from '../security/pathSafety.js';
+import { estimateTokens } from '../tokens.js';
 import type { PromptSurface } from '../promptOptimization/promptOptimizer.js';
 
 export async function optimizePromptAsset(params: {
@@ -61,9 +62,6 @@ function compactPromptAssetLine(line: string): string {
   return line.replace(/\s+/g, ' ');
 }
 
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
-}
 
 function unique(values: Array<string | undefined>): string[] {
   const seen = new Set<string>();

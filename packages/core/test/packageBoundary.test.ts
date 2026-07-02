@@ -143,13 +143,28 @@ describe('package boundary', () => {
     expect(reference).toContain('Do not compress before UTK has parsed schemas/templates');
   });
 
+  it('ships a model-proxy agent skill for the Copilot context gateway', async () => {
+    const skillRoot = path.join(repoRoot, 'skills', 'model-proxy');
+    const skill = await readFile(path.join(skillRoot, 'SKILL.md'), 'utf8');
+    const references = (await readdir(path.join(skillRoot, 'references'))).sort();
+
+    await access(path.join(skillRoot, 'agents', 'openai.yaml'));
+
+    expect(skill).toContain('name: model-proxy');
+    expect(skill).toContain('Use when configuring, running, or verifying the UTK model proxy');
+    expect(skill).toContain('references/pipeline.md');
+    expect(skill).toContain('references/endpoints-and-recovery.md');
+    expect(skill).toContain('references/configuration.md');
+    expect(references).toEqual(['configuration.md', 'endpoints-and-recovery.md', 'pipeline.md']);
+  });
+
   it('packages every repo skill for agentskills.io and skills.sh discovery', async () => {
     await expect(access(path.join(repoRoot, 'agent-skills'))).rejects.toThrow();
 
     const skillsRoot = path.join(repoRoot, 'skills');
     const skillNames = (await readdir(skillsRoot)).sort();
 
-    expect(skillNames).toEqual(['detoks', 'detoks-skill', 'utk', 'utk-init']);
+    expect(skillNames).toEqual(['detoks', 'detoks-skill', 'model-proxy', 'utk', 'utk-init']);
 
     for (const skillName of skillNames) {
       const skillRoot = path.join(skillsRoot, skillName);
@@ -312,6 +327,7 @@ describe('package boundary', () => {
     const pluginSkillsByName: Record<string, string> = {
       'detoks': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-detoks', 'skills', 'detoks'),
       'detoks-skill': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-detoks', 'skills', 'detoks-skill'),
+      'model-proxy': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-model-proxy', 'skills', 'model-proxy'),
       'utk': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-cli', 'skills', 'utk'),
       'utk-init': path.join(repoRoot, 'packages', 'plugins', 'agents', 'copilot', 'plugins', 'utk-cli', 'skills', 'utk-init')
     };

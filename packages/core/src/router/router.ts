@@ -1,4 +1,5 @@
 import { contentHash } from '../artifact/canonical.js';
+import { estimateTokens } from '../tokens.js';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 
 export type RouteReason = 'shape_match' | 'input_match' | 'tool_match' | 'prior_match' | 'fallback' | 'unknown';
@@ -75,8 +76,4 @@ export function buildRouterPrompt(toolId: string, inputKeys: string[], shapeFing
     'Return route only.'
   ].join('\n');
   return { prompt, promptTokens: estimateTokens(prompt), candidates: capped };
-}
-
-export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
 }

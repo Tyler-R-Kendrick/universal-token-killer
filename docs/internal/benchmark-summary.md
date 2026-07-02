@@ -2,6 +2,8 @@
 
 Aggregate view of fixture-backed benchmark comparisons in this repository.
 
+These are self-authored parity fixtures measured against deterministic baselines checked into this repo — the competitors are not installed, hosted, or run — with coarse `ceil(len/4)` token estimates. Treat the numbers as reproducible internal self-comparisons that also gate fact retention, recoverability, and correctness, not as head-to-head results against live competitor systems.
+
 ## Current Results
 
 | Benchmark | Baseline | Scope | Cases | Passed | UTK tokens | Baseline tokens | Saved | Average UTK/baseline ratio | Quality gates | Report |

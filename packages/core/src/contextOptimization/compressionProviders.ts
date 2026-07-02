@@ -1,3 +1,5 @@
+import { estimateTokens } from '../tokens.js';
+
 export type CompressionProvider = {
   id: string;
   localOnly: boolean;
@@ -26,8 +28,4 @@ export function createCompressionProviderRegistry(options: { remoteEnabled?: boo
     estimateCost: () => 0
   };
   return { remoteEnabled: options.remoteEnabled ?? false, providers: { default: provider, [provider.id]: provider } };
-}
-
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
 }

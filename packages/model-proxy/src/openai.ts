@@ -86,6 +86,4 @@ function normalizeResponsesInput(input: unknown): JsonObject[] {
   return Array.isArray(input) ? input.filter(isObject).map((item) => ({ ...item })) : [];
 }
 
-export function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
-}
+export { estimateTokens } from '@utk/core';

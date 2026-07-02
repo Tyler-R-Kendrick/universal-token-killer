@@ -1,6 +1,6 @@
 /* c8 ignore file -- covered by model-proxy behavior tests; schema-shape branches are defensive. */
 import { buildExpandContextTool } from './recovery.js';
-import { cloneJson, isObject, type JsonObject } from './openai.js';
+import { cloneJson, estimateTokens, isObject, type JsonObject } from './openai.js';
 
 export type ToolSchemaMinimizationResult = {
   tools: JsonObject[];
@@ -78,5 +78,5 @@ function terseDescription(value: string): string {
 }
 
 function estimateJsonTokens(value: unknown): number {
-  return Math.max(1, Math.ceil(JSON.stringify(value).length / 4));
+  return estimateTokens(JSON.stringify(value));
 }

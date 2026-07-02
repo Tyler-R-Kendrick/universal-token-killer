@@ -23,6 +23,8 @@ Expected discoverable skills:
 
 ```text
 detoks
+detoks-skill
+model-proxy
 utk
 utk-init
 ```
@@ -88,6 +90,14 @@ Generated session agents must require sketch-of-thought through `reason-with-lex
 ## `skills/detoks`
 
 Use when an agent should compress bulky prompt text, consolidate `detoks-skill` guidance into `detoks`, shrink AGENTS.md-style always-loaded files into memory and skills, or refactor GitHub Copilot custom agents into smaller subagents. The root skill routes to focused references for `detoks-prompt`, skill cleanup, AGENTS.md cleanup, GHCP subagent orchestration, and MCP details.
+
+## `skills/detoks-skill`
+
+Use when optimizing an Agent Skill itself for lower token usage: splitting instructions into `references/`, extracting deterministic workflow scripts, and adding eval-backed skill compression. `detoks` is the entry point for prompt/agent compression and routes here; `detoks-skill` carries the executable optimizer scripts (`analyze-skill`, `evolve-candidates`, `render-optimized-skill`, `validate-optimized-skill`) and an AgentEvals contract.
+
+## `skills/model-proxy`
+
+Use when configuring, running, or verifying `@utk/model-proxy`, UTK's OpenAI-compatible local context gateway. The skill routes to focused references for the request pipeline and local-first compaction (`references/pipeline.md`), the `expand_context`/`proof`/`find_tool` recovery endpoints (`references/endpoints-and-recovery.md`), and `[model_proxy]` policy defaults plus provider routing (`references/configuration.md`).
 
 ## Synchronization Rules
 

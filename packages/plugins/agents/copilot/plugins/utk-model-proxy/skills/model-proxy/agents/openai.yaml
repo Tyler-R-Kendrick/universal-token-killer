@@ -1,0 +1,4 @@
+interface:
+  display_name: "UTK Model Proxy"
+  short_description: "Run and verify the UTK model-proxy context gateway"
+  default_prompt: "Use $model-proxy to run and verify UTK's OpenAI-compatible context gateway for GitHub Copilot: compact and recover history and tool output, configure [model_proxy] policy and upstream provider routing, and exercise the expand_context, proof, and find_tool recovery endpoints without adding a public CLI or VS Code extension."

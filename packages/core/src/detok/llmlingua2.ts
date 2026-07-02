@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { estimateTokens } from '../tokens.js';
 import { recordFailure, type JaegerSpan, type RunContext } from '../tracing/index.js';
 
 export type DetokOptions = {
@@ -79,10 +80,6 @@ async function rewriteValue(value: unknown, options: DetokOptions, results: Deto
   }
 
   return value;
-}
-
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
 }
 
 async function runLlmlingua2(text: string, options: DetokOptions & { rate: number }, originalTokens: number): Promise<DetokResult> {
