@@ -496,6 +496,13 @@ vendor caching). Treat its seven-tactic taxonomy as a benchmark checklist for
 `@utk/model-proxy`, and its numbers as the bar UTK's proxy must meet or beat.
 RouteLLM/FrugalGPT are the canonical routing/cascade references.
 
+The full model-level landscape — pre-call routing, cascade routing, selective and
+full ensembling, batch-aware routing, and decode-time (speculative) methods — is
+broken out as a dedicated deep-dive tree in [`models/`](models/README.md), with one
+verified brief per technique. That folder is the expansion of this section; keep the
+scope discipline consistent (routing/ensemble cut expected `$/task`, not billable
+token count; speculative decoding is self-hosted latency only).
+
 ---
 
 ## Prioritization For UTK
