@@ -1,7 +1,7 @@
 import { defineTemplate, extractSlotReferences, inlineGrammarSlot, renderTemplate } from '@utk/core';
 import { readPackagedGrammar } from '../grammars/grammarFiles.js';
 import { allocateEntry } from '../minmap/allocator.js';
-import type { MinMap, MinMapEntry } from '../minmap/format.js';
+import { PRETTY_NAME_PATTERN, type MinMap, type MinMapEntry } from '../minmap/format.js';
 
 export type MacroDescriptor = {
   name: string;
@@ -17,15 +17,14 @@ export type RegisteredMacro = {
   entry: MinMapEntry;
 };
 
-const IDENT_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const MACRO_ARG_LARK = readPackagedGrammar('macro-arg.lark');
 
 export function defineMacro(descriptor: MacroDescriptor): MacroDescriptor {
-  if (typeof descriptor.name !== 'string' || !IDENT_PATTERN.test(descriptor.name)) {
+  if (typeof descriptor.name !== 'string' || !PRETTY_NAME_PATTERN.test(descriptor.name)) {
     throw new Error(`Macro name '${String(descriptor.name)}' must be a valid identifier`);
   }
   for (const param of descriptor.params) {
-    if (!IDENT_PATTERN.test(param)) {
+    if (!PRETTY_NAME_PATTERN.test(param)) {
       throw new Error(`Macro '${descriptor.name}' param '${param}' must be a valid identifier`);
     }
   }

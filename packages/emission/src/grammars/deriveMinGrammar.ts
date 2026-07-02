@@ -46,6 +46,9 @@ export function deriveMinGrammar(baseLark: string, options: DeriveMinGrammarOpti
 
   const withPatches = [...lines];
   const ignoreIndex = withPatches.findIndex((line) => line.startsWith('%ignore'));
+  if (ignoreIndex === -1) {
+    throw new Error('Emission grammar must declare an %ignore directive');
+  }
   withPatches.splice(ignoreIndex, 0, ...PATCH_PRODUCTIONS, ...macroProductions(options.macroIds ?? []));
 
   return `${renameRules(withPatches).join('\n')}\n`;

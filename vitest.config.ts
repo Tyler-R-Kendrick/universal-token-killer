@@ -6,7 +6,8 @@ export default defineConfig({
     alias: {
       '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts'),
       '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
-      '@utk/emission': path.resolve(import.meta.dirname, 'packages/emission/src/index.ts')
+      '@utk/emission': path.resolve(import.meta.dirname, 'packages/emission/src/index.ts'),
+      '@utk/lang-typescript': path.resolve(import.meta.dirname, 'packages/plugins/languages/typescript/src/index.ts')
     }
   },
   test: {
@@ -16,7 +17,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary'],
       all: true,
-      include: ['packages/*/src/**/*.ts', 'packages/evals/assertions/**/*.ts', 'scripts/**/*.ts'],
+      include: [
+        'packages/*/src/**/*.ts',
+        'packages/plugins/languages/*/src/**/*.ts',
+        'packages/evals/assertions/**/*.ts',
+        'scripts/**/*.ts'
+      ],
       exclude: [
         '**/dist/**',
         '**/*.d.ts',

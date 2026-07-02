@@ -1,4 +1,4 @@
-import { readPackagedGrammar } from './grammarFiles.js';
+import { readFileSync } from 'node:fs';
 
 /**
  * Base TypeScript emission profile grammar, loaded from the committed
@@ -7,4 +7,8 @@ import { readPackagedGrammar } from './grammarFiles.js';
  * grounds constrained generation; conversion between min and pretty forms is
  * owned by the language adapter.
  */
-export const TYPESCRIPT_EMIT_LARK = readPackagedGrammar('typescript.emit.lark');
+export const TYPESCRIPT_EMIT_LARK = readPackGrammar('typescript.emit.lark');
+
+export function readPackGrammar(fileName: string): string {
+  return readFileSync(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
+}

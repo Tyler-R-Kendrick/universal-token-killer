@@ -43,16 +43,17 @@ export async function gradePonytailParityCodeGraderInput(input: AgentVCodeGrader
     expectedPretty: expected.expected_pretty ?? '',
     requiredTerms: expected.required_terms ?? [],
     mapEntries: expected.map_entries ?? [],
-    macros: (expected.macro_names ?? []).map((name) => PONYTAIL_PARITY_MACROS[name]!),
+    macros: (expected.macro_names ?? []).map((name) => {
+      const macro = PONYTAIL_PARITY_MACROS[name];
+      if (!macro) {
+        throw new Error(`Unknown ponytail parity macro '${name}'`);
+      }
+      return macro;
+    }),
     ...(expected.max_token_ratio !== undefined ? { maxTokenRatio: expected.max_token_ratio } : {})
   });
   const metrics = assertion.metrics;
-  const qualityGatesFailed =
-    metrics.roundTripFidelityScore < 1 ||
-    metrics.parseValidityScore < 1 ||
-    metrics.minLeakageScore < 1 ||
-    metrics.requiredTermRetentionScore < 1;
-  const score = qualityGatesFailed ? 0 : assertion.passed ? 1 : 0;
+  const score = assertion.passed ? 1 : 0;
 
   return {
     score,

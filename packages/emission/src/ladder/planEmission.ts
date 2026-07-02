@@ -36,6 +36,8 @@ export type EmissionPlan = {
   request: string;
   capability: string;
   mode: string;
+  /** Safety carve-outs in force for this plan — auditable in the artifact. */
+  carveOuts: string[];
   decisions: EmissionLadderDecision[];
   selectedRung?: number;
   strategy: EmissionStrategy;
@@ -62,10 +64,9 @@ export async function planEmission(input: PlanEmissionInput): Promise<EmissionPl
   let strategy: EmissionStrategy = 'none';
 
   if (policy.mode !== 'off') {
-    const reuse = await reuseDecision(input);
+    const [reuse, dependency] = await Promise.all([reuseDecision(input), dependencyDecision(input)]);
     const stdlib = indexDecision(3, 'stdlib', stdlibCapabilities(input.language), input.capability);
     const platform = indexDecision(4, 'platform', platformCapabilities(input.language), input.capability);
-    const dependency = await dependencyDecision(input);
     const resolvers: Array<{ decision: EmissionLadderDecision; strategy: EmissionStrategy }> = [
       { decision: reuse, strategy: 'reuse' },
       { decision: stdlib, strategy: 'stdlib' },
@@ -109,6 +110,7 @@ export async function planEmission(input: PlanEmissionInput): Promise<EmissionPl
     request: input.request,
     capability: input.capability,
     mode: policy.mode,
+    carveOuts: policy.carveOuts,
     decisions,
     ...(selectedRung !== undefined ? { selectedRung } : {}),
     strategy

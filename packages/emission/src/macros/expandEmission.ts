@@ -1,5 +1,5 @@
+import type { LanguageAdapter, ScannedToken } from '../languages/adapter.js';
 import type { MinMap } from '../minmap/format.js';
-import { scanTypeScriptTokens, typescriptAdapter, type ScannedToken } from '../languages/typescript.js';
 import { expandMacro, type MacroDescriptor } from './defineMacro.js';
 
 type MacroCallSite = {
@@ -15,22 +15,35 @@ type MacroCallSite = {
  * call sites. Macro expansions must not themselves contain macro calls —
  * expansion is single-pass by design so `ultra`-mode output stays reviewable.
  */
-export async function expandEmissionSource(source: string, map: MinMap, macros: MacroDescriptor[]): Promise<string> {
-  return await expandMacroCallsInSource(typescriptAdapter.expand(source, map), map, macros);
+export async function expandEmissionSource(
+  source: string,
+  map: MinMap,
+  macros: MacroDescriptor[],
+  adapter: LanguageAdapter
+): Promise<string> {
+  return await expandMacroCallsInSource(adapter.expand(source, map), map, macros, adapter);
 }
 
 export async function expandMacroCallsInSource(
   source: string,
   map: MinMap,
-  macros: MacroDescriptor[]
+  macros: MacroDescriptor[],
+  adapter: LanguageAdapter
 ): Promise<string> {
+  const macroNames = new Set<string>();
+  for (const macro of macros) {
+    if (macroNames.has(macro.name)) {
+      throw new Error(`Macro '${macro.name}' is registered more than once`);
+    }
+    macroNames.add(macro.name);
+  }
   const macroPretty = new Map<string, string>();
   for (const entry of map.entries) {
     if (entry.kind === 'macro') {
       macroPretty.set(entry.minId, entry.pretty);
     }
   }
-  const tokens = scanTypeScriptTokens(source);
+  const tokens = adapter.scanTokens(source);
   const sites: MacroCallSite[] = [];
   let index = 0;
   while (index < tokens.length) {

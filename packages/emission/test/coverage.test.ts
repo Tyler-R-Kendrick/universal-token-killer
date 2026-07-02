@@ -4,7 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { addMinMapEntry, createMinMap, parseMinMap } from '../src/minmap/format.js';
 import { loadMinMap, minMapJournalPath, minMapPath, replayMinMapJournal } from '../src/minmap/journal.js';
-import { typescriptAdapter } from '../src/languages/typescript.js';
+import { typescriptAdapter } from '../../plugins/languages/typescript/src/adapter.js';
 
 async function workspace(): Promise<string> {
   return await mkdtemp(path.join(tmpdir(), 'utk-emission-coverage-'));

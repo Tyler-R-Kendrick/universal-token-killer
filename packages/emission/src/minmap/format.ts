@@ -24,6 +24,10 @@ export type MinMap = {
 
 export const MIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9]{0,2}$/;
 
+export const PRETTY_NAME_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+export const MIN_MAP_KIND_TAG_PATTERN = new RegExp(`^@(${MIN_MAP_ENTRY_KINDS.join('|')})$`);
+
 export function createMinMap(language: string): MinMap {
   if (typeof language !== 'string' || language.length === 0) {
     throw new Error('Min map requires a non-empty language id');

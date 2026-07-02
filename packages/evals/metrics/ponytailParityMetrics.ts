@@ -7,11 +7,12 @@ import {
   extractEmissionPatchBlock,
   parseMinMapPatch,
   planEmission,
-  typescriptAdapter,
   type MacroDescriptor,
   type MinMap,
   type MinMapEntry
 } from '@utk/emission';
+// Importing the language pack registers typescript with the emission core.
+import { typescriptAdapter } from '@utk/lang-typescript';
 import { estimateTokens } from '../assertions/tokenBudgets.js';
 import { requiredTermRetentionScore } from './cavemanParityMetrics.js';
 import type { PonytailLadderFixture } from '../fixtures/ponytailParityFixtures.js';
@@ -56,7 +57,7 @@ export async function measurePonytailParity(input: PonytailParityInput): Promise
   let pretty = '';
   try {
     const { code } = extractEmissionPatchBlock(input.minEmission);
-    pretty = await expandEmissionSource(code, map, input.macros);
+    pretty = await expandEmissionSource(code, map, input.macros, typescriptAdapter);
   } catch {
     pretty = '';
   }

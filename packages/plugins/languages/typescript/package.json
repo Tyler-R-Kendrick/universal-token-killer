@@ -1,5 +1,5 @@
 {
-  "name": "@utk/emission",
+  "name": "@utk/lang-typescript",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -17,10 +17,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@utk/code-graph": "0.1.0",
-    "@utk/core": "0.1.0"
-  },
-  "devDependencies": {
+    "@utk/emission": "0.1.0",
     "typescript": "^5.8.3"
   }
 }

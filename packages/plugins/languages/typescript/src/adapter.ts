@@ -1,8 +1,14 @@
 import ts from 'typescript';
-import { allocateEntry } from '../minmap/allocator.js';
-import { createMinMap, minIdFor, type MinMap } from '../minmap/format.js';
-import type { MinMapPatchOp } from '../minmap/patch.js';
-import type { LanguageAdapter } from './adapter.js';
+import {
+  allocateEntry,
+  createMinMap,
+  minIdFor,
+  type LanguageAdapter,
+  type MinMap,
+  type MinMapPatchOp,
+  type ScannedToken,
+  type ScannedTokenKind
+} from '@utk/emission';
 
 export type BuildSourceMinMapOptions = {
   baseMap?: MinMap;
@@ -17,6 +23,7 @@ export type BuildSourceMinMapResult = {
 
 export const typescriptAdapter: LanguageAdapter = {
   language: 'typescript',
+  fileExtension: '.ts',
   minify(source: string, map: MinMap): string {
     const rename = new Map<string, string>();
     const guards = new Set<string>();
@@ -61,30 +68,40 @@ export const typescriptAdapter: LanguageAdapter = {
   },
   collectIdentifiers(source: string): Set<string> {
     const identifiers = new Set<string>();
-    scanIdentifiers(source, (identifier) => {
-      identifiers.add(identifier);
-      return undefined;
-    });
+    for (const token of scanTypeScriptTokens(source)) {
+      if (token.kind === 'identifier') {
+        identifiers.add(token.text);
+      }
+    }
     return identifiers;
   },
   isParseable(source: string): boolean {
-    const sourceFile = ts.createSourceFile('snippet.ts', source, ts.ScriptTarget.Latest, true);
-    const diagnostics = (sourceFile as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics;
-    return diagnostics.length === 0;
+    return parseDiagnosticsAreClean(ts.createSourceFile('snippet.ts', source, ts.ScriptTarget.Latest, true));
+  },
+  scanTokens(source: string): ScannedToken[] {
+    return scanTypeScriptTokens(source);
   }
 };
+
+/**
+ * parseDiagnostics is internal compiler state — guard against the field
+ * moving in a future typescript release instead of throwing at runtime.
+ */
+export function parseDiagnosticsAreClean(sourceFile: ts.SourceFile): boolean {
+  const diagnostics = (sourceFile as unknown as { parseDiagnostics?: unknown[] }).parseDiagnostics;
+  return Array.isArray(diagnostics) ? diagnostics.length === 0 : true;
+}
 
 export function buildSourceMinMap(source: string, options: BuildSourceMinMapOptions = {}): BuildSourceMinMapResult {
   const minLength = options.minLength ?? 3;
   const ordered: string[] = [];
   const seen = new Set<string>();
-  scanIdentifiers(source, (identifier) => {
-    if (!seen.has(identifier)) {
-      seen.add(identifier);
-      ordered.push(identifier);
+  for (const token of scanTypeScriptTokens(source)) {
+    if (token.kind === 'identifier' && !seen.has(token.text)) {
+      seen.add(token.text);
+      ordered.push(token.text);
     }
-    return undefined;
-  });
+  }
 
   let map = options.baseMap ?? createMinMap('typescript');
   const patchOps: MinMapPatchOp[] = [];
@@ -103,39 +120,6 @@ export function buildSourceMinMap(source: string, options: BuildSourceMinMapOpti
   }
   return { map, patchOps };
 }
-
-function renameIdentifiers(source: string, rename: (identifier: string) => string | undefined): string {
-  const parts: string[] = [];
-  let cursor = 0;
-  scanIdentifiers(source, (identifier, start, end) => {
-    const replacement = rename(identifier);
-    if (replacement !== undefined) {
-      parts.push(source.slice(cursor, start), replacement);
-      cursor = end;
-    }
-    return undefined;
-  });
-  parts.push(source.slice(cursor));
-  return parts.join('');
-}
-
-export type ScannedTokenKind =
-  | 'identifier'
-  | 'open-paren'
-  | 'close-paren'
-  | 'open-brace'
-  | 'close-brace'
-  | 'open-bracket'
-  | 'close-bracket'
-  | 'comma'
-  | 'other';
-
-export type ScannedToken = {
-  kind: ScannedTokenKind;
-  text: string;
-  start: number;
-  end: number;
-};
 
 const TOKEN_KINDS = new Map<ts.SyntaxKind, ScannedTokenKind>([
   [ts.SyntaxKind.Identifier, 'identifier'],
@@ -195,10 +179,19 @@ export function scanTypeScriptTokens(source: string): ScannedToken[] {
   return tokens;
 }
 
-function scanIdentifiers(source: string, visit: (identifier: string, start: number, end: number) => void): void {
+function renameIdentifiers(source: string, rename: (identifier: string) => string | undefined): string {
+  const parts: string[] = [];
+  let cursor = 0;
   for (const token of scanTypeScriptTokens(source)) {
-    if (token.kind === 'identifier') {
-      visit(token.text, token.start, token.end);
+    if (token.kind !== 'identifier') {
+      continue;
+    }
+    const replacement = rename(token.text);
+    if (replacement !== undefined) {
+      parts.push(source.slice(cursor, token.start), replacement);
+      cursor = token.end;
     }
   }
+  parts.push(source.slice(cursor));
+  return parts.join('');
 }

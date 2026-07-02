@@ -7,7 +7,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "packages/plugins/agents/*"
+    "packages/plugins/agents/*",
+    "packages/plugins/languages/*"
   ],
   "scripts": {
     "build": "npm run -ws build",

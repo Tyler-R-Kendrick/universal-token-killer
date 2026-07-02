@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -61,13 +61,17 @@ export async function buildPonytailParityReport(): Promise<{
   const ladderRows: PonytailLadderReportRow[] = [];
   for (const fixture of PONYTAIL_LADDER_FIXTURES) {
     const workspaceRoot = await mkdtemp(path.join(tmpdir(), 'utk-ponytail-ladder-'));
-    for (const [relativePath, content] of Object.entries(fixture.files)) {
-      const filePath = path.join(workspaceRoot, relativePath);
-      await mkdir(path.dirname(filePath), { recursive: true });
-      await writeFile(filePath, content, 'utf8');
+    try {
+      for (const [relativePath, content] of Object.entries(fixture.files)) {
+        const filePath = path.join(workspaceRoot, relativePath);
+        await mkdir(path.dirname(filePath), { recursive: true });
+        await writeFile(filePath, content, 'utf8');
+      }
+      const macros = (fixture.macroNames ?? []).map((name) => PONYTAIL_PARITY_MACROS[name]!);
+      ladderRows.push({ fixture, metrics: await measurePonytailLadder(workspaceRoot, fixture, macros) });
+    } finally {
+      await rm(workspaceRoot, { recursive: true, force: true });
     }
-    const macros = (fixture.macroNames ?? []).map((name) => PONYTAIL_PARITY_MACROS[name]!);
-    ladderRows.push({ fixture, metrics: await measurePonytailLadder(workspaceRoot, fixture, macros) });
   }
 
   return { rows, modeRows, ladderRows, markdown: renderMarkdown(rows, modeRows, ladderRows) };

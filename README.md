@@ -340,7 +340,8 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
-- `@utk/emission`: grammar-grounded emission — min maps with declare-before-use patches, deterministic min↔pretty TypeScript conversion, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, and constrained emission with honest fallback.
+- `@utk/emission`: language-agnostic grammar-grounded emission — min maps with declare-before-use patches, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, constrained emission with honest fallback, and the language-pack registry.
+- `@utk/lang-typescript`: the reference emission language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, emission-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
 - `@utk/evals`: RTK parity fixtures, metrics, assertions, and AgentV-style eval definitions.

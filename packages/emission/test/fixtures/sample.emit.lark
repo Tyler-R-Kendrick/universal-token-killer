@@ -1,0 +1,10 @@
+// Sample emission profile exercising deriveMinGrammar transforms.
+start: statement+
+statement: greet_decl | expr_stmt
+greet_decl: "greet" IDENT "=" expr ";"
+expr_stmt: expr ";"
+expr: call_expr | IDENT | STRING
+call_expr: IDENT "(" expr? ")"
+IDENT: /[A-Za-z_$][A-Za-z0-9_$]*/
+STRING: /'[^']*'/
+%ignore /\s+/

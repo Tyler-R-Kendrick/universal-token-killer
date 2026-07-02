@@ -8,6 +8,10 @@ import { defineMacro, registerMacro } from '../src/macros/defineMacro.js';
 import { readEmissionLedger } from '../src/macros/ledger.js';
 import { extractEmissionPatchBlock } from '../src/emit/patchBlock.js';
 import { emitConstrained } from '../src/emit/emitConstrained.js';
+import { registerLanguagePack } from '../src/languages/registry.js';
+import { typescriptLanguagePack } from '../../plugins/languages/typescript/src/index.js';
+
+registerLanguagePack(typescriptLanguagePack);
 
 const HTTP_GET_JSON = defineMacro({
   name: 'httpGetJson',
@@ -50,12 +54,19 @@ describe('extractEmissionPatchBlock', () => {
     expect(() => extractEmissionPatchBlock('@minmap - toolong99 @end code();')).toThrow(/patch/);
     expect(() => extractEmissionPatchBlock('@minmap ~ e @end code();')).toThrow(/patch/);
   });
+
+  it('only terminates on @end at a token boundary, so embedded markers fail loudly', () => {
+    expect(() => extractEmissionPatchBlock('@minmap + e corrupt@endName @end code();')).toThrow(/patch/);
+    const { patchText } = extractEmissionPatchBlock('@minmap + e cleanName @end code();');
+    expect(patchText).toBe('+ e cleanName');
+  });
 });
 
 describe('resolveLanguageAdapter', () => {
-  it('resolves typescript and rejects unregistered languages', async () => {
+  it('resolves typescript from the registered pack and rejects unregistered languages', async () => {
     const { resolveLanguageAdapter } = await import('../src/languages/registry.js');
     expect(resolveLanguageAdapter('typescript').language).toBe('typescript');
+    expect(resolveLanguageAdapter('typescript').fileExtension).toBe('.ts');
     expect(() => resolveLanguageAdapter('rust')).toThrow(/language 'rust'/);
   });
 });
@@ -92,6 +103,7 @@ describe('emitConstrained', () => {
 
     const persistedMap = await loadMinMap(root, 'typescript');
     expect(prettyFor(persistedMap, 'b')).toBe('loadWidgetData');
+    expect(prettyFor(persistedMap, 'a')).toBe('requestUrl');
 
     await access(result.artifacts!.minPath);
     await access(result.artifacts!.prettyPath);

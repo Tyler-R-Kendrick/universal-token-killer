@@ -1,14 +1,13 @@
 import { mkdir } from 'node:fs/promises';
 import { atomicWriteFile, contentHash, safeJoin, type GrammarCompletion } from '@utk/core';
 import { deriveMinGrammar } from '../grammars/deriveMinGrammar.js';
-import { languageGrammar } from '../grammars/languageProfile.js';
 import type { LanguageAdapter } from '../languages/adapter.js';
-import { resolveLanguageAdapter } from '../languages/registry.js';
+import { languageGrammar, resolveLanguageAdapter } from '../languages/registry.js';
 import type { MacroDescriptor } from '../macros/defineMacro.js';
 import { expandEmissionSource } from '../macros/expandEmission.js';
 import { appendEmissionLedgerEntry } from '../macros/ledger.js';
 import { MIN_ID_PATTERN, type MinMap } from '../minmap/format.js';
-import { appendMinMapPatch } from '../minmap/journal.js';
+import { appendMinMapPatch, saveMinMap } from '../minmap/journal.js';
 import { applyMinMapPatch, parseMinMapPatch } from '../minmap/patch.js';
 import { planEmission, type EmissionPlan } from '../ladder/planEmission.js';
 import { extractEmissionPatchBlock } from './patchBlock.js';
@@ -96,6 +95,9 @@ export async function emitConstrained(input: EmitConstrainedInput): Promise<Emit
   if (patchText !== undefined) {
     map = applyMinMapPatch(map, parseMinMapPatch(patchText));
     await appendMinMapPatch(input.workspaceRoot, input.language, patchText);
+    // The journal records patch history; the snapshot must hold the fully
+    // reconciled state including entries that were only in input.map.
+    await saveMinMap(input.workspaceRoot, map);
     await appendEmissionLedgerEntry(input.workspaceRoot, { type: 'minmap-patch', data: { patch: patchText } });
   }
 
@@ -104,13 +106,13 @@ export async function emitConstrained(input: EmitConstrainedInput): Promise<Emit
   }
   assertMinIdentifiersResolve(adapter, code, map);
 
-  const prettySource = await expandEmissionSource(code, map, input.macros ?? []);
+  const prettySource = await expandEmissionSource(code, map, input.macros ?? [], adapter);
 
   const runHash = contentHash({ planHash: plan.planHash, minSource }, 16);
   const runDir = safeJoin(input.workspaceRoot, '.utk', 'emission', 'runs', runHash);
   await mkdir(runDir, { recursive: true });
-  const minPath = safeJoin(runDir, 'emission.min.ts');
-  const prettyPath = safeJoin(runDir, 'emission.pretty.ts');
+  const minPath = safeJoin(runDir, `emission.min${adapter.fileExtension}`);
+  const prettyPath = safeJoin(runDir, `emission.pretty${adapter.fileExtension}`);
   await atomicWriteFile(minPath, minSource);
   await atomicWriteFile(prettyPath, prettySource);
   await appendEmissionLedgerEntry(input.workspaceRoot, {

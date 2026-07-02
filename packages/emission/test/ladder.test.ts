@@ -10,6 +10,10 @@ import {
   resolveEmissionPolicy
 } from '../src/ladder/policy.js';
 import { planEmission } from '../src/ladder/planEmission.js';
+import { registerLanguagePack } from '../src/languages/registry.js';
+import { typescriptLanguagePack } from '../../plugins/languages/typescript/src/index.js';
+
+registerLanguagePack(typescriptLanguagePack);
 
 const HTTP_GET_JSON = defineMacro({
   name: 'httpGetJson',
@@ -157,13 +161,15 @@ describe('planEmission ladder', () => {
     expect(plan.decisions).toEqual([]);
   });
 
-  it('persists a canonical plan artifact and a ledger entry', async () => {
+  it('persists a canonical plan artifact with carve-outs and a ledger entry', async () => {
     const root = await workspace();
     const plan = await planEmission({ workspaceRoot: root, language: 'typescript', request: 'deep clone', capability: 'structuredClone' });
 
     expect(plan.planPath).toContain(path.join('.utk', 'emission', 'plans'));
-    const persisted = JSON.parse(await readFile(plan.planPath, 'utf8')) as { planHash: string };
+    const persisted = JSON.parse(await readFile(plan.planPath, 'utf8')) as { planHash: string; carveOuts: string[] };
     expect(persisted.planHash).toBe(plan.planHash);
+    expect(persisted.carveOuts).toEqual([...EMISSION_SAFETY_CARVE_OUTS]);
+    expect(plan.carveOuts).toEqual([...EMISSION_SAFETY_CARVE_OUTS]);
 
     const ledger = await readEmissionLedger(root);
     expect(ledger).toHaveLength(1);

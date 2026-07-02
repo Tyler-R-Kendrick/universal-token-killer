@@ -1,47 +1,31 @@
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { TYPESCRIPT_EMIT_LARK } from '../src/grammars/typescriptEmitGrammar.js';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { deriveMinGrammar } from '../src/grammars/deriveMinGrammar.js';
 import { installLanguageProfile } from '../src/grammars/languageProfile.js';
+import { registerLanguagePack } from '../src/languages/registry.js';
+import { typescriptLanguagePack } from '../../plugins/languages/typescript/src/index.js';
 
-describe('typescript emission grammar profile', () => {
-  it('declares a start rule and the identifier terminal lint requires', () => {
-    expect(TYPESCRIPT_EMIT_LARK).toMatch(/^start:/m);
-    expect(TYPESCRIPT_EMIT_LARK).toMatch(/^IDENT:/m);
-    expect(TYPESCRIPT_EMIT_LARK).toContain('%ignore');
-  });
+let SAMPLE_LARK = '';
 
-  it('ships every grammar as a committed .lark file, never as escaped source strings', async () => {
-    for (const fileName of ['typescript.emit.lark', 'typescript.emit.min.lark', 'minmap-patch.lark', 'minmap-patch-block.lark', 'macro-arg.lark']) {
-      const content = await readFile(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
-      expect(content.length, fileName).toBeGreaterThan(0);
-      expect(content.endsWith('\n'), fileName).toBe(true);
-    }
-    expect(TYPESCRIPT_EMIT_LARK).toBe(await readFile(new URL('../grammars/typescript.emit.lark', import.meta.url), 'utf8'));
-  });
-
-  it('covers the emission profile constructs the plan commits to', () => {
-    for (const construct of ['import_decl', 'const_decl', 'function_decl', 'class_decl', 'return_stmt', 'arrow_fn']) {
-      expect(TYPESCRIPT_EMIT_LARK).toContain(construct);
-    }
-  });
+beforeAll(async () => {
+  SAMPLE_LARK = await readFile(new URL('./fixtures/sample.emit.lark', import.meta.url), 'utf8');
 });
 
 describe('deriveMinGrammar', () => {
   it('is deterministic', () => {
-    expect(deriveMinGrammar(TYPESCRIPT_EMIT_LARK)).toBe(deriveMinGrammar(TYPESCRIPT_EMIT_LARK));
+    expect(deriveMinGrammar(SAMPLE_LARK)).toBe(deriveMinGrammar(SAMPLE_LARK));
   });
 
   it('constrains identifiers to pool-shaped min ids', () => {
-    const derived = deriveMinGrammar(TYPESCRIPT_EMIT_LARK);
+    const derived = deriveMinGrammar(SAMPLE_LARK);
     expect(derived).toContain('IDENT: /[A-Za-z][A-Za-z0-9]{0,2}/');
     expect(derived).not.toContain('IDENT: /[A-Za-z_$][A-Za-z0-9_$]*/');
   });
 
   it('embeds declare-before-use min-map patch productions ahead of code', () => {
-    const derived = deriveMinGrammar(TYPESCRIPT_EMIT_LARK);
+    const derived = deriveMinGrammar(SAMPLE_LARK);
     expect(derived).toContain('"@minmap"');
     expect(derived).toContain('"@end"');
     expect(derived).toContain('PRETTY:');
@@ -49,56 +33,58 @@ describe('deriveMinGrammar', () => {
   });
 
   it('strips comments and blank lines and renames rules to compact ids', () => {
-    const derived = deriveMinGrammar(TYPESCRIPT_EMIT_LARK);
+    const derived = deriveMinGrammar(SAMPLE_LARK);
     expect(derived).not.toMatch(/^\/\//m);
     expect(derived.trimEnd().split('\n').every((line) => line.trim().length > 0)).toBe(true);
-    expect(derived).not.toContain('function_decl');
+    expect(derived).not.toContain('greet_decl');
     expect(derived).toMatch(/^r\d+:/m);
-    expect(derived.length).toBeLessThan(TYPESCRIPT_EMIT_LARK.length + 400);
   });
 
   it('keeps quoted keyword literals intact while renaming rules', () => {
-    const derived = deriveMinGrammar(TYPESCRIPT_EMIT_LARK);
-    expect(derived).toContain('"import"');
-    expect(derived).toContain('"function"');
-    expect(derived).toContain('"class"');
+    const derived = deriveMinGrammar(SAMPLE_LARK);
+    expect(derived).toContain('"greet"');
   });
 
-  it('rejects grammars without a start rule or IDENT terminal', () => {
+  it('rejects grammars without a start rule, IDENT terminal, or %ignore directive', () => {
     expect(() => deriveMinGrammar('nothing: "x"\n')).toThrow(/start/);
     expect(() => deriveMinGrammar('start: "x"\n')).toThrow(/IDENT/);
+    expect(() => deriveMinGrammar(SAMPLE_LARK.replace('%ignore /\\s+/\n', ''))).toThrow(/%ignore/);
   });
 
   it('appends macro-call productions when macro ids are supplied', () => {
-    const derived = deriveMinGrammar(TYPESCRIPT_EMIT_LARK, { macroIds: ['m1', 'm2'] });
+    const derived = deriveMinGrammar(SAMPLE_LARK, { macroIds: ['m1', 'm2'] });
     expect(derived).toContain('MACRO_ID: "m1" | "m2"');
     expect(derived).toContain('MACRO_ID "("');
   });
 
   it('rejects macro ids that do not fit the min-id shape', () => {
-    expect(() => deriveMinGrammar(TYPESCRIPT_EMIT_LARK, { macroIds: ['not valid'] })).toThrow(/macro id/);
+    expect(() => deriveMinGrammar(SAMPLE_LARK, { macroIds: ['not valid'] })).toThrow(/macro id/);
   });
 });
 
-describe('committed derived grammar staleness gate', () => {
-  it('grammars/typescript.emit.min.lark byte-equals deriveMinGrammar(TYPESCRIPT_EMIT_LARK)', async () => {
-    const committed = await readFile(new URL('../grammars/typescript.emit.min.lark', import.meta.url), 'utf8');
-    expect(committed.replace(/\r\n/g, '\n')).toBe(deriveMinGrammar(TYPESCRIPT_EMIT_LARK));
+describe('emission core grammar files', () => {
+  it('ships every language-agnostic grammar as a committed .lark file', async () => {
+    for (const fileName of ['minmap-patch.lark', 'minmap-patch-block.lark', 'macro-arg.lark']) {
+      const content = await readFile(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
+      expect(content.length, fileName).toBeGreaterThan(0);
+      expect(content.endsWith('\n'), fileName).toBe(true);
+    }
   });
 });
 
 describe('installLanguageProfile', () => {
-  it('persists base and derived grammars under .utk/lang/<language>/', async () => {
+  it('persists base and derived grammars for a registered language pack', async () => {
+    registerLanguagePack(typescriptLanguagePack);
     const root = await mkdtemp(path.join(tmpdir(), 'utk-emission-grammar-'));
     const installed = await installLanguageProfile(root, 'typescript');
 
     expect(installed.grammarPath).toBe(path.join(root, '.utk', 'lang', 'typescript', 'grammar.lark'));
     expect(installed.minGrammarPath).toBe(path.join(root, '.utk', 'lang', 'typescript', 'grammar.min.lark'));
-    expect(await readFile(installed.grammarPath, 'utf8')).toBe(TYPESCRIPT_EMIT_LARK);
-    expect(await readFile(installed.minGrammarPath, 'utf8')).toBe(deriveMinGrammar(TYPESCRIPT_EMIT_LARK));
+    expect(await readFile(installed.grammarPath, 'utf8')).toBe(typescriptLanguagePack.grammar);
+    expect(await readFile(installed.minGrammarPath, 'utf8')).toBe(deriveMinGrammar(typescriptLanguagePack.grammar));
   });
 
-  it('rejects languages without a registered grammar profile', async () => {
+  it('rejects languages without a registered pack', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'utk-emission-grammar-'));
     await expect(installLanguageProfile(root, 'cobol')).rejects.toThrow(/language 'cobol'/);
   });

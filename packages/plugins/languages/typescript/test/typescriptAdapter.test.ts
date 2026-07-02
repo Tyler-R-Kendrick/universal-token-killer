@@ -1,7 +1,7 @@
+import type ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
-import { applyMinMapPatch } from '../src/minmap/patch.js';
-import { buildSourceMinMap, typescriptAdapter } from '../src/languages/typescript.js';
+import { addMinMapEntry, applyMinMapPatch, createMinMap } from '@utk/emission';
+import { buildSourceMinMap, parseDiagnosticsAreClean, typescriptAdapter } from '../src/adapter.js';
 
 const PRETTY_CORPUS: Record<string, string> = {
   'function-with-refs': [
@@ -23,7 +23,7 @@ const PRETTY_CORPUS: Record<string, string> = {
   'imports-and-templates': [
     "import { readFile } from 'node:fs/promises';",
     'export async function loadManifest(manifestPath: string): Promise<string> {',
-    '  const manifestText = await readFile(manifestPath, \'utf8\');',
+    "  const manifestText = await readFile(manifestPath, 'utf8');",
     '  return `manifest:${manifestText}`;',
     '}',
     ''
@@ -161,6 +161,12 @@ describe('typescript adapter minify/expand', () => {
     expect(typescriptAdapter.isParseable(source)).toBe(true);
     expect(typescriptAdapter.isParseable(typescriptAdapter.minify(source, map))).toBe(true);
     expect(typescriptAdapter.isParseable('export function ((( {')).toBe(false);
+  });
+
+  it('fails open when a future typescript release drops the internal parseDiagnostics field', () => {
+    expect(parseDiagnosticsAreClean({} as ts.SourceFile)).toBe(true);
+    expect(parseDiagnosticsAreClean({ parseDiagnostics: [] } as unknown as ts.SourceFile)).toBe(true);
+    expect(parseDiagnosticsAreClean({ parseDiagnostics: ['broken'] } as unknown as ts.SourceFile)).toBe(false);
   });
 });
 

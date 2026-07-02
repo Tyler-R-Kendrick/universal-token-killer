@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
 import { defineMacro, expandMacro, registerMacro } from '../src/macros/defineMacro.js';
 import { expandEmissionSource, expandMacroCallsInSource } from '../src/macros/expandEmission.js';
+import { typescriptAdapter } from '../../plugins/languages/typescript/src/adapter.js';
 import {
   appendEmissionLedgerEntry,
   emissionLedgerPath,
@@ -80,7 +81,7 @@ describe('expandMacroCallsInSource', () => {
 
   it('replaces macro call sites with their expansions', async () => {
     const source = `const payload = ${macroId('httpGetJson')}('https://example.test/data');\n`;
-    const expanded = await expandMacroCallsInSource(source, map, macros);
+    const expanded = await expandMacroCallsInSource(source, map, macros, typescriptAdapter);
     expect(expanded).toBe(
       "const payload = await fetch('https://example.test/data').then((response) => response.json());\n"
     );
@@ -92,39 +93,46 @@ describe('expandMacroCallsInSource', () => {
       `const body = ${macroId('httpGetJson')}(requestUrl);`,
       ''
     ].join('\n');
-    const expanded = await expandMacroCallsInSource(source, map, macros);
+    const expanded = await expandMacroCallsInSource(source, map, macros, typescriptAdapter);
     expect(expanded).toContain("if (loadedConfig === undefined) { throw new Error('missing config'); }");
     expect(expanded).toContain('const body = await fetch(requestUrl).then((response) => response.json());');
   });
 
   it('handles nested parentheses inside a single argument', async () => {
     const source = `const body = ${macroId('httpGetJson')}(buildUrl(baseUrl, requestPath));\n`;
-    const expanded = await expandMacroCallsInSource(source, map, macros);
+    const expanded = await expandMacroCallsInSource(source, map, macros, typescriptAdapter);
     expect(expanded).toContain('await fetch(buildUrl(baseUrl, requestPath))');
   });
 
   it('does not split arguments on commas inside object or array literals', async () => {
     const source = `${macroId('guardRequired')}({ first: 1, second: 2 }.first, 'missing');\n`;
-    const expanded = await expandMacroCallsInSource(source, map, macros);
+    const expanded = await expandMacroCallsInSource(source, map, macros, typescriptAdapter);
     expect(expanded).toContain("if ({ first: 1, second: 2 }.first === undefined) { throw new Error('missing'); }");
   });
 
   it('leaves bare macro ids and string contents untouched', async () => {
     const bare = `const alias = ${macroId('httpGetJson')};\n`;
-    expect(await expandMacroCallsInSource(bare, map, macros)).toBe(bare);
+    expect(await expandMacroCallsInSource(bare, map, macros, typescriptAdapter)).toBe(bare);
 
     const quoted = `const note = "${macroId('httpGetJson')}(ignored)";\n`;
-    expect(await expandMacroCallsInSource(quoted, map, macros)).toBe(quoted);
+    expect(await expandMacroCallsInSource(quoted, map, macros, typescriptAdapter)).toBe(quoted);
   });
 
   it('rejects nested macro calls', async () => {
     const source = `${macroId('httpGetJson')}(${macroId('httpGetJson')}(innerUrl));\n`;
-    await expect(expandMacroCallsInSource(source, map, macros)).rejects.toThrow(/nested macro/);
+    await expect(expandMacroCallsInSource(source, map, macros, typescriptAdapter)).rejects.toThrow(/nested macro/);
   });
 
   it('rejects unterminated macro call sites', async () => {
     const source = `${macroId('httpGetJson')}(unclosed;\n`;
-    await expect(expandMacroCallsInSource(source, map, macros)).rejects.toThrow(/unterminated/);
+    await expect(expandMacroCallsInSource(source, map, macros, typescriptAdapter)).rejects.toThrow(/unterminated/);
+  });
+
+  it('rejects duplicate macro names in the descriptor list', async () => {
+    const source = `${macroId('httpGetJson')}(requestUrl);\n`;
+    await expect(
+      expandMacroCallsInSource(source, map, [HTTP_GET_JSON, HTTP_GET_JSON], typescriptAdapter)
+    ).rejects.toThrow(/registered more than once/);
   });
 
   it('rejects macro ids in the map without a registered descriptor', async () => {
@@ -134,7 +142,7 @@ describe('expandMacroCallsInSource', () => {
       kind: 'macro',
       provenance: 'new'
     });
-    await expect(expandMacroCallsInSource('q9(value);\n', orphanMap, [])).rejects.toThrow(/descriptor/);
+    await expect(expandMacroCallsInSource('q9(value);\n', orphanMap, [], typescriptAdapter)).rejects.toThrow(/descriptor/);
   });
 });
 
@@ -146,7 +154,7 @@ describe('expandEmissionSource', () => {
     const registered = registerMacro(map, HTTP_GET_JSON);
     const minSource = `const b = ${registered.entry.minId}(a);\n`;
 
-    const pretty = await expandEmissionSource(minSource, registered.map, [HTTP_GET_JSON]);
+    const pretty = await expandEmissionSource(minSource, registered.map, [HTTP_GET_JSON], typescriptAdapter);
     expect(pretty).toBe(
       'const responsePayload = await fetch(requestUrl).then((response) => response.json());\n'
     );
@@ -189,6 +197,9 @@ describe('emission ledger', () => {
     await expect(readEmissionLedger(root)).rejects.toThrow(/ledger/);
 
     await writeFile(ledgerPath, '{"seq":1}\n', 'utf8');
+    await expect(readEmissionLedger(root)).rejects.toThrow(/ledger/);
+
+    await writeFile(ledgerPath, '{"seq":1,"type":"bogus-type","data":{}}\n', 'utf8');
     await expect(readEmissionLedger(root)).rejects.toThrow(/ledger/);
   });
 
