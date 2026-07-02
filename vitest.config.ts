@@ -5,7 +5,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts'),
-      '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts')
+      '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
+      '@utk/emission': path.resolve(import.meta.dirname, 'packages/emission/src/index.ts')
     }
   },
   test: {
