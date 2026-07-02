@@ -15,3 +15,6 @@ export * from './macros/ledger.js';
 export * from './ladder/policy.js';
 export * from './ladder/languageCapabilities.js';
 export * from './ladder/planEmission.js';
+export * from './languages/registry.js';
+export * from './emit/patchBlock.js';
+export * from './emit/emitConstrained.js';
