@@ -1,0 +1,38 @@
+start: r25? r0+
+r0: r1 | r2 | r3 | r4 | r5 | r18 | r19
+r1: "import" "{" IDENT ("," IDENT)* "}" "from" STRING ";"
+r2: "export" (r3 | r4 | r5)
+r3: ("const" | "let") IDENT r14? "=" r20 ";"
+r4: "async"? "function" IDENT "(" r11? ")" r14? r17
+r5: "class" IDENT r13? "{" r6* "}"
+r6: r7 | r9
+r7: r10* IDENT r14? r8? ";"
+r8: "=" r20
+r9: IDENT "(" r11? ")" r14? r17
+r10: "private" | "readonly" | "static"
+r11: r12 ("," r12)*
+r12: IDENT r14?
+r13: "<" IDENT ("," IDENT)* ">"
+r14: ":" r15
+r15: "string" | "number" | "boolean" | "void" | IDENT r16?
+r16: "<" r15 ("," r15)* ">"
+r17: "{" r0* "}"
+r18: "return" r20? ";"
+r19: r20 ";"
+r20: "await" r20 | r24 | r21 | r22 | IDENT | STRING | NUMBER | TEMPLATE
+r21: r22 "(" r23? ")" | IDENT "(" r23? ")"
+r22: IDENT ("." IDENT)+
+r23: r20 ("," r20)*
+r24: "(" r11? ")" "=>" r20
+IDENT: /[A-Za-z][A-Za-z0-9]{0,2}/
+STRING: /'[^']*'|"[^"]*"/
+NUMBER: /[0-9]+(\.[0-9]+)?/
+TEMPLATE: /`[^`]*`/
+r25: "@minmap" r26+ "@end"
+r26: r27 | r28 | r29
+r27: "+" IDENT PRETTY r30?
+r28: "-" IDENT
+r29: "~" IDENT PRETTY
+r30: "@ident" | "@macro" | "@keyword"
+PRETTY: /[A-Za-z_$][A-Za-z0-9_$]*/
+%ignore /\s+/
