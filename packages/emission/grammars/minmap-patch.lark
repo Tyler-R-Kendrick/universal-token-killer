@@ -1,0 +1,10 @@
+start: line (NEWLINE line)*
+line: add | remove | rename
+add: "+" WS MIN_ID WS PRETTY (WS KIND)?
+remove: "-" WS MIN_ID
+rename: "~" WS MIN_ID WS PRETTY
+KIND: "@ident" | "@macro" | "@keyword"
+MIN_ID: /[A-Za-z][A-Za-z0-9]{0,2}/
+PRETTY: /[A-Za-z_$][A-Za-z0-9_$]*/
+WS: " "
+NEWLINE: "\n"
