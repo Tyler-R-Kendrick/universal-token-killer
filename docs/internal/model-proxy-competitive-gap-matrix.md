@@ -21,6 +21,7 @@ Internal note. Keep public docs focused on shipped UTK behavior, not competitor 
 | OpenCode DCP durable IDs | Request-local helper state | Session ids come from `x-utk-session-id`, metadata, or request hash; ledgers persist monotonic message/tool/block ids under `.utk/model-proxy/sessions` | `gateway-v3-durable-ledger` | Replacement/purge policies need stable handles |
 | Serena progressive handles | Raw refs only | Compact handles carry artifact, route/schema, range, and snippet metadata; expand accepts `id`, `handle`, `range`, `query`, or `blockId` | `gateway-v3-progressive-handles` | Model-visible context can stay terse but recoverable |
 | Prompt-compression tools | Naive prompt optimizer | `optimizePromptAsset` emits pipe-index, retrieval-led asset prompts | `prompt-compression-agent-context-index` | Shrinks AGENTS/Copilot/skill prompt surfaces |
+| Ponytail "write less code" ruleset | Prompt guidance only, no intensity levels | Skill-level "read/emit less first" guidance layered on deterministic mediation; safety carve-outs (exact diagnostics, volatility-flagged tokens, data-loss warnings) enumerated as non-compactable | `prompt-compression-agent-context-index`, `gateway-context-proof` | Ponytail proves 54% code cut ≠ token win (~22%); UTK savings must come from payload mediation with recoverability, not authoring pressure |
 
 Not shipped in v2:
 
