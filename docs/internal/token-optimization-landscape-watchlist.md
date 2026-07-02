@@ -98,7 +98,9 @@ citing; do not cite a number without its benchmark.
 | FrugalGPT | arXiv 2305.05176 | `stanford-futuredata/FrugalGPT`; TMLR |
 | Local-Splitter | arXiv 2604.12301 | — |
 | GPT Semantic Cache | arXiv 2411.05276 | — |
-| OpenAI / Anthropic / Gemini caching | vendor docs | — |
+| OpenAI prompt caching | platform.openai.com/docs/guides/prompt-caching | vendor doc |
+| Anthropic prompt caching | docs.anthropic.com/en/docs/build-with-claude/prompt-caching | vendor doc |
+| Gemini context caching | ai.google.dev/gemini-api/docs/caching | vendor doc |
 
 ---
 
@@ -391,14 +393,23 @@ Attacks token count below the prompt layer.
   tokenizer, recovering performance in "a few GPU hours." Track under
   **tokenizer/model adaptation**, not the zip2zip / TokenSugar token-savings
   class; it does not reduce prompt tokens for a fixed model.
-- **TokenSugar / Anka** — covered in depth in their own docs
-  (`tokensugar-competitive-research.md`, `anka-competitive-research.md`); they
-  attack the same below-the-prompt layer via code shorthand / LLM-native DSL.
+- **TokenSugar** — covered in depth in `tokensugar-competitive-research.md`.
+  Attacks the below-the-prompt layer via **trained special-token code shorthand**
+  (tokenizer vocab additions + continual pretraining) — the same tokenizer-level
+  class as zip2zip.
+- **Anka** — covered in `anka-competitive-research.md`. **Not** a tokenizer-level
+  technique: it is a **prompt-taught, training-free DSL** (a constrained language
+  learned in-context, no vocab changes, no fine-tuning). It belongs here only as
+  an LLM-native *language-design* alternative to spending tokens, not as evidence
+  for the vocab+PEFT argument below.
 
-UTK relevance: same conclusion as TokenSugar — **requires vocab changes + PEFT**,
-incompatible with UTK's model-agnostic hook. The GPT-4.1 negative result in the
-TokenSugar doc (94.5% → 51.2% on untrained sugarized input) is the standing
-argument against any tokenizer-level scheme in a UTK hot path. Reference-only.
+UTK relevance: the **tokenizer-level** members here (zip2zip, TokenSugar) require
+**vocab changes + PEFT/pretraining**, incompatible with UTK's model-agnostic hook.
+The GPT-4.1 negative result in the TokenSugar doc (94.5% → 51.2% on untrained
+sugarized input) is the standing argument against any *tokenizer-level* scheme in
+a UTK hot path. Anka's training-free DSL approach does not carry that constraint,
+but adopting a bespoke language is its own non-goal (see its doc). All
+reference-only for UTK.
 
 ## 13. Multimodal / Visual Token Pruning
 
@@ -422,13 +433,17 @@ not to prune tokens inside the VLM. Reference-only for now.
 Often more practical than compression, and fully compatible with UTK (caching a
 compact UTK-serialized prefix compounds the savings).
 
-**Provider prompt caching (verified vendor docs):**
-- **OpenAI:** automatic for prompts >1024 tokens, no code change, no extra fee;
-  **up to 80% latency and up to 90% input-cost reduction** for repeated prefixes.
-- **Anthropic:** cache **write 1.25× (5-min TTL) or 2.0× (1-hour TTL)** base input;
-  cache **read 0.10×** (90% discount). Explicit `cache_control` markers.
-- **Gemini:** implicit (automatic) + explicit context caching; **50–90% cost
-  reduction** depending on context-to-query ratio.
+**Provider prompt caching (verified vendor docs, cited individually so the
+time-sensitive TTL/discount figures stay re-checkable):**
+- **OpenAI** (platform.openai.com/docs/guides/prompt-caching): automatic for
+  prompts >1024 tokens, no code change, no extra fee; **up to 80% latency and up
+  to 90% input-cost reduction** for repeated prefixes.
+- **Anthropic** (docs.anthropic.com/en/docs/build-with-claude/prompt-caching):
+  cache **write 1.25× (5-min TTL) or 2.0× (1-hour TTL)** base input; cache **read
+  0.10×** (90% discount). Explicit `cache_control` markers.
+- **Gemini** (ai.google.dev/gemini-api/docs/caching): implicit (automatic) +
+  explicit context caching; **50–90% cost reduction** depending on
+  context-to-query ratio.
 
 **Semantic response caching:**
 - **GPT Semantic Cache** (arXiv 2411.05276) / GPTCache pattern. Embeds queries,
