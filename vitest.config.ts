@@ -20,7 +20,6 @@ export default defineConfig({
       include: [
         'packages/*/src/**/*.ts',
         'packages/plugins/languages/*/src/**/*.ts',
-        'packages/evals/assertions/**/*.ts',
         'scripts/**/*.ts'
       ],
       exclude: [

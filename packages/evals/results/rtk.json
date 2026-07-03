@@ -1,0 +1,450 @@
+{
+  "competitor": "rtk",
+  "label": "RTK (rust-token-killer)",
+  "benchmark": "tool-output",
+  "description": "Shell/CLI output summarizer. UTK matches its fact retention while cutting far more visible tokens by keeping raw recoverable off-context.",
+  "cases": 12,
+  "arms": {
+    "baseline": {
+      "arm": "baseline",
+      "label": "Baseline (raw tool output)",
+      "session": {
+        "tools": [
+          "shell",
+          "read",
+          "edit"
+        ],
+        "skills": [
+          "rtk-shell-summary"
+        ],
+        "model": "reference-judge"
+      },
+      "cases": [
+        {
+          "name": "shell-git-status",
+          "category": "Version control",
+          "visibleTokens": 103,
+          "baselineTokens": 103,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-vitest",
+          "category": "Test output",
+          "visibleTokens": 61,
+          "baselineTokens": 61,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-kubectl-pods",
+          "category": "Kubernetes",
+          "visibleTokens": 69,
+          "baselineTokens": 69,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-npm-install-error",
+          "category": "Package install",
+          "visibleTokens": 108,
+          "baselineTokens": 108,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-docker-ps",
+          "category": "Containers",
+          "visibleTokens": 66,
+          "baselineTokens": 66,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-rg-search",
+          "category": "Code search",
+          "visibleTokens": 90,
+          "baselineTokens": 90,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-terraform-plan",
+          "category": "Infrastructure",
+          "visibleTokens": 70,
+          "baselineTokens": 70,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-node-stack",
+          "category": "Runtime error",
+          "visibleTokens": 98,
+          "baselineTokens": 98,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-secret-log",
+          "category": "Secret safety",
+          "visibleTokens": 53,
+          "baselineTokens": 53,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "json-events-array",
+          "category": "Structured JSON",
+          "visibleTokens": 307,
+          "baselineTokens": 307,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "json-users-object",
+          "category": "Structured JSON",
+          "visibleTokens": 199,
+          "baselineTokens": 199,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-gh-pr-list",
+          "category": "GitHub CLI",
+          "visibleTokens": 73,
+          "baselineTokens": 73,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        }
+      ],
+      "totals": {
+        "cases": 12,
+        "passed": 12,
+        "visibleTokens": 1297,
+        "baselineTokens": 1297,
+        "savedTokens": 0,
+        "avgRatio": 1,
+        "avgQuality": 0.667,
+        "avgComposite": 0.334
+      }
+    },
+    "competitor": {
+      "arm": "competitor",
+      "label": "RTK (rust-token-killer)",
+      "session": {
+        "tools": [
+          "shell",
+          "read",
+          "edit"
+        ],
+        "skills": [
+          "rtk-shell-summary"
+        ],
+        "model": "reference-judge"
+      },
+      "cases": [
+        {
+          "name": "shell-git-status",
+          "category": "Version control",
+          "visibleTokens": 27,
+          "baselineTokens": 103,
+          "savingsRatio": 0.738,
+          "quality": 1,
+          "composite": 0.869,
+          "passed": true
+        },
+        {
+          "name": "shell-vitest",
+          "category": "Test output",
+          "visibleTokens": 53,
+          "baselineTokens": 61,
+          "savingsRatio": 0.131,
+          "quality": 0.833,
+          "composite": 0.482,
+          "passed": true
+        },
+        {
+          "name": "shell-kubectl-pods",
+          "category": "Kubernetes",
+          "visibleTokens": 69,
+          "baselineTokens": 69,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-npm-install-error",
+          "category": "Package install",
+          "visibleTokens": 73,
+          "baselineTokens": 108,
+          "savingsRatio": 0.324,
+          "quality": 1,
+          "composite": 0.662,
+          "passed": true
+        },
+        {
+          "name": "shell-docker-ps",
+          "category": "Containers",
+          "visibleTokens": 66,
+          "baselineTokens": 66,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-rg-search",
+          "category": "Code search",
+          "visibleTokens": 90,
+          "baselineTokens": 90,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-terraform-plan",
+          "category": "Infrastructure",
+          "visibleTokens": 35,
+          "baselineTokens": 70,
+          "savingsRatio": 0.5,
+          "quality": 1,
+          "composite": 0.75,
+          "passed": true
+        },
+        {
+          "name": "shell-node-stack",
+          "category": "Runtime error",
+          "visibleTokens": 98,
+          "baselineTokens": 98,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-secret-log",
+          "category": "Secret safety",
+          "visibleTokens": 53,
+          "baselineTokens": 53,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "json-events-array",
+          "category": "Structured JSON",
+          "visibleTokens": 307,
+          "baselineTokens": 307,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "json-users-object",
+          "category": "Structured JSON",
+          "visibleTokens": 199,
+          "baselineTokens": 199,
+          "savingsRatio": 0,
+          "quality": 0.667,
+          "composite": 0.334,
+          "passed": true
+        },
+        {
+          "name": "shell-gh-pr-list",
+          "category": "GitHub CLI",
+          "visibleTokens": 53,
+          "baselineTokens": 73,
+          "savingsRatio": 0.274,
+          "quality": 0.833,
+          "composite": 0.554,
+          "passed": true
+        }
+      ],
+      "totals": {
+        "cases": 12,
+        "passed": 12,
+        "visibleTokens": 1123,
+        "baselineTokens": 1297,
+        "savedTokens": 174,
+        "avgRatio": 0.866,
+        "avgQuality": 0.778,
+        "avgComposite": 0.471
+      }
+    },
+    "utk": {
+      "arm": "utk",
+      "label": "UTK (mediated compaction)",
+      "session": {
+        "tools": [
+          "shell",
+          "read",
+          "edit"
+        ],
+        "skills": [
+          "rtk-shell-summary"
+        ],
+        "model": "reference-judge"
+      },
+      "cases": [
+        {
+          "name": "shell-git-status",
+          "category": "Version control",
+          "visibleTokens": 28,
+          "baselineTokens": 103,
+          "savingsRatio": 0.728,
+          "quality": 1,
+          "composite": 0.864,
+          "passed": true
+        },
+        {
+          "name": "shell-vitest",
+          "category": "Test output",
+          "visibleTokens": 25,
+          "baselineTokens": 61,
+          "savingsRatio": 0.59,
+          "quality": 1,
+          "composite": 0.795,
+          "passed": true
+        },
+        {
+          "name": "shell-kubectl-pods",
+          "category": "Kubernetes",
+          "visibleTokens": 30,
+          "baselineTokens": 69,
+          "savingsRatio": 0.565,
+          "quality": 1,
+          "composite": 0.783,
+          "passed": true
+        },
+        {
+          "name": "shell-npm-install-error",
+          "category": "Package install",
+          "visibleTokens": 28,
+          "baselineTokens": 108,
+          "savingsRatio": 0.741,
+          "quality": 1,
+          "composite": 0.871,
+          "passed": true
+        },
+        {
+          "name": "shell-docker-ps",
+          "category": "Containers",
+          "visibleTokens": 27,
+          "baselineTokens": 66,
+          "savingsRatio": 0.591,
+          "quality": 1,
+          "composite": 0.796,
+          "passed": true
+        },
+        {
+          "name": "shell-rg-search",
+          "category": "Code search",
+          "visibleTokens": 23,
+          "baselineTokens": 90,
+          "savingsRatio": 0.744,
+          "quality": 1,
+          "composite": 0.872,
+          "passed": true
+        },
+        {
+          "name": "shell-terraform-plan",
+          "category": "Infrastructure",
+          "visibleTokens": 29,
+          "baselineTokens": 70,
+          "savingsRatio": 0.586,
+          "quality": 1,
+          "composite": 0.793,
+          "passed": true
+        },
+        {
+          "name": "shell-node-stack",
+          "category": "Runtime error",
+          "visibleTokens": 24,
+          "baselineTokens": 98,
+          "savingsRatio": 0.755,
+          "quality": 1,
+          "composite": 0.878,
+          "passed": true
+        },
+        {
+          "name": "shell-secret-log",
+          "category": "Secret safety",
+          "visibleTokens": 28,
+          "baselineTokens": 53,
+          "savingsRatio": 0.472,
+          "quality": 1,
+          "composite": 0.736,
+          "passed": true
+        },
+        {
+          "name": "json-events-array",
+          "category": "Structured JSON",
+          "visibleTokens": 28,
+          "baselineTokens": 307,
+          "savingsRatio": 0.909,
+          "quality": 1,
+          "composite": 0.955,
+          "passed": true
+        },
+        {
+          "name": "json-users-object",
+          "category": "Structured JSON",
+          "visibleTokens": 27,
+          "baselineTokens": 199,
+          "savingsRatio": 0.864,
+          "quality": 1,
+          "composite": 0.932,
+          "passed": true
+        },
+        {
+          "name": "shell-gh-pr-list",
+          "category": "GitHub CLI",
+          "visibleTokens": 27,
+          "baselineTokens": 73,
+          "savingsRatio": 0.63,
+          "quality": 1,
+          "composite": 0.815,
+          "passed": true
+        }
+      ],
+      "totals": {
+        "cases": 12,
+        "passed": 12,
+        "visibleTokens": 324,
+        "baselineTokens": 1297,
+        "savedTokens": 973,
+        "avgRatio": 0.25,
+        "avgQuality": 1,
+        "avgComposite": 0.841
+      }
+    }
+  }
+}

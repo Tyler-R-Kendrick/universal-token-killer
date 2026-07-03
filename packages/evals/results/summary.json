@@ -1,0 +1,38 @@
+{
+  "benchmark": "tool-output",
+  "competitors": [
+    {
+      "competitor": "rtk",
+      "label": "RTK (rust-token-killer)",
+      "cases": 12,
+      "baselineTokens": 1297,
+      "competitorTokens": 1123,
+      "utkTokens": 324,
+      "utkFactsKept": "12/12",
+      "utkAvgComposite": 0.841,
+      "competitorAvgComposite": 0.471
+    },
+    {
+      "competitor": "compresr",
+      "label": "Compresr (query-aware)",
+      "cases": 12,
+      "baselineTokens": 1297,
+      "competitorTokens": 1122,
+      "utkTokens": 324,
+      "utkFactsKept": "12/12",
+      "utkAvgComposite": 0.841,
+      "competitorAvgComposite": 0.462
+    },
+    {
+      "competitor": "caveman",
+      "label": "Caveman (terse register)",
+      "cases": 12,
+      "baselineTokens": 1297,
+      "competitorTokens": 1083,
+      "utkTokens": 324,
+      "utkFactsKept": "12/12",
+      "utkAvgComposite": 0.841,
+      "competitorAvgComposite": 0.454
+    }
+  ]
+}

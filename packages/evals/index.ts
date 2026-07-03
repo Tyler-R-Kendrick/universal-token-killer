@@ -1,40 +1,14 @@
-export * from './fixtures/rtkParityFixtures.js';
-export * from './fixtures/bashRewriteFixtures.js';
-export * from './fixtures/modelProxyCompetitiveFixtures.js';
-export * from './fixtures/cavemanParityFixtures.js';
-export * from './fixtures/compresrParityFixtures.js';
-export * from './fixtures/codeGraphRagFixtures.js';
-export * from './fixtures/toolCallingBypassFixtures.js';
-export * from './config/compresrConfig.js';
-export * from './fixtures/leanCtxCopilotFixtures.js';
-export * from './fixtures/ponytailParityFixtures.js';
-export * from './metrics/rtkParityMetrics.js';
-export * from './metrics/bashRewriteMetrics.js';
-export * from './metrics/cavemanParityMetrics.js';
-export * from './metrics/codeGraphRagMetrics.js';
-export {
-  assertCompresrParity,
-  measureCompresrParity
-} from './metrics/compresrParityMetrics.js';
-export type {
-  CompresrParityAssertion,
-  CompresrParityMeasurementInput,
-  CompresrParityMetrics
-} from './metrics/compresrParityMetrics.js';
-export * from './metrics/toolCallingBypassMetrics.js';
-export * from './metrics/ponytailParityMetrics.js';
+// Comparison harness: benchmark data → 3 concurrent arms (baseline / competitor / utk) → graders.
+export * from './data.js';
+export * from './harness.js';
+export * from './graders/index.js';
+export * from './comparison/index.js';
+export * from './report.js';
+
+// agentevals.io evaluator protocol + baseline store (trace-based TDD substrate).
 export * from './evaluators/index.js';
 export * from './evaluators/loadUtkTrace.js';
 export * from './baselines/baselineStore.js';
-export * from './reports/rtkParityReport.js';
-export * from './reports/cavemanParityReport.js';
-export * from './reports/compresrParityReport.js';
-export * from './reports/codeGraphRagReport.js';
-export * from './reports/toolCallingBypassReport.js';
-export * from './reports/ponytailParityReport.js';
-export { gradeRtkParityCodeGraderInput } from './graders/rtkParityCodeGrader.js';
-export { gradeCavemanParityCodeGraderInput } from './graders/cavemanParityCodeGrader.js';
-export { gradeCompresrParityCodeGraderInput } from './graders/compresrParityCodeGrader.js';
-export { gradeCodeGraphRagCodeGraderInput } from './graders/codeGraphRagCodeGrader.js';
-export { gradeToolCallingBypassCodeGraderInput } from './graders/toolCallingBypassCodeGrader.js';
-export { gradePonytailParityCodeGraderInput } from './graders/ponytailParityCodeGrader.js';
+
+// LeanCTX Copilot benchmark fixtures (consumed by scripts/bench-leanctx-copilot.ts).
+export { leanCtxCopilotFixtures, type LeanCtxCopilotFixture, type LeanCtxCopilotFixtureKind } from './fixtures/leanCtxCopilotFixtures.js';
