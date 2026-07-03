@@ -73,27 +73,16 @@ The end-to-end regression demo (`packages/evals/evals/agentevals-harness.test.ts
 Baseline writes are gated by `UTK_BASELINE_UPDATE=1` (or `force: true`) so accidental writes from a normal test run are prevented:
 
 ```bash
-UTK_BASELINE_UPDATE=1 npx vitest run packages/evals/evals/agentevals-harness.test.ts
+UTK_BASELINE_UPDATE=1 npx vitest run packages/evals/evaluators.test.ts
 ```
 
 Severity rules and tolerance behaviour: [refs/baseline-store.md](/features/evals/references/baseline-store.md).
 
 ## Cross-Check With `agentevals-cli`
 
-UTK does not depend on the Python CLI, but the artifacts are interoperable. A spawn bridge ships with `@utk/evals`:
-
-```ts
-import { runAgentEvalsCli } from '@utk/evals';
-
-const result = await runAgentEvalsCli({
-  tracePath: '.utk/events/<run>.jaeger.json',
-  evalSetPath: '.utk/events/<run>.eval_set.json',
-  metric: 'tool_trajectory_avg_score'
-});
-// result.available === false with reason 'binary-missing' when the CLI isn't installed.
-```
-
-Install the reference implementation locally for cross-checks:
+UTK does not depend on the Python CLI, but the emitted Jaeger + EvalSet artifacts are
+wire-compatible with it. Run the reference implementation directly against them for a
+cross-check:
 
 ```bash
 pip install agentevals-cli

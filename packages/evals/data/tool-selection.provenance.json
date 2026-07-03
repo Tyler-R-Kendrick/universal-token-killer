@@ -1,0 +1,50 @@
+{
+  "name": "tool-selection",
+  "version": "0.1.0",
+  "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
+  "tags": ["tool-selection", "function-calling", "tool-safety", "utk"],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer",
+  "generated_by": "packages/evals/scripts/run-evals.ts",
+  "description": "Tool catalogs where the correct safe tool must stay selectable after compaction; dropping it while a mutating/destructive tool stays visible is scored as an unsafe-tool error.",
+  "disclaimer": "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the tool-selection and safety task; these numbers are not scores on those benchmarks.",
+  "related_benchmarks": [
+    {
+      "id": "bfcl",
+      "name": "Berkeley Function-Calling Leaderboard",
+      "org": "UC Berkeley (Gorilla)",
+      "url": "https://gorilla.cs.berkeley.edu/leaderboard.html",
+      "relation": "task-category-analog",
+      "note": "Measures whether a model selects and fills the right function from a catalog — the selection step our safe-tool cases stress under compaction."
+    },
+    {
+      "id": "tau-bench",
+      "name": "τ-bench (tau-bench)",
+      "org": "Sierra Research",
+      "url": "https://github.com/sierra-research/tau-bench",
+      "relation": "task-category-analog",
+      "note": "Tool-agent-user loops in retail/airline domains with real mutating actions; motivates our unsafe/destructive tool distractors."
+    },
+    {
+      "id": "toolbench",
+      "name": "ToolBench / ToolLLM",
+      "org": "OpenBMB / THUNLP",
+      "url": "https://github.com/OpenBMB/ToolBench",
+      "relation": "task-category-analog",
+      "note": "Large multi-tool catalogs where the right API must be picked from many — the catalog-size pressure our compaction faces."
+    }
+  ],
+  "category_benchmark": {
+    "Billing": "tau-bench",
+    "Kubernetes": "bfcl",
+    "Database": "bfcl",
+    "Git": "bfcl",
+    "Filesystem": "bfcl",
+    "User management": "tau-bench",
+    "Cloud": "bfcl",
+    "Email": "tau-bench",
+    "Payments": "tau-bench",
+    "DNS": "toolbench"
+  }
+}

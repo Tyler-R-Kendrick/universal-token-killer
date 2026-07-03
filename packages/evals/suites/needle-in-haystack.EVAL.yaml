@@ -1,0 +1,372 @@
+# Generated from packages/evals/data/needle-in-haystack.jsonl by packages/evals/scripts/generate-suite.ts.
+# Do not edit by hand — run `npm run evals:suites --workspace @utk/evals` to refresh.
+name: needle-in-haystack
+version: "0.1.0"
+license: "MIT"
+tags: ["needle-in-haystack", "retrieval", "context-compaction", "utk"]
+# Provenance is informational — AgentV does not execute these fields.
+provenance:
+  origin: "synthetic"
+  authored_by: "universal-token-killer"
+  description: "A single distinctive needle buried in repetitive distractor lines, used to measure whether a compaction technique keeps the needle recoverable instead of dropping it with the noise."
+  disclaimer: "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the needle-in-a-haystack retrieval task; these numbers are not scores on those benchmarks."
+  related_benchmarks:
+    - id: "niah"
+      name: "Needle In A Haystack"
+      org: "Greg Kamradt"
+      url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+      relation: "task-category-analog"
+      note: "The original pressure test: hide one fact in a long context and ask for it back — the exact shape of these cases."
+    - id: "ruler-niah"
+      name: "RULER (NIAH tasks)"
+      org: "NVIDIA"
+      url: "https://github.com/NVIDIA/RULER"
+      relation: "task-category-analog"
+      note: "Parameterized single/multi-needle retrieval over synthetic haystacks, which our filler-plus-needle construction mirrors."
+    - id: "lost-in-the-middle"
+      name: "Lost in the Middle"
+      org: "Stanford / Percy Liang et al."
+      url: "https://arxiv.org/abs/2307.03172"
+      relation: "task-category-analog"
+      note: "Shows retrieval accuracy depends on where the needle sits; motivates keeping every needle recoverable regardless of position."
+tests:
+  - id: niah-access-code
+    input:
+      - role: user
+        content: "What is the access code for building 7?"
+    metadata:
+      category: "Access code"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "niah"
+      related_benchmark_url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+    expected_output: |
+      {
+        "prompt": "What is the access code for building 7?",
+        "rawOutput": "Routine note: the hallway lights were checked and are fine (log line 1)\nRoutine note: the hallway lights were checked and are fine (log line 2)\nRoutine note: the hallway lights were checked and are fine (log line 3)\nRoutine note: the hallway lights were checked and are fine (log line 4)\nRoutine note: the hallway lights were checked and are fine (log line 5)\nRoutine note: the hallway lights were checked and are fine (log line 6)\nRoutine note: the hallway lights were checked and are fine (log line 7)\nRoutine note: the hallway lights were checked and are fine (log line 8)\nRoutine note: the hallway lights were checked and are fine (log line 9)\nReminder: the access code for building 7 is 4471 this month.\nRoutine note: the hallway lights were checked and are fine (log line 10)\nRoutine note: the hallway lights were checked and are fine (log line 11)\nRoutine note: the hallway lights were checked and are fine (log line 12)\nRoutine note: the hallway lights were checked and are fine (log line 13)\nRoutine note: the hallway lights were checked and are fine (log line 14)\nRoutine note: the hallway lights were checked and are fine (log line 15)\nRoutine note: the hallway lights were checked and are fine (log line 16)\nRoutine note: the hallway lights were checked and are fine (log line 17)\nRoutine note: the hallway lights were checked and are fine (log line 18)",
+        "requiredFacts": [
+          "the access code for building 7 is 4471 this month."
+        ],
+        "irrelevantFacts": [
+          "Routine note: the hallway lights were checked and are fine (log line 1)",
+          "Routine note: the hallway lights were checked and are fine (log line 18)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-passphrase
+    input:
+      - role: user
+        content: "What is the recovery passphrase?"
+    metadata:
+      category: "Passphrase"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "niah"
+      related_benchmark_url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+    expected_output: |
+      {
+        "prompt": "What is the recovery passphrase?",
+        "rawOutput": "Status update: batch job completed with nothing unusual to report (log line 1)\nStatus update: batch job completed with nothing unusual to report (log line 2)\nStatus update: batch job completed with nothing unusual to report (log line 3)\nStatus update: batch job completed with nothing unusual to report (log line 4)\nStatus update: batch job completed with nothing unusual to report (log line 5)\nStatus update: batch job completed with nothing unusual to report (log line 6)\nStatus update: batch job completed with nothing unusual to report (log line 7)\nStatus update: batch job completed with nothing unusual to report (log line 8)\nStatus update: batch job completed with nothing unusual to report (log line 9)\nStatus update: batch job completed with nothing unusual to report (log line 10)\nStatus update: batch job completed with nothing unusual to report (log line 11)\nStatus update: batch job completed with nothing unusual to report (log line 12)\nStatus update: batch job completed with nothing unusual to report (log line 13)\nThe recovery passphrase is correct-horse-battery-staple for the vault.\nStatus update: batch job completed with nothing unusual to report (log line 14)\nStatus update: batch job completed with nothing unusual to report (log line 15)\nStatus update: batch job completed with nothing unusual to report (log line 16)\nStatus update: batch job completed with nothing unusual to report (log line 17)\nStatus update: batch job completed with nothing unusual to report (log line 18)\nStatus update: batch job completed with nothing unusual to report (log line 19)\nStatus update: batch job completed with nothing unusual to report (log line 20)",
+        "requiredFacts": [
+          "The recovery passphrase is correct-horse-battery-staple for the vault."
+        ],
+        "irrelevantFacts": [
+          "Status update: batch job completed with nothing unusual to report (log line 1)",
+          "Status update: batch job completed with nothing unusual to report (log line 20)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-magic-number
+    input:
+      - role: user
+        content: "What magic number should be used for the checksum seed?"
+    metadata:
+      category: "Magic number"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "ruler-niah"
+      related_benchmark_url: "https://github.com/NVIDIA/RULER"
+    expected_output: |
+      {
+        "prompt": "What magic number should be used for the checksum seed?",
+        "rawOutput": "Heartbeat ok, everything nominal on the primary node (log line 1)\nHeartbeat ok, everything nominal on the primary node (log line 2)\nHeartbeat ok, everything nominal on the primary node (log line 3)\nHeartbeat ok, everything nominal on the primary node (log line 4)\nHeartbeat ok, everything nominal on the primary node (log line 5)\nHeartbeat ok, everything nominal on the primary node (log line 6)\nHeartbeat ok, everything nominal on the primary node (log line 7)\nHeartbeat ok, everything nominal on the primary node (log line 8)\nHeartbeat ok, everything nominal on the primary node (log line 9)\nHeartbeat ok, everything nominal on the primary node (log line 10)\nHeartbeat ok, everything nominal on the primary node (log line 11)\nHeartbeat ok, everything nominal on the primary node (log line 12)\nHeartbeat ok, everything nominal on the primary node (log line 13)\nHeartbeat ok, everything nominal on the primary node (log line 14)\nHeartbeat ok, everything nominal on the primary node (log line 15)\nUse the magic number 8675309 as the checksum seed for this run.\nHeartbeat ok, everything nominal on the primary node (log line 16)\nHeartbeat ok, everything nominal on the primary node (log line 17)\nHeartbeat ok, everything nominal on the primary node (log line 18)\nHeartbeat ok, everything nominal on the primary node (log line 19)\nHeartbeat ok, everything nominal on the primary node (log line 20)\nHeartbeat ok, everything nominal on the primary node (log line 21)\nHeartbeat ok, everything nominal on the primary node (log line 22)",
+        "requiredFacts": [
+          "Use the magic number 8675309 as the checksum seed for this run."
+        ],
+        "irrelevantFacts": [
+          "Heartbeat ok, everything nominal on the primary node (log line 1)",
+          "Heartbeat ok, everything nominal on the primary node (log line 22)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-uuid
+    input:
+      - role: user
+        content: "What is the tenant UUID to migrate?"
+    metadata:
+      category: "Identifier"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "ruler-niah"
+      related_benchmark_url: "https://github.com/NVIDIA/RULER"
+    expected_output: |
+      {
+        "prompt": "What is the tenant UUID to migrate?",
+        "rawOutput": "Sync tick observed, no drift detected between replicas (log line 1)\nSync tick observed, no drift detected between replicas (log line 2)\nSync tick observed, no drift detected between replicas (log line 3)\nSync tick observed, no drift detected between replicas (log line 4)\nSync tick observed, no drift detected between replicas (log line 5)\nSync tick observed, no drift detected between replicas (log line 6)\nSync tick observed, no drift detected between replicas (log line 7)\nSync tick observed, no drift detected between replicas (log line 8)\nSync tick observed, no drift detected between replicas (log line 9)\nSync tick observed, no drift detected between replicas (log line 10)\nSync tick observed, no drift detected between replicas (log line 11)\nMigrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\nSync tick observed, no drift detected between replicas (log line 12)\nSync tick observed, no drift detected between replicas (log line 13)\nSync tick observed, no drift detected between replicas (log line 14)\nSync tick observed, no drift detected between replicas (log line 15)\nSync tick observed, no drift detected between replicas (log line 16)\nSync tick observed, no drift detected between replicas (log line 17)\nSync tick observed, no drift detected between replicas (log line 18)\nSync tick observed, no drift detected between replicas (log line 19)",
+        "requiredFacts": [
+          "Migrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first."
+        ],
+        "irrelevantFacts": [
+          "Sync tick observed, no drift detected between replicas (log line 1)",
+          "Sync tick observed, no drift detected between replicas (log line 19)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-instruction
+    input:
+      - role: user
+        content: "What special instruction did the operator leave?"
+    metadata:
+      category: "Instruction"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "niah"
+      related_benchmark_url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+    expected_output: |
+      {
+        "prompt": "What special instruction did the operator leave?",
+        "rawOutput": "Observation: queue depth stable and workers idle as expected (log line 1)\nObservation: queue depth stable and workers idle as expected (log line 2)\nObservation: queue depth stable and workers idle as expected (log line 3)\nObservation: queue depth stable and workers idle as expected (log line 4)\nObservation: queue depth stable and workers idle as expected (log line 5)\nObservation: queue depth stable and workers idle as expected (log line 6)\nObservation: queue depth stable and workers idle as expected (log line 7)\nObservation: queue depth stable and workers idle as expected (log line 8)\nObservation: queue depth stable and workers idle as expected (log line 9)\nObservation: queue depth stable and workers idle as expected (log line 10)\nObservation: queue depth stable and workers idle as expected (log line 11)\nObservation: queue depth stable and workers idle as expected (log line 12)\nObservation: queue depth stable and workers idle as expected (log line 13)\nObservation: queue depth stable and workers idle as expected (log line 14)\nOperator note: do not restart node-3 before the snapshot completes.\nObservation: queue depth stable and workers idle as expected (log line 15)\nObservation: queue depth stable and workers idle as expected (log line 16)\nObservation: queue depth stable and workers idle as expected (log line 17)\nObservation: queue depth stable and workers idle as expected (log line 18)\nObservation: queue depth stable and workers idle as expected (log line 19)\nObservation: queue depth stable and workers idle as expected (log line 20)\nObservation: queue depth stable and workers idle as expected (log line 21)",
+        "requiredFacts": [
+          "Operator note: do not restart node-3 before the snapshot completes."
+        ],
+        "irrelevantFacts": [
+          "Observation: queue depth stable and workers idle as expected (log line 1)",
+          "Observation: queue depth stable and workers idle as expected (log line 21)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-coordinate
+    input:
+      - role: user
+        content: "Where is the rendezvous point?"
+    metadata:
+      category: "Coordinate"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "niah"
+      related_benchmark_url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+    expected_output: |
+      {
+        "prompt": "Where is the rendezvous point?",
+        "rawOutput": "Weather station reports calm conditions along the coast (log line 1)\nWeather station reports calm conditions along the coast (log line 2)\nWeather station reports calm conditions along the coast (log line 3)\nWeather station reports calm conditions along the coast (log line 4)\nWeather station reports calm conditions along the coast (log line 5)\nWeather station reports calm conditions along the coast (log line 6)\nWeather station reports calm conditions along the coast (log line 7)\nWeather station reports calm conditions along the coast (log line 8)\nRendezvous point is at grid reference 51.5074 by 0.1278 at noon.\nWeather station reports calm conditions along the coast (log line 9)\nWeather station reports calm conditions along the coast (log line 10)\nWeather station reports calm conditions along the coast (log line 11)\nWeather station reports calm conditions along the coast (log line 12)\nWeather station reports calm conditions along the coast (log line 13)\nWeather station reports calm conditions along the coast (log line 14)\nWeather station reports calm conditions along the coast (log line 15)\nWeather station reports calm conditions along the coast (log line 16)\nWeather station reports calm conditions along the coast (log line 17)",
+        "requiredFacts": [
+          "Rendezvous point is at grid reference 51.5074 by 0.1278 at noon."
+        ],
+        "irrelevantFacts": [
+          "Weather station reports calm conditions along the coast (log line 1)",
+          "Weather station reports calm conditions along the coast (log line 17)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-version-pin
+    input:
+      - role: user
+        content: "Which exact dependency version must be pinned?"
+    metadata:
+      category: "Version pin"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "ruler-niah"
+      related_benchmark_url: "https://github.com/NVIDIA/RULER"
+    expected_output: |
+      {
+        "prompt": "Which exact dependency version must be pinned?",
+        "rawOutput": "Build note: assets compiled and uploaded without incident (log line 1)\nBuild note: assets compiled and uploaded without incident (log line 2)\nBuild note: assets compiled and uploaded without incident (log line 3)\nBuild note: assets compiled and uploaded without incident (log line 4)\nBuild note: assets compiled and uploaded without incident (log line 5)\nBuild note: assets compiled and uploaded without incident (log line 6)\nBuild note: assets compiled and uploaded without incident (log line 7)\nBuild note: assets compiled and uploaded without incident (log line 8)\nBuild note: assets compiled and uploaded without incident (log line 9)\nBuild note: assets compiled and uploaded without incident (log line 10)\nBuild note: assets compiled and uploaded without incident (log line 11)\nBuild note: assets compiled and uploaded without incident (log line 12)\nBuild note: assets compiled and uploaded without incident (log line 13)\nBuild note: assets compiled and uploaded without incident (log line 14)\nBuild note: assets compiled and uploaded without incident (log line 15)\nBuild note: assets compiled and uploaded without incident (log line 16)\nPin the dependency to exactly libwidget 2.9.3 to avoid the regression.\nBuild note: assets compiled and uploaded without incident (log line 17)\nBuild note: assets compiled and uploaded without incident (log line 18)\nBuild note: assets compiled and uploaded without incident (log line 19)\nBuild note: assets compiled and uploaded without incident (log line 20)\nBuild note: assets compiled and uploaded without incident (log line 21)\nBuild note: assets compiled and uploaded without incident (log line 22)\nBuild note: assets compiled and uploaded without incident (log line 23)",
+        "requiredFacts": [
+          "Pin the dependency to exactly libwidget 2.9.3 to avoid the regression."
+        ],
+        "irrelevantFacts": [
+          "Build note: assets compiled and uploaded without incident (log line 1)",
+          "Build note: assets compiled and uploaded without incident (log line 23)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-coupon
+    input:
+      - role: user
+        content: "What is the promo code for the campaign?"
+    metadata:
+      category: "Coupon code"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "niah"
+      related_benchmark_url: "https://github.com/gkamradt/LLMTest_NeedleInAHaystack"
+    expected_output: |
+      {
+        "prompt": "What is the promo code for the campaign?",
+        "rawOutput": "CRM note: contact preferences unchanged for this segment (log line 1)\nCRM note: contact preferences unchanged for this segment (log line 2)\nCRM note: contact preferences unchanged for this segment (log line 3)\nCRM note: contact preferences unchanged for this segment (log line 4)\nCRM note: contact preferences unchanged for this segment (log line 5)\nCRM note: contact preferences unchanged for this segment (log line 6)\nCRM note: contact preferences unchanged for this segment (log line 7)\nCRM note: contact preferences unchanged for this segment (log line 8)\nCRM note: contact preferences unchanged for this segment (log line 9)\nCRM note: contact preferences unchanged for this segment (log line 10)\nThe promo code for the spring campaign is SPRINGWIDGET25 exactly.\nCRM note: contact preferences unchanged for this segment (log line 11)\nCRM note: contact preferences unchanged for this segment (log line 12)\nCRM note: contact preferences unchanged for this segment (log line 13)\nCRM note: contact preferences unchanged for this segment (log line 14)\nCRM note: contact preferences unchanged for this segment (log line 15)\nCRM note: contact preferences unchanged for this segment (log line 16)\nCRM note: contact preferences unchanged for this segment (log line 17)\nCRM note: contact preferences unchanged for this segment (log line 18)",
+        "requiredFacts": [
+          "The promo code for the spring campaign is SPRINGWIDGET25 exactly."
+        ],
+        "irrelevantFacts": [
+          "CRM note: contact preferences unchanged for this segment (log line 1)",
+          "CRM note: contact preferences unchanged for this segment (log line 18)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-name-date
+    input:
+      - role: user
+        content: "Who is the on-call owner and until when?"
+    metadata:
+      category: "Owner and date"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "lost-in-the-middle"
+      related_benchmark_url: "https://arxiv.org/abs/2307.03172"
+    expected_output: |
+      {
+        "prompt": "Who is the on-call owner and until when?",
+        "rawOutput": "Roster note: shift coverage looks balanced this cycle (log line 1)\nRoster note: shift coverage looks balanced this cycle (log line 2)\nRoster note: shift coverage looks balanced this cycle (log line 3)\nRoster note: shift coverage looks balanced this cycle (log line 4)\nRoster note: shift coverage looks balanced this cycle (log line 5)\nRoster note: shift coverage looks balanced this cycle (log line 6)\nRoster note: shift coverage looks balanced this cycle (log line 7)\nRoster note: shift coverage looks balanced this cycle (log line 8)\nRoster note: shift coverage looks balanced this cycle (log line 9)\nRoster note: shift coverage looks balanced this cycle (log line 10)\nRoster note: shift coverage looks balanced this cycle (log line 11)\nRoster note: shift coverage looks balanced this cycle (log line 12)\nOn-call owner is Priya Nandakumar until 2026-07-15, then it rotates.\nRoster note: shift coverage looks balanced this cycle (log line 13)\nRoster note: shift coverage looks balanced this cycle (log line 14)\nRoster note: shift coverage looks balanced this cycle (log line 15)\nRoster note: shift coverage looks balanced this cycle (log line 16)\nRoster note: shift coverage looks balanced this cycle (log line 17)\nRoster note: shift coverage looks balanced this cycle (log line 18)\nRoster note: shift coverage looks balanced this cycle (log line 19)\nRoster note: shift coverage looks balanced this cycle (log line 20)",
+        "requiredFacts": [
+          "On-call owner is Priya Nandakumar until 2026-07-15, then it rotates."
+        ],
+        "irrelevantFacts": [
+          "Roster note: shift coverage looks balanced this cycle (log line 1)",
+          "Roster note: shift coverage looks balanced this cycle (log line 20)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: niah-threshold
+    input:
+      - role: user
+        content: "What threshold should trigger the alert?"
+    metadata:
+      category: "Threshold"
+      tool_id: "tool.notes.dump"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "ruler-niah"
+      related_benchmark_url: "https://github.com/NVIDIA/RULER"
+    expected_output: |
+      {
+        "prompt": "What threshold should trigger the alert?",
+        "rawOutput": "Metric note: throughput within the usual daily band (log line 1)\nMetric note: throughput within the usual daily band (log line 2)\nMetric note: throughput within the usual daily band (log line 3)\nMetric note: throughput within the usual daily band (log line 4)\nMetric note: throughput within the usual daily band (log line 5)\nMetric note: throughput within the usual daily band (log line 6)\nMetric note: throughput within the usual daily band (log line 7)\nMetric note: throughput within the usual daily band (log line 8)\nMetric note: throughput within the usual daily band (log line 9)\nMetric note: throughput within the usual daily band (log line 10)\nMetric note: throughput within the usual daily band (log line 11)\nMetric note: throughput within the usual daily band (log line 12)\nMetric note: throughput within the usual daily band (log line 13)\nMetric note: throughput within the usual daily band (log line 14)\nMetric note: throughput within the usual daily band (log line 15)\nMetric note: throughput within the usual daily band (log line 16)\nMetric note: throughput within the usual daily band (log line 17)\nSet the alert threshold at 4200 events per second, not the old value.\nMetric note: throughput within the usual daily band (log line 18)\nMetric note: throughput within the usual daily band (log line 19)\nMetric note: throughput within the usual daily band (log line 20)\nMetric note: throughput within the usual daily band (log line 21)\nMetric note: throughput within the usual daily band (log line 22)\nMetric note: throughput within the usual daily band (log line 23)\nMetric note: throughput within the usual daily band (log line 24)",
+        "requiredFacts": [
+          "Set the alert threshold at 4200 events per second, not the old value."
+        ],
+        "irrelevantFacts": [
+          "Metric note: throughput within the usual daily band (log line 1)",
+          "Metric note: throughput within the usual daily band (log line 24)"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]

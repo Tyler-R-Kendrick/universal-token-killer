@@ -1,0 +1,726 @@
+{
+  "model": "reference-model",
+  "benchmarks": [
+    {
+      "benchmark": "tool-output",
+      "kind": "compression",
+      "cases": 12,
+      "frontier": [
+        "rtk",
+        "compresr",
+        "ponytail",
+        "utk"
+      ],
+      "techniques": [
+        {
+          "technique": "baseline",
+          "label": "Baseline (raw context)",
+          "onFrontier": false,
+          "visibleTokens": 1297,
+          "tokenReduction": 0,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.667,
+          "costPerTask": 0.001079,
+          "costPerSuccess": 0.001079,
+          "p95LatencyMs": 516.935,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.667,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": 0
+          },
+          "gatePassed": null
+        },
+        {
+          "technique": "rtk",
+          "label": "RTK (rust-token-killer)",
+          "onFrontier": true,
+          "visibleTokens": 1123,
+          "tokenReduction": 0.134,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.778,
+          "costPerTask": 0.001035,
+          "costPerSuccess": 0.001035,
+          "p95LatencyMs": 521.887,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.792,
+            "costReductionAt1PctQualityLoss": 0.105,
+            "p95LatencyReductionAt1PctQualityLoss": -1.349
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "leanctx",
+          "label": "LeanCTX (context runtime)",
+          "onFrontier": false,
+          "visibleTokens": 1143,
+          "tokenReduction": 0.119,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.75,
+          "costPerTask": 0.00104,
+          "costPerSuccess": 0.00104,
+          "p95LatencyMs": 521.887,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.847,
+            "costReductionAt1PctQualityLoss": 0.125,
+            "p95LatencyReductionAt1PctQualityLoss": 0.002
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "compresr",
+          "label": "Compresr (query-aware)",
+          "onFrontier": true,
+          "visibleTokens": 1122,
+          "tokenReduction": 0.135,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.764,
+          "costPerTask": 0.001035,
+          "costPerSuccess": 0.001035,
+          "p95LatencyMs": 521.887,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.847,
+            "costReductionAt1PctQualityLoss": 0.125,
+            "p95LatencyReductionAt1PctQualityLoss": 0.002
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "caveman",
+          "label": "Caveman (terse register)",
+          "onFrontier": false,
+          "visibleTokens": 1083,
+          "tokenReduction": 0.165,
+          "taskSuccessRate": 0.917,
+          "avgQuality": 0.764,
+          "costPerTask": 0.001042,
+          "costPerSuccess": 0.001136,
+          "p95LatencyMs": 832.926,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.792,
+            "costReductionAt1PctQualityLoss": 0.105,
+            "p95LatencyReductionAt1PctQualityLoss": -1.349
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "ponytail",
+          "label": "Ponytail (minimum emission)",
+          "onFrontier": true,
+          "visibleTokens": 977,
+          "tokenReduction": 0.247,
+          "taskSuccessRate": 0.917,
+          "avgQuality": 0.847,
+          "costPerTask": 0.001015,
+          "costPerSuccess": 0.001107,
+          "p95LatencyMs": 832.588,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.792,
+            "costReductionAt1PctQualityLoss": 0.105,
+            "p95LatencyReductionAt1PctQualityLoss": -1.349
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "utk",
+          "label": "UTK (mediated compaction)",
+          "onFrontier": true,
+          "visibleTokens": 324,
+          "tokenReduction": 0.75,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.001035,
+          "costPerSuccess": 0.001035,
+          "p95LatencyMs": 1210.88,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.041,
+            "p95LatencyReductionAt1PctQualityLoss": -1.342
+          },
+          "gatePassed": true
+        }
+      ]
+    },
+    {
+      "benchmark": "long-context",
+      "kind": "compression",
+      "cases": 10,
+      "frontier": [
+        "compresr",
+        "ponytail",
+        "utk"
+      ],
+      "techniques": [
+        {
+          "technique": "baseline",
+          "label": "Baseline (raw context)",
+          "onFrontier": false,
+          "visibleTokens": 1644,
+          "tokenReduction": 0,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.667,
+          "costPerTask": 0.001256,
+          "costPerSuccess": 0.001256,
+          "p95LatencyMs": 515.948,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.667,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": 0
+          },
+          "gatePassed": null
+        },
+        {
+          "technique": "rtk",
+          "label": "RTK (rust-token-killer)",
+          "onFrontier": false,
+          "visibleTokens": 571,
+          "tokenReduction": 0.653,
+          "taskSuccessRate": 0.5,
+          "avgQuality": 0.667,
+          "costPerTask": 0.001034,
+          "costPerSuccess": 0.002068,
+          "p95LatencyMs": 1212.232,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.683,
+            "costReductionAt1PctQualityLoss": 0.229,
+            "p95LatencyReductionAt1PctQualityLoss": -1.347
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "leanctx",
+          "label": "LeanCTX (context runtime)",
+          "onFrontier": false,
+          "visibleTokens": 722,
+          "tokenReduction": 0.561,
+          "taskSuccessRate": 0.9,
+          "avgQuality": 0.9,
+          "costPerTask": 0.001,
+          "costPerSuccess": 0.001111,
+          "p95LatencyMs": 896.67,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.883,
+            "costReductionAt1PctQualityLoss": 0.218,
+            "p95LatencyReductionAt1PctQualityLoss": -0.737
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "compresr",
+          "label": "Compresr (query-aware)",
+          "onFrontier": true,
+          "visibleTokens": 684,
+          "tokenReduction": 0.584,
+          "taskSuccessRate": 0.9,
+          "avgQuality": 0.867,
+          "costPerTask": 0.000988,
+          "costPerSuccess": 0.001098,
+          "p95LatencyMs": 896.23,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.883,
+            "costReductionAt1PctQualityLoss": 0.218,
+            "p95LatencyReductionAt1PctQualityLoss": -0.737
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "caveman",
+          "label": "Caveman (terse register)",
+          "onFrontier": false,
+          "visibleTokens": 394,
+          "tokenReduction": 0.76,
+          "taskSuccessRate": 0.5,
+          "avgQuality": 0.65,
+          "costPerTask": 0.000981,
+          "costPerSuccess": 0.001962,
+          "p95LatencyMs": 1210.906,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.683,
+            "costReductionAt1PctQualityLoss": 0.229,
+            "p95LatencyReductionAt1PctQualityLoss": -1.347
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "ponytail",
+          "label": "Ponytail (minimum emission)",
+          "onFrontier": true,
+          "visibleTokens": 374,
+          "tokenReduction": 0.773,
+          "taskSuccessRate": 0.5,
+          "avgQuality": 0.667,
+          "costPerTask": 0.000975,
+          "costPerSuccess": 0.00195,
+          "p95LatencyMs": 1210.906,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.683,
+            "costReductionAt1PctQualityLoss": 0.229,
+            "p95LatencyReductionAt1PctQualityLoss": -1.347
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "utk",
+          "label": "UTK (mediated compaction)",
+          "onFrontier": true,
+          "visibleTokens": 281,
+          "tokenReduction": 0.829,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.001047,
+          "costPerSuccess": 0.001047,
+          "p95LatencyMs": 1210.71,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.166,
+            "p95LatencyReductionAt1PctQualityLoss": -1.347
+          },
+          "gatePassed": true
+        }
+      ]
+    },
+    {
+      "benchmark": "needle-in-haystack",
+      "kind": "needle",
+      "cases": 10,
+      "frontier": [
+        "leanctx",
+        "compresr"
+      ],
+      "techniques": [
+        {
+          "technique": "baseline",
+          "label": "Baseline (raw context)",
+          "onFrontier": false,
+          "visibleTokens": 3735,
+          "tokenReduction": 0,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.667,
+          "costPerTask": 0.001631,
+          "costPerSuccess": 0.001631,
+          "p95LatencyMs": 397.695,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.667,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": 0
+          },
+          "gatePassed": null
+        },
+        {
+          "technique": "rtk",
+          "label": "RTK (rust-token-killer)",
+          "onFrontier": false,
+          "visibleTokens": 416,
+          "tokenReduction": 0.889,
+          "taskSuccessRate": 0.6,
+          "avgQuality": 0.7,
+          "costPerTask": 0.000716,
+          "costPerSuccess": 0.001193,
+          "p95LatencyMs": 1085.011,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.717,
+            "costReductionAt1PctQualityLoss": 0.561,
+            "p95LatencyReductionAt1PctQualityLoss": -1.728
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "leanctx",
+          "label": "LeanCTX (context runtime)",
+          "onFrontier": true,
+          "visibleTokens": 487,
+          "tokenReduction": 0.87,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.967,
+          "costPerTask": 0.000657,
+          "costPerSuccess": 0.000657,
+          "p95LatencyMs": 393.679,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.967,
+            "costReductionAt1PctQualityLoss": 0.597,
+            "p95LatencyReductionAt1PctQualityLoss": 0.01
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "compresr",
+          "label": "Compresr (query-aware)",
+          "onFrontier": true,
+          "visibleTokens": 487,
+          "tokenReduction": 0.87,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.967,
+          "costPerTask": 0.000657,
+          "costPerSuccess": 0.000657,
+          "p95LatencyMs": 393.679,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.967,
+            "costReductionAt1PctQualityLoss": 0.597,
+            "p95LatencyReductionAt1PctQualityLoss": 0.01
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "caveman",
+          "label": "Caveman (terse register)",
+          "onFrontier": false,
+          "visibleTokens": 385,
+          "tokenReduction": 0.897,
+          "taskSuccessRate": 0.4,
+          "avgQuality": 0.567,
+          "costPerTask": 0.000746,
+          "costPerSuccess": 0.001866,
+          "p95LatencyMs": 1085.011,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.717,
+            "costReductionAt1PctQualityLoss": 0.561,
+            "p95LatencyReductionAt1PctQualityLoss": -1.728
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "ponytail",
+          "label": "Ponytail (minimum emission)",
+          "onFrontier": false,
+          "visibleTokens": 369,
+          "tokenReduction": 0.901,
+          "taskSuccessRate": 0.3,
+          "avgQuality": 0.5,
+          "costPerTask": 0.000762,
+          "costPerSuccess": 0.002539,
+          "p95LatencyMs": 1085.011,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.717,
+            "costReductionAt1PctQualityLoss": 0.561,
+            "p95LatencyReductionAt1PctQualityLoss": -1.728
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "utk",
+          "label": "UTK (mediated compaction)",
+          "onFrontier": false,
+          "visibleTokens": 270,
+          "tokenReduction": 0.928,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.000792,
+          "costPerSuccess": 0.000792,
+          "p95LatencyMs": 1086.361,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.514,
+            "p95LatencyReductionAt1PctQualityLoss": -1.732
+          },
+          "gatePassed": true
+        }
+      ]
+    },
+    {
+      "benchmark": "tool-selection",
+      "kind": "tool-selection",
+      "cases": 10,
+      "frontier": [
+        "compresr"
+      ],
+      "techniques": [
+        {
+          "technique": "baseline",
+          "label": "Baseline (raw context)",
+          "onFrontier": false,
+          "visibleTokens": 841,
+          "tokenReduction": 0,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.000654,
+          "costPerSuccess": 0.000654,
+          "p95LatencyMs": 317.78,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": 0
+          },
+          "gatePassed": null
+        },
+        {
+          "technique": "rtk",
+          "label": "RTK (rust-token-killer)",
+          "onFrontier": false,
+          "visibleTokens": 539,
+          "tokenReduction": 0.359,
+          "taskSuccessRate": 0.8,
+          "avgQuality": 0.8,
+          "costPerTask": 0.000644,
+          "costPerSuccess": 0.000805,
+          "p95LatencyMs": 1716.338,
+          "unsafeToolErrors": 1,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.8,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": -0.006
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "leanctx",
+          "label": "LeanCTX (context runtime)",
+          "onFrontier": false,
+          "visibleTokens": 625,
+          "tokenReduction": 0.257,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.00059,
+          "costPerSuccess": 0.00059,
+          "p95LatencyMs": 319.352,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.118,
+            "p95LatencyReductionAt1PctQualityLoss": -0.005
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "compresr",
+          "label": "Compresr (query-aware)",
+          "onFrontier": true,
+          "visibleTokens": 591,
+          "tokenReduction": 0.297,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.000579,
+          "costPerSuccess": 0.000579,
+          "p95LatencyMs": 319.352,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.118,
+            "p95LatencyReductionAt1PctQualityLoss": -0.005
+          },
+          "gatePassed": true
+        },
+        {
+          "technique": "caveman",
+          "label": "Caveman (terse register)",
+          "onFrontier": false,
+          "visibleTokens": 30,
+          "tokenReduction": 0.964,
+          "taskSuccessRate": 0.1,
+          "avgQuality": 0.1,
+          "costPerTask": 0.000771,
+          "costPerSuccess": 0.00771,
+          "p95LatencyMs": 1715.227,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.8,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": -0.006
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "ponytail",
+          "label": "Ponytail (minimum emission)",
+          "onFrontier": false,
+          "visibleTokens": 30,
+          "tokenReduction": 0.964,
+          "taskSuccessRate": 0.1,
+          "avgQuality": 0.1,
+          "costPerTask": 0.000771,
+          "costPerSuccess": 0.00771,
+          "p95LatencyMs": 1715.227,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.8,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": -0.006
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "utk",
+          "label": "UTK (mediated compaction)",
+          "onFrontier": false,
+          "visibleTokens": 255,
+          "tokenReduction": 0.697,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.000679,
+          "costPerSuccess": 0.000679,
+          "p95LatencyMs": 1016.12,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": -0.038,
+            "p95LatencyReductionAt1PctQualityLoss": -2.198
+          },
+          "gatePassed": false
+        }
+      ]
+    },
+    {
+      "benchmark": "agent-workflows",
+      "kind": "workflow",
+      "cases": 10,
+      "frontier": [
+        "utk"
+      ],
+      "techniques": [
+        {
+          "technique": "baseline",
+          "label": "Baseline (raw context)",
+          "onFrontier": false,
+          "visibleTokens": 1333,
+          "tokenReduction": 0,
+          "taskSuccessRate": 1,
+          "avgQuality": 0.667,
+          "costPerTask": 0.00141,
+          "costPerSuccess": 0.00141,
+          "p95LatencyMs": 642.765,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.667,
+            "costReductionAt1PctQualityLoss": 0,
+            "p95LatencyReductionAt1PctQualityLoss": 0
+          },
+          "gatePassed": null
+        },
+        {
+          "technique": "rtk",
+          "label": "RTK (rust-token-killer)",
+          "onFrontier": false,
+          "visibleTokens": 934,
+          "tokenReduction": 0.299,
+          "taskSuccessRate": 0.8,
+          "avgQuality": 0.8,
+          "costPerTask": 0.00133,
+          "costPerSuccess": 0.001663,
+          "p95LatencyMs": 1343.564,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.583,
+            "costReductionAt1PctQualityLoss": 0.057,
+            "p95LatencyReductionAt1PctQualityLoss": -1.09
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "leanctx",
+          "label": "LeanCTX (context runtime)",
+          "onFrontier": false,
+          "visibleTokens": 1063,
+          "tokenReduction": 0.203,
+          "taskSuccessRate": 0.9,
+          "avgQuality": 0.817,
+          "costPerTask": 0.001349,
+          "costPerSuccess": 0.001499,
+          "p95LatencyMs": 1030.287,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.817,
+            "costReductionAt1PctQualityLoss": 0.052,
+            "p95LatencyReductionAt1PctQualityLoss": -0.602
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "compresr",
+          "label": "Compresr (query-aware)",
+          "onFrontier": false,
+          "visibleTokens": 1063,
+          "tokenReduction": 0.203,
+          "taskSuccessRate": 0.9,
+          "avgQuality": 0.817,
+          "costPerTask": 0.001349,
+          "costPerSuccess": 0.001499,
+          "p95LatencyMs": 1030.287,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.817,
+            "costReductionAt1PctQualityLoss": 0.052,
+            "p95LatencyReductionAt1PctQualityLoss": -0.602
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "caveman",
+          "label": "Caveman (terse register)",
+          "onFrontier": false,
+          "visibleTokens": 837,
+          "tokenReduction": 0.372,
+          "taskSuccessRate": 0.7,
+          "avgQuality": 0.783,
+          "costPerTask": 0.001321,
+          "costPerSuccess": 0.001887,
+          "p95LatencyMs": 1342.941,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.583,
+            "costReductionAt1PctQualityLoss": 0.063,
+            "p95LatencyReductionAt1PctQualityLoss": -1.089
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "ponytail",
+          "label": "Ponytail (minimum emission)",
+          "onFrontier": false,
+          "visibleTokens": 760,
+          "tokenReduction": 0.43,
+          "taskSuccessRate": 0.5,
+          "avgQuality": 0.683,
+          "costPerTask": 0.001338,
+          "costPerSuccess": 0.002676,
+          "p95LatencyMs": 1344.102,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 0.583,
+            "costReductionAt1PctQualityLoss": 0.057,
+            "p95LatencyReductionAt1PctQualityLoss": -1.09
+          },
+          "gatePassed": false
+        },
+        {
+          "technique": "utk",
+          "label": "UTK (mediated compaction)",
+          "onFrontier": true,
+          "visibleTokens": 298,
+          "tokenReduction": 0.776,
+          "taskSuccessRate": 1,
+          "avgQuality": 1,
+          "costPerTask": 0.0013,
+          "costPerSuccess": 0.0013,
+          "p95LatencyMs": 1338.417,
+          "unsafeToolErrors": 0,
+          "headlines": {
+            "qualityRetentionAt50PctReduction": 1,
+            "costReductionAt1PctQualityLoss": 0.078,
+            "p95LatencyReductionAt1PctQualityLoss": -1.082
+          },
+          "gatePassed": true
+        }
+      ]
+    }
+  ]
+}

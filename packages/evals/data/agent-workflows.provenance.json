@@ -1,0 +1,50 @@
+{
+  "name": "agent-workflows",
+  "version": "0.1.0",
+  "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
+  "tags": ["agent-workflows", "coding", "multi-step", "utk"],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer",
+  "generated_by": "packages/evals/scripts/run-evals.ts",
+  "description": "Multi-step task contexts (failing tests, repo maps, profiler and bisect output, app/web task state) where the fix-relevant lines must survive compaction for the task to succeed.",
+  "disclaimer": "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the agent-workflow and coding task; these numbers are not scores on those benchmarks.",
+  "related_benchmarks": [
+    {
+      "id": "swe-bench-verified",
+      "name": "SWE-bench Verified",
+      "org": "OpenAI / Princeton NLP",
+      "url": "https://www.swebench.com/",
+      "relation": "task-category-analog",
+      "note": "Human-validated real-repo bug fixes; the failing-test-plus-traceback-plus-fix-location shape of our coding cases."
+    },
+    {
+      "id": "appworld",
+      "name": "AppWorld",
+      "org": "Stony Brook University",
+      "url": "https://appworld.dev/",
+      "relation": "task-category-analog",
+      "note": "Interactive multi-app tasks over APIs and state (invoices, calendars); the app-task cases mirror its structured task context."
+    },
+    {
+      "id": "webarena",
+      "name": "WebArena",
+      "org": "CMU",
+      "url": "https://webarena.dev/",
+      "relation": "task-category-analog",
+      "note": "Realistic web-navigation tasks where the answer sits in a noisy page context, like our order-history navigation case."
+    }
+  ],
+  "category_benchmark": {
+    "Bug fix": "swe-bench-verified",
+    "Feature": "swe-bench-verified",
+    "Multi-step task": "appworld",
+    "Web navigation": "webarena",
+    "Performance": "swe-bench-verified",
+    "Flaky test": "swe-bench-verified",
+    "Dependency upgrade": "swe-bench-verified",
+    "Scheduling task": "appworld",
+    "Regression": "swe-bench-verified",
+    "Type error": "swe-bench-verified"
+  }
+}

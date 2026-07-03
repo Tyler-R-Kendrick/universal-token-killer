@@ -47,8 +47,7 @@ Built-in serializers are maintained plugin packs under `packages/plugins/seriali
 1. Register the tool id, base command, and known positional/flag/option completions.
 2. Use `completeBashLikeToolInvocation` from `@utk/core`.
 3. Store the generated compact template and guidance grammar under `.utk/tools/<tool-id>/templates/`.
-4. Add a fixture in `packages/evals/fixtures/bashRewriteFixtures.ts`.
-5. Assert exact command/argv accuracy and token wins in `bash-rewrite-metrics.test.ts`.
+4. To track token savings, add a case to `packages/evals/data/tool-output.jsonl` and rerun `npm run evals --workspace @utk/evals` (see [Evals](../evals/evals.md)).
 
 ## Add A Session Agent Or Session Skill Generator
 

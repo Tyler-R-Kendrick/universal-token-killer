@@ -4,8 +4,8 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { createCodeGraph } from '../src/index.js';
-import { CODE_GRAPH_RAG_FIXTURES } from '../../evals/fixtures/codeGraphRagFixtures.js';
-import { assertCodeGraphRag } from '../../evals/metrics/codeGraphRagMetrics.js';
+import { CODE_GRAPH_RAG_FIXTURES } from './codeGraphRagFixtures.js';
+import { assertCodeGraphRag } from './codeGraphRagMetrics.js';
 
 async function createFixture(files: Record<string, string>): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), 'utk-code-graph-rag-'));

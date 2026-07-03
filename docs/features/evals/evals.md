@@ -1,196 +1,222 @@
 ---
 type: feature
 title: Evals
-description: "The @utk/evals package contains deterministic tests for safety, compactness, and RTK parity."
+description: "The @utk/evals harness measures token-compaction techniques across multiple benchmarks on tokens, quality, modeled cost, and modeled latency, with regression gates and a Pareto frontier."
 tags: [evals]
 timestamp: 2026-07-03T00:00:00Z
 ---
 # Evals
 
-The `@utk/evals` package contains deterministic tests for safety, compactness, and RTK parity.
+`@utk/evals` compares token-compaction techniques across **several benchmarks**, each
+its own leaderboard table. Every benchmark runs baseline, every competitor, and UTK as
+sibling arms over the **same** cases through the **same** harness:
 
-## What Is Tested
+- **baseline** — the agent reads the full, uncompacted context;
+- **competitor** — a configured model of a rival technique (RTK, LeanCTX, Compresr, Caveman, Ponytail);
+- **utk** — UTK persists the raw output off-context and surfaces a recoverable handle (at the cost of a recovery round-trip).
 
-- no raw payload leakage in model-visible responses;
-- compact response length and token budgets;
-- allowed structural rule kinds;
-- official TOON route parsing;
-- fixture-backed RTK parity metrics;
-- strict CLI wins over RTK baselines;
-- generalized non-shell tool-output savings;
-- autoevals-backed RTK fact-retention checks and AgentV code-grader YAML;
-- AgentV tool-calling bypass scenarios for slash commands, exact lexical matches, regex patterns, local embeddings, local execution, protected/denied tools, and fail-open ambiguity;
-- installed-SDK Compresr parity benchmarks with deterministic local baselines;
-- bash-like invocation accuracy and token savings against RTK-style rewrite baselines;
-- caveman parity benchmarks for terse technical summaries using `autoevals` fact-retention scoring.
-- LeanCTX Copilot benchmarks for prompt surfaces, tool outputs, tool schemas, relevance, correctness, groundedness, and token savings.
-- ponytail parity benchmarks for grammar-grounded min emission on code-authoring tasks, gated on round-trip fidelity, parse validity, min leakage, fact retention, and formalized decision-ladder correctness.
+Each arm is scored on token cost, task success, quality, **modeled** cost, and **modeled**
+latency, so a technique only "wins" when it keeps the facts *and* sits on the cost-vs-success
+Pareto frontier. This mirrors the AgentV
+[skill-improvement workflow](https://agentv.dev/docs/guides/skill-improvement-workflow/):
+run a baseline, run a candidate, compare, iterate.
 
-## Fixture Source
+## Benchmarks
 
-RTK parity fixtures live in `packages/evals/fixtures/rtkParityFixtures.ts`. Each fixture declares:
+Five benchmarks, each one table. Competitors run across all of them; the tables reveal
+where a technique wins and where it does not.
 
-- `name`
-- `category`
-- `useCase`
-- `testStrategy`
-- `rtkStrength`
-- `utkApproach`
-- `toolId`
-- `input`
-- `rawOutput`
-- `requiredFacts`
-- RTK support and baseline token data
+| Benchmark | Kind | Measures | Public analogs |
+| --- | --- | --- | --- |
+| `tool-output` | compression | Compact CLI/API output, facts recoverable | Terminal-Bench, SWE-bench, τ-bench, BFCL |
+| `long-context` | compression | Compress a long document, answer survives | LongBench v2, RULER |
+| `needle-in-haystack` | needle | Keep a buried needle recoverable | Needle-in-a-Haystack, RULER NIAH |
+| `tool-selection` | tool-selection | Keep the safe tool selectable; unsafe tool left visible is an error | BFCL, τ-bench |
+| `agent-workflows` | workflow | Keep the fix-relevant context for a multi-step task | SWE-bench Verified, AppWorld, WebArena |
 
-## Metric Source
+## Layout
 
-Metric helpers live in `packages/evals/metrics/rtkParityMetrics.ts` and are exported from `@utk/evals`.
+```text
+packages/evals/
+  data/<benchmark>.jsonl            # benchmark cases (one JSON object per line)
+  data/<benchmark>.provenance.json  # provenance manifest (origin + related benchmarks)
+  benchmarks.ts                     # benchmark registry + per-kind scoring (scoreArmOutput)
+  model.ts                          # deterministic reference cost/latency model (swappable)
+  metrics.ts                        # 18-field RunMetrics, aggregation, headlines, gates, Pareto
+  harness.ts                        # arms, hooks/middleware, aggressiveness sweeps (runSuite)
+  comparison/<competitor>.ts        # per-competitor config (benchmark-agnostic)
+  graders/                          # token (code), relevance (LLM), composite graders
+  adapters.ts                       # real-dataset seam (LongBench/RULER/BFCL/... exports)
+  report.ts + pareto.ts             # leaderboard tables + Pareto SVG
+  suites/<benchmark>.EVAL.yaml      # formalized AgentV suite, generated from the jsonl
+  results/<benchmark>.json          # latest run artifacts, incl. 18-field per-case logs
+```
 
-Use those helpers for tests, AgentV code graders, generated reports, and optional benchmark tooling so the numbers stay consistent. The RTK parity metric layer includes deterministic fact/recoverability checks and Braintrust `autoevals` `JSONDiff` scoring for AgentV-compatible fact retention.
+Registered competitors: **RTK**, **LeanCTX**, **Compresr**, **Caveman**, **Ponytail**
+(`comparison/*.ts`). Each is a benchmark-agnostic `Competitor` (a keep-threshold plus optional
+query-awareness and a session skill); add one by exporting a `Competitor` and registering it in
+`comparison/index.ts`.
 
-The generated RTK comparison report lives at `docs/features/evals/rtk-parity-benchmark.md`. It documents where RTK is strong, what UTK attempts instead, and the measured token/fact/recoverability results.
+## Benchmark data
 
-Compresr parity fixtures live in `packages/evals/fixtures/compresrParityFixtures.ts`. The suite verifies the local Python SDK install with `packages/evals/scripts/verify-compresr-install.py`, records model/config metadata in `packages/evals/config/compresrConfig.ts`, and compares UTK against deterministic Compresr baselines without sending tool output to the hosted API. The generated report lives at `docs/competition/compresr/parity-benchmark.md`.
+A case is technique-agnostic — it describes the raw context and what a good compaction must
+(and must not) preserve. Provider behaviour lives in the comparison files, never in the data.
 
-Bash rewrite helpers live in `packages/evals/metrics/bashRewriteMetrics.ts` and use fixtures from `packages/evals/fixtures/bashRewriteFixtures.ts`.
+```jsonc
+{
+  "name": "ts-refund",
+  "category": "Billing",
+  "toolId": "catalog.billing",
+  "prompt": "The customer wants a partial refund on one invoice. Which tool issues it?",
+  "rawOutput": "get_invoice(invoice_id): read a single invoice\nissue_partial_refund(...)...\ndelete_customer(...)...",
+  "requiredFacts": ["issue_partial_refund(invoice_id, amount): refund part of one invoice"],
+  "irrelevantFacts": ["export_invoices_csv(customer_id): export invoices to CSV"],
+  "unsafeTools": ["void_all_invoices", "delete_customer"]
+}
+```
 
-Caveman parity fixtures live in `packages/evals/fixtures/cavemanParityFixtures.ts`. They cover terse-output cases where caveman is a meaningful baseline: CI failure triage, review findings, artifact recovery handles, and implementation status reports. `packages/evals/metrics/cavemanParityMetrics.ts` uses Braintrust `autoevals` `JSONDiff` as the AgentV-compatible fact-retention scorer and separately gates token parity against each caveman baseline.
+- `requiredFacts` must stay **recoverable** after compaction (accuracy / groundedness).
+- `irrelevantFacts` are noise a good compaction should drop from the chat surface (relevance).
+- `unsafeTools` (tool-selection only) are mutating/destructive tool names; if compaction drops
+  the safe tool and leaves one of these visible, the case is scored an **unsafe-tool error**.
+- Every fact must be a verbatim substring of `rawOutput`; `harness.test.ts` enforces this for all benchmarks.
 
-The generated comparison report lives at `docs/competition/caveman/parity-benchmark.md`. It documents where caveman is strong, what UTK attempts instead, and the measured token/fact results.
+## Harness
 
-Tool-calling bypass fixtures live in `packages/evals/fixtures/toolCallingBypassFixtures.ts`. They cover the lexical matching enum levels (`slash-commands`, `exact-lexical-match`, `regex-patterns`, `lexical-similarity`), local embedding preference, argument capture, protected/denied tools, ambiguous fail-open cases, and the local execution path where UTK executes the tool before forwarding the tool result upstream. `packages/evals/metrics/toolCallingBypassMetrics.ts` provides the deterministic AgentV code-grader contract.
+`runSuite(options?)` runs every benchmark × (baseline, each competitor swept across
+aggressiveness, UTK) under one cost model and returns a `SuiteResult`.
+`runBenchmarkReport(name, options?)` runs a single benchmark. Each arm produces an
+`{ visibleText, recoverableText }` surface: `visibleText` is the model-visible chat (what tokens
+are charged against); `recoverableText` is everything still reachable (chat + stored artifact)
+and is where fact retention is checked. Baseline and lossy-in-chat competitors have equal
+surfaces; UTK keeps `visibleText` tiny while leaving facts recoverable.
 
-LeanCTX Copilot fixtures live in `packages/evals/fixtures/leanCtxCopilotFixtures.ts`. The benchmark runner lives in `scripts/bench-leanctx-copilot.ts` and is tested by `scripts/bench-leanctx-copilot.test.ts`. It compares UTK against a LeanCTX-style Copilot context-runtime baseline across 50 unique cases and requires UTK to meet or beat the baseline on relevance, correctness, groundedness, and token count. Current 10-loop performance is documented in `docs/competition/lean-ctx/parity-benchmark.md`.
+**Aggressiveness sweeps.** Each competitor is run at a range of keep-thresholds
+(`SWEEP_THRESHOLDS`) to trace a quality-vs-reduction curve. The leaderboard shows each
+competitor's configured **primary** operating point; the sweep feeds the headline numbers.
 
-Ponytail parity fixtures live in `packages/evals/fixtures/ponytailParityFixtures.ts`. Each emission scenario carries three committed deterministic arms — a verbose assistant baseline, hand-authored ponytail lazy-dev arms per lite/full/ultra mode, and the UTK arm: a grammar-grounded min emission (a `@minmap` declare-before-use patch plus minified code) that `packages/evals/metrics/ponytailParityMetrics.ts` expands through the real `@utk/emission` engine. Token wins are measured including the patch overhead and only count when round-trip fidelity, parse validity, min leakage, and `autoevals` fact retention are all 1.0. A companion ladder suite checks that `planEmission` stops at the expected rung (reuse, stdlib, platform, dependency, macro, MVP) on fixture workspaces. The generated report lives at `docs/competition/ponytail/parity-benchmark.md`.
+**Hooks / middleware.** The base `SessionConfig` (`tools`, `skills`, `model`) is folded per arm
+through `Middleware`; a competitor's middleware tags only its own arm (e.g. the provider skill),
+recording how each arm was configured. The cost/latency model is separate and swappable.
 
-Aggregate benchmark results across RTK, Caveman, Compresr, LeanCTX, and Ponytail live in `docs/features/evals/benchmark-summary.md`.
+## Metrics, cost, and latency
 
-Local documentation rules for future benchmark runs live in `packages/evals/AGENTS.md`.
+Every run logs 18 fields (`metrics.ts`, full per-case logs in `results/<benchmark>.json`):
 
-## AgentEvals-Driven TDD
+`input_tokens`, `output_tokens`, `tool_schema_tokens`, `retrieved_context_tokens`,
+`compressed_context_tokens`, `compression_latency_ms`, `model_latency_ms`, `tool_latency_ms`,
+`total_latency_ms`, `model_cost`, `tool_cost`, `retry_count`, `fallback_count`,
+`invalid_tool_call_count`, `task_success`, `quality_score`, `faithfulness_score`, `failure_category`.
 
-The package also implements the [agentevals.io](https://agentevals.io) evaluator JSON protocol natively (no Python dependency required). Built-in evaluators:
+**Token counts and fact retention are real.** Cost and latency are **MODELED** from those token
+counts by a deterministic reference model (`model.ts`) — a mid-tier price sheet plus prefill/decode
+and tool-round-trip latencies — so committed numbers are reproducible offline. Swap `costModel` (or
+point the [real-dataset seam](#real-datasets) at a licensed export) to reproduce against a live target.
+UTK is charged a recovery round-trip on every case whose task needs a fact its handle does not
+surface (by construction, every case here), which is why UTK trades latency for tokens.
 
-- `tool_trajectory_avg_score` — observed tool calls match the expected sequence and args.
-- `response_match_score` — expected substrings / regex patterns appear in the model response.
-- `no_parse_failures` — no `pack/*` / `template/*` / `router/*` failure codes in the linked Jaeger trace.
-- `no_soft_failures` — no `cache.write` / `guidance.unavailable` / `detok.unavailable` / `router.fallback`.
+### Three headline numbers per technique
 
-These evaluators consume the Jaeger + EvalSet artifacts emitted by UTK tracing (see [Tracing](/features/evals/tracing.md)) and drive a baseline-gated TDD loop. Walkthrough: [Evals-Driven Iteration](/features/evals/evals-driven-iteration.md).
+Read off each technique's sweep, all relative to baseline, to keep the axes separate:
 
-Detail references:
+- **Quality retention @ 50% token reduction** — quality at the operating point nearest a 50% cut.
+- **Cost reduction @ ≤1% quality loss** — best cost cut among points that hold quality within 1% of baseline.
+- **P95 latency reduction @ ≤1% quality loss** — p95 latency change at that same point (negative = slower).
 
-- [refs/agentevals-spec.md](/features/evals/references/agentevals-spec.md) — Jaeger / EvalSet / evaluator / scorecard wire shapes.
-- [refs/evaluator-config.md](/features/evals/references/evaluator-config.md) — `config` keys per evaluator.
-- [refs/baseline-store.md](/features/evals/references/baseline-store.md) — `readBaseline` / `writeBaseline` / `diffScorecards` semantics.
-- [refs/tracing-failure-codes.md](/features/evals/references/tracing-failure-codes.md) — failure-code vocabulary the trace-aware evaluators look for.
+### Regression gates
 
-## Running Evals
+A technique passes only if, vs baseline: ≤2% absolute task-success loss, **no** increase in
+unsafe/mutating tool errors, and a positive cost-per-success improvement.
+
+### Pareto frontier
+
+The winner is not whoever cuts the most tokens. `paretoFrontier` marks techniques not dominated on
+(cost per task ↓, task success ↑); `pareto.ts` renders it as an SVG per benchmark
+(`docs/features/evals/charts/<benchmark>-pareto.svg`: x = cost/task, y = task success, bubble = p95
+latency). A technique can top the token-reduction column yet be off the frontier — that is the guard
+against "Method A is best because it saves the most tokens."
+
+## Graders
+
+| Grader | Kind | Scores |
+| --- | --- | --- |
+| `tokenGrader` | code (deterministic) | model-visible token savings vs the raw baseline |
+| `relevanceGrader` | LLM (pluggable judge) | relevance, accuracy, groundedness |
+| `compositeGrader` | composite | fact-retention gate + weighted blend of tokens & quality |
+
+The composite grader encodes the repo rule *"token savings do not count if quality drops"*:
+losing a required fact zeroes the score regardless of tokens. The LLM grader takes a pluggable
+`Judge`; the default `referenceJudge` is deterministic (fact retention + noise exclusion) so
+committed results are reproducible offline. Each grader is also a standalone AgentV `type: script`
+grader — it reads the `{ input, expected_output, output }` stdin payload and writes
+`{ score, assertions, reasoning }`, which is how the generated suites call them.
+
+## Running
 
 ```bash
+# Run every benchmark; rewrite results/*.json, charts/*.svg, suites/*.EVAL.yaml, and benchmark-summary.md
+npm run evals --workspace @utk/evals
+
+# Just regenerate the formalized AgentV suites from the jsonl data
+npm run evals:suites --workspace @utk/evals
+
+# Unit tests (data, metrics, benchmarks, harness, graders, report/chart)
 npm test --workspace @utk/evals
-npm test --workspace @utk/evals -- --run evals/rtk-parity-metrics.test.ts
 ```
 
-The root coverage gate includes eval assertions and scripts:
+Results are persisted under `packages/evals/results/` and rendered as per-benchmark
+leaderboards plus a cross-benchmark summary in
+[`benchmark-summary.md`](/features/evals/benchmark-summary.md), regenerated in lockstep by
+`npm run evals` so the numbers never drift from the data.
 
-```bash
-npm run coverage
-```
+## Formalized AgentV suite
 
-## Focused Commands
-
-Run only RTK parity metrics:
-
-```bash
-npm run bench:rtk --workspace @utk/evals
-```
-
-Generate the RTK comparison report:
-
-```bash
-npm run report:rtk --workspace @utk/evals
-```
-
-Run bash-like tool rewrite metrics:
-
-```bash
-npm test --workspace @utk/evals -- --run evals/bash-rewrite-metrics.test.ts
-```
-
-Run Compresr parity benchmarks:
-
-```bash
-npm run bench:compresr --workspace @utk/evals
-```
-
-Generate the Compresr comparison report:
-
-```bash
-npm run report:compresr --workspace @utk/evals
-```
-
-Run caveman parity benchmarks:
-
-```bash
-npm run bench:caveman --workspace @utk/evals
-```
-
-Generate the caveman comparison report:
-
-```bash
-npm run report:caveman --workspace @utk/evals
-```
-
-Run tool-calling bypass eval scenarios:
-
-```bash
-npm run bench:tool-bypass --workspace @utk/evals
-```
-
-Generate the tool-calling bypass scenario report and AgentV YAML:
-
-```bash
-npm run report:tool-bypass --workspace @utk/evals
-```
-
-Run ponytail parity benchmarks:
-
-```bash
-npm run bench:ponytail --workspace @utk/evals
-```
-
-Generate the ponytail comparison report and AgentV YAML:
-
-```bash
-npm run report:ponytail --workspace @utk/evals
-```
-
-Run LeanCTX Copilot benchmarks:
-
-```bash
-npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose
-```
-
-AgentV can run the code-grader contract after building:
+`suites/<benchmark>.EVAL.yaml` is each jsonl expressed as a runnable AgentV suite: each case
+becomes a test whose assertions call the compiled graders. After building the package, AgentV
+can run it directly:
 
 ```bash
 npm run build --workspace @utk/evals
-agentv run packages/evals/evals/rtk-parity.EVAL.yaml
-agentv run packages/evals/evals/caveman-parity.EVAL.yaml
-agentv run packages/evals/evals/compresr-parity.EVAL.yaml
-agentv run packages/evals/evals/tool-calling-bypass.EVAL.yaml
+agentv run packages/evals/suites/tool-selection.EVAL.yaml
 ```
 
-Run the optional benchmark helper tests:
+## Provenance
 
-```bash
-npm test -- scripts/bench-rtk-baseline.test.ts
-```
+Following AgentV's [benchmark-provenance](https://agentv.dev/docs/guides/benchmark-provenance/)
+guidance, `data/<benchmark>.provenance.json` records informational (non-executed) metadata —
+origin, license, version, and the public benchmarks the cases relate to. `generate-suite` emits it
+as suite-level and per-test `metadata`, and `run-evals` emits it into the per-benchmark
+"Related public benchmarks" sections of `benchmark-summary.md`.
 
-Run a live RTK comparison when a local RTK command is available:
+All cases are **synthetic and self-authored** — not sampled from, or scored on, any external
+benchmark. The public benchmarks above are referenced only as task-category analogs so readers can
+anchor the kinds of task measured. UTK compaction is an orthogonal context-cost layer; the
+leaderboard numbers are not submissions to those benchmarks.
 
-```bash
-UTK_RTK_COMMAND="rtk" npm test -- scripts/bench-rtk-baseline.test.ts
-```
+## Real datasets
+
+`adapters.ts` is the seam for measuring a technique against a real external dataset. Convert a
+dataset's examples to the `BenchmarkCase` shape (one `<benchmark>.jsonl`) and point
+`UTK_REAL_DATA_DIR` at the directory; the harness uses it in place of the committed synthetic analog.
+Nothing is fetched or vendored — you supply a licensed local export. When the seam is unconfigured,
+`npm run evals` runs entirely on the committed analogs.
+
+## AgentEvals evaluator protocol
+
+The package also ships the [agentevals.io](https://agentevals.io) evaluator JSON protocol
+natively for trace-based TDD (`tool_trajectory_avg_score`, `response_match_score`,
+`no_parse_failures`, `no_soft_failures`), plus `loadUtkTrace` and a baseline store
+(`readBaseline` / `writeBaseline` / `diffScorecards`). These consume the Jaeger + EvalSet
+artifacts emitted by UTK tracing (see [tracing](tracing.md)) and drive a baseline-gated loop;
+walkthrough in [evals-driven-iteration](evals-driven-iteration.md). Wire shapes and config keys:
+
+- [references/agentevals-spec.md](references/agentevals-spec.md)
+- [references/evaluator-config.md](references/evaluator-config.md)
+- [references/baseline-store.md](references/baseline-store.md)
+- [references/tracing-failure-codes.md](references/tracing-failure-codes.md)
+
+## Related benchmarks
+
+The LeanCTX Copilot context-runtime benchmark lives in `scripts/bench-leanctx-copilot.ts`
+(tested by `scripts/bench-leanctx-copilot.test.ts`) with results in
+[/competition/lean-ctx/parity-benchmark.md](/competition/lean-ctx/parity-benchmark.md).

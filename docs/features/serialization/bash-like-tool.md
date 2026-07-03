@@ -94,18 +94,15 @@ become dashes on disk. Only one compact template is written, based on
 
 ## Metrics
 
-Bash rewrite metrics live in `packages/evals/metrics/bashRewriteMetrics.ts`.
-The fixture-backed tests assert:
+Bash-like invocation accuracy (exact command/argv, argument completion) is a core
+`@utk/core` guarantee. Token savings from routing a bash command to its compact
+template are measured by the comparison harness in `@utk/evals` (see [Evals](../evals/evals.md)),
+alongside the other tool-output techniques.
 
-- exact command and argv match;
-- argument accuracy is `1`;
-- compact template token use beats RTK-style baselines;
-- failing metrics name the scenario and failed value.
-
-Run the focused checks:
+Run the benchmark:
 
 ```bash
-npm test --workspace @utk/evals -- --run evals/bash-rewrite-metrics.test.ts
+npm run evals --workspace @utk/evals
 ```
 
 ## Safety Rules
