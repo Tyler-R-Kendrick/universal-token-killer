@@ -6,7 +6,7 @@ import { TYPESCRIPT_EMIT_LARK } from './grammar.js';
 export { buildSourceMinMap, scanTypeScriptTokens, typescriptAdapter } from './adapter.js';
 export type { BuildSourceMinMapOptions, BuildSourceMinMapResult } from './adapter.js';
 export { TYPESCRIPT_PLATFORM_CAPABILITIES, TYPESCRIPT_STDLIB_CAPABILITIES } from './capabilities.js';
-export { readPackGrammar, TYPESCRIPT_EMIT_LARK } from './grammar.js';
+export { TYPESCRIPT_EMIT_LARK } from './grammar.js';
 
 /**
  * Reference language pack for `@utk/emission`. Sibling languages (python,

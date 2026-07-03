@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@utk/code-graph": "0.1.0",
-    "@utk/core": "0.1.0"
+    "@utk/core": "0.1.0",
+    "@utk/grammar": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

@@ -1,4 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { createGrammarReader } from '@utk/grammar';
+
+const readGrammar = createGrammarReader(new URL('../grammars/', import.meta.url));
 
 /**
  * Base TypeScript emission profile grammar, loaded from the committed
@@ -7,8 +9,4 @@ import { readFileSync } from 'node:fs';
  * grounds constrained generation; conversion between min and pretty forms is
  * owned by the language adapter.
  */
-export const TYPESCRIPT_EMIT_LARK = readPackGrammar('typescript.emit.lark');
-
-export function readPackGrammar(fileName: string): string {
-  return readFileSync(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
-}
+export const TYPESCRIPT_EMIT_LARK = readGrammar('typescript.emit.lark');
