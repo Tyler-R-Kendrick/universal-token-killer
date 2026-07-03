@@ -87,7 +87,7 @@ become dashes on disk. Only one compact template is written, based on
 
 ## Metrics
 
-Bash rewrite metrics live in `packages/evals/metrics/bashRewriteMetrics.ts`.
+Bash rewrite token savings are measured by the comparison harness in `@utk/evals` (see [Evals](evals.md)).
 The fixture-backed tests assert:
 
 - exact command and argv match;
@@ -98,7 +98,7 @@ The fixture-backed tests assert:
 Run the focused checks:
 
 ```bash
-npm test --workspace @utk/evals -- --run evals/bash-rewrite-metrics.test.ts
+npm run evals --workspace @utk/evals
 ```
 
 ## Safety Rules

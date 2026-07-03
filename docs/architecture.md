@@ -49,7 +49,7 @@ UTK currently exposes several surfaces with different constraints:
 | `@utk/copilot-hook` | GitHub Copilot hook payload adapters and the internal `preToolUse` detok runner, maintained under `packages/plugins/agents/copilot`. | No |
 | `@utk/constrained-decoder` | `guidance-ts` grammar helpers for constrained route fallback (carries a `tracer?` DI seam to avoid a core cycle). | No |
 | `@utk/detok-mcp` | Private local MCP server exposing LLMLingua-2 rewriting as `detok`. | MCP only |
-| `@utk/evals` | Fixture-backed parity, safety, bash rewrite, and agentevals.io evaluators / baselines. | No |
+| `@utk/evals` | Comparison harness (baseline vs competitor vs UTK) and agentevals.io evaluators / baselines. | No |
 
 ## Runtime Packages
 
@@ -57,7 +57,7 @@ UTK currently exposes several surfaces with different constraints:
 - `@utk/copilot-hook` adapts Copilot hook JSON to core mediation from the Copilot agent plugin folder.
 - `@utk/constrained-decoder` owns `guidance-ts` route grammar helpers.
 - `@utk/detok-mcp` owns the private local stdio MCP server for the `detok` tool.
-- `@utk/evals` owns parity fixtures, metrics, agentevals.io evaluators, and the baseline store.
+- `@utk/evals` owns the comparison harness, agentevals.io evaluators, and the baseline store.
 
 ## Related Docs
 
