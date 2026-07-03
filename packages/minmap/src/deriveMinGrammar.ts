@@ -1,4 +1,4 @@
-import { MIN_ID_PATTERN } from '../minmap/format.js';
+import { MIN_ID_PATTERN } from './format.js';
 import { readPackagedGrammar } from './grammarFiles.js';
 
 export type DeriveMinGrammarOptions = {

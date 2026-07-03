@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, createMinMap, minMapHash } from '../src/minmap/format.js';
+import { addMinMapEntry, createMinMap, minMapHash } from '@utk/minmap';
 import {
   appendMinMapPatch,
   loadMinMap,
@@ -10,7 +10,7 @@ import {
   minMapPath,
   replayMinMapJournal,
   saveMinMap
-} from '../src/minmap/journal.js';
+} from '@utk/minmap';
 
 async function workspace(): Promise<string> {
   return await mkdtemp(path.join(tmpdir(), 'utk-emission-journal-'));

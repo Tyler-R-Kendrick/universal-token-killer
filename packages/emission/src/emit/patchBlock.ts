@@ -1,4 +1,4 @@
-import { MIN_ID_PATTERN, MIN_MAP_KIND_TAG_PATTERN, PRETTY_NAME_PATTERN } from '../minmap/format.js';
+import { MIN_ID_PATTERN, MIN_MAP_KIND_TAG_PATTERN, PRETTY_NAME_PATTERN } from '@utk/minmap';
 
 export type ExtractedPatchBlock = {
   patchText?: string;

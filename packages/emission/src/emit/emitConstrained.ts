@@ -1,14 +1,14 @@
 import { mkdir } from 'node:fs/promises';
 import { atomicWriteFile, contentHash, safeJoin, type GrammarCompletion } from '@utk/core';
-import { deriveMinGrammar } from '../grammars/deriveMinGrammar.js';
+import { deriveMinGrammar } from '@utk/minmap';
 import type { LanguageAdapter } from '../languages/adapter.js';
 import { languageGrammar, resolveLanguageAdapter } from '../languages/registry.js';
 import type { MacroDescriptor } from '../macros/defineMacro.js';
 import { expandEmissionSource } from '../macros/expandEmission.js';
 import { appendEmissionLedgerEntry } from '../macros/ledger.js';
-import { MIN_ID_PATTERN, type MinMap } from '../minmap/format.js';
-import { appendMinMapPatch, saveMinMap } from '../minmap/journal.js';
-import { applyMinMapPatch, parseMinMapPatch } from '../minmap/patch.js';
+import { MIN_ID_PATTERN, type MinMap } from '@utk/minmap';
+import { appendMinMapPatch, saveMinMap } from '@utk/minmap';
+import { applyMinMapPatch, parseMinMapPatch } from '@utk/minmap';
 import { planEmission, type EmissionPlan } from '../ladder/planEmission.js';
 import { extractEmissionPatchBlock } from './patchBlock.js';
 

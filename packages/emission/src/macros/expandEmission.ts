@@ -1,5 +1,5 @@
 import type { LanguageAdapter, ScannedToken } from '../languages/adapter.js';
-import type { MinMap } from '../minmap/format.js';
+import type { MinMap } from '@utk/minmap';
 import { expandMacro, type MacroDescriptor } from './defineMacro.js';
 
 type MacroCallSite = {

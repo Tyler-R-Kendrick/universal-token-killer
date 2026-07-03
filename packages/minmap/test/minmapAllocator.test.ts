@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SINGLE_TOKEN_POOL } from '../src/minmap/singleTokenPool.js';
-import { allocateEntry, allocateMinId } from '../src/minmap/allocator.js';
-import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
+import { SINGLE_TOKEN_POOL } from '@utk/minmap';
+import { allocateEntry, allocateMinId } from '@utk/minmap';
+import { addMinMapEntry, createMinMap } from '@utk/minmap';
 
 describe('single-token pool', () => {
   it('contains only short, unique, identifier-safe ids', () => {

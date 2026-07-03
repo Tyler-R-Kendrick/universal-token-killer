@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
+import { addMinMapEntry, createMinMap } from '@utk/minmap';
 import { defineMacro, expandMacro, registerMacro } from '../src/macros/defineMacro.js';
 import { expandEmissionSource, expandMacroCallsInSource } from '../src/macros/expandEmission.js';
 import { typescriptAdapter } from '../../plugins/languages/typescript/src/adapter.js';

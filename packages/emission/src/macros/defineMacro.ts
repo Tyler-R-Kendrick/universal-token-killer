@@ -1,7 +1,7 @@
 import { defineTemplate, extractSlotReferences, inlineGrammarSlot, renderTemplate } from '@utk/core';
 import { readPackagedGrammar } from '../grammars/grammarFiles.js';
-import { allocateEntry } from '../minmap/allocator.js';
-import { PRETTY_NAME_PATTERN, type MinMap, type MinMapEntry } from '../minmap/format.js';
+import { allocateEntry } from '@utk/minmap';
+import { PRETTY_NAME_PATTERN, type MinMap, type MinMapEntry } from '@utk/minmap';
 
 export type MacroDescriptor = {
   name: string;

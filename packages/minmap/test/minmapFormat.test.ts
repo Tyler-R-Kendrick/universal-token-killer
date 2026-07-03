@@ -7,7 +7,7 @@ import {
   parseMinMap,
   prettyFor,
   serializeMinMap
-} from '../src/minmap/format.js';
+} from '@utk/minmap';
 
 describe('min-map format', () => {
   it('creates an empty versioned map for a language', () => {

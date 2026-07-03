@@ -10,6 +10,7 @@ export default defineConfig({
       '@utk/tracing': path.resolve(import.meta.dirname, 'packages/tracing/src/index.ts'),
       '@utk/grammar': path.resolve(import.meta.dirname, 'packages/grammar/src/index.ts'),
       '@utk/detok': path.resolve(import.meta.dirname, 'packages/detok/src/index.ts'),
+      '@utk/minmap': path.resolve(import.meta.dirname, 'packages/minmap/src/index.ts'),
       '@utk/constrained-decoder': path.resolve(import.meta.dirname, 'packages/constrained-decoder/src/index.ts'),
       '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
       '@utk/emission': path.resolve(import.meta.dirname, 'packages/emission/src/index.ts'),

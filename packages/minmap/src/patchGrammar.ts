@@ -1,4 +1,4 @@
-import { readPackagedGrammar } from '../grammars/grammarFiles.js';
+import { readPackagedGrammar } from './grammarFiles.js';
 
 /**
  * Grammar for the compact min-map patch language, loaded from the committed

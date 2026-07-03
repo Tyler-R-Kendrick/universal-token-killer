@@ -2,8 +2,8 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, createMinMap, parseMinMap } from '../src/minmap/format.js';
-import { loadMinMap, minMapJournalPath, minMapPath, replayMinMapJournal } from '../src/minmap/journal.js';
+import { addMinMapEntry, createMinMap, parseMinMap } from '@utk/minmap';
+import { loadMinMap, minMapJournalPath, minMapPath, replayMinMapJournal } from '@utk/minmap';
 import { typescriptAdapter } from '../../plugins/languages/typescript/src/adapter.js';
 
 async function workspace(): Promise<string> {

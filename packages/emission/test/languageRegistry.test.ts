@@ -10,7 +10,7 @@ import {
 } from '../src/languages/registry.js';
 import { platformCapabilities, stdlibCapabilities } from '../src/ladder/languageCapabilities.js';
 import { expandEmissionSource } from '../src/macros/expandEmission.js';
-import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
+import { addMinMapEntry, createMinMap } from '@utk/minmap';
 
 /** Minimal third-party pack: whitespace-token language, identity semantics. */
 const stubAdapter: LanguageAdapter = {

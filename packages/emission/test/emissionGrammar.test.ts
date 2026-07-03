@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { deriveMinGrammar } from '../src/grammars/deriveMinGrammar.js';
+import { deriveMinGrammar } from '@utk/minmap';
 import { installLanguageProfile } from '../src/grammars/languageProfile.js';
 import { registerLanguagePack } from '../src/languages/registry.js';
 import { typescriptLanguagePack } from '../../plugins/languages/typescript/src/index.js';
@@ -64,7 +64,9 @@ describe('deriveMinGrammar', () => {
 
 describe('emission core grammar files', () => {
   it('ships every language-agnostic grammar as a committed .lark file', async () => {
-    for (const fileName of ['minmap-patch.lark', 'minmap-patch-block.lark', 'macro-arg.lark']) {
+    // The declare-before-use min-map patch grammars now ship with @utk/minmap;
+    // emission retains only the macro-argument grammar.
+    for (const fileName of ['macro-arg.lark']) {
       const content = await readFile(new URL(`../grammars/${fileName}`, import.meta.url), 'utf8');
       expect(content.length, fileName).toBeGreaterThan(0);
       expect(content.endsWith('\n'), fileName).toBe(true);

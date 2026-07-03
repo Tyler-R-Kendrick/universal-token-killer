@@ -1,4 +1,4 @@
-import type { MinMap } from '../minmap/format.js';
+import type { MinMap } from '@utk/minmap';
 
 export type ScannedTokenKind =
   | 'identifier'

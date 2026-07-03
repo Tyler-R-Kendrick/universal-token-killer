@@ -1,4 +1,4 @@
-import { canonicalJson, contentHash } from '@utk/core';
+import { canonicalJson, contentHash } from '@utk/foundation';
 
 export const MIN_MAP_VERSION = 1;
 

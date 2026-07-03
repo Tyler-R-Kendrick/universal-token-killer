@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { atomicWriteFile, normalizeToolId, safeJoin } from '@utk/core';
 import { languageGrammar } from '../languages/registry.js';
-import { deriveMinGrammar } from './deriveMinGrammar.js';
+import { deriveMinGrammar } from '@utk/minmap';
 
 export type InstalledLanguageProfile = {
   language: string;

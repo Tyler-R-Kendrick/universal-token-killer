@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, createMinMap } from '../src/minmap/format.js';
+import { addMinMapEntry, createMinMap } from '@utk/minmap';
 import {
   applyMinMapPatch,
   invertMinMapPatch,
   parseMinMapPatch,
   serializeMinMapPatch
-} from '../src/minmap/patch.js';
-import { MINMAP_PATCH_LARK, MINMAP_PATCH_LINE_PATTERN } from '../src/minmap/patchGrammar.js';
+} from '@utk/minmap';
+import { MINMAP_PATCH_LARK, MINMAP_PATCH_LINE_PATTERN } from '@utk/minmap';
 
 const baseMap = addMinMapEntry(createMinMap('typescript'), {
   minId: 'a',
