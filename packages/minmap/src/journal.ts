@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile, normalizeToolId, safeJoin } from '@utk/core';
+import { atomicWriteFile, normalizeToolId, safeJoin } from '@utk/foundation';
 import { createMinMap, minMapHash, parseMinMap, serializeMinMap, type MinMap } from './format.js';
 import { applyMinMapPatch, parseMinMapPatch } from './patch.js';
 
