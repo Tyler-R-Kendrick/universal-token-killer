@@ -6,11 +6,13 @@ numbers — change the data or the harness, then regenerate.
 
 ## Regenerating
 
-- `npm run evals --workspace @utk/evals` runs every comparison and rewrites, in lockstep:
-  - `results/<competitor>.json` and `results/summary.json`;
+- `npm run evals --workspace @utk/evals` runs the whole benchmark and rewrites, in lockstep:
+  - `results/<benchmark>.json` and `results/summary.json`;
   - `suites/<benchmark>.EVAL.yaml`;
-  - `docs/internal/<competitor>-benchmark-results.md` and `docs/internal/benchmark-summary.md`.
+  - `docs/features/evals/benchmark-summary.md` (the leaderboard).
 - Commit the regenerated artifacts in the same change as the data/harness edit that moved them.
+- Benchmark docs are OKF concepts: `run-evals` emits the `type: benchmark` frontmatter; run `npm run lint:okf` after regenerating.
+- Do not bury benchmark metrics only in PR text, terminal output, or test logs.
 
 ## Adding a case or competitor
 
@@ -35,6 +37,8 @@ non-deterministic numbers.
 
 ## LeanCTX Copilot
 
-The LeanCTX benchmark is separate. Rerun with
-`npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose` and keep its results in
-`docs/internal/leanctx-copilot-benchmark-results.md`.
+The LeanCTX Copilot benchmark is separate. When rerunning it:
+
+- run at least `npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose`;
+- for repeated improvement loops, record loop count, rounds per loop, total evaluated cases, per-surface totals, and minimum relevance/correctness/groundedness;
+- keep detailed results in `docs/competition/lean-ctx/parity-benchmark.md`, not the aggregate leaderboard.

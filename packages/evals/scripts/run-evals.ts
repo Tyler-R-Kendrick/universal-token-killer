@@ -9,7 +9,7 @@ import { REPO_ROOT, RESULTS_DIR } from '../paths.js';
 import { generateSuite } from './generate-suite.js';
 
 export { RESULTS_DIR };
-const DOCS_DIR = path.join(REPO_ROOT, 'docs', 'internal');
+const DOCS_DIR = path.join(REPO_ROOT, 'docs', 'features', 'evals');
 
 /** Run the whole benchmark (baseline + every competitor + UTK). */
 export async function runAll(): Promise<BenchmarkResult> {
@@ -58,7 +58,7 @@ async function main(): Promise<void> {
     const change = baselineTokens === 0 ? '—' : `${Math.round((arm.totals.visibleTokens / baselineTokens - 1) * 100)}%`;
     process.stdout.write(`${arm.label.padEnd(30)} tokens=${String(arm.totals.visibleTokens).padStart(5)} change=${change.padStart(5)} facts=${arm.totals.passed}/${arm.totals.cases}\n`);
   }
-  process.stdout.write('\nWrote results/, suites/, and docs/internal/benchmark-summary.md.\n');
+  process.stdout.write('\nWrote results/, suites/, and docs/features/evals/benchmark-summary.md.\n');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -2,6 +2,7 @@
   "name": "tool-output",
   "version": "0.1.0",
   "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
   "tags": ["tool-output", "context-compaction", "utk"],
   "origin": "synthetic",
   "authored_by": "universal-token-killer",

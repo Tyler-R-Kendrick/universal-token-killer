@@ -1,0 +1,14 @@
+#!/bin/sh
+# OKF conformance check on staged docs/ Markdown before commit.
+# Bypass with `git commit --no-verify` if you must.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^docs/.*\.md$' || true)
+[ -z "$staged" ] && exit 0
+
+echo "OKF: linting staged docs..."
+if ! node scripts/okf-lint.mjs $staged; then
+  echo ""
+  echo "OKF lint failed. Fix the issues above, or run 'npm run lint:okf' for the full report."
+  echo "(To bypass in an emergency: git commit --no-verify)"
+  exit 1
+fi

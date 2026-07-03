@@ -49,6 +49,8 @@ export type BenchmarkProvenance = {
   name: string;
   version: string;
   license: string;
+  /** ISO 8601 stamp emitted into the OKF frontmatter of the generated report. */
+  timestamp?: string;
   tags: string[];
   origin: string;
   authored_by: string;

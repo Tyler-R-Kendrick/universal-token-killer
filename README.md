@@ -28,7 +28,7 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 ## Benchmark Snapshot
 
-Full comparison: `docs/internal/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
+Full comparison: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
 
 > Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run — and token counts are coarse `ceil(len/4)` estimates. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
 
@@ -44,7 +44,7 @@ The tool-output benchmark runs baseline, every competitor, and UTK as sibling ar
 | Ponytail (minimum emission) | 977 | −25% | 11/12 |
 | UTK (mediated compaction) | 324 | −75% | 12/12 |
 
-In-context compactors bottom out around −25% and the aggressive ones start dropping required facts (11/12). UTK spends −75% at full retention because it moves the payload off-context instead of compressing it in place. Harness, graders, provenance, and data format: `docs/evals.md`; full report: `docs/internal/benchmark-summary.md`.
+In-context compactors bottom out around −25% and the aggressive ones start dropping required facts (11/12). UTK spends −75% at full retention because it moves the payload off-context instead of compressing it in place. Harness, graders, provenance, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
 
 ## LeanCTX Copilot Benchmark
 
@@ -58,7 +58,7 @@ The LeanCTX Copilot suite compares UTK against a context-runtime baseline across
 - Savings vs LeanCTX: `33.68%`
 - Minimum relevance/correctness/groundedness: `1.000`
 
-Full report: `docs/internal/leanctx-copilot-benchmark-results.md`.
+Full report: `docs/competition/lean-ctx/parity-benchmark.md`.
 
 ## Example Usage
 
@@ -286,7 +286,7 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
-- `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/model-proxy.md).
+- `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
 - `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/emission`.
 - `@utk/emission`: language-agnostic grammar-grounded emission — min maps with declare-before-use patches, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, constrained emission with honest fallback, and the language-pack registry.
@@ -336,29 +336,29 @@ my-pack/
 
 ## Reference Docs
 
-- [Quickstart](docs/quickstart.md)
-- [Architecture](docs/architecture.md)
-- [Agent Skills](docs/agent-skills.md)
-- [Bash-Like Tool Templates](docs/bash-like-tool.md)
-- [Copilot Hook Integration](docs/copilot-hook.md)
-- [Configuration](docs/configuration.md)
-- [Detok MCP](docs/detok-mcp.md)
-- [Session Agents And Skills](docs/session-artifacts.md)
-- [Serialization Providers](docs/serialization.md)
-- [Artifacts And Recovery](docs/artifacts.md)
-- [Security And Privacy](docs/security-and-privacy.md)
-- [Schema Routing](docs/schema-routing.md)
-- [Constrained Decoding](docs/constrained-decoding.md)
-- [RTK Parity](docs/rtk-parity.md)
-- [Evals](docs/evals.md)
-- [Tracing](docs/tracing.md)
-- [Evals-Driven Iteration](docs/evals-driven-iteration.md)
-- [Spec Reference: agentevals.io](docs/refs/agentevals-spec.md)
-- [Reference: Tracing Failure Codes](docs/refs/tracing-failure-codes.md)
-- [Reference: Evaluator Config Keys](docs/refs/evaluator-config.md)
-- [Reference: Baseline Store](docs/refs/baseline-store.md)
-- [Implementation Guide](docs/implementation-guide.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- [Quickstart](docs/features/getting-started/quickstart.md)
+- [Architecture](docs/features/architecture/architecture.md)
+- [Agent Skills](docs/features/skills/agent-skills.md)
+- [Bash-Like Tool Templates](docs/features/serialization/bash-like-tool.md)
+- [Copilot Hook Integration](docs/features/copilot-hook/copilot-hook.md)
+- [Configuration](docs/features/getting-started/configuration.md)
+- [Detok MCP](docs/features/detok/detok-mcp.md)
+- [Session Agents And Skills](docs/features/skills/session-artifacts.md)
+- [Serialization Providers](docs/features/serialization/serialization.md)
+- [Artifacts And Recovery](docs/features/architecture/artifacts.md)
+- [Security And Privacy](docs/features/architecture/security-and-privacy.md)
+- [Schema Routing](docs/features/serialization/schema-routing.md)
+- [Constrained Decoding](docs/features/serialization/constrained-decoding.md)
+- [RTK Parity](docs/features/evals/rtk-parity.md)
+- [Evals](docs/features/evals/evals.md)
+- [Tracing](docs/features/evals/tracing.md)
+- [Evals-Driven Iteration](docs/features/evals/evals-driven-iteration.md)
+- [Spec Reference: agentevals.io](docs/features/evals/references/agentevals-spec.md)
+- [Reference: Tracing Failure Codes](docs/features/evals/references/tracing-failure-codes.md)
+- [Reference: Evaluator Config Keys](docs/features/evals/references/evaluator-config.md)
+- [Reference: Baseline Store](docs/features/evals/references/baseline-store.md)
+- [Implementation Guide](docs/features/getting-started/implementation-guide.md)
+- [Troubleshooting](docs/features/getting-started/troubleshooting.md)
 
 ## Development
 

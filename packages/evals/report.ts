@@ -29,10 +29,26 @@ export function renderLeaderboard(result: BenchmarkResult): string[] {
   ];
 }
 
+/** OKF concept frontmatter for the generated benchmark doc (informational). */
+function frontmatter(provenance?: BenchmarkProvenance | null): string[] {
+  if (!provenance) return [];
+  return [
+    '---',
+    'type: benchmark',
+    'title: Benchmark Summary',
+    `description: ${JSON.stringify(provenance.description)}`,
+    `tags: [${provenance.tags.join(', ')}]`,
+    ...(provenance.timestamp ? [`timestamp: ${provenance.timestamp}`] : []),
+    '---',
+    ''
+  ];
+}
+
 /** Render the whole benchmark as one leaderboard-first results doc. */
 export function renderBenchmarkMarkdown(result: BenchmarkResult, provenance?: BenchmarkProvenance | null): string {
   const ranked = [...result.arms].sort((a, b) => b.totals.visibleTokens - a.totals.visibleTokens);
   const lines = [
+    ...frontmatter(provenance),
     '# Tool-output compaction benchmark',
     '',
     `Three-plus concurrent arms over the same ${result.cases} cases: **baseline** (raw output), each **competitor**, and **UTK** (raw persisted off-context, recoverable handle in chat).`,
