@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile, canonicalJson, contentHash, safeJoin } from '@utk/core';
+import { atomicWriteFile, canonicalJson, contentHash, safeJoin } from '@utk/foundation';
 import { findSymbol } from '@utk/code-graph';
 import type { MacroDescriptor } from '../macros/defineMacro.js';
 import { appendEmissionLedgerEntry } from '../macros/ledger.js';

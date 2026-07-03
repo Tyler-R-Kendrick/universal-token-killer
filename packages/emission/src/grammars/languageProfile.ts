@@ -1,6 +1,6 @@
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile, normalizeToolId, safeJoin } from '@utk/core';
+import { atomicWriteFile, normalizeToolId, safeJoin } from '@utk/foundation';
 import { languageGrammar } from '../languages/registry.js';
 import { deriveMinGrammar } from '@utk/minmap';
 

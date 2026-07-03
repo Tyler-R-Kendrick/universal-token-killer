@@ -1,5 +1,6 @@
 import { mkdir } from 'node:fs/promises';
-import { atomicWriteFile, contentHash, safeJoin, type GrammarCompletion } from '@utk/core';
+import { atomicWriteFile, contentHash, safeJoin } from '@utk/foundation';
+import type { GrammarCompletion } from '@utk/templates';
 import { deriveMinGrammar } from '@utk/minmap';
 import type { LanguageAdapter } from '../languages/adapter.js';
 import { languageGrammar, resolveLanguageAdapter } from '../languages/registry.js';

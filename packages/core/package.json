@@ -16,6 +16,7 @@
     "@utk/constrained-decoder": "0.1.0",
     "@utk/detok": "0.1.0",
     "@utk/foundation": "0.1.0",
+    "@utk/templates": "0.1.0",
     "@utk/tracing": "0.1.0",
     "smol-toml": "^1.6.1"
   }

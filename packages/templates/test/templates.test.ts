@@ -8,14 +8,14 @@ import {
   grammarSlot,
   inlineGrammarSlot,
   type TemplateDescriptor
-} from '../src/templates/defineTemplate.js';
+} from '@utk/templates';
 import {
   cacheTemplateDescriptor,
   loadTemplateDescriptor,
   readTemplateDescriptorCache,
   renderTemplate,
   templateCachePath
-} from '../src/templates/templateRuntime.js';
+} from '@utk/templates';
 
 describe('defineTemplate', () => {
   it('validates a complete template', () => {

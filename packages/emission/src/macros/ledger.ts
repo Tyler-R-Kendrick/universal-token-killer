@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile, safeJoin } from '@utk/core';
+import { atomicWriteFile, safeJoin } from '@utk/foundation';
 
 export const EMISSION_LEDGER_ENTRY_TYPES = ['macro-expansion', 'minmap-patch', 'emission-plan', 'constrained-emission'] as const;
 export type EmissionLedgerEntryType = (typeof EMISSION_LEDGER_ENTRY_TYPES)[number];

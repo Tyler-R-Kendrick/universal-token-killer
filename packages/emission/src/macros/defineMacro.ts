@@ -1,4 +1,4 @@
-import { defineTemplate, extractSlotReferences, inlineGrammarSlot, renderTemplate } from '@utk/core';
+import { defineTemplate, extractSlotReferences, inlineGrammarSlot, renderTemplate } from '@utk/templates';
 import { readPackagedGrammar } from '../grammars/grammarFiles.js';
 import { allocateEntry } from '@utk/minmap';
 import { PRETTY_NAME_PATTERN, type MinMap, type MinMapEntry } from '@utk/minmap';
