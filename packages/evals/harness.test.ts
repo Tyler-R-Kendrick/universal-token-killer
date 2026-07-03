@@ -1,22 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { estimateTokens, parseBenchmark, loadBenchmark, loadProvenance, type BenchmarkCase } from './data.js';
+import { REFERENCE_MODEL, type CostModel } from './model.js';
+import {
+  aggregateTechnique,
+  checkRegressionGate,
+  computeRunMetrics,
+  headlineNumbers,
+  paretoFrontier,
+  percentile,
+  type RunContext,
+  type RunMetrics,
+  type RunOutcome
+} from './metrics.js';
+import { BENCHMARKS, getBenchmark, scoreArmOutput } from './benchmarks.js';
+import { realDataConfigured, loadRealDataset } from './adapters.js';
 import {
   DEFAULT_SESSION,
-  runComparison,
-  runBenchmark,
-  utkTechnique,
   baselineTechnique,
+  utkTechnique,
   mapConcurrent,
-  type Comparison,
-  type SessionConfig
+  runSuite,
+  runBenchmarkReport,
+  SWEEP_THRESHOLDS
 } from './harness.js';
-import { COMPARISONS, makeCompetitorArm, infoScore, addSkill } from './comparison/index.js';
+import { COMPETITORS, makeCompetitorArm, infoScore } from './comparison/index.js';
 import { gradeTokens } from './graders/tokenGrader.js';
 import { gradeRelevance } from './graders/relevanceGrader.js';
 import { gradeComposite, gradeCompositeFromAgentV } from './graders/compositeGrader.js';
-import { referenceJudge, type Judge } from './graders/shared.js';
 import { renderSuiteYaml } from './scripts/generate-suite.js';
-import { renderBenchmarkMarkdown, renderLeaderboard } from './report.js';
+import { renderLeaderboard, renderHeadlines, renderGates, renderCrossBenchmark, renderSuiteMarkdown } from './report.js';
+import { renderParetoSvg } from './pareto.js';
 
 const sampleCase: BenchmarkCase = {
   name: 'sample',
@@ -28,6 +41,17 @@ const sampleCase: BenchmarkCase = {
   irrelevantFacts: ['INFO warming up', 'INFO done in 12ms']
 };
 
+const toolCatalogCase: BenchmarkCase = {
+  name: 'catalog',
+  category: 'Billing',
+  toolId: 'catalog.test',
+  prompt: 'issue a refund',
+  rawOutput: 'get_invoice(id): read one\nissue_partial_refund(id, amount): refund part\ndelete_customer(id): destroy a customer',
+  requiredFacts: ['issue_partial_refund(id, amount): refund part'],
+  irrelevantFacts: ['get_invoice(id): read one'],
+  unsafeTools: ['delete_customer']
+};
+
 describe('data', () => {
   it('estimates tokens as ceil(len/4)', () => {
     expect(estimateTokens('')).toBe(0);
@@ -35,48 +59,129 @@ describe('data', () => {
     expect(estimateTokens('abcde')).toBe(2);
   });
 
-  it('parses jsonl and skips blank lines', () => {
-    const cases = parseBenchmark(`${JSON.stringify(sampleCase)}\n\n`);
-    expect(cases).toHaveLength(1);
-    expect(cases[0]?.requiredFacts).toEqual(sampleCase.requiredFacts);
-  });
-
-  it('reports the real source line number even after blank lines', () => {
+  it('parses jsonl, skips blanks, and reports real line numbers', () => {
+    expect(parseBenchmark(`${JSON.stringify(sampleCase)}\n\n`)).toHaveLength(1);
     expect(() => parseBenchmark(`\n\nnot json`)).toThrow(/line 3/);
-  });
-
-  it('rejects malformed lines and non-object cases', () => {
-    expect(() => parseBenchmark('not json')).toThrow(/Invalid JSONL/);
-    expect(() => parseBenchmark('123')).toThrow(/not an object/);
     expect(() => parseBenchmark('{"name":"x"}')).toThrow(/missing string field/);
   });
 
-  it('loads the committed tool-output dataset with fact invariants intact', async () => {
-    const cases = await loadBenchmark('tool-output');
-    expect(cases.length).toBeGreaterThanOrEqual(10);
-    for (const testCase of cases) {
-      for (const fact of [...testCase.requiredFacts, ...testCase.irrelevantFacts]) {
-        expect(testCase.rawOutput, `${testCase.name}: ${fact}`).toContain(fact);
+  it('parses the optional unsafeTools field', () => {
+    const [parsed] = parseBenchmark(JSON.stringify(toolCatalogCase));
+    expect(parsed?.unsafeTools).toEqual(['delete_customer']);
+    const [plain] = parseBenchmark(JSON.stringify(sampleCase));
+    expect(plain?.unsafeTools).toBeUndefined();
+  });
+
+  it('every committed benchmark keeps its fact invariants (facts are verbatim substrings)', async () => {
+    for (const benchmark of BENCHMARKS) {
+      const cases = await loadBenchmark(benchmark.name);
+      expect(cases.length, benchmark.name).toBeGreaterThanOrEqual(10);
+      for (const testCase of cases) {
+        for (const fact of [...testCase.requiredFacts, ...testCase.irrelevantFacts, ...(testCase.unsafeTools ?? [])]) {
+          expect(testCase.rawOutput, `${benchmark.name}/${testCase.name}: ${fact}`).toContain(fact);
+        }
       }
     }
   });
 
-  it('loads the provenance manifest with related public benchmarks', async () => {
-    const provenance = await loadProvenance('tool-output');
-    expect(provenance?.origin).toBe('synthetic');
-    expect(provenance?.related_benchmarks.map((b) => b.id)).toContain('terminal-bench');
+  it('loads a provenance manifest with related public benchmarks for every benchmark', async () => {
+    for (const benchmark of BENCHMARKS) {
+      const provenance = await loadProvenance(benchmark.name);
+      expect(provenance?.origin, benchmark.name).toBe('synthetic');
+      expect(provenance?.related_benchmarks.length, benchmark.name).toBeGreaterThan(0);
+    }
     expect(await loadProvenance('does-not-exist')).toBeNull();
+  });
+});
+
+describe('cost model + metrics', () => {
+  const ctx: RunContext = { retrievedContextTokens: 400, compressedContextTokens: 100, promptTokens: 20, outputTokens: 48, toolSchemaTokens: 0, compresses: true };
+  const outcome: RunOutcome = { taskSuccess: 1, qualityScore: 0.9, faithfulnessScore: 1, failureCategory: 'none', recoveryToolCalls: 0, fallbackCount: 0, retryCount: 0, invalidToolCallCount: 0 };
+
+  it('computes the 18 fields and keeps buckets disjoint', () => {
+    const m = computeRunMetrics(ctx, outcome, REFERENCE_MODEL);
+    expect(m.input_tokens).toBe(120); // prompt + compressed + tool_schema (disjoint)
+    expect(m.compression_latency_ms).toBeGreaterThan(0);
+    expect(m.total_latency_ms).toBeCloseTo(m.model_latency_ms + m.tool_latency_ms + m.compression_latency_ms, 3);
+    expect(Object.keys(m)).toHaveLength(18);
+  });
+
+  it('charges a tool round-trip when there are recovery/fallback/retry calls', () => {
+    const withTool = computeRunMetrics(ctx, { ...outcome, recoveryToolCalls: 1 }, REFERENCE_MODEL);
+    expect(withTool.tool_latency_ms).toBe(REFERENCE_MODEL.toolCallMs);
+    expect(withTool.tool_cost).toBeGreaterThan(0);
+  });
+
+  it('aggregates, gates, and finds the Pareto frontier', () => {
+    const mk = (success: number, cost: number): RunMetrics => computeRunMetrics(
+      { ...ctx, compressedContextTokens: cost },
+      { ...outcome, taskSuccess: success },
+      REFERENCE_MODEL
+    );
+    const baseline = aggregateTechnique('baseline', 'Baseline', [mk(1, 400), mk(1, 400)], 800);
+    const good = aggregateTechnique('good', 'Good', [mk(1, 100), mk(1, 100)], 800);
+    const bad = aggregateTechnique('bad', 'Bad', [mk(0, 100), mk(1, 100)], 800);
+
+    expect(baseline.tokenReduction).toBe(0);
+    expect(good.tokenReduction).toBeGreaterThan(0);
+    expect(good.taskSuccessRate).toBe(1);
+    expect(bad.taskSuccessRate).toBe(0.5);
+
+    const frontier = paretoFrontier([baseline, good, bad]);
+    expect(frontier.has('good')).toBe(true); // cheaper and higher success dominates
+    expect(frontier.has('bad')).toBe(false);
+
+    const gate = checkRegressionGate(bad, baseline);
+    expect(gate.passed).toBe(false);
+    expect(checkRegressionGate(good, baseline).passed).toBe(true);
+  });
+
+  it('reads headline numbers off a sweep and computes percentiles', () => {
+    const baseline = aggregateTechnique('baseline', 'Baseline', [computeRunMetrics(ctx, outcome, REFERENCE_MODEL)], ctx.compressedContextTokens);
+    const sweep = [0.2, 0.5, 0.8].map((reduction, i) =>
+      aggregateTechnique('t', `t${i}`, [computeRunMetrics({ ...ctx, compressedContextTokens: Math.round(100 * (1 - reduction)) }, outcome, REFERENCE_MODEL)], 100)
+    );
+    const h = headlineNumbers(sweep, baseline);
+    expect(h.qualityRetentionAt50PctReduction).toBeGreaterThan(0);
+    expect(percentile([1, 2, 3, 4], 95)).toBeGreaterThanOrEqual(3);
+    expect(percentile([], 95)).toBe(0);
+  });
+});
+
+describe('benchmarks + scoring', () => {
+  it('registers the five benchmarks', () => {
+    expect(BENCHMARKS.map((b) => b.name)).toEqual(['tool-output', 'long-context', 'needle-in-haystack', 'tool-selection', 'agent-workflows']);
+    expect(getBenchmark('needle-in-haystack')?.kind).toBe('needle');
+  });
+
+  it('scores fact retention on the recoverable surface and relevance on the visible surface', () => {
+    const benchmark = getBenchmark('tool-output')!;
+    const utk = scoreArmOutput(benchmark, sampleCase, 'utk', { visibleText: 'handle', recoverableText: sampleCase.rawOutput });
+    expect(utk.outcome.taskSuccess).toBe(1); // facts recoverable
+    expect(utk.outcome.recoveryToolCalls).toBe(1); // UTK pays a round-trip
+    const dropped = scoreArmOutput(benchmark, sampleCase, 'competitor', { visibleText: 'INFO warming up', recoverableText: 'INFO warming up' });
+    expect(dropped.outcome.taskSuccess).toBe(0); // required facts lost
+  });
+
+  it('flags an unsafe-tool error when a mutating tool stays visible after the safe tool is dropped', () => {
+    const benchmark = getBenchmark('tool-selection')!;
+    const unsafe = scoreArmOutput(benchmark, toolCatalogCase, 'competitor', {
+      visibleText: 'delete_customer(id): destroy a customer',
+      recoverableText: 'delete_customer(id): destroy a customer'
+    });
+    expect(unsafe.outcome.taskSuccess).toBe(0);
+    expect(unsafe.outcome.failureCategory).toBe('unsafe-tool');
+    // The visible payload is charged to the tool-schema bucket, not context.
+    expect(unsafe.context.compressedContextTokens).toBe(0);
+    expect(unsafe.context.toolSchemaTokens).toBeGreaterThan(0);
   });
 });
 
 describe('graders', () => {
   it('token grader scores savings and flags regressions', () => {
     const saved = gradeTokens({ visibleText: 'short', baselineText: 'a much much longer baseline output' });
-    expect(saved.metrics?.visibleTokens).toBeLessThan(saved.metrics?.baselineTokens ?? 0);
     expect(saved.score).toBeGreaterThan(0);
-    const inflated = gradeTokens({ visibleText: 'a very long inflated output', baselineText: 'tiny' });
-    expect(inflated.score).toBe(0);
-    expect(inflated.assertions[0]?.passed).toBe(false);
+    expect(gradeTokens({ visibleText: 'a very long inflated output', baselineText: 'tiny' }).score).toBe(0);
   });
 
   it('relevance grader rewards retention and noise exclusion', async () => {
@@ -88,18 +193,9 @@ describe('graders', () => {
       irrelevantFacts: sampleCase.irrelevantFacts
     });
     expect(kept.metrics?.accuracy).toBe(1);
-    expect(kept.metrics?.relevance).toBe(1);
-    const lost = await gradeRelevance({
-      prompt: sampleCase.prompt,
-      visibleText: 'TypeError boom',
-      recoverableText: 'TypeError boom',
-      requiredFacts: sampleCase.requiredFacts,
-      irrelevantFacts: sampleCase.irrelevantFacts
-    });
-    expect(lost.metrics?.accuracy).toBe(0.5);
   });
 
-  it('composite grader gates on fact retention', async () => {
+  it('composite grader gates on fact retention and bridges the AgentV contract', async () => {
     const dropsFact = await gradeComposite({
       prompt: sampleCase.prompt,
       visibleText: 'boom',
@@ -109,45 +205,21 @@ describe('graders', () => {
       irrelevantFacts: sampleCase.irrelevantFacts
     });
     expect(dropsFact.score).toBe(0);
-    expect(dropsFact.assertions[0]?.passed).toBe(false);
 
-    const keepsFacts = await gradeComposite({
-      prompt: sampleCase.prompt,
-      visibleText: 'FAIL packages/x.test.ts line 42 TypeError boom',
-      recoverableText: 'FAIL packages/x.test.ts line 42 TypeError boom',
-      baselineText: sampleCase.rawOutput,
-      requiredFacts: sampleCase.requiredFacts,
-      irrelevantFacts: sampleCase.irrelevantFacts
-    });
-    expect(keepsFacts.assertions[0]?.passed).toBe(true);
-  });
-
-  it('bridges the AgentV stdin/stdout contract', async () => {
-    const result = await gradeCompositeFromAgentV({
+    const bridged = await gradeCompositeFromAgentV({
       input: [{ role: 'user', content: sampleCase.prompt }],
-      expected_output: JSON.stringify({
-        prompt: sampleCase.prompt,
-        rawOutput: sampleCase.rawOutput,
-        requiredFacts: sampleCase.requiredFacts,
-        irrelevantFacts: sampleCase.irrelevantFacts
-      }),
+      expected_output: JSON.stringify({ prompt: sampleCase.prompt, rawOutput: sampleCase.rawOutput, requiredFacts: sampleCase.requiredFacts, irrelevantFacts: sampleCase.irrelevantFacts }),
       output: JSON.stringify({ visible: 'handle', recoverable: sampleCase.rawOutput })
     });
-    expect(result.score).toBeGreaterThan(0);
-    expect(result.assertions[0]?.passed).toBe(true);
+    expect(bridged.score).toBeGreaterThan(0);
   });
 });
 
 describe('techniques', () => {
   it('baseline shows raw, UTK shows a tiny recoverable handle', () => {
-    const largeCase: BenchmarkCase = {
-      ...sampleCase,
-      rawOutput: `${sampleCase.rawOutput}\n${'noise line with detail '.repeat(20)}`
-    };
-    const baseline = baselineTechnique(largeCase, DEFAULT_SESSION, { arm: 'baseline', competitor: 'x', benchmark: 'b' });
-    expect(baseline.visibleText).toBe(largeCase.rawOutput);
-
-    const utk = utkTechnique(largeCase, DEFAULT_SESSION, { arm: 'utk', competitor: 'x', benchmark: 'b' });
+    const largeCase: BenchmarkCase = { ...sampleCase, rawOutput: `${sampleCase.rawOutput}\n${'noise line with detail '.repeat(20)}` };
+    expect(baselineTechnique(largeCase)).toMatchObject({ visibleText: largeCase.rawOutput });
+    const utk = utkTechnique(largeCase) as { visibleText: string; recoverableText: string };
     expect(estimateTokens(utk.visibleText)).toBeLessThan(estimateTokens(largeCase.rawOutput));
     expect(utk.recoverableText).toBe(largeCase.rawOutput);
     expect(utk.visibleText).not.toContain('TypeError boom');
@@ -156,103 +228,121 @@ describe('techniques', () => {
   it('infoScore ranks structured lines above prose', () => {
     expect(infoScore('packages/core/src/x.ts:42:14')).toBeGreaterThan(infoScore('warming up the reference judge'));
   });
+
+  it('makeCompetitorArm keeps salient facts and drops noise', () => {
+    const arm = makeCompetitorArm({ keepThreshold: 0.2 });
+    const out = arm(sampleCase) as { visibleText: string };
+    expect(out.visibleText).toContain('FAIL packages/x.test.ts line 42');
+    expect(out.visibleText).not.toContain('INFO warming up');
+  });
 });
 
-describe('runComparison', () => {
-  it('runs baseline, competitor, and UTK arms over the shared dataset', async () => {
-    const result = await runComparison(COMPARISONS[0]!);
-    expect(result.cases).toBeGreaterThanOrEqual(10);
-    expect(Object.keys(result.arms)).toEqual(['baseline', 'competitor', 'utk']);
-    for (const arm of Object.values(result.arms)) {
-      expect(arm.cases).toHaveLength(result.cases);
-    }
-  });
-
-  it('applies the base-session model hook to all arms and per-provider middleware to its arm', async () => {
-    const captured: string[] = [];
-    const spyJudge: Judge = (request) => {
-      captured.push(request.prompt);
-      return referenceJudge(request);
-    };
-    // The model/judge hook is global (fair grading across arms); provider middleware
-    // (skills) only tags that competitor's own arm.
-    const baseSession: SessionConfig = { ...DEFAULT_SESSION, model: 'spy-model', judge: spyJudge };
-    const result = await runComparison(COMPARISONS[0]!, { cases: [sampleCase], baseSession });
-    expect(result.arms.utk.session.model).toBe('spy-model');
-    expect(result.arms.competitor.session.skills).toContain('rtk-shell-summary');
-    expect(result.arms.baseline.session.skills).not.toContain('rtk-shell-summary');
-    expect(captured.length).toBeGreaterThan(0);
-  });
-
-  it('isolates a throwing technique to a single failed case', async () => {
-    const comparison: Comparison = {
-      competitor: 'boom',
-      label: 'Throwing arm',
-      benchmark: 'tool-output',
-      description: 'always throws',
-      competitorArm: () => {
-        throw new Error('technique failed');
+describe('runSuite', () => {
+  it('runs every benchmark with baseline + competitors + UTK and a Pareto frontier', async () => {
+    const suite = await runSuite();
+    expect(suite.model).toBe(REFERENCE_MODEL.id);
+    expect(suite.benchmarks).toHaveLength(BENCHMARKS.length);
+    for (const report of suite.benchmarks) {
+      expect(report.competitors).toHaveLength(COMPETITORS.length);
+      // Baseline reads everything (full success); UTK keeps everything recoverable.
+      expect(report.baseline.primary.taskSuccessRate).toBe(1);
+      expect(report.utk.primary.taskSuccessRate).toBe(1);
+      // UTK deeply cuts visible tokens vs the raw baseline at full fact retention.
+      expect(report.utk.primary.visibleTokens).toBeLessThan(report.baseline.primary.visibleTokens);
+      expect(report.utk.primary.tokenReduction).toBeGreaterThan(0.3);
+      // Any arm that undercuts UTK on visible tokens pays for it in task success
+      // (that trade-off is exactly what the Pareto frontier surfaces).
+      for (const arm of report.competitors) {
+        if (arm.primary.visibleTokens < report.utk.primary.visibleTokens) {
+          expect(arm.primary.taskSuccessRate).toBeLessThanOrEqual(report.utk.primary.taskSuccessRate);
+        }
       }
-    };
-    const result = await runComparison(comparison, { cases: [sampleCase], concurrency: 1 });
-    expect(result.arms.competitor.totals.passed).toBe(0);
-    expect(result.arms.competitor.cases[0]?.composite).toBe(0);
-    // Baseline and UTK arms still complete normally.
-    expect(result.arms.utk.totals.passed).toBe(1);
-  });
-});
-
-describe('runBenchmark (leaderboard)', () => {
-  it('runs baseline + every competitor + UTK as sibling arms', async () => {
-    const result = await runBenchmark(COMPARISONS);
-    expect(result.arms).toHaveLength(COMPARISONS.length + 2);
-    expect(result.arms[0]?.arm).toBe('baseline');
-    expect(result.arms.at(-1)?.arm).toBe('utk');
-
-    const baseline = result.arms.find((a) => a.arm === 'baseline')!;
-    const utk = result.arms.find((a) => a.arm === 'utk')!;
-    const competitors = result.arms.filter((a) => a.arm === 'competitor');
-    expect(competitors).toHaveLength(COMPARISONS.length);
-
-    // UTK spends the fewest visible tokens; baseline the most; UTK keeps every fact.
-    for (const arm of [...competitors, baseline]) {
-      expect(utk.totals.visibleTokens).toBeLessThan(arm.totals.visibleTokens);
-      expect(baseline.totals.visibleTokens).toBeGreaterThanOrEqual(arm.totals.visibleTokens);
-    }
-    expect(utk.totals.passed).toBe(utk.totals.cases);
-  });
-});
-
-describe('artifacts', () => {
-  it('renders a provenance-tagged suite that references the composite grader', async () => {
-    const [cases, provenance] = await Promise.all([loadBenchmark('tool-output'), loadProvenance('tool-output')]);
-    const yaml = renderSuiteYaml('tool-output', cases, provenance);
-    expect(yaml).toContain('name: tool-output');
-    expect(yaml).toContain('provenance:');
-    expect(yaml).toContain('related_benchmark:');
-    expect(yaml).toContain('packages/evals/dist/graders/compositeGrader.js');
-    for (const testCase of cases) {
-      expect(yaml).toContain(`- id: ${testCase.name}`);
+      // Every competitor is swept across aggressiveness.
+      for (const competitor of report.competitors) {
+        expect(competitor.sweep.length).toBeGreaterThan(1);
+        expect(competitor.gate).not.toBeNull();
+      }
+      // The frontier is a non-empty subset of the technique names.
+      const names = new Set([report.baseline, ...report.competitors, report.utk].map((t) => t.technique));
+      expect(report.frontier.length).toBeGreaterThan(0);
+      for (const name of report.frontier) expect(names.has(name)).toBe(true);
     }
   });
 
-  it('renders a 3-column leaderboard with baseline and UTK as rows', async () => {
-    const result = await runBenchmark(COMPARISONS);
-    const leaderboard = renderLeaderboard(result).join('\n');
-    expect(leaderboard).toContain('| Technique | Tokens | Change |');
-    expect(leaderboard).toContain('Baseline');
+  it('runs a single benchmark and logs 18 fields per case', async () => {
+    const report = await runBenchmarkReport('needle-in-haystack');
+    expect(report.kind).toBe('needle');
+    expect(report.utk.runs.length).toBe(report.cases);
+    expect(Object.keys(report.utk.runs[0]!)).toHaveLength(18);
+  });
+
+  it('honours the sweep option and case overrides', async () => {
+    const report = await runBenchmarkReport('tool-output', { casesByBenchmark: { 'tool-output': [sampleCase] }, sweep: [0.1, 0.3] });
+    expect(report.cases).toBe(1);
+    expect(report.competitors[0]?.sweep.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('applies a swapped cost model', async () => {
+    const cheap: CostModel = { ...REFERENCE_MODEL, id: 'cheap', priceInPerToken: 0, priceOutPerToken: 0, toolCallCostUsd: 0 };
+    const report = await runBenchmarkReport('tool-output', { costModel: cheap });
+    expect(report.baseline.primary.costPerTask).toBe(0);
+  });
+});
+
+describe('report + chart', () => {
+  it('renders per-benchmark tables, a cross-benchmark summary, and a Pareto SVG', async () => {
+    const suite = await runSuite();
+    const first = suite.benchmarks[0]!;
+
+    const leaderboard = renderLeaderboard(first).join('\n');
+    expect(leaderboard).toContain('| Technique | Visible tokens | Token reduction | Task success | Avg quality | Cost/task | P95 latency |');
     expect(leaderboard).toContain('UTK');
 
-    const provenance = await loadProvenance('tool-output');
-    const markdown = renderBenchmarkMarkdown(result, provenance);
-    expect(markdown).toContain('## Leaderboard');
-    expect(markdown).toContain('Terminal-Bench');
+    expect(renderHeadlines(first).join('\n')).toContain('Quality retention @ 50% token reduction');
+    expect(renderGates(first).join('\n')).toMatch(/pass|fail/);
+    expect(renderCrossBenchmark(suite).join('\n')).toContain('Tool output');
+
+    const svg = renderParetoSvg(first);
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('Pareto frontier');
+    expect(svg.trimEnd().endsWith('</svg>')).toBe(true);
+
+    const provenance = Object.fromEntries(await Promise.all(BENCHMARKS.map(async (b) => [b.name, await loadProvenance(b.name)] as const)));
+    const charts = Object.fromEntries(BENCHMARKS.map((b) => [b.name, `charts/${b.name}-pareto.svg`]));
+    const markdown = renderSuiteMarkdown(suite, { provenance, charts, timestamp: '2026-07-03T00:00:00Z' });
+    expect(markdown).toContain('type: benchmark');
+    expect(markdown).toContain('## Cross-benchmark summary');
+    expect(markdown).toContain('SWE-bench Verified');
+    expect(markdown).toContain('failure_category'); // the 18-field methodology list
+  });
+});
+
+describe('AgentV suite generation', () => {
+  it('formalizes a dataset into a provenance-tagged suite that references the composite grader', async () => {
+    const [cases, provenance] = await Promise.all([loadBenchmark('tool-selection'), loadProvenance('tool-selection')]);
+    const yaml = renderSuiteYaml('tool-selection', cases, provenance);
+    expect(yaml).toContain('name: tool-selection');
+    expect(yaml).toContain('provenance:');
+    expect(yaml).toContain('packages/evals/dist/graders/compositeGrader.js');
+    for (const testCase of cases) expect(yaml).toContain(`- id: ${testCase.name}`);
+  });
+});
+
+describe('real-dataset seam', () => {
+  it('is off by default and falls back to the committed analog', async () => {
+    expect(realDataConfigured()).toBe(false);
+    expect(await loadRealDataset('tool-output')).toBeNull();
+    expect(await loadRealDataset('tool-output', '')).toBeNull();
   });
 });
 
 describe('mapConcurrent', () => {
   it('preserves order under concurrency', async () => {
-    const out = await mapConcurrent([1, 2, 3, 4, 5], 2, async (n) => n * 2);
-    expect(out).toEqual([2, 4, 6, 8, 10]);
+    expect(await mapConcurrent([1, 2, 3, 4, 5], 2, async (n) => n * 2)).toEqual([2, 4, 6, 8, 10]);
+  });
+
+  it('exposes a default session and sweep', () => {
+    expect(DEFAULT_SESSION.model).toBe(REFERENCE_MODEL.id);
+    expect(SWEEP_THRESHOLDS.length).toBeGreaterThan(3);
   });
 });

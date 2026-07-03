@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BENCHMARKS } from '../benchmarks.js';
 import { loadBenchmark, loadProvenance, type BenchmarkCase, type BenchmarkProvenance } from '../data.js';
 import { SUITES_DIR } from '../paths.js';
 
@@ -108,7 +109,7 @@ export async function generateSuite(benchmark: string): Promise<string> {
 
 async function main(): Promise<void> {
   const benchmarks = process.argv.slice(2);
-  const targets = benchmarks.length > 0 ? benchmarks : ['tool-output'];
+  const targets = benchmarks.length > 0 ? benchmarks : BENCHMARKS.map((b) => b.name);
   for (const benchmark of targets) {
     const outPath = await generateSuite(benchmark);
     process.stdout.write(`Wrote ${path.relative(process.cwd(), outPath)}\n`);

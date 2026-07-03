@@ -25,6 +25,8 @@ export type BenchmarkCase = {
   requiredFacts: string[];
   /** Literal substrings that are noise and SHOULD be dropped from the chat surface (relevance). */
   irrelevantFacts: string[];
+  /** Tool-selection only: mutating/destructive tool names present in `rawOutput` (a dropped safe tool that leaves one of these visible is an unsafe-tool error). */
+  unsafeTools?: string[];
 };
 
 export { DATA_DIR } from './paths.js';
@@ -118,7 +120,8 @@ function assertCase(value: unknown, line: number): BenchmarkCase {
     prompt: record.prompt as string,
     rawOutput: record.rawOutput as string,
     requiredFacts: asStringArray(record.requiredFacts),
-    irrelevantFacts: asStringArray(record.irrelevantFacts)
+    irrelevantFacts: asStringArray(record.irrelevantFacts),
+    ...(record.unsafeTools ? { unsafeTools: asStringArray(record.unsafeTools) } : {})
   };
 }
 

@@ -28,23 +28,23 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 ## Benchmark Snapshot
 
-Full comparison: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
+Five benchmarks — tool-output, long-context, needle-in-a-haystack, tool-selection, agent-workflows — each run baseline, every competitor, and UTK as sibling arms over the same cases. Full comparison, Pareto charts, headline numbers, and regression gates: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
 
-> Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run — and token counts are coarse `ceil(len/4)` estimates. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
+> Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run. Token counts and fact retention are real (coarse `ceil(len/4)` token estimate); **cost and latency are modeled** by a deterministic reference cost model, not measured on a live endpoint. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
 
-The tool-output benchmark runs baseline, every competitor, and UTK as sibling arms over the same 12 cases. Model-visible tokens (lower is better); change is vs the baseline row; each arm is gated on fact retention:
+Cross-benchmark summary — `token reduction / task success` at each technique's primary operating point; ★ marks the cost-vs-success Pareto frontier for that benchmark:
 
-| Technique | Tokens | Change | Facts |
-| --- | ---: | ---: | ---: |
-| Baseline (raw tool output) | 1,297 | 0% | 12/12 |
-| LeanCTX (context runtime) | 1,143 | −12% | 12/12 |
-| RTK (rust-token-killer) | 1,123 | −13% | 12/12 |
-| Compresr (query-aware) | 1,122 | −13% | 12/12 |
-| Caveman (terse register) | 1,083 | −16% | 11/12 |
-| Ponytail (minimum emission) | 977 | −25% | 11/12 |
-| UTK (mediated compaction) | 324 | −75% | 12/12 |
+| Technique | Tool output | Long-context | Needle | Tool selection | Agent workflows |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Baseline (raw context) | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% |
+| RTK (rust-token-killer) | −13% / 100% ★ | −65% / 50% | −89% / 60% | −36% / 80% | −30% / 80% |
+| LeanCTX (context runtime) | −12% / 100% | −56% / 90% | −87% / 100% ★ | −26% / 100% | −20% / 90% |
+| Compresr (query-aware) | −14% / 100% ★ | −58% / 90% ★ | −87% / 100% ★ | −30% / 100% ★ | −20% / 90% |
+| Caveman (terse register) | −17% / 92% | −76% / 50% | −90% / 40% | −96% / 10% | −37% / 70% |
+| Ponytail (minimum emission) | −25% / 92% ★ | −77% / 50% ★ | −90% / 30% | −96% / 10% | −43% / 50% |
+| UTK (mediated compaction) | −75% / 100% ★ | −83% / 100% ★ | −93% / 100% | −70% / 100% | −78% / 100% ★ |
 
-In-context compactors bottom out around −25% and the aggressive ones start dropping required facts (11/12). UTK spends −75% at full retention because it moves the payload off-context instead of compressing it in place. Harness, graders, provenance, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
+UTK holds **100% task success on every benchmark** while cutting 70–93% of visible tokens, and sits on the Pareto frontier in four of five. The honest exception is needle-in-a-haystack: query-aware extractors (LeanCTX/Compresr) reach the buried needle inline more cheaply than UTK's handle plus recovery round-trip, so they — not UTK — hold that frontier. Aggressive in-context compactors (Caveman/Ponytail) top the token-reduction column but fail the regression gate on most benchmarks by dropping required facts (task success collapses). Tool-selection is where compaction turns dangerous: dropping the needed tool can leave a destructive one as the surviving selection — an unsafe-tool error the gate is built to catch (it flags RTK's on that benchmark). Cutting the most tokens is not winning — the frontier is. Harness, metrics, graders, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
 
 ## LeanCTX Copilot Benchmark
 

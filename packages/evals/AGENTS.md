@@ -1,39 +1,47 @@
 # Evals Agent Instructions
 
 The evals are data-driven. Benchmark cases live in `data/<benchmark>.jsonl`; everything
-else (results, suite YAML, docs) is generated from them. Never hand-edit generated
-numbers — change the data or the harness, then regenerate.
+else (results, charts, suite YAML, docs) is generated from them. Never hand-edit generated
+numbers — change the data or the harness, then regenerate. There are five benchmarks:
+`tool-output`, `long-context`, `needle-in-haystack`, `tool-selection`, `agent-workflows`.
 
 ## Regenerating
 
-- `npm run evals --workspace @utk/evals` runs the whole benchmark and rewrites, in lockstep:
-  - `results/<benchmark>.json` and `results/summary.json`;
+- `npm run evals --workspace @utk/evals` runs every benchmark and rewrites, in lockstep:
+  - `results/<benchmark>.json` (incl. the 18-field per-case logs) and `results/summary.json`;
+  - `docs/features/evals/charts/<benchmark>-pareto.svg`;
   - `suites/<benchmark>.EVAL.yaml`;
-  - `docs/features/evals/benchmark-summary.md` (the leaderboard).
+  - `docs/features/evals/benchmark-summary.md` (all leaderboards + cross-benchmark summary).
 - Commit the regenerated artifacts in the same change as the data/harness edit that moved them.
-- Benchmark docs are OKF concepts: `run-evals` emits the `type: benchmark` frontmatter; run `npm run lint:okf` after regenerating.
+- The summary doc is an OKF concept: `run-evals` emits the `type: benchmark` frontmatter; run `npm run lint:okf` after regenerating.
 - Do not bury benchmark metrics only in PR text, terminal output, or test logs.
 
 ## Adding a case or competitor
 
-- A case: add a line to `data/tool-output.jsonl` with `requiredFacts` (must stay recoverable)
-  and `irrelevantFacts` (should be dropped). Every fact must be a verbatim substring of `rawOutput`;
-  `harness.test.ts` enforces this.
-- A competitor: add `comparison/<name>.ts` exporting a `Comparison` (a `competitorArm` technique
-  plus optional middleware), register it in `comparison/index.ts`, and rerun `npm run evals`.
+- A case: add a line to the relevant `data/<benchmark>.jsonl` with `requiredFacts` (must stay
+  recoverable) and `irrelevantFacts` (should be dropped); for `tool-selection` also add `unsafeTools`
+  (mutating tools that must not be the surviving selection). Every fact must be a verbatim substring
+  of `rawOutput`; `harness.test.ts` enforces this across all benchmarks.
+- A competitor: add `comparison/<name>.ts` exporting a benchmark-agnostic `Competitor` (a
+  `keepThreshold`, optional `queryAware`, and a session skill via `addSkill`), register it in
+  `comparison/index.ts`, and rerun `npm run evals`. It runs across every benchmark automatically.
 
-## Quality rule
+## Quality rule and gates
 
-Token savings do not count if quality drops. The composite grader gates on fact retention:
-losing a required fact zeroes the score no matter how many tokens were saved. A comparison is
-only favourable to UTK when UTK meets or beats the competitor on fact retention **and** visible tokens.
+Token savings do not count if quality drops. A technique passes the regression gate only if, vs
+baseline: ≤2% absolute task-success loss, no increase in unsafe/mutating tool errors, and a positive
+cost-per-success improvement. The winner per benchmark is a technique on the **Pareto frontier**
+(cost per task ↓, task success ↑), not whoever cuts the most tokens — never present a token-reduction
+number as an overall win without the frontier + headline numbers.
 
-## Reference judge vs model judge
+## Modeled cost vs. real numbers
 
-Committed results use the deterministic `referenceJudge` (fact retention + noise exclusion) so
-they are reproducible offline. When reporting numbers from a real model judge, say which model was
-used and via which `configureModel` hook — do not overwrite the committed reference-judge artifacts with
-non-deterministic numbers.
+Token counts and fact retention are real. Cost and latency are **MODELED** by the deterministic
+reference model in `model.ts`, not measured on a live endpoint — say so when quoting cost/latency.
+Committed results use the deterministic `referenceJudge` and reference cost model so they are
+reproducible offline. To reproduce against a real target, swap the `costModel` (or point
+`UTK_REAL_DATA_DIR` at a licensed dataset export via `adapters.ts`); do not overwrite the committed
+reference artifacts with non-deterministic numbers.
 
 ## LeanCTX Copilot
 

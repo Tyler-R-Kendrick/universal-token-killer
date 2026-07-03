@@ -1,64 +1,97 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { COMPARISONS } from '../comparison/index.js';
-import { loadProvenance } from '../data.js';
-import { runBenchmark, type BenchmarkResult } from '../harness.js';
-import { renderBenchmarkMarkdown } from '../report.js';
+import { loadProvenance, type BenchmarkProvenance } from '../data.js';
+import { runSuite, type BenchmarkReport, type SuiteResult, type TechniqueReport } from '../harness.js';
+import { renderSuiteMarkdown } from '../report.js';
+import { renderParetoSvg } from '../pareto.js';
 import { REPO_ROOT, RESULTS_DIR } from '../paths.js';
 import { generateSuite } from './generate-suite.js';
 
 export { RESULTS_DIR };
 const DOCS_DIR = path.join(REPO_ROOT, 'docs', 'features', 'evals');
+const CHARTS_DIR = path.join(DOCS_DIR, 'charts');
+// Deterministic stamp so re-running does not churn the committed artifact.
+const SUITE_TIMESTAMP = '2026-07-03T00:00:00Z';
 
-/** Run the whole benchmark (baseline + every competitor + UTK). */
-export async function runAll(): Promise<BenchmarkResult> {
-  return runBenchmark(COMPARISONS);
+/** Run the whole suite (every benchmark × baseline + competitors + UTK). */
+export async function runAll(): Promise<SuiteResult> {
+  return runSuite();
 }
 
-/** Run the benchmark and persist results, suite, and docs so they stay in sync. */
-export async function runAndPersist(): Promise<BenchmarkResult> {
-  const result = await runAll();
-  const provenance = await loadProvenance(result.benchmark);
-
+/** Run the suite and persist per-benchmark results, Pareto charts, AgentV suites, and the summary doc. */
+export async function runAndPersist(): Promise<SuiteResult> {
+  const suite = await runAll();
   await mkdir(RESULTS_DIR, { recursive: true });
-  await writeFile(path.join(RESULTS_DIR, `${result.benchmark}.json`), `${JSON.stringify(result, null, 2)}\n`, 'utf8');
-  await writeFile(path.join(RESULTS_DIR, 'summary.json'), `${JSON.stringify(summarize(result), null, 2)}\n`, 'utf8');
+  await mkdir(CHARTS_DIR, { recursive: true });
 
-  await generateSuite(result.benchmark);
+  const provenance: Record<string, BenchmarkProvenance | null> = {};
+  const charts: Record<string, string> = {};
 
+  for (const report of suite.benchmarks) {
+    provenance[report.benchmark] = await loadProvenance(report.benchmark);
+    // Per-benchmark results carry the full 18-field per-case logs for every arm.
+    await writeFile(path.join(RESULTS_DIR, `${report.benchmark}.json`), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    const chartFile = `${report.benchmark}-pareto.svg`;
+    await writeFile(path.join(CHARTS_DIR, chartFile), renderParetoSvg(report), 'utf8');
+    charts[report.benchmark] = `charts/${chartFile}`;
+    // Keep the formal AgentV suite in sync with the dataset + provenance.
+    await generateSuite(report.benchmark);
+  }
+
+  await writeFile(path.join(RESULTS_DIR, 'summary.json'), `${JSON.stringify(summarize(suite), null, 2)}\n`, 'utf8');
   await mkdir(DOCS_DIR, { recursive: true });
-  await writeFile(path.join(DOCS_DIR, 'benchmark-summary.md'), renderBenchmarkMarkdown(result, provenance), 'utf8');
+  await writeFile(path.join(DOCS_DIR, 'benchmark-summary.md'), renderSuiteMarkdown(suite, { provenance, charts, timestamp: SUITE_TIMESTAMP }), 'utf8');
 
-  return result;
+  return suite;
 }
 
-function summarize(result: BenchmarkResult): unknown {
-  const baselineTokens = result.arms.find((arm) => arm.arm === 'baseline')?.totals.visibleTokens ?? 0;
+function summarize(suite: SuiteResult): unknown {
   return {
-    benchmark: result.benchmark,
-    cases: result.cases,
-    leaderboard: [...result.arms]
-      .sort((a, b) => b.totals.visibleTokens - a.totals.visibleTokens)
-      .map((arm) => ({
-        technique: arm.label,
-        competitor: arm.competitor,
-        tokens: arm.totals.visibleTokens,
-        changePct: baselineTokens === 0 ? 0 : Math.round((arm.totals.visibleTokens / baselineTokens - 1) * 100),
-        factsKept: `${arm.totals.passed}/${arm.totals.cases}`,
-        avgComposite: arm.totals.avgComposite
-      }))
+    model: suite.model,
+    benchmarks: suite.benchmarks.map((report) => ({
+      benchmark: report.benchmark,
+      kind: report.kind,
+      cases: report.cases,
+      frontier: report.frontier,
+      techniques: [report.baseline, ...report.competitors, report.utk].map(techniqueSummary)
+    }))
   };
 }
 
-async function main(): Promise<void> {
-  const result = await runAndPersist();
-  const baselineTokens = result.arms.find((arm) => arm.arm === 'baseline')?.totals.visibleTokens ?? 0;
-  for (const arm of [...result.arms].sort((a, b) => b.totals.visibleTokens - a.totals.visibleTokens)) {
-    const change = baselineTokens === 0 ? '—' : `${Math.round((arm.totals.visibleTokens / baselineTokens - 1) * 100)}%`;
-    process.stdout.write(`${arm.label.padEnd(30)} tokens=${String(arm.totals.visibleTokens).padStart(5)} change=${change.padStart(5)} facts=${arm.totals.passed}/${arm.totals.cases}\n`);
+function techniqueSummary(tech: TechniqueReport): unknown {
+  return {
+    technique: tech.technique,
+    label: tech.label,
+    onFrontier: tech.onFrontier,
+    visibleTokens: tech.primary.visibleTokens,
+    tokenReduction: tech.primary.tokenReduction,
+    taskSuccessRate: tech.primary.taskSuccessRate,
+    avgQuality: tech.primary.avgQuality,
+    costPerTask: tech.primary.costPerTask,
+    costPerSuccess: Number.isFinite(tech.primary.costPerSuccess) ? tech.primary.costPerSuccess : null,
+    p95LatencyMs: tech.primary.p95LatencyMs,
+    unsafeToolErrors: tech.primary.unsafeToolErrors,
+    headlines: tech.headlines,
+    gatePassed: tech.gate?.passed ?? null
+  };
+}
+
+function printBenchmark(report: BenchmarkReport): void {
+  process.stdout.write(`\n${report.title} (${report.kind}, ${report.cases} cases) — frontier: ${report.frontier.join(', ') || '—'}\n`);
+  for (const tech of [report.baseline, ...report.competitors, report.utk]) {
+    const p = tech.primary;
+    const star = tech.onFrontier ? '★' : ' ';
+    process.stdout.write(
+      `  ${star} ${tech.label.padEnd(30)} vis=${String(p.visibleTokens).padStart(5)} red=${(p.tokenReduction * 100).toFixed(0).padStart(3)}% succ=${(p.taskSuccessRate * 100).toFixed(0).padStart(3)}% $${p.costPerTask.toFixed(5)} p95=${String(Math.round(p.p95LatencyMs)).padStart(4)}ms\n`
+    );
   }
-  process.stdout.write('\nWrote results/, suites/, and docs/features/evals/benchmark-summary.md.\n');
+}
+
+async function main(): Promise<void> {
+  const suite = await runAndPersist();
+  for (const report of suite.benchmarks) printBenchmark(report);
+  process.stdout.write('\nWrote results/, charts/, suites/, and docs/features/evals/benchmark-summary.md.\n');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

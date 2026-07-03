@@ -1,133 +1,68 @@
 import { encode } from '@toon-format/toon';
 import { estimateTokens, loadBenchmark, type BenchmarkCase } from './data.js';
-import { gradeComposite, type CompositeWeights } from './graders/compositeGrader.js';
-import { referenceJudge, round, type ArmOutput, type Judge } from './graders/shared.js';
+import { loadRealDataset } from './adapters.js';
+import { BENCHMARKS, getBenchmark, scoreArmOutput, type ArmKind, type Benchmark, type BenchmarkKind } from './benchmarks.js';
+import {
+  aggregateTechnique,
+  checkRegressionGate,
+  computeRunMetrics,
+  headlineNumbers,
+  paretoFrontier,
+  type GateVerdict,
+  type HeadlineNumbers,
+  type RegressionGate,
+  type RunMetrics,
+  type TechniqueAggregate
+} from './metrics.js';
+import { REFERENCE_MODEL, type CostModel } from './model.js';
+import { addSkill, COMPETITORS, makeCompetitorArm, type Competitor } from './comparison/index.js';
+import type { ArmOutput } from './graders/shared.js';
 
-export type ArmId = 'baseline' | 'competitor' | 'utk';
+/** Turn one case into an arm's model-visible + recoverable surface. May be async (a live target). */
+export type ArmTechnique = (testCase: BenchmarkCase) => ArmOutput | Promise<ArmOutput>;
 
 /**
- * The execution environment a single arm ("session") runs under. The harness
- * builds one per arm by folding the comparison's {@link Middleware} over
- * {@link DEFAULT_SESSION}. `judge`/`model` drive the LLM grader; `tools`/`skills`
- * are recorded on the artifact and are the seam where a live target would wire in
- * its real tool + skill set.
+ * The recorded execution environment for one arm. `tools`/`skills`/`model` are the
+ * seam a live target wires its real tool + skill set + model into; the harness folds
+ * a comparison's {@link Middleware} over {@link DEFAULT_SESSION} to build it. Cost and
+ * latency come from the swappable {@link CostModel}, not from this record.
  */
 export type SessionConfig = {
   tools: string[];
   skills: string[];
   model: string;
-  judge: Judge;
 };
 
-export type SessionMeta = { arm: ArmId; competitor: string; benchmark: string };
+export type SessionMeta = { technique: string; benchmark: string; armKind: ArmKind };
 
-/** A middleware that tweaks the session config for one arm (tools/skills/model/judge). */
-export type Middleware = (config: SessionConfig, meta: SessionMeta) => SessionConfig | Promise<SessionConfig>;
-
-/** A compaction technique: turn one case into the arm's model-visible + recoverable surface. */
-export type Technique = (testCase: BenchmarkCase, session: SessionConfig, meta: SessionMeta) => ArmOutput | Promise<ArmOutput>;
-
-export type Comparison = {
-  /** Competitor slug (e.g. "rtk"). */
-  competitor: string;
-  /** Human-readable competitor label. */
-  label: string;
-  /** Benchmark dataset name under `data/` (e.g. "tool-output"). */
-  benchmark: string;
-  description: string;
-  /** How the competitor arm compacts each case. Baseline + UTK arms are supplied by the harness. */
-  competitorArm: Technique;
-  /** Per-provider session tweaks applied to every arm of this comparison. */
-  middleware?: Middleware[];
-  /** Composite weighting of token savings vs quality (default 0.5 / 0.5). */
-  weights?: CompositeWeights;
-  /** Minimum per-dimension quality for savings to count (default 1). */
-  qualityGate?: number;
-};
-
-export type RunOptions = {
-  /** Override the loaded cases (used by tests). */
-  cases?: BenchmarkCase[];
-  /** Base session before middleware; defaults to {@link DEFAULT_SESSION}. */
-  baseSession?: SessionConfig;
-  /** Max cases graded concurrently within an arm (default 8). */
-  concurrency?: number;
-};
-
-export type CaseScore = {
-  name: string;
-  category: string;
-  visibleTokens: number;
-  baselineTokens: number;
-  savingsRatio: number;
-  quality: number;
-  composite: number;
-  passed: boolean;
-};
-
-export type ArmTotals = {
-  cases: number;
-  passed: number;
-  visibleTokens: number;
-  baselineTokens: number;
-  savedTokens: number;
-  avgRatio: number;
-  avgQuality: number;
-  avgComposite: number;
-};
-
-export type ArmResult = {
-  arm: ArmId;
-  competitor: string;
-  label: string;
-  session: { tools: string[]; skills: string[]; model: string };
-  cases: CaseScore[];
-  totals: ArmTotals;
-};
-
-/** One competitor's baseline/competitor/UTK view of the benchmark. */
-export type ComparisonResult = {
-  competitor: string;
-  label: string;
-  benchmark: string;
-  description: string;
-  cases: number;
-  arms: Record<ArmId, ArmResult>;
-};
-
-/** The whole benchmark as one leaderboard: baseline, every competitor, and UTK as sibling arms. */
-export type BenchmarkResult = {
-  benchmark: string;
-  cases: number;
-  /** Baseline first, competitors in registry order, UTK last. */
-  arms: ArmResult[];
-};
+/** A hook that configures one arm's session (tools/skills/model). */
+export type Middleware = (config: SessionConfig, meta: SessionMeta) => SessionConfig;
 
 export const DEFAULT_SESSION: SessionConfig = {
   tools: ['shell', 'read', 'edit'],
   skills: [],
-  model: 'reference-judge',
-  judge: referenceJudge
+  model: REFERENCE_MODEL.id
 };
 
-const ARM_LABELS: Record<ArmId, string> = {
-  baseline: 'Baseline (raw tool output)',
-  competitor: 'Competitor',
-  utk: 'UTK (mediated compaction)'
-};
+const BASELINE_LABEL = 'Baseline (raw context)';
+const UTK_LABEL = 'UTK (mediated compaction)';
 
-/** Baseline arm: the agent reads the full, uncompacted tool output. */
-export const baselineTechnique: Technique = (testCase) => ({
+/** Aggressiveness sweep: the keep-threshold operating points that trace each competitor's curve. */
+export const SWEEP_THRESHOLDS = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4];
+
+/** Baseline arm: the agent reads the full, uncompacted context. */
+export const baselineTechnique: ArmTechnique = (testCase) => ({
   visibleText: testCase.rawOutput,
   recoverableText: testCase.rawOutput
 });
 
 /**
  * UTK arm: persist the raw output (fully recoverable) and surface only a compact,
- * schema-backed handle in chat. Facts stay recoverable via the raw artifact while
- * the model-visible token cost collapses to the handle.
+ * schema-backed handle in chat. Facts stay recoverable via the raw artifact — at the
+ * cost of a recovery round-trip, which the cost/latency model charges — while the
+ * model-visible token cost collapses to the handle.
  */
-export const utkTechnique: Technique = (testCase) => {
+export const utkTechnique: ArmTechnique = (testCase) => {
   const compact = toonify(testCase.rawOutput);
   const schema = schemaLabel(testCase.toolId);
   const rawTokens = estimateTokens(testCase.rawOutput);
@@ -138,157 +73,201 @@ export const utkTechnique: Technique = (testCase) => {
   return { visibleText, recoverableText: testCase.rawOutput };
 };
 
-/** Internal spec for one arm of a run. */
-type ArmSpec = {
-  arm: ArmId;
-  competitor: string;
+/** Full per-technique report for one benchmark: the primary operating point plus its sweep. */
+export type TechniqueReport = {
+  technique: string;
   label: string;
-  technique: Technique;
-  middleware: Middleware[];
-  weights?: CompositeWeights;
-  qualityGate?: number;
+  armKind: ArmKind;
+  session: SessionConfig;
+  /** The operating point shown on the leaderboard + Pareto chart (competitor's configured aggressiveness). */
+  primary: TechniqueAggregate;
+  /** The full aggressiveness sweep tracing the quality-vs-reduction curve (single point for baseline/UTK). */
+  sweep: TechniqueAggregate[];
+  /** Three headline numbers read off the sweep, all relative to the baseline arm. */
+  headlines: HeadlineNumbers;
+  /** Regression-gate verdict vs baseline (null for the baseline arm itself). */
+  gate: GateVerdict | null;
+  /** Whether the primary point sits on the cost-vs-success Pareto frontier. */
+  onFrontier: boolean;
+  /** The 18-field per-case log at the primary operating point. */
+  runs: RunMetrics[];
 };
 
-function baselineSpec(): ArmSpec {
-  return { arm: 'baseline', competitor: 'baseline', label: ARM_LABELS.baseline, technique: baselineTechnique, middleware: [] };
-}
+/** One benchmark as one table: baseline, every competitor, and UTK over the same cases. */
+export type BenchmarkReport = {
+  benchmark: string;
+  kind: BenchmarkKind;
+  title: string;
+  description: string;
+  cases: number;
+  baseline: TechniqueReport;
+  competitors: TechniqueReport[];
+  utk: TechniqueReport;
+  /** Technique names on the Pareto frontier (cost per task ↓, task success ↑). */
+  frontier: string[];
+};
 
-function utkSpec(): ArmSpec {
-  return { arm: 'utk', competitor: 'utk', label: ARM_LABELS.utk, technique: utkTechnique, middleware: [] };
-}
+export type SuiteResult = {
+  /** Id of the cost/latency model the numbers were produced under. */
+  model: string;
+  benchmarks: BenchmarkReport[];
+};
 
-function competitorSpec(comparison: Comparison): ArmSpec {
-  return {
-    arm: 'competitor',
-    competitor: comparison.competitor,
-    label: comparison.label,
-    technique: comparison.competitorArm,
-    middleware: comparison.middleware ?? [],
-    weights: comparison.weights,
-    qualityGate: comparison.qualityGate
-  };
-}
-
-/** Run one comparison: baseline, this competitor, and UTK arms over the same data, concurrently. */
-export async function runComparison(comparison: Comparison, options: RunOptions = {}): Promise<ComparisonResult> {
-  const cases = options.cases ?? (await loadBenchmark(comparison.benchmark));
-  const base = options.baseSession ?? DEFAULT_SESSION;
-  const concurrency = options.concurrency ?? 8;
-  const specs = [baselineSpec(), competitorSpec(comparison), utkSpec()];
-  const [baseline, competitor, utk] = await Promise.all(
-    specs.map((spec) => runArm(spec, comparison.benchmark, cases, base, concurrency))
-  );
-  return {
-    competitor: comparison.competitor,
-    label: comparison.label,
-    benchmark: comparison.benchmark,
-    description: comparison.description,
-    cases: cases.length,
-    arms: { baseline: baseline!, competitor: competitor!, utk: utk! }
-  };
-}
+export type RunSuiteOptions = {
+  competitors?: Competitor[];
+  benchmarks?: Benchmark[];
+  costModel?: CostModel;
+  gate?: RegressionGate;
+  sweep?: number[];
+  /** Test override: cases per benchmark name (bypasses the dataset + real-data seam). */
+  casesByBenchmark?: Record<string, BenchmarkCase[]>;
+  baseSession?: SessionConfig;
+  concurrency?: number;
+};
 
 /**
- * Run the whole benchmark as one leaderboard: baseline, every competitor arm, and
- * UTK — all over the same data, concurrently. Arms come back baseline-first,
- * competitors in registry order, UTK last.
+ * Run the whole suite: every benchmark × (baseline, each competitor swept across
+ * aggressiveness, UTK), all under one cost model. Real datasets are used when the
+ * adapter seam is configured; otherwise the committed synthetic analogs.
  */
-export async function runBenchmark(comparisons: Comparison[], options: RunOptions = {}): Promise<BenchmarkResult> {
-  const benchmark = comparisons[0]?.benchmark ?? 'tool-output';
-  const cases = options.cases ?? (await loadBenchmark(benchmark));
+export async function runSuite(options: RunSuiteOptions = {}): Promise<SuiteResult> {
+  const competitors = options.competitors ?? COMPETITORS;
+  const benchmarks = options.benchmarks ?? BENCHMARKS;
+  const model = options.costModel ?? REFERENCE_MODEL;
+  const reports = await Promise.all(benchmarks.map((benchmark) => runOneBenchmark(benchmark, competitors, model, options)));
+  return { model: model.id, benchmarks: reports };
+}
+
+/** Run a single benchmark and return its report (convenience wrapper over {@link runSuite}). */
+export async function runBenchmarkReport(benchmark: string, options: RunSuiteOptions = {}): Promise<BenchmarkReport> {
+  const def = getBenchmark(benchmark);
+  if (!def) throw new Error(`Unknown benchmark: ${benchmark}`);
+  const model = options.costModel ?? REFERENCE_MODEL;
+  return runOneBenchmark(def, options.competitors ?? COMPETITORS, model, options);
+}
+
+async function runOneBenchmark(benchmark: Benchmark, competitors: Competitor[], model: CostModel, options: RunSuiteOptions): Promise<BenchmarkReport> {
+  const cases = options.casesByBenchmark?.[benchmark.name] ?? (await loadRealDataset(benchmark.name)) ?? (await loadBenchmark(benchmark.name));
   const base = options.baseSession ?? DEFAULT_SESSION;
   const concurrency = options.concurrency ?? 8;
-  const specs = [baselineSpec(), ...comparisons.map(competitorSpec), utkSpec()];
-  const arms = await Promise.all(specs.map((spec) => runArm(spec, benchmark, cases, base, concurrency)));
-  return { benchmark, cases: cases.length, arms };
+  const sweep = options.sweep ?? SWEEP_THRESHOLDS;
+
+  // Baseline first — it fixes the raw-token denominator every reduction is measured against.
+  const baselineRuns = await runArm(benchmark, cases, 'baseline', baselineTechnique, model, concurrency);
+  const baselineRetrieved = sum(baselineRuns.map((r) => r.retrieved_context_tokens));
+  const baselineAgg = aggregateTechnique('baseline', BASELINE_LABEL, baselineRuns, baselineRetrieved);
+  const baseline: TechniqueReport = {
+    technique: 'baseline',
+    label: BASELINE_LABEL,
+    armKind: 'baseline',
+    session: buildSession(base, { technique: 'baseline', benchmark: benchmark.name, armKind: 'baseline' }, []),
+    primary: baselineAgg,
+    sweep: [baselineAgg],
+    headlines: { qualityRetentionAt50PctReduction: baselineAgg.avgQuality, costReductionAt1PctQualityLoss: 0, p95LatencyReductionAt1PctQualityLoss: 0 },
+    gate: null,
+    onFrontier: false,
+    runs: baselineRuns
+  };
+
+  const competitorReports = await Promise.all(
+    competitors.map((competitor) => runCompetitor(benchmark, cases, competitor, model, baselineAgg, baselineRetrieved, sweep, base, concurrency, options.gate))
+  );
+
+  const utkRuns = await runArm(benchmark, cases, 'utk', utkTechnique, model, concurrency);
+  const utkAgg = aggregateTechnique('utk', UTK_LABEL, utkRuns, baselineRetrieved);
+  const utk: TechniqueReport = {
+    technique: 'utk',
+    label: UTK_LABEL,
+    armKind: 'utk',
+    session: buildSession(base, { technique: 'utk', benchmark: benchmark.name, armKind: 'utk' }, [addSkill('utk-mediated-compaction')]),
+    primary: utkAgg,
+    sweep: [utkAgg],
+    headlines: headlineNumbers([utkAgg], baselineAgg),
+    gate: checkRegressionGate(utkAgg, baselineAgg, options.gate),
+    onFrontier: false,
+    runs: utkRuns
+  };
+
+  const all = [baseline, ...competitorReports, utk];
+  const frontier = paretoFrontier(all.map((report) => report.primary));
+  for (const report of all) report.onFrontier = frontier.has(report.technique);
+
+  return {
+    benchmark: benchmark.name,
+    kind: benchmark.kind,
+    title: benchmark.title,
+    description: benchmark.description,
+    cases: cases.length,
+    baseline,
+    competitors: competitorReports,
+    utk,
+    frontier: [...frontier]
+  };
 }
 
-async function runArm(spec: ArmSpec, benchmark: string, cases: BenchmarkCase[], base: SessionConfig, concurrency: number): Promise<ArmResult> {
-  const meta: SessionMeta = { arm: spec.arm, competitor: spec.competitor, benchmark };
-  const session = await applyMiddleware(base, meta, spec.middleware);
-  const qualityGate = spec.qualityGate ?? 1;
+async function runCompetitor(
+  benchmark: Benchmark,
+  cases: BenchmarkCase[],
+  competitor: Competitor,
+  model: CostModel,
+  baselineAgg: TechniqueAggregate,
+  baselineRetrieved: number,
+  sweep: number[],
+  base: SessionConfig,
+  concurrency: number,
+  gate: RegressionGate | undefined
+): Promise<TechniqueReport> {
+  const thresholds = uniqueSorted([...sweep, competitor.keepThreshold]);
+  const sweepPoints = await Promise.all(
+    thresholds.map(async (threshold) => {
+      const arm = makeCompetitorArm({ keepThreshold: threshold, queryAware: competitor.queryAware });
+      const runs = await runArm(benchmark, cases, 'competitor', arm, model, concurrency);
+      return aggregateTechnique(competitor.name, `${competitor.label} @keep=${threshold}`, runs, baselineRetrieved);
+    })
+  );
 
-  const scores = await mapConcurrent(cases, concurrency, async (testCase) => {
-    // Isolate per-case failures (a real injected judge can throw) so one bad case
-    // does not abort the whole arm — record it as a failed, zero-savings score.
+  // Primary operating point: the competitor's configured aggressiveness (kept with per-case runs).
+  const primaryArm = makeCompetitorArm({ keepThreshold: competitor.keepThreshold, queryAware: competitor.queryAware });
+  const primaryRuns = await runArm(benchmark, cases, 'competitor', primaryArm, model, concurrency);
+  const primary = aggregateTechnique(competitor.name, competitor.label, primaryRuns, baselineRetrieved);
+
+  return {
+    technique: competitor.name,
+    label: competitor.label,
+    armKind: 'competitor',
+    session: buildSession(base, { technique: competitor.name, benchmark: benchmark.name, armKind: 'competitor' }, competitor.middleware ?? []),
+    primary,
+    sweep: sweepPoints,
+    headlines: headlineNumbers(sweepPoints, baselineAgg),
+    gate: checkRegressionGate(primary, baselineAgg, gate),
+    onFrontier: false,
+    runs: primaryRuns
+  };
+}
+
+async function runArm(benchmark: Benchmark, cases: BenchmarkCase[], armKind: ArmKind, technique: ArmTechnique, model: CostModel, concurrency: number): Promise<RunMetrics[]> {
+  return mapConcurrent(cases, concurrency, async (testCase) => {
+    // Isolate per-case failures (a live technique can throw) so one bad case does
+    // not abort the arm — record it as a zero-quality, full-context failed run.
     try {
-      const output = await spec.technique(testCase, session, meta);
-      const graded = await gradeComposite({
-        prompt: testCase.prompt,
-        visibleText: output.visibleText,
-        recoverableText: output.recoverableText,
-        baselineText: testCase.rawOutput,
-        requiredFacts: testCase.requiredFacts,
-        irrelevantFacts: testCase.irrelevantFacts,
-        judge: session.judge,
-        weights: spec.weights,
-        qualityGate
-      });
-      const factsRetained = graded.assertions.find((assertion) => assertion.text.startsWith('facts retained'))?.passed ?? false;
-      return {
-        name: testCase.name,
-        category: testCase.category,
-        visibleTokens: graded.components.tokens.metrics?.visibleTokens ?? 0,
-        baselineTokens: graded.components.tokens.metrics?.baselineTokens ?? 0,
-        savingsRatio: graded.components.tokens.score,
-        quality: graded.components.quality.score,
-        composite: graded.score,
-        passed: factsRetained
-      } satisfies CaseScore;
+      const output = await technique(testCase);
+      const { context, outcome } = scoreArmOutput(benchmark, testCase, armKind, output);
+      return computeRunMetrics(context, outcome, model);
     } catch {
-      const baselineTokens = estimateTokens(testCase.rawOutput);
-      return {
-        name: testCase.name,
-        category: testCase.category,
-        visibleTokens: baselineTokens,
-        baselineTokens,
-        savingsRatio: 0,
-        quality: 0,
-        composite: 0,
-        passed: false
-      } satisfies CaseScore;
+      const raw = estimateTokens(testCase.rawOutput);
+      const failed = scoreArmOutput(benchmark, testCase, armKind, { visibleText: testCase.rawOutput, recoverableText: '' });
+      return computeRunMetrics({ ...failed.context, retrievedContextTokens: raw }, { ...failed.outcome, taskSuccess: 0, qualityScore: 0, faithfulnessScore: 0, failureCategory: 'error' }, model);
     }
   });
-
-  return {
-    arm: spec.arm,
-    competitor: spec.competitor,
-    label: spec.label,
-    session: { tools: session.tools, skills: session.skills, model: session.model },
-    cases: scores,
-    totals: totalsOf(scores)
-  };
 }
 
-async function applyMiddleware(base: SessionConfig, meta: SessionMeta, middleware: Middleware[]): Promise<SessionConfig> {
-  let config = base;
-  for (const mw of middleware) {
-    config = await mw(config, meta);
-  }
-  return config;
+/** Fold an arm's middleware over a fresh copy of the base session (records tools/skills/model). */
+function buildSession(base: SessionConfig, meta: SessionMeta, middleware: Middleware[]): SessionConfig {
+  return middleware.reduce((config, mw) => mw(config, meta), { tools: [...base.tools], skills: [...base.skills], model: base.model });
 }
 
-function totalsOf(scores: CaseScore[]): ArmTotals {
-  const visibleTokens = sum(scores.map((s) => s.visibleTokens));
-  const baselineTokens = sum(scores.map((s) => s.baselineTokens));
-  return {
-    cases: scores.length,
-    passed: scores.filter((s) => s.passed).length,
-    visibleTokens,
-    baselineTokens,
-    savedTokens: baselineTokens - visibleTokens,
-    avgRatio: baselineTokens === 0 ? 0 : round(visibleTokens / baselineTokens),
-    avgQuality: round(average(scores.map((s) => s.quality))),
-    avgComposite: round(average(scores.map((s) => s.composite)))
-  };
-}
-
-/** Bounded-concurrency map used to fan cases out within an arm. */
-export async function mapConcurrent<T, U>(
-  items: readonly T[],
-  limit: number,
-  run: (item: T, index: number) => Promise<U>
-): Promise<U[]> {
+/** Bounded-concurrency map used to fan cases out within an arm (the seam for a live async target). */
+export async function mapConcurrent<T, U>(items: readonly T[], limit: number, run: (item: T, index: number) => Promise<U>): Promise<U[]> {
   const results = new Array<U>(items.length);
   let next = 0;
   const workerCount = Math.min(Math.max(1, Math.floor(limit)), Math.max(1, items.length));
@@ -320,10 +299,10 @@ function schemaLabel(toolId: string): string {
   return `${toolId.replace(/[^a-z0-9]+/gi, '-')}.v1`;
 }
 
-function sum(values: number[]): number {
-  return values.reduce((total, value) => total + value, 0);
+function uniqueSorted(values: number[]): number[] {
+  return [...new Set(values)].sort((a, b) => a - b);
 }
 
-function average(values: number[]): number {
-  return values.length === 0 ? 0 : sum(values) / values.length;
+function sum(values: number[]): number {
+  return values.reduce((total, value) => total + value, 0);
 }

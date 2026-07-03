@@ -1,6 +1,25 @@
 import type { BenchmarkCase } from '../data.js';
-import type { Middleware, SessionConfig, Technique } from '../harness.js';
+import type { ArmTechnique, Middleware, SessionConfig } from '../harness.js';
 import type { ArmOutput } from '../graders/shared.js';
+
+/**
+ * A competitor technique, benchmark-agnostic: the same config runs across every
+ * benchmark. Providers differ only in aggressiveness ({@link CompetitorConfig})
+ * and the session skill they tag; the compaction algorithm is shared.
+ */
+export type Competitor = {
+  /** Competitor slug (e.g. "rtk"). */
+  name: string;
+  /** Human-readable label used on the leaderboard. */
+  label: string;
+  description: string;
+  /** Primary operating point: the keep-threshold shown on the leaderboard + Pareto chart. */
+  keepThreshold: number;
+  /** Also retain lines sharing a salient keyword with the prompt (query-aware compression). */
+  queryAware?: boolean;
+  /** Session hooks (tools/skills/model) applied to this competitor's arm. */
+  middleware?: Middleware[];
+};
 
 /** Middleware that tags an arm's session with a provider skill (records how the arm was configured). */
 export function addSkill(skill: string): Middleware {
@@ -32,7 +51,7 @@ const NOISE = /^\(use |downloading|extracting|^note: |refreshing state|warming u
 const SALIENT = /error|exception|fail|warn|denied|conflict|unhealthy|crash|panic|fatal|timeout|refused|missing|rotate|secret|leak|\bplan\b|created|destroyed|modified|untracked|deprecated|listening/i;
 
 /** Build a competitor arm technique from a provider config. */
-export function makeCompetitorArm(config: CompetitorConfig): Technique {
+export function makeCompetitorArm(config: CompetitorConfig): ArmTechnique {
   return (testCase: BenchmarkCase): ArmOutput => {
     const keywords = config.queryAware ? promptKeywords(testCase.prompt) : [];
     const kept = testCase.rawOutput.split('\n').filter((line) => keepLine(line, config, keywords));

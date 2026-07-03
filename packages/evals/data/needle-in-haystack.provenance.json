@@ -1,0 +1,50 @@
+{
+  "name": "needle-in-haystack",
+  "version": "0.1.0",
+  "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
+  "tags": ["needle-in-haystack", "retrieval", "context-compaction", "utk"],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer",
+  "generated_by": "packages/evals/scripts/run-evals.ts",
+  "description": "A single distinctive needle buried in repetitive distractor lines, used to measure whether a compaction technique keeps the needle recoverable instead of dropping it with the noise.",
+  "disclaimer": "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the needle-in-a-haystack retrieval task; these numbers are not scores on those benchmarks.",
+  "related_benchmarks": [
+    {
+      "id": "niah",
+      "name": "Needle In A Haystack",
+      "org": "Greg Kamradt",
+      "url": "https://github.com/gkamradt/LLMTest_NeedleInAHaystack",
+      "relation": "task-category-analog",
+      "note": "The original pressure test: hide one fact in a long context and ask for it back — the exact shape of these cases."
+    },
+    {
+      "id": "ruler-niah",
+      "name": "RULER (NIAH tasks)",
+      "org": "NVIDIA",
+      "url": "https://github.com/NVIDIA/RULER",
+      "relation": "task-category-analog",
+      "note": "Parameterized single/multi-needle retrieval over synthetic haystacks, which our filler-plus-needle construction mirrors."
+    },
+    {
+      "id": "lost-in-the-middle",
+      "name": "Lost in the Middle",
+      "org": "Stanford / Percy Liang et al.",
+      "url": "https://arxiv.org/abs/2307.03172",
+      "relation": "task-category-analog",
+      "note": "Shows retrieval accuracy depends on where the needle sits; motivates keeping every needle recoverable regardless of position."
+    }
+  ],
+  "category_benchmark": {
+    "Access code": "niah",
+    "Passphrase": "niah",
+    "Magic number": "ruler-niah",
+    "Identifier": "ruler-niah",
+    "Instruction": "niah",
+    "Coordinate": "niah",
+    "Version pin": "ruler-niah",
+    "Coupon code": "niah",
+    "Owner and date": "lost-in-the-middle",
+    "Threshold": "ruler-niah"
+  }
+}

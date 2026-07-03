@@ -1,26 +1,20 @@
-import type { Comparison } from '../harness.js';
-import { rtkComparison } from './rtk.js';
-import { leanctxComparison } from './leanctx.js';
-import { compresrComparison } from './compresr.js';
-import { cavemanComparison } from './caveman.js';
-import { ponytailComparison } from './ponytail.js';
+import { rtk } from './rtk.js';
+import { leanctx } from './leanctx.js';
+import { compresr } from './compresr.js';
+import { caveman } from './caveman.js';
+import { ponytail } from './ponytail.js';
+import type { Competitor } from './compactors.js';
 
-export { makeCompetitorArm, addSkill, infoScore, type CompetitorConfig } from './compactors.js';
-export { rtkComparison } from './rtk.js';
-export { leanctxComparison } from './leanctx.js';
-export { compresrComparison } from './compresr.js';
-export { cavemanComparison } from './caveman.js';
-export { ponytailComparison } from './ponytail.js';
+export { makeCompetitorArm, addSkill, infoScore, type Competitor, type CompetitorConfig } from './compactors.js';
+export { rtk } from './rtk.js';
+export { leanctx } from './leanctx.js';
+export { compresr } from './compresr.js';
+export { caveman } from './caveman.js';
+export { ponytail } from './ponytail.js';
 
-/** Every registered competitor comparison, in leaderboard order. */
-export const COMPARISONS: Comparison[] = [
-  rtkComparison,
-  leanctxComparison,
-  compresrComparison,
-  cavemanComparison,
-  ponytailComparison
-];
+/** Every registered competitor, in leaderboard order (least → most aggressive). */
+export const COMPETITORS: Competitor[] = [rtk, leanctx, compresr, caveman, ponytail];
 
-export function getComparison(competitor: string): Comparison | undefined {
-  return COMPARISONS.find((comparison) => comparison.competitor === competitor);
+export function getCompetitor(name: string): Competitor | undefined {
+  return COMPETITORS.find((competitor) => competitor.name === name);
 }
