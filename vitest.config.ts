@@ -16,6 +16,7 @@ export default defineConfig({
       '@utk/context-optimization': path.resolve(import.meta.dirname, 'packages/context-optimization/src/index.ts'),
       '@utk/session-artifacts': path.resolve(import.meta.dirname, 'packages/session-artifacts/src/index.ts'),
       '@utk/tool-invocation': path.resolve(import.meta.dirname, 'packages/tool-invocation/src/index.ts'),
+      '@utk/grammar-dsl': path.resolve(import.meta.dirname, 'packages/grammar-dsl/src/index.ts'),
       '@utk/constrained-decoder': path.resolve(import.meta.dirname, 'packages/constrained-decoder/src/index.ts'),
       '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
       '@utk/codegen': path.resolve(import.meta.dirname, 'packages/codegen/src/index.ts'),

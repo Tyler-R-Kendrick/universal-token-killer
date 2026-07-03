@@ -11,7 +11,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@utk/constrained-decoder": "0.1.0",
+    "@utk/grammar-dsl": "0.1.0",
     "@utk/foundation": "0.1.0"
   }
 }

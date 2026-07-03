@@ -13,7 +13,6 @@
   "dependencies": {
     "@toon-format/toon": "^2.2.0",
     "@utk/config": "0.1.0",
-    "@utk/constrained-decoder": "0.1.0",
     "@utk/context-optimization": "0.1.0",
     "@utk/detok": "0.1.0",
     "@utk/foundation": "0.1.0",

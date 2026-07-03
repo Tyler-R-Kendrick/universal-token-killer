@@ -1,4 +1,4 @@
-import type { GrammarNode } from 'guidance-ts';
+import type { GrammarNode } from '@utk/grammar-dsl';
 
 export type CompleteWithGrammarTracer = {
   recordFailure(params: { name: string; runType?: 'tool' | 'parser' | 'chain' | 'llm'; error?: { message: string; name?: string } | Error; extra?: Record<string, unknown> }): void;

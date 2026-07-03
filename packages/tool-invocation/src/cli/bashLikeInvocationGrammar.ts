@@ -1,4 +1,4 @@
-import { grm, nonEmptyChoices, select } from '@utk/constrained-decoder';
+import { grm, nonEmptyChoices, select } from '@utk/grammar-dsl';
 import type { BashLikeToolDefinition, GuidanceGrammarNode } from './bashLikeToolTypes.js';
 
 export function buildBashLikeInvocationGrammar(tools: BashLikeToolDefinition[]): GuidanceGrammarNode {

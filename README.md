@@ -291,7 +291,8 @@ UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the 
 - `@utk/foundation`: the shared kernel — token estimation, canonical hashing, atomic writes, tool-id normalization, and path-safety. Depended on by nearly everything, so it carries no upward edges.
 - `@utk/config`: `.utk/config.toml` loading and normalization.
 - `@utk/tracing`: run contexts, Jaeger-style spans, GenAI tags, failure recording, and trace persistence.
-- `@utk/constrained-decoder`: the single `guidance-ts` facade — the constrained-decoding runtime (`completeWithGrammar`, llguidance adapter) plus the shared invocation-grammar DSL (`nonEmptyChoices` and materialized `grm`/`gen`/`select`/`str`). The only package that depends on `guidance-ts`.
+- `@utk/grammar-dsl`: the single `guidance-ts` facade and the invocation-grammar builder DSL — `nonEmptyChoices` plus materialized `grm`/`gen`/`select`/`str`/`Session`/`Generation`. The only package that depends on `guidance-ts`.
+- `@utk/constrained-decoder`: the llguidance constrained-decoding runtime (`completeWithGrammar`, the llguidance adapter, and the route-grammar builder), built on `@utk/grammar-dsl`.
 - `@utk/grammar`: `.lark` grammar-file loading (`createGrammarReader`), the shared basis for llguidance constrained decoding against lark grammars.
 - `@utk/minmap`: the whole min-representation system — min maps (format/allocator/patch/journal), the declare-before-use patch grammars, and derivative token-optimized min-grammar generation (`deriveMinGrammar`).
 - `@utk/detok`: local LLMLingua-2 prompt/text compression with protected-span segmentation.

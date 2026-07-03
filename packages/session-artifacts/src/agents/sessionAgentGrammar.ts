@@ -1,4 +1,4 @@
-import { gen, grm, nonEmptyChoices, select } from '@utk/constrained-decoder';
+import { gen, grm, nonEmptyChoices, select } from '@utk/grammar-dsl';
 
 export function buildSketchOfThoughtLexiconGrammar(domain: string, lexicon: string[]) {
   const lexiconChoices = nonEmptyChoices(lexicon.map((item) => item.trim()), 'general');

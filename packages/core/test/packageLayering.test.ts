@@ -79,20 +79,20 @@ describe('package layering fitness', () => {
     }
   });
 
-  it('keeps guidance-ts the single responsibility of @utk/constrained-decoder', async () => {
+  it('keeps guidance-ts the single responsibility of @utk/grammar-dsl', async () => {
     const files = await collectSourceTs(packagesRoot);
     const declarations = files
       .filter((file) => file.endsWith('guidance-ts.d.ts'))
       .map((file) => path.relative(repoRoot, file))
       .sort();
-    expect(declarations).toEqual(['packages/constrained-decoder/src/guidance-ts.d.ts']);
+    expect(declarations).toEqual(['packages/grammar-dsl/src/guidance-ts.d.ts']);
 
     const packageDirs = (await readdir(packagesRoot, { withFileTypes: true })).filter((entry) => entry.isDirectory());
     const guidanceDependents: string[] = [];
     for (const dir of packageDirs) {
       if ('guidance-ts' in (await packageDependencies(dir.name))) guidanceDependents.push(dir.name);
     }
-    expect(guidanceDependents).toEqual(['constrained-decoder']);
+    expect(guidanceDependents).toEqual(['grammar-dsl']);
   });
 
   it('has eliminated the hand-written utk-core.d.ts ambient shims', async () => {
@@ -109,7 +109,7 @@ describe('package layering fitness', () => {
         definitions.push(path.relative(repoRoot, file));
       }
     }
-    expect(definitions).toEqual(['packages/constrained-decoder/src/invocationGrammar.ts']);
+    expect(definitions).toEqual(['packages/grammar-dsl/src/invocationGrammar.ts']);
   });
 
   it('removes the duplicated grammar-file reader', async () => {

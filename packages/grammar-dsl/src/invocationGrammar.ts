@@ -1,13 +1,14 @@
-import { gen, grm, select, str } from 'guidance-ts';
+import { Generation, Session, gen, grm, select, str } from 'guidance-ts';
 import type { GrammarNode } from 'guidance-ts';
 
 /**
- * Materialized re-exports of the `guidance-ts` grammar primitives. Dependents
- * import these from `@utk/constrained-decoder` instead of touching the ambient
- * `guidance-ts` module directly, so there is a single guidance facade (and a
- * single `declare module 'guidance-ts'`) in the workspace.
+ * Materialized re-exports of the `guidance-ts` primitives. `@utk/grammar-dsl` is
+ * the single guidance facade in the workspace — the only package that touches the
+ * ambient `guidance-ts` module (and the only home of `declare module 'guidance-ts'`).
+ * Dependents (the tool-invocation and session-agent grammar builders, and the
+ * `@utk/constrained-decoder` runtime) import these from here.
  */
-export { gen, grm, select, str };
+export { Generation, Session, gen, grm, select, str };
 export type { GrammarNode };
 
 /**

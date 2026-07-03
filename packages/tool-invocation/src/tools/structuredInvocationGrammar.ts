@@ -1,4 +1,4 @@
-import { grm, nonEmptyChoices, select } from '@utk/constrained-decoder';
+import { grm, nonEmptyChoices, select } from '@utk/grammar-dsl';
 import type { StructuredGuidanceGrammarNode, StructuredToolDefinition } from './structuredToolTypes.js';
 
 export function buildStructuredInvocationGrammar(tools: StructuredToolDefinition[]): StructuredGuidanceGrammarNode {

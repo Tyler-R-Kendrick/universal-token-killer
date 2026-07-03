@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@utk/config": "0.1.0",
-    "@utk/constrained-decoder": "0.1.0",
+    "@utk/grammar-dsl": "0.1.0",
     "@utk/core": "0.1.0",
     "@utk/foundation": "0.1.0",
     "@utk/tracing": "0.1.0"
