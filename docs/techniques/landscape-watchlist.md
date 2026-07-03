@@ -27,8 +27,8 @@ routing. Each entry is here to be tracked, not endorsed.
 
 **See also:** the sink-based map in
 [`token-optimization-taxonomy.md`](/techniques/overview.md) (which lever for
-which sink), the model-level deep dives in [`models/`](/techniques/model-routing/overview.md), input
-compression in [`prompt-compression/`](/techniques/prompt-compression/overview.md), and
+which sink), the model-level deep dives in [`models/`](/research/model-routing/overview.md), input
+compression in [`prompt-compression/`](/research/prompt-compression/overview.md), and
 output/skill compression in
 [`assistant-prose-compression/`](/techniques/assistant-prose-compression/overview.md).
 
@@ -512,7 +512,7 @@ RouteLLM/FrugalGPT are the canonical routing/cascade references.
 
 The full model-level landscape — pre-call routing, cascade routing, selective and
 full ensembling, batch-aware routing, and decode-time (speculative) methods — is
-broken out as a dedicated deep-dive tree in [`models/`](/techniques/model-routing/overview.md), with one
+broken out as a dedicated deep-dive tree in [`models/`](/research/model-routing/overview.md), with one
 verified brief per technique. That folder is the expansion of this section; keep the
 scope discipline consistent (routing/ensemble cut expected `$/task`, not billable
 token count; speculative decoding is self-hosted latency only).

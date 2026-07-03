@@ -11,7 +11,7 @@ Internal note. Keep public docs focused on shipped UTK behavior.
 
 Axis 4 in [gaps](/gaps.md), owned by `@utk/model-proxy`: an
 OpenAI-compatible local gateway that reduces repeated context *before* it reaches
-the provider. It is also where UTK's [model-routing](/techniques/model-routing/overview.md)
+the provider. It is also where UTK's [model-routing](/research/model-routing/overview.md)
 adoption lands — route to the cheapest capable model **and** compress its prompt;
 the savings compound because each attacks a different sink.
 
@@ -35,7 +35,7 @@ the savings compound because each attacks a different sink.
 ## Underlying research & competition
 
 - **Model routing / cascade** is the adjacent research family →
-  [model routing](/techniques/model-routing/overview.md).
+  [model routing](/research/model-routing/overview.md).
 - **Active cache alignment** and **semantic response caching** are open gaps
   (see [gaps](/gaps.md), Type A).
 - Nearest product competition:

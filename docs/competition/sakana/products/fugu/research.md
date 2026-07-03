@@ -69,7 +69,7 @@ pending). Also reachable via OpenRouter and Vercel.
 The reference point for "compound model as a product." Fugu's trained-coordinator
 approach is the opposite end of the spectrum from UTK's deterministic hook path, but
 its **internal verification/synthesis** loop is conceptually the cascade
-quality-estimator idea (see [`../cascade-routing/`](/techniques/model-routing/cascade-routing/overview.md)) productized
+quality-estimator idea (see [`../cascade-routing/`](/research/model-routing/cascade-routing/overview.md)) productized
 and learned. For UTK it is **reference/competitor**, not adoptable (it needs a
 trained orchestrator and a hosted model pool). If UTK's proxy ever fronts multiple
 models, Fugu is the bar the "quality mode" is measured against.

@@ -18,12 +18,14 @@ readable by both. This guide is the repo-local convention layer on top of the sp
 |---|---|---|
 | Features | Shipped project/product docs | `docs/features/<feature>/*.md` |
 | Competition | Competitor & product dossiers | `docs/competition/<competitor>/*.md`, `.../products/<product>/*.md` |
-| Research | Academic articles / evaluations | `docs/research/<article>/*.md` |
-| Techniques | Technique taxonomy (the four gap-analysis axes + research families) | `docs/techniques/<category>/<technique>.md` |
+| Research | Academic papers & evaluations, grouped by method family | `docs/research/<family>/<paper>.md`, `docs/research/<article>/overview.md` |
+| Techniques | UTK's own optimization axes; link out to research + competition | `docs/techniques/<axis>/*.md` |
 | Gaps | Whole-product analysis & comparisons | `docs/gaps.md` |
 
-Techniques link out to the academic [research](/research/) and [competition](/competition/)
-that implement them; competitions and research do not duplicate technique prose.
+Techniques describe UTK's implementation axes and link out to the academic
+[research](/research/) and [competition](/competition/) that back them.
+**A dossier of a specific research paper is a `paper` and lives in `research/`, never
+`techniques/`.** Competitor products live under `competition/<vendor>/products/<product>/`.
 
 ## Every concept needs frontmatter
 
@@ -32,11 +34,11 @@ YAML frontmatter block:
 
 ```yaml
 ---
-type: technique            # REQUIRED — the only field OKF requires
+type: paper                # REQUIRED — the only field OKF requires
 title: LLMLingua-2         # human display name
 description: One sentence.  # single-sentence summary (used in index.md + previews)
 resource: https://arxiv.org/abs/2403.12968   # canonical URI of the underlying asset
-tags: [techniques, prompt-compression, internal]
+tags: [research, prompt-compression, internal]
 timestamp: 2026-07-03T00:00:00Z              # ISO 8601, last meaningful change
 ---
 ```
@@ -61,7 +63,7 @@ Use **bundle-relative absolute** links that start with `/` (relative to `docs/`)
 
 ```markdown
 [the gap analysis](/gaps.md)
-[RouteLLM](/techniques/model-routing/pre-call-routing/routellm.md)
+[RouteLLM](/research/model-routing/pre-call-routing/routellm.md)
 ```
 
 Links are directed, untyped edges; consumers tolerate broken links, but the linter
@@ -72,6 +74,22 @@ flags them so keep them live.
 Lowercase kebab-case files and directories. The folder carries the entity, so files
 are role-named inside it: `research.md`, `parity-benchmark.md`, `overview.md` (a
 category's prose), `<technique>.md` for technique leaves.
+
+## Classification rules (enforced)
+
+The linter binds each `type` to a top-level area — misfiling fails CI:
+
+| `type` | Must live under |
+|---|---|
+| `paper` | `docs/research/` |
+| `competitor` | `docs/competition/<competitor>/` |
+| `product` | `docs/competition/<competitor>/products/<product>/` |
+| `feature`, `reference` | `docs/features/` |
+| `category`, technique/plan/analysis for a UTK axis | `docs/techniques/` |
+
+Rule of thumb: **if a doc describes a specific research paper, it is a `paper` and
+belongs in `research/`** — not `techniques/`. A vendor's product is a `product` under
+that vendor's `competition/<vendor>/products/`, not its own top-level competitor.
 
 ## Enforcement
 

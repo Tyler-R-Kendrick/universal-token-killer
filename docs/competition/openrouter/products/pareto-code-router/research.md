@@ -54,7 +54,7 @@ tiering basis but publishes no savings/accuracy figures.
 
 **Closest external precedent for `@utk/model-proxy`'s coding path.** The
 "minimum coding score → cheapest-in-tier" pattern is exactly the productized form of
-the patch-generation row in the [model-routing overview](/techniques/model-routing/overview.md) phase-routing table
+the patch-generation row in the [model-routing overview](/research/model-routing/overview.md) phase-routing table
 ("cheapest model that passes local tests"). Adopt the **coding-tier floor** framing;
 UTK adds the escalation trigger (failed compile/test) that Pareto Code lacks. `:nitro`
 (fastest-in-tier) is a useful second axis.

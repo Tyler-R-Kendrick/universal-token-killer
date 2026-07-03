@@ -15,8 +15,8 @@ Research date: 2026-07-02
 output, and skill/instruction text all get **re-read by the agent on later turns**,
 so every token saved is saved repeatedly. This bucket tracks the tools and evidence
 that attack those agent-native sinks specifically (distinct from academic prompt
-compression in [`../prompt-compression/`](/techniques/prompt-compression/overview.md) and model routing
-in [`../models/`](/techniques/model-routing/overview.md)).
+compression in [`../prompt-compression/`](/research/prompt-compression/overview.md) and model routing
+in [`../models/`](/research/model-routing/overview.md)).
 
 ## The governing rule (from CAVEWOMAN)
 
@@ -34,7 +34,7 @@ Compress INPUT only when verifiably lossless → blind input compression is a "s
 | Item | Source | Kind | Status |
 |---|---|---|---|
 | [CAVEWOMAN](/research/cavewoman/overview.md) | arXiv 2606.24083 | Independent empirical eval of input/output compression | Verified (preprint) |
-| [SkillReducer](/techniques/assistant-prose-compression/skillreducer.md) | arXiv 2603.29919 | Skill/instruction compression (routing-desc + progressive disclosure) | Verified (preprint) |
+| [SkillReducer](/research/skillreducer/overview.md) | arXiv 2603.29919 | Skill/instruction compression (routing-desc + progressive disclosure) | Verified (preprint) |
 | [Caveman Code](/competition/caveman/products/caveman-code/research.md) | github JuliusBrussee/caveman-code | Terminal coding agent (output + tool-output compression) | Verified (project-side metrics) |
 
 ## Already covered elsewhere in the docs bundle (cross-reference, not duplicated)

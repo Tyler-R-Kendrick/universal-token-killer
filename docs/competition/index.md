@@ -2,10 +2,7 @@
 
 ## Subcategories
 
-* [Anka](/competition/anka/research.md) - Competitive research dossier on Anka, an adaptive-tokenization / vocab-surgery token optimizer.
-* [Cavekit](/competition/cavekit/research.md) - Competitive research dossier on Cavekit, a caveman-family token-compression toolkit.
 * [Caveman](/competition/caveman/) - Competitive research dossier on Caveman, a prompt-layer output-compression skill/plugin for coding agents.
-* [Cavemem](/competition/cavemem/research.md) - Competitive research dossier on Cavemem, an MCP-based agent memory-compression tool.
 * [Compresr](/competition/compresr/) - Competitive research dossier on Compresr, a prompt/history-compaction SDK for agent context.
 * [Headroom](/competition/headroom/research.md) - Competitive research dossier on Headroom, an agent context gateway that compresses tool outputs, logs, and repeated context.
 * [Kompress-Base](/competition/kompress-base/research.md) - Competitive research dossier on Kompress-Base, a Hugging Face ML text-compression model.
@@ -18,4 +15,3 @@
 * [Sakana](/competition/sakana/)
 * [Serena](/competition/serena/research.md) - Competitive research dossier on Serena, a multi-language LSP symbol-navigation code-context tool.
 * [Token Company](/competition/token-company/research.md) - Competitive research dossier on The Token Company, a hosted prompt-compression product line.
-* [TokenSugar](/competition/tokensugar/research.md) - Competitive research dossier on TokenSugar, an adaptive-tokenization token optimizer.

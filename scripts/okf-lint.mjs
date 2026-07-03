@@ -17,6 +17,17 @@ const RESERVED = new Set(['index.md', 'log.md']);
 const RECOMMENDED = ['title', 'description', 'timestamp'];
 const ISO = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2}))?$/;
 
+// Classification rules: a concept's `type` binds it to a top-level area.
+// Research papers live in research/, competitors/products in competition/,
+// shipped product docs and references in features/. (Enforced as errors.)
+const TYPE_AREA = {
+  paper: 'research/',
+  competitor: 'competition/',
+  product: 'competition/',
+  feature: 'features/',
+  reference: 'features/',
+};
+
 const args = process.argv.slice(2);
 const strict = args.includes('--strict');
 const targets = args.filter((a) => !a.startsWith('--'));
@@ -136,6 +147,12 @@ function lintFile(file) {
   if (!fm.ok) return;
   const type = fm.data.type;
   if (!type || (typeof type === 'string' && !type.trim())) err(file, "frontmatter is missing the required non-empty `type` field");
+  if (typeof type === 'string' && TYPE_AREA[type]) {
+    const rel = norm.startsWith(BUNDLE + '/') ? norm.slice(BUNDLE.length + 1) : norm;
+    if (!rel.startsWith(TYPE_AREA[type])) {
+      err(file, `type \`${type}\` must live under ${BUNDLE}/${TYPE_AREA[type]} (classification rule) — move it or fix the type`);
+    }
+  }
   for (const k of RECOMMENDED) if (!(k in fm.data)) warn(file, `missing recommended field \`${k}\``);
   if (fm.data.timestamp && !ISO.test(String(fm.data.timestamp))) warn(file, `timestamp is not ISO 8601: ${fm.data.timestamp}`);
   if ('tags' in fm.data && !Array.isArray(fm.data.tags)) warn(file, 'tags should be a YAML list');

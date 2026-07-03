@@ -20,5 +20,5 @@ Boundaries: code/commits/PRs written normal.
 - Every concept `.md` needs frontmatter with non-empty `type` (+ title/description/tags/timestamp).
 - Reserved: `index.md` (no frontmatter; regenerate `npm run docs:index`), `log.md`.
 - Links bundle-relative absolute (`/techniques/...`).
-- Place by kind: `features/` `competition/` `research/` `techniques/` `gaps.md`.
+- Place by kind (linter enforces type↔area): research papers → `research/`; competitors → `competition/<vendor>/`, their products → `.../products/<product>/`; shipped docs → `features/`; UTK technique axes → `techniques/`; gaps → `gaps.md`. Paper dossier ⇒ `type: paper` in `research/`, never `techniques/`.
 - Check: `npm run lint:okf:strict`. Full guide: `docs/authoring-okf.md`.

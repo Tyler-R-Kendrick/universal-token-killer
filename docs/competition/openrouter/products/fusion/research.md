@@ -51,8 +51,8 @@ cost *multiplier* if applied to every request rather than gated to high-stakes w
 
 ## UTK Relevance
 
-The productized analogue of the [`../full-ensembling/`](/techniques/model-routing/full-ensembling/overview.md) layer
-and the [`../selective-ensembling/`](/techniques/model-routing/selective-ensembling/overview.md) gating rule. For UTK
+The productized analogue of the [`../full-ensembling/`](/research/model-routing/full-ensembling/overview.md) layer
+and the [`../selective-ensembling/`](/research/model-routing/selective-ensembling/overview.md) gating rule. For UTK
 this is **reference-only / a quality mode to gate**: use it (or expose it) only when
 the cost of being wrong exceeds ~4–5× a completion — high-risk diffs, security
 review, contested plans. The structured "blind spots / disagreements" output is a

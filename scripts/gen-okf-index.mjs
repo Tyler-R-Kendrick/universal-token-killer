@@ -93,7 +93,12 @@ let created = 0;
 function generate(dir) {
   const { subdirs, files } = scan(dir);
   for (const s of subdirs) generate(s);
-  if (!shouldIndex(dir)) return;
+  const idx = path.join(dir, 'index.md');
+  if (!shouldIndex(dir)) {
+    // Prune a stale index.md left behind when a dir dropped below the threshold.
+    if (fs.existsSync(idx)) { fs.rmSync(idx); console.log('Pruned stale index:', idx); }
+    return;
+  }
 
   const isRoot = dir === ROOT;
   const lines = [];

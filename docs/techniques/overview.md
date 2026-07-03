@@ -22,8 +22,8 @@ correct one recurring mistake:
 
 For the breadth-first technique survey see
 [`token-optimization-landscape-watchlist.md`](/techniques/landscape-watchlist.md);
-for the model-level deep dives see [`models/`](/techniques/model-routing/overview.md); for input
-compression see [`prompt-compression/`](/techniques/prompt-compression/overview.md); for
+for the model-level deep dives see [`models/`](/research/model-routing/overview.md); for input
+compression see [`prompt-compression/`](/research/prompt-compression/overview.md); for
 output/skill compression see
 [`assistant-prose-compression/`](/techniques/assistant-prose-compression/overview.md). This doc sits above
 all of them.
@@ -47,15 +47,15 @@ Which lever attacks which sink, with pointers into this tree:
 
 | Sink | Best techniques | Where |
 |---|---|---|
-| Repeated system / tool / schema tokens | Provider prompt caching; tool/schema pruning; dynamic toolsets; **SkillReducer** | [watchlist §4, §14](/techniques/landscape-watchlist.md); [SkillReducer](/techniques/assistant-prose-compression/skillreducer.md) |
+| Repeated system / tool / schema tokens | Provider prompt caching; tool/schema pruning; dynamic toolsets; **SkillReducer** | [watchlist §4, §14](/techniques/landscape-watchlist.md); [SkillReducer](/research/skillreducer/overview.md) |
 | Huge shell / log / tool output | **RTK**; **Headroom**; **Caveman Code**; snip-style filters | [Headroom](/competition/headroom/research.md); [Caveman Code](/competition/caveman/products/caveman-code/research.md); [rtk-parity](/features/evals/rtk-parity-benchmark.md) |
 | Overloaded repo context | Repo maps; code-graph pruning; SWE-Pruner; Serena-like symbol nav | [watchlist §1–3](/techniques/landscape-watchlist.md); [Serena](/competition/serena/research.md) |
 | Verbose model replies | **Caveman / CaveGemma**; Chain-of-Draft; output budgets | [caveman](/competition/caveman/research.md); [cavegemma](/competition/caveman/products/cavegemma/research.md); [watchlist §7](/techniques/landscape-watchlist.md) |
-| Bad model choice | **OpenRouter Auto / Pareto Code**; RouteLLM; **NotDiamond**; **Fugu** | [compound-and-productized-routers](/techniques/model-routing/compound-and-productized-routers/overview.md); [pre-call-routing](/techniques/model-routing/pre-call-routing/overview.md) |
-| High-stakes uncertainty | **Fusion**; **Fugu Ultra**; gated best-of-n; verifier escalation | [full-ensembling](/techniques/model-routing/full-ensembling/overview.md); [selective-ensembling](/techniques/model-routing/selective-ensembling/overview.md); [Fusion](/competition/openrouter/products/fusion/research.md) |
-| RAG bloat | **LongLLMLingua**; **RECOMP**; Selective Context; contextual compression | [prompt-compression](/techniques/prompt-compression/overview.md); [watchlist §10](/techniques/landscape-watchlist.md) |
+| Bad model choice | **OpenRouter Auto / Pareto Code**; RouteLLM; **NotDiamond**; **Fugu** | [compound-and-productized-routers](/research/model-routing/compound-and-productized-routers/overview.md); [pre-call-routing](/research/model-routing/pre-call-routing/overview.md) |
+| High-stakes uncertainty | **Fusion**; **Fugu Ultra**; gated best-of-n; verifier escalation | [full-ensembling](/research/model-routing/full-ensembling/overview.md); [selective-ensembling](/research/model-routing/selective-ensembling/overview.md); [Fusion](/competition/openrouter/products/fusion/research.md) |
+| RAG bloat | **LongLLMLingua**; **RECOMP**; Selective Context; contextual compression | [prompt-compression](/research/prompt-compression/overview.md); [watchlist §10](/techniques/landscape-watchlist.md) |
 | Long static prefixes | Provider prompt caching **before** compression | [watchlist §14](/techniques/landscape-watchlist.md) |
-| Bloated agent skills/instructions | **SkillReducer** (routing-desc + progressive disclosure) | [SkillReducer](/techniques/assistant-prose-compression/skillreducer.md) |
+| Bloated agent skills/instructions | **SkillReducer** (routing-desc + progressive disclosure) | [SkillReducer](/research/skillreducer/overview.md) |
 
 ## The layered architecture pattern
 
@@ -87,7 +87,7 @@ Compress INPUT only when verifiably lossless → blind input compression is a
 ```
 
 This is exactly UTK's existing recoverability discipline, now with third-party evidence.
-It is why every input-side compressor in [`prompt-compression/`](/techniques/prompt-compression/overview.md)
+It is why every input-side compressor in [`prompt-compression/`](/research/prompt-compression/overview.md)
 must be **gated on fact-retention**, and why UTK keeps compact-but-**recoverable** `.utk/`
 artifacts rather than lossy compression.
 
@@ -106,7 +106,7 @@ artifacts rather than lossy compression.
 ### Academic prompt-compression layer
 1. **LLMLingua** · 2. **LongLLMLingua** · 3. **LLMLingua-2** (the front-runner) ·
 4. **Selective Context** · 5. **RECOMP** · 6. **SCOPE** · 7. **Gist Tokens** ·
-8. **500xCompressor** — see [`prompt-compression/`](/techniques/prompt-compression/overview.md); also
+8. **500xCompressor** — see [`prompt-compression/`](/research/prompt-compression/overview.md); also
 ICAE / xRAG / PCC in [watchlist §9](/techniques/landscape-watchlist.md).
 
 ### Routing / ensemble research layer
@@ -114,7 +114,7 @@ ICAE / xRAG / PCC in [watchlist §9](/techniques/landscape-watchlist.md).
 3. **ParetoBandit / EquiRouter / RouteJudge** (budget control, routing collapse, router
 eval) · 4. **best-of-n / Fusion / MoA** (gated ensemble, not default) ·
 5. **R2-Router** (routes model **and** output-length budget) — see
-[`models/`](/techniques/model-routing/overview.md).
+[`models/`](/research/model-routing/overview.md).
 
 ## UTK positioning across the map
 
@@ -122,7 +122,7 @@ eval) · 4. **best-of-n / Fusion / MoA** (gated ensemble, not default) ·
   reduction, recoverable `.utk/` artifacts, skill compression. This is the safe side of
   the CAVEWOMAN rule and UTK's core.
 - **UTK's proxy layer (`@utk/model-proxy`):** model routing / cascade / compound —
-  adopt the [`models/`](/techniques/model-routing/overview.md) patterns (Pareto Code tiering, cascade
+  adopt the [`models/`](/research/model-routing/overview.md) patterns (Pareto Code tiering, cascade
   quality-estimators, R2-Router length budgets); gate on UTK evals.
 - **Reference-only (not adoptable on a training-free, model-agnostic hook):** soft-token
   compression (Gist, 500xCompressor), speculative decoding, KV-cache — training and/or

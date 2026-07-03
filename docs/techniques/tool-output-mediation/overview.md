@@ -27,7 +27,7 @@ rule — compress output freely, keep input recoverable.
 
 ## Underlying research
 
-- Input/detok compression → [prompt compression](/techniques/prompt-compression/overview.md)
+- Input/detok compression → [prompt compression](/research/prompt-compression/overview.md)
   (the LLMLingua family, Selective Context) is the academic baseline UTK's detok seam must beat or gate.
 - Serialization notation accuracy cost is an open validation gap — see [gaps](/gaps.md).
 
