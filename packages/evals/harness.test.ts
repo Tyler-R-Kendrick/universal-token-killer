@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateTokens, parseBenchmark, loadBenchmark, loadProvenance, type BenchmarkCase } from './data.js';
+import { DATA_DIR, estimateTokens, parseBenchmark, loadBenchmark, loadProvenance, type BenchmarkCase } from './data.js';
 import { REFERENCE_MODEL, type CostModel } from './model.js';
 import {
   aggregateTechnique,
@@ -333,6 +333,15 @@ describe('real-dataset seam', () => {
     expect(realDataConfigured()).toBe(false);
     expect(await loadRealDataset('tool-output')).toBeNull();
     expect(await loadRealDataset('tool-output', '')).toBeNull();
+  });
+
+  it('loads an export in the BenchmarkCase shape when a directory is configured', async () => {
+    // Exercise the configured branch through the explicit dir arg (no env mutation);
+    // the committed data dir doubles as a stand-in real-dataset export.
+    const loaded = await loadRealDataset('tool-output', DATA_DIR);
+    expect(loaded?.length).toBeGreaterThan(0);
+    expect(loaded?.[0]?.requiredFacts).toBeInstanceOf(Array);
+    expect(await loadRealDataset('does-not-exist', DATA_DIR)).toBeNull();
   });
 });
 

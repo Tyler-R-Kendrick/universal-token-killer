@@ -36,7 +36,7 @@ where a technique wins and where it does not.
 
 ## Layout
 
-```
+```text
 packages/evals/
   data/<benchmark>.jsonl            # benchmark cases (one JSON object per line)
   data/<benchmark>.provenance.json  # provenance manifest (origin + related benchmarks)

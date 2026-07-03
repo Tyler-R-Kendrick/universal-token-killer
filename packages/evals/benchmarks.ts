@@ -59,6 +59,8 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
   const factsRetained = retentionRatio(testCase.requiredFacts, output.recoverableText) === 1;
   const relevance = exclusionRatio(testCase.irrelevantFacts, output.visibleText);
   const accuracy = retentionRatio(testCase.requiredFacts, output.recoverableText);
+  // Weight accuracy (fact retention) twice against relevance: dropping a required
+  // fact is a correctness failure and matters more than leaving some noise visible.
   const quality = round((relevance + accuracy + accuracy) / 3);
   const recoveryToolCalls = armKind === 'utk' ? 1 : 0;
 
