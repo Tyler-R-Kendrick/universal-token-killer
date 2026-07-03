@@ -20,10 +20,15 @@ packages/evals/
   harness.ts                    # base harness: 3 arms, hooks/middleware, grading
   comparison/<competitor>.ts    # per-competitor config over the shared data
   graders/                      # token (code), relevance (LLM), composite graders
+  data/<benchmark>.provenance.json  # provenance manifest (origin + related benchmarks)
   suites/<benchmark>.EVAL.yaml  # formalized AgentV suite, generated from the jsonl
-  results/<competitor>.json     # latest run artifacts (+ summary.json)
+  results/<benchmark>.json      # latest run artifacts (+ summary.json)
   evaluators/ + baselines/      # agentevals.io evaluator protocol + baseline store
 ```
+
+Registered competitors: **RTK**, **LeanCTX**, **Compresr**, **Caveman**, **Ponytail**
+(`comparison/*.ts`). Add one by exporting a `Comparison` and registering it in
+`comparison/index.ts`.
 
 ## Benchmark data
 
@@ -48,17 +53,19 @@ files, never in the data.
 
 ## Harness
 
-`runComparison(comparison, options?)` loads the benchmark and runs the three arms
-concurrently. Each arm produces an `{ visibleText, recoverableText }` surface:
-`visibleText` is the model-visible chat (what tokens are charged against);
-`recoverableText` is everything still reachable (chat + stored artifact) and is where
-fact retention is checked. Baseline and lossy-in-chat competitors have equal surfaces;
-UTK keeps `visibleText` tiny while leaving facts recoverable.
+`runBenchmark(comparisons, options?)` runs baseline, every competitor, and UTK as
+sibling arms over the same data, concurrently, and returns them baseline-first / UTK-last
+— the leaderboard. `runComparison(comparison, options?)` runs one competitor's
+baseline/competitor/UTK triple. Each arm produces an `{ visibleText, recoverableText }`
+surface: `visibleText` is the model-visible chat (what tokens are charged against);
+`recoverableText` is everything still reachable (chat + stored artifact) and is where fact
+retention is checked. Baseline and lossy-in-chat competitors have equal surfaces; UTK keeps
+`visibleText` tiny while leaving facts recoverable.
 
-**Hooks / middleware.** A comparison can pass `middleware` that fold a `SessionConfig`
-(`tools`, `skills`, `model`, `judge`) per arm — the seam for wiring in the tools, skills,
-and model a real target would use. `configureModel`-style middleware swaps the judge used
-by the LLM grader.
+**Hooks / middleware.** The base `SessionConfig` (`tools`, `skills`, `model`, `judge`) applies
+to every arm — that is the seam for a global `configureModel` hook that swaps the judge used by
+the LLM grader. A comparison's per-provider `middleware` tags only its own arm (e.g. the provider
+`skills`), so grading stays uniform across arms while each provider records how it was configured.
 
 ## Graders
 
@@ -80,7 +87,7 @@ Each grader is also a standalone AgentV `type: script` grader — it reads the
 ## Running
 
 ```bash
-# Run every comparison; rewrite results/*.json, suites/*.EVAL.yaml, and docs/internal/*-benchmark-results.md
+# Run the benchmark; rewrite results/*.json, suites/*.EVAL.yaml, and docs/internal/benchmark-summary.md
 npm run evals --workspace @utk/evals
 
 # Just regenerate the formalized AgentV suite from the jsonl data
@@ -90,10 +97,9 @@ npm run evals:suites --workspace @utk/evals
 npm test --workspace @utk/evals
 ```
 
-Results are persisted as artifacts under `packages/evals/results/`, referenced from
-`docs/internal/benchmark-summary.md` and the per-competitor
-`docs/internal/<competitor>-benchmark-results.md`, and regenerated in lockstep by
-`npm run evals` so the numbers never drift from the data.
+Results are persisted as artifacts under `packages/evals/results/` (`<benchmark>.json` +
+`summary.json`) and rendered as the leaderboard in `docs/internal/benchmark-summary.md`,
+regenerated in lockstep by `npm run evals` so the numbers never drift from the data.
 
 ## Formalized AgentV suite
 
@@ -105,6 +111,24 @@ package, AgentV can run it directly:
 npm run build --workspace @utk/evals
 agentv run packages/evals/suites/tool-output.EVAL.yaml
 ```
+
+## Provenance
+
+Following AgentV's [benchmark-provenance](https://agentv.dev/docs/guides/benchmark-provenance/)
+guidance, `data/<benchmark>.provenance.json` records informational (non-executed) metadata —
+origin, license, version, and the known public benchmarks the cases relate to. `generate-suite`
+emits it into the suite as suite-level and per-test `metadata`.
+
+The `tool-output` cases are **synthetic and self-authored** — not sampled from, or scored on,
+any external benchmark. The following public benchmarks are referenced only as task-category
+analogs so readers can anchor the kinds of tool output measured here:
+
+- [Terminal-Bench](https://www.tbench.ai/) (Stanford + Laude Institute) — CLI/terminal agent tasks (our `shell.*` cases).
+- [SWE-bench](https://www.swebench.com/) (Princeton NLP) — real-repo tasks; test-runner output and tracebacks.
+- [τ-bench](https://github.com/sierra-research/tau-bench) (Sierra Research) — tool-agent-user loops over structured tool results.
+- [Berkeley Function-Calling Leaderboard](https://gorilla.cs.berkeley.edu/leaderboard.html) (UC Berkeley) — function/tool-calling.
+
+UTK compaction is an orthogonal context-cost layer; the leaderboard numbers are not submissions to these benchmarks.
 
 ## AgentEvals evaluator protocol
 

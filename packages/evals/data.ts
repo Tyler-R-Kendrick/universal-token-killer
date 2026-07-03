@@ -29,6 +29,48 @@ export type BenchmarkCase = {
 
 export { DATA_DIR } from './paths.js';
 
+/** A public benchmark referenced for provenance (a task-category analog, not a data source). */
+export type RelatedBenchmark = {
+  id: string;
+  name: string;
+  org?: string;
+  url: string;
+  relation: string;
+  note?: string;
+};
+
+/**
+ * Informational provenance for a benchmark, following AgentV's benchmark-provenance
+ * guidance: it documents where the data came from and which known external benchmarks
+ * it relates to. None of it is executed — it is carried into the generated suite as
+ * suite-level and per-test `metadata`.
+ */
+export type BenchmarkProvenance = {
+  name: string;
+  version: string;
+  license: string;
+  tags: string[];
+  origin: string;
+  authored_by: string;
+  generated_by?: string;
+  description: string;
+  disclaimer: string;
+  related_benchmarks: RelatedBenchmark[];
+  /** Maps each case `category` to a `related_benchmarks[].id` for per-test provenance. */
+  category_benchmark: Record<string, string>;
+};
+
+/** Load the provenance manifest for a benchmark, if one exists (`data/<name>.provenance.json`). */
+export async function loadProvenance(name: string, dir: string = DATA_DIR): Promise<BenchmarkProvenance | null> {
+  try {
+    const raw = await readFile(path.join(dir, `${name}.provenance.json`), 'utf8');
+    return JSON.parse(raw) as BenchmarkProvenance;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
 /** Coarse token estimate shared by the harness and every grader. */
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -38,16 +80,16 @@ export function estimateTokens(text: string): number {
 export function parseBenchmark(jsonl: string): BenchmarkCase[] {
   return jsonl
     .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((line, index) => {
+    .map((line, index) => ({ line: line.trim(), lineNumber: index + 1 }))
+    .filter((entry) => entry.line.length > 0)
+    .map(({ line, lineNumber }) => {
       let parsed: unknown;
       try {
         parsed = JSON.parse(line);
       } catch (error) {
-        throw new Error(`Invalid JSONL on line ${index + 1}: ${(error as Error).message}`);
+        throw new Error(`Invalid JSONL on line ${lineNumber}: ${(error as Error).message}`);
       }
-      return assertCase(parsed, index + 1);
+      return assertCase(parsed, lineNumber);
     });
 }
 

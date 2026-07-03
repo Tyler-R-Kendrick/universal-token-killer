@@ -1,5 +1,5 @@
 import type { Comparison } from '../harness.js';
-import { makeCompetitorArm } from './compactors.js';
+import { addSkill, makeCompetitorArm } from './compactors.js';
 
 /**
  * RTK (rust-token-killer) — the predecessor that produces terse summaries of
@@ -13,9 +13,7 @@ export const rtkComparison: Comparison = {
   benchmark: 'tool-output',
   description: 'Shell/CLI output summarizer. UTK matches its fact retention while cutting far more visible tokens by keeping raw recoverable off-context.',
   competitorArm: makeCompetitorArm({ keepThreshold: 0.10 }),
-  middleware: [
-    (config) => ({ ...config, skills: [...config.skills, 'rtk-shell-summary'] })
-  ]
+  middleware: [addSkill('rtk-shell-summary')]
 };
 
 export default rtkComparison;

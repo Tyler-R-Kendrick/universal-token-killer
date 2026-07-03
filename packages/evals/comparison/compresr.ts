@@ -1,5 +1,5 @@
 import type { Comparison } from '../harness.js';
-import { makeCompetitorArm } from './compactors.js';
+import { addSkill, makeCompetitorArm } from './compactors.js';
 
 /**
  * Compresr — a query-aware compression SDK. Modelled as a query-aware extractive
@@ -14,9 +14,7 @@ export const compresrComparison: Comparison = {
   benchmark: 'tool-output',
   description: 'Query-aware compressor. UTK reaches deeper token cuts at equal fact retention by never placing the payload in context.',
   competitorArm: makeCompetitorArm({ keepThreshold: 0.16, queryAware: true }),
-  middleware: [
-    (config) => ({ ...config, skills: [...config.skills, 'compresr-query-aware'] })
-  ]
+  middleware: [addSkill('compresr-query-aware')]
 };
 
 export default compresrComparison;

@@ -1,5 +1,5 @@
 import type { Comparison } from '../harness.js';
-import { makeCompetitorArm } from './compactors.js';
+import { addSkill, makeCompetitorArm } from './compactors.js';
 
 /**
  * Caveman — a terse output-style skill that strips prose to a "caveman" register.
@@ -14,9 +14,7 @@ export const cavemanComparison: Comparison = {
   benchmark: 'tool-output',
   description: 'Aggressive terse rewriter. UTK keeps the same facts recoverable while spending a fraction of the visible tokens.',
   competitorArm: makeCompetitorArm({ keepThreshold: 0.18 }),
-  middleware: [
-    (config) => ({ ...config, skills: [...config.skills, 'caveman-terse'] })
-  ]
+  middleware: [addSkill('caveman-terse')]
 };
 
 export default cavemanComparison;

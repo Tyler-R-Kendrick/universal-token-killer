@@ -1,21 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { estimateTokens, parseBenchmark, loadBenchmark, type BenchmarkCase } from './data.js';
+import { estimateTokens, parseBenchmark, loadBenchmark, loadProvenance, type BenchmarkCase } from './data.js';
 import {
   DEFAULT_SESSION,
   runComparison,
+  runBenchmark,
   utkTechnique,
   baselineTechnique,
   mapConcurrent,
   type Comparison,
   type SessionConfig
 } from './harness.js';
-import { rtkComparison, compresrComparison, cavemanComparison, makeCompetitorArm, infoScore, COMPARISONS } from './comparison/index.js';
+import { COMPARISONS, makeCompetitorArm, infoScore, addSkill } from './comparison/index.js';
 import { gradeTokens } from './graders/tokenGrader.js';
 import { gradeRelevance } from './graders/relevanceGrader.js';
 import { gradeComposite, gradeCompositeFromAgentV } from './graders/compositeGrader.js';
 import { referenceJudge, type Judge } from './graders/shared.js';
 import { renderSuiteYaml } from './scripts/generate-suite.js';
-import { renderComparisonMarkdown, renderSummaryMarkdown } from './report.js';
+import { renderBenchmarkMarkdown, renderLeaderboard } from './report.js';
 
 const sampleCase: BenchmarkCase = {
   name: 'sample',
@@ -40,6 +41,10 @@ describe('data', () => {
     expect(cases[0]?.requiredFacts).toEqual(sampleCase.requiredFacts);
   });
 
+  it('reports the real source line number even after blank lines', () => {
+    expect(() => parseBenchmark(`\n\nnot json`)).toThrow(/line 3/);
+  });
+
   it('rejects malformed lines and non-object cases', () => {
     expect(() => parseBenchmark('not json')).toThrow(/Invalid JSONL/);
     expect(() => parseBenchmark('123')).toThrow(/not an object/);
@@ -54,6 +59,13 @@ describe('data', () => {
         expect(testCase.rawOutput, `${testCase.name}: ${fact}`).toContain(fact);
       }
     }
+  });
+
+  it('loads the provenance manifest with related public benchmarks', async () => {
+    const provenance = await loadProvenance('tool-output');
+    expect(provenance?.origin).toBe('synthetic');
+    expect(provenance?.related_benchmarks.map((b) => b.id)).toContain('terminal-bench');
+    expect(await loadProvenance('does-not-exist')).toBeNull();
   });
 });
 
@@ -148,7 +160,7 @@ describe('techniques', () => {
 
 describe('runComparison', () => {
   it('runs baseline, competitor, and UTK arms over the shared dataset', async () => {
-    const result = await runComparison(rtkComparison);
+    const result = await runComparison(COMPARISONS[0]!);
     expect(result.cases).toBeGreaterThanOrEqual(10);
     expect(Object.keys(result.arms)).toEqual(['baseline', 'competitor', 'utk']);
     for (const arm of Object.values(result.arms)) {
@@ -156,76 +168,85 @@ describe('runComparison', () => {
     }
   });
 
-  it('UTK keeps every fact while cutting the most visible tokens', async () => {
-    for (const comparison of COMPARISONS) {
-      const result = await runComparison(comparison);
-      const { baseline, competitor, utk } = result.arms;
-      // eslint-disable-next-line no-console
-      console.info(
-        `${comparison.competitor}: baseline=${baseline.totals.visibleTokens} competitor=${competitor.totals.visibleTokens} ` +
-          `utk=${utk.totals.visibleTokens} | quality b=${baseline.totals.avgQuality} c=${competitor.totals.avgQuality} u=${utk.totals.avgQuality} ` +
-          `| composite b=${baseline.totals.avgComposite} c=${competitor.totals.avgComposite} u=${utk.totals.avgComposite} ` +
-          `| facts c=${competitor.totals.passed}/${competitor.totals.cases} u=${utk.totals.passed}/${utk.totals.cases}`
-      );
-      expect(utk.totals.passed).toBe(utk.totals.cases);
-      expect(utk.totals.avgQuality).toBe(1);
-      expect(utk.totals.visibleTokens).toBeLessThan(competitor.totals.visibleTokens);
-      expect(competitor.totals.visibleTokens).toBeLessThanOrEqual(baseline.totals.visibleTokens);
-      expect(utk.totals.avgComposite).toBeGreaterThan(competitor.totals.avgComposite);
-    }
-  });
-
-  it('applies middleware to configure the session per provider', async () => {
+  it('applies the base-session model hook to all arms and per-provider middleware to its arm', async () => {
     const captured: string[] = [];
     const spyJudge: Judge = (request) => {
       captured.push(request.prompt);
       return referenceJudge(request);
     };
-    const comparison: Comparison = {
-      ...rtkComparison,
-      middleware: [
-        (config): SessionConfig => ({ ...config, model: 'spy-model', judge: spyJudge, skills: [...config.skills, 'rtk-shell-summary'] })
-      ]
-    };
-    const result = await runComparison(comparison, { cases: [sampleCase] });
+    // The model/judge hook is global (fair grading across arms); provider middleware
+    // (skills) only tags that competitor's own arm.
+    const baseSession: SessionConfig = { ...DEFAULT_SESSION, model: 'spy-model', judge: spyJudge };
+    const result = await runComparison(COMPARISONS[0]!, { cases: [sampleCase], baseSession });
     expect(result.arms.utk.session.model).toBe('spy-model');
-    expect(result.arms.utk.session.skills).toContain('rtk-shell-summary');
+    expect(result.arms.competitor.session.skills).toContain('rtk-shell-summary');
+    expect(result.arms.baseline.session.skills).not.toContain('rtk-shell-summary');
     expect(captured.length).toBeGreaterThan(0);
   });
 
-  it('respects an injected competitor arm and base session', async () => {
+  it('isolates a throwing technique to a single failed case', async () => {
     const comparison: Comparison = {
-      competitor: 'noop',
-      label: 'No-op passthrough',
+      competitor: 'boom',
+      label: 'Throwing arm',
       benchmark: 'tool-output',
-      description: 'passes raw through',
-      competitorArm: makeCompetitorArm({ keepThreshold: 0 })
+      description: 'always throws',
+      competitorArm: () => {
+        throw new Error('technique failed');
+      }
     };
     const result = await runComparison(comparison, { cases: [sampleCase], concurrency: 1 });
-    // keepThreshold 0 keeps every informative line but still drops pure noise,
-    // so the competitor arm is no larger than the baseline and retains the facts.
-    expect(result.arms.competitor.totals.visibleTokens).toBeLessThanOrEqual(result.arms.baseline.totals.visibleTokens);
-    expect(result.arms.competitor.totals.passed).toBe(1);
+    expect(result.arms.competitor.totals.passed).toBe(0);
+    expect(result.arms.competitor.cases[0]?.composite).toBe(0);
+    // Baseline and UTK arms still complete normally.
+    expect(result.arms.utk.totals.passed).toBe(1);
+  });
+});
+
+describe('runBenchmark (leaderboard)', () => {
+  it('runs baseline + every competitor + UTK as sibling arms', async () => {
+    const result = await runBenchmark(COMPARISONS);
+    expect(result.arms).toHaveLength(COMPARISONS.length + 2);
+    expect(result.arms[0]?.arm).toBe('baseline');
+    expect(result.arms.at(-1)?.arm).toBe('utk');
+
+    const baseline = result.arms.find((a) => a.arm === 'baseline')!;
+    const utk = result.arms.find((a) => a.arm === 'utk')!;
+    const competitors = result.arms.filter((a) => a.arm === 'competitor');
+    expect(competitors).toHaveLength(COMPARISONS.length);
+
+    // UTK spends the fewest visible tokens; baseline the most; UTK keeps every fact.
+    for (const arm of [...competitors, baseline]) {
+      expect(utk.totals.visibleTokens).toBeLessThan(arm.totals.visibleTokens);
+      expect(baseline.totals.visibleTokens).toBeGreaterThanOrEqual(arm.totals.visibleTokens);
+    }
+    expect(utk.totals.passed).toBe(utk.totals.cases);
   });
 });
 
 describe('artifacts', () => {
-  it('renders a suite that references the composite grader', async () => {
-    const cases = await loadBenchmark('tool-output');
-    const yaml = renderSuiteYaml('tool-output', cases);
-    expect(yaml).toContain('suite: tool-output');
+  it('renders a provenance-tagged suite that references the composite grader', async () => {
+    const [cases, provenance] = await Promise.all([loadBenchmark('tool-output'), loadProvenance('tool-output')]);
+    const yaml = renderSuiteYaml('tool-output', cases, provenance);
+    expect(yaml).toContain('name: tool-output');
+    expect(yaml).toContain('provenance:');
+    expect(yaml).toContain('related_benchmark:');
     expect(yaml).toContain('packages/evals/dist/graders/compositeGrader.js');
     for (const testCase of cases) {
       expect(yaml).toContain(`- id: ${testCase.name}`);
     }
   });
 
-  it('renders comparison and summary markdown', async () => {
-    const results = await Promise.all(COMPARISONS.map((comparison) => runComparison(comparison)));
-    expect(renderComparisonMarkdown(results[0]!)).toContain('vs UTK');
-    const summary = renderSummaryMarkdown(results);
-    expect(summary).toContain('Benchmark Summary');
-    expect(summary).toContain('fewer');
+  it('renders a 3-column leaderboard with baseline and UTK as rows', async () => {
+    const result = await runBenchmark(COMPARISONS);
+    const leaderboard = renderLeaderboard(result).join('\n');
+    expect(leaderboard).toContain('| Technique | Tokens | Change |');
+    expect(leaderboard).toContain('Baseline');
+    expect(leaderboard).toContain('UTK');
+
+    const provenance = await loadProvenance('tool-output');
+    const markdown = renderBenchmarkMarkdown(result, provenance);
+    expect(markdown).toContain('## Leaderboard');
+    expect(markdown).toContain('Terminal-Bench');
   });
 });
 

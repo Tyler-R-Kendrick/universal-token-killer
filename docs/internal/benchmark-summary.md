@@ -1,29 +1,67 @@
-# Benchmark Summary
+# Tool-output compaction benchmark
 
-Aggregate view of the tool-output compaction benchmark: the same benchmark data run through the same
-harness against each competitor, with three concurrent arms (baseline, competitor, UTK).
+Three-plus concurrent arms over the same 12 cases: **baseline** (raw output), each **competitor**, and **UTK** (raw persisted off-context, recoverable handle in chat).
 
-> Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data, not the vendors' live systems. Token counts use a coarse `ceil(len/4)` estimate. Quality is scored by the reference judge (fact retention + noise exclusion); swap in a model judge via the harness `configureModel` hook for semantic grading.
+> Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
 
-## Current Results
+## Leaderboard
 
-| Competitor | Cases | Baseline tok | Competitor tok | UTK tok | UTK vs competitor | UTK facts | Report |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| RTK (rust-token-killer) | 12 | 1297 | 1123 | 324 | 71% fewer | 12/12 | [report](rtk-benchmark-results.md) |
-| Compresr (query-aware) | 12 | 1297 | 1122 | 324 | 71% fewer | 12/12 | [report](compresr-benchmark-results.md) |
-| Caveman (terse register) | 12 | 1297 | 1083 | 324 | 70% fewer | 12/12 | [report](caveman-benchmark-results.md) |
+Model-visible tokens (lower is better). Change is vs the baseline arm.
 
-## Interpretation
+| Technique | Tokens | Change |
+| --- | ---: | ---: |
+| Baseline (raw tool output) | 1297 | 0% |
+| LeanCTX (context runtime) | 1143 | −12% |
+| RTK (rust-token-killer) | 1123 | −13% |
+| Compresr (query-aware) | 1122 | −13% |
+| Caveman (terse register) | 1083 | −16% |
+| Ponytail (minimum emission) | 977 | −25% |
+| UTK (mediated compaction) | 324 | −75% |
 
-- **Baseline** reads the full tool output — maximum tokens, keeps every fact, keeps all the noise.
-- **Competitor** arms compact into the chat context: they cut tokens but pay for what survives and can shed relevant facts.
-- **UTK** persists the raw output off-context and surfaces a recoverable handle, so it keeps every fact at a fraction of the visible tokens.
+## Quality
 
-## Related benchmarks
+Every arm is gated on fact retention — a dropped required fact zeroes that case.
 
-- LeanCTX Copilot context-runtime benchmark: [leanctx-copilot-benchmark-results.md](leanctx-copilot-benchmark-results.md).
+| Technique | Facts kept | Avg quality | Avg composite |
+| --- | ---: | ---: | ---: |
+| Baseline (raw tool output) | 12/12 | 0.667 | 0.334 |
+| LeanCTX (context runtime) | 12/12 | 0.75 | 0.446 |
+| RTK (rust-token-killer) | 12/12 | 0.778 | 0.471 |
+| Compresr (query-aware) | 12/12 | 0.764 | 0.462 |
+| Caveman (terse register) | 11/12 | 0.764 | 0.454 |
+| Ponytail (minimum emission) | 11/12 | 0.847 | 0.54 |
+| UTK (mediated compaction) | 12/12 | 1 | 0.841 |
 
-## Update Rules
+## Per-case visible tokens
 
-- Regenerate with `npm run evals --workspace @utk/evals`; it rewrites `results/*.json`, the suite YAML, and these docs together.
-- Never hand-edit the numbers — they are derived from `packages/evals/data/*.jsonl`.
+| Case | Category | baseline | rtk | leanctx | compresr | caveman | ponytail | UTK |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| shell-git-status | Version control | 103 | 27 | 27 | 27 | 27 | 27 | 28 |
+| shell-vitest | Test output | 61 | 53 | 53 | 53 | 46 | 31 | 25 |
+| shell-kubectl-pods | Kubernetes | 69 | 69 | 69 | 69 | 69 | 35 | 30 |
+| shell-npm-install-error | Package install | 108 | 73 | 73 | 73 | 73 | 73 | 28 |
+| shell-docker-ps | Containers | 66 | 66 | 66 | 66 | 66 | 33 | 27 |
+| shell-rg-search | Code search | 90 | 90 | 90 | 90 | 90 | 90 | 23 |
+| shell-terraform-plan | Infrastructure | 70 | 35 | 35 | 35 | 23 | 23 | 29 |
+| shell-node-stack | Runtime error | 98 | 98 | 98 | 77 | 77 | 53 | 24 |
+| shell-secret-log | Secret safety | 53 | 53 | 53 | 53 | 53 | 53 | 28 |
+| json-events-array | Structured JSON | 307 | 307 | 307 | 307 | 307 | 307 | 28 |
+| json-users-object | Structured JSON | 199 | 199 | 199 | 199 | 199 | 199 | 27 |
+| shell-gh-pr-list | GitHub CLI | 73 | 53 | 73 | 73 | 53 | 53 | 27 |
+
+## Provenance
+
+- Origin: synthetic (universal-token-killer)
+- License: MIT · version 0.1.0
+- Hand-authored, representative tool outputs used to measure the model-visible token cost of compaction techniques (baseline vs competitor vs UTK).
+
+### Related public benchmarks
+
+Referenced as task-category analogs so readers can anchor the kinds of tool output measured here — not data sources, and not scored on:
+
+- [Terminal-Bench 2.0](https://www.tbench.ai/) (Stanford + Laude Institute) — Containerized CLI/terminal agent tasks; the environments our shell.* cases (git, kubectl, docker, npm, terraform, rg, gh) mirror.
+- [SWE-bench Verified](https://www.swebench.com/) (Princeton NLP) — Real-repo software tasks whose test-runner output and tracebacks resemble our test/runtime-error cases.
+- [τ-bench (tau-bench)](https://github.com/sierra-research/tau-bench) (Sierra Research) — Tool-agent-user interaction loops that consume structured tool results like our tool.* JSON cases.
+- [Berkeley Function-Calling Leaderboard](https://gorilla.cs.berkeley.edu/leaderboard.html) (UC Berkeley (Gorilla)) — Function/tool-calling whose responses feed back into the model context that UTK compacts.
+
+Generated by `npm run evals --workspace @utk/evals`.

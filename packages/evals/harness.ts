@@ -28,7 +28,7 @@ export type Middleware = (config: SessionConfig, meta: SessionMeta) => SessionCo
 export type Technique = (testCase: BenchmarkCase, session: SessionConfig, meta: SessionMeta) => ArmOutput | Promise<ArmOutput>;
 
 export type Comparison = {
-  /** Competitor slug, also the results artifact filename (e.g. "rtk"). */
+  /** Competitor slug (e.g. "rtk"). */
   competitor: string;
   /** Human-readable competitor label. */
   label: string;
@@ -78,12 +78,14 @@ export type ArmTotals = {
 
 export type ArmResult = {
   arm: ArmId;
+  competitor: string;
   label: string;
   session: { tools: string[]; skills: string[]; model: string };
   cases: CaseScore[];
   totals: ArmTotals;
 };
 
+/** One competitor's baseline/competitor/UTK view of the benchmark. */
 export type ComparisonResult = {
   competitor: string;
   label: string;
@@ -91,6 +93,14 @@ export type ComparisonResult = {
   description: string;
   cases: number;
   arms: Record<ArmId, ArmResult>;
+};
+
+/** The whole benchmark as one leaderboard: baseline, every competitor, and UTK as sibling arms. */
+export type BenchmarkResult = {
+  benchmark: string;
+  cases: number;
+  /** Baseline first, competitors in registry order, UTK last. */
+  arms: ArmResult[];
 };
 
 export const DEFAULT_SESSION: SessionConfig = {
@@ -128,77 +138,122 @@ export const utkTechnique: Technique = (testCase) => {
   return { visibleText, recoverableText: testCase.rawOutput };
 };
 
-/** Run a comparison: baseline, competitor, and UTK arms over the same data, concurrently. */
+/** Internal spec for one arm of a run. */
+type ArmSpec = {
+  arm: ArmId;
+  competitor: string;
+  label: string;
+  technique: Technique;
+  middleware: Middleware[];
+  weights?: CompositeWeights;
+  qualityGate?: number;
+};
+
+function baselineSpec(): ArmSpec {
+  return { arm: 'baseline', competitor: 'baseline', label: ARM_LABELS.baseline, technique: baselineTechnique, middleware: [] };
+}
+
+function utkSpec(): ArmSpec {
+  return { arm: 'utk', competitor: 'utk', label: ARM_LABELS.utk, technique: utkTechnique, middleware: [] };
+}
+
+function competitorSpec(comparison: Comparison): ArmSpec {
+  return {
+    arm: 'competitor',
+    competitor: comparison.competitor,
+    label: comparison.label,
+    technique: comparison.competitorArm,
+    middleware: comparison.middleware ?? [],
+    weights: comparison.weights,
+    qualityGate: comparison.qualityGate
+  };
+}
+
+/** Run one comparison: baseline, this competitor, and UTK arms over the same data, concurrently. */
 export async function runComparison(comparison: Comparison, options: RunOptions = {}): Promise<ComparisonResult> {
   const cases = options.cases ?? (await loadBenchmark(comparison.benchmark));
   const base = options.baseSession ?? DEFAULT_SESSION;
   const concurrency = options.concurrency ?? 8;
-
-  const arms: Array<{ id: ArmId; technique: Technique }> = [
-    { id: 'baseline', technique: baselineTechnique },
-    { id: 'competitor', technique: comparison.competitorArm },
-    { id: 'utk', technique: utkTechnique }
-  ];
-
-  const armResults = await Promise.all(
-    arms.map((arm) => runArm(arm.id, arm.technique, comparison, cases, base, concurrency))
+  const specs = [baselineSpec(), competitorSpec(comparison), utkSpec()];
+  const [baseline, competitor, utk] = await Promise.all(
+    specs.map((spec) => runArm(spec, comparison.benchmark, cases, base, concurrency))
   );
-
   return {
     competitor: comparison.competitor,
     label: comparison.label,
     benchmark: comparison.benchmark,
     description: comparison.description,
     cases: cases.length,
-    arms: {
-      baseline: armResults[0]!,
-      competitor: armResults[1]!,
-      utk: armResults[2]!
-    }
+    arms: { baseline: baseline!, competitor: competitor!, utk: utk! }
   };
 }
 
-async function runArm(
-  arm: ArmId,
-  technique: Technique,
-  comparison: Comparison,
-  cases: BenchmarkCase[],
-  base: SessionConfig,
-  concurrency: number
-): Promise<ArmResult> {
-  const meta: SessionMeta = { arm, competitor: comparison.competitor, benchmark: comparison.benchmark };
-  const session = await applyMiddleware(base, meta, comparison.middleware ?? []);
-  const qualityGate = comparison.qualityGate ?? 1;
+/**
+ * Run the whole benchmark as one leaderboard: baseline, every competitor arm, and
+ * UTK — all over the same data, concurrently. Arms come back baseline-first,
+ * competitors in registry order, UTK last.
+ */
+export async function runBenchmark(comparisons: Comparison[], options: RunOptions = {}): Promise<BenchmarkResult> {
+  const benchmark = comparisons[0]?.benchmark ?? 'tool-output';
+  const cases = options.cases ?? (await loadBenchmark(benchmark));
+  const base = options.baseSession ?? DEFAULT_SESSION;
+  const concurrency = options.concurrency ?? 8;
+  const specs = [baselineSpec(), ...comparisons.map(competitorSpec), utkSpec()];
+  const arms = await Promise.all(specs.map((spec) => runArm(spec, benchmark, cases, base, concurrency)));
+  return { benchmark, cases: cases.length, arms };
+}
+
+async function runArm(spec: ArmSpec, benchmark: string, cases: BenchmarkCase[], base: SessionConfig, concurrency: number): Promise<ArmResult> {
+  const meta: SessionMeta = { arm: spec.arm, competitor: spec.competitor, benchmark };
+  const session = await applyMiddleware(base, meta, spec.middleware);
+  const qualityGate = spec.qualityGate ?? 1;
 
   const scores = await mapConcurrent(cases, concurrency, async (testCase) => {
-    const output = await technique(testCase, session, meta);
-    const graded = await gradeComposite({
-      prompt: testCase.prompt,
-      visibleText: output.visibleText,
-      recoverableText: output.recoverableText,
-      baselineText: testCase.rawOutput,
-      requiredFacts: testCase.requiredFacts,
-      irrelevantFacts: testCase.irrelevantFacts,
-      judge: session.judge,
-      weights: comparison.weights,
-      qualityGate
-    });
-    const score: CaseScore = {
-      name: testCase.name,
-      category: testCase.category,
-      visibleTokens: graded.components.tokens.metrics?.visibleTokens ?? 0,
-      baselineTokens: graded.components.tokens.metrics?.baselineTokens ?? 0,
-      savingsRatio: graded.components.tokens.score,
-      quality: graded.components.quality.score,
-      composite: graded.score,
-      passed: graded.assertions[0]?.passed ?? false
-    };
-    return score;
+    // Isolate per-case failures (a real injected judge can throw) so one bad case
+    // does not abort the whole arm — record it as a failed, zero-savings score.
+    try {
+      const output = await spec.technique(testCase, session, meta);
+      const graded = await gradeComposite({
+        prompt: testCase.prompt,
+        visibleText: output.visibleText,
+        recoverableText: output.recoverableText,
+        baselineText: testCase.rawOutput,
+        requiredFacts: testCase.requiredFacts,
+        irrelevantFacts: testCase.irrelevantFacts,
+        judge: session.judge,
+        weights: spec.weights,
+        qualityGate
+      });
+      const factsRetained = graded.assertions.find((assertion) => assertion.text.startsWith('facts retained'))?.passed ?? false;
+      return {
+        name: testCase.name,
+        category: testCase.category,
+        visibleTokens: graded.components.tokens.metrics?.visibleTokens ?? 0,
+        baselineTokens: graded.components.tokens.metrics?.baselineTokens ?? 0,
+        savingsRatio: graded.components.tokens.score,
+        quality: graded.components.quality.score,
+        composite: graded.score,
+        passed: factsRetained
+      } satisfies CaseScore;
+    } catch {
+      const baselineTokens = estimateTokens(testCase.rawOutput);
+      return {
+        name: testCase.name,
+        category: testCase.category,
+        visibleTokens: baselineTokens,
+        baselineTokens,
+        savingsRatio: 0,
+        quality: 0,
+        composite: 0,
+        passed: false
+      } satisfies CaseScore;
+    }
   });
 
   return {
-    arm,
-    label: arm === 'competitor' ? comparison.label : ARM_LABELS[arm],
+    arm: spec.arm,
+    competitor: spec.competitor,
+    label: spec.label,
     session: { tools: session.tools, skills: session.skills, model: session.model },
     cases: scores,
     totals: totalsOf(scores)
@@ -253,7 +308,7 @@ function toonify(raw: string): string {
   const trimmed = raw.trim();
   if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
     try {
-      return encode(JSON.parse(trimmed) as never);
+      return encode(JSON.parse(trimmed));
     } catch {
       /* not JSON — fall through to the text form */
     }

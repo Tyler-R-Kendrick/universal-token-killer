@@ -1,11 +1,52 @@
 # Generated from packages/evals/data/tool-output.jsonl by packages/evals/scripts/generate-suite.ts.
 # Do not edit by hand — run `npm run evals:suites --workspace @utk/evals` to refresh.
-suite: tool-output
+name: tool-output
+version: "0.1.0"
+license: "MIT"
+tags: ["tool-output", "context-compaction", "utk"]
+# Provenance is informational — AgentV does not execute these fields.
+provenance:
+  origin: "synthetic"
+  authored_by: "universal-token-killer"
+  description: "Hand-authored, representative tool outputs used to measure the model-visible token cost of compaction techniques (baseline vs competitor vs UTK)."
+  disclaimer: "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks."
+  related_benchmarks:
+    - id: "terminal-bench"
+      name: "Terminal-Bench 2.0"
+      org: "Stanford + Laude Institute"
+      url: "https://www.tbench.ai/"
+      relation: "task-category-analog"
+      note: "Containerized CLI/terminal agent tasks; the environments our shell.* cases (git, kubectl, docker, npm, terraform, rg, gh) mirror."
+    - id: "swe-bench"
+      name: "SWE-bench Verified"
+      org: "Princeton NLP"
+      url: "https://www.swebench.com/"
+      relation: "task-category-analog"
+      note: "Real-repo software tasks whose test-runner output and tracebacks resemble our test/runtime-error cases."
+    - id: "tau-bench"
+      name: "τ-bench (tau-bench)"
+      org: "Sierra Research"
+      url: "https://github.com/sierra-research/tau-bench"
+      relation: "task-category-analog"
+      note: "Tool-agent-user interaction loops that consume structured tool results like our tool.* JSON cases."
+    - id: "bfcl"
+      name: "Berkeley Function-Calling Leaderboard"
+      org: "UC Berkeley (Gorilla)"
+      url: "https://gorilla.cs.berkeley.edu/leaderboard.html"
+      relation: "task-category-analog"
+      note: "Function/tool-calling whose responses feed back into the model context that UTK compacts."
 tests:
   - id: shell-git-status
     input:
       - role: user
         content: "Summarize the dirty worktree without losing modified or untracked files."
+    metadata:
+      category: "Version control"
+      tool_id: "shell.git.status"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Summarize the dirty worktree without losing modified or untracked files.",
@@ -35,6 +76,13 @@ tests:
     input:
       - role: user
         content: "Report the pass counts for the vitest run."
+    metadata:
+      category: "Test output"
+      tool_id: "shell.vitest"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench"
+      related_benchmark_url: "https://www.swebench.com/"
     expected_output: |
       {
         "prompt": "Report the pass counts for the vitest run.",
@@ -63,6 +111,13 @@ tests:
     input:
       - role: user
         content: "Which pod is failing and how many times has it restarted?"
+    metadata:
+      category: "Kubernetes"
+      tool_id: "shell.kubectl.get-pods"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Which pod is failing and how many times has it restarted?",
@@ -91,6 +146,13 @@ tests:
     input:
       - role: user
         content: "Explain why the install failed."
+    metadata:
+      category: "Package install"
+      tool_id: "shell.npm.install"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Explain why the install failed.",
@@ -119,6 +181,13 @@ tests:
     input:
       - role: user
         content: "Flag any unhealthy container."
+    metadata:
+      category: "Containers"
+      tool_id: "shell.docker.ps"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Flag any unhealthy container.",
@@ -147,6 +216,13 @@ tests:
     input:
       - role: user
         content: "Where is mediateToolExecution defined and used?"
+    metadata:
+      category: "Code search"
+      tool_id: "shell.rg"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Where is mediateToolExecution defined and used?",
@@ -174,6 +250,13 @@ tests:
     input:
       - role: user
         content: "Give the add/change/destroy counts."
+    metadata:
+      category: "Infrastructure"
+      tool_id: "shell.terraform.plan"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Give the add/change/destroy counts.",
@@ -202,6 +285,13 @@ tests:
     input:
       - role: user
         content: "What threw and where?"
+    metadata:
+      category: "Runtime error"
+      tool_id: "shell.node"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench"
+      related_benchmark_url: "https://www.swebench.com/"
     expected_output: |
       {
         "prompt": "What threw and where?",
@@ -230,12 +320,19 @@ tests:
     input:
       - role: user
         content: "Note the leaked secret and the remediation without echoing the secret in chat."
+    metadata:
+      category: "Secret safety"
+      tool_id: "shell.cat.env-log"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "Note the leaked secret and the remediation without echoing the secret in chat.",
-        "rawOutput": "INFO  server listening on http://127.0.0.1:3000\nINFO  login user=ada@example.com session=8f2c\nWARN  env dump contained OPENAI_API_KEY=sk-live-1234567890abcdef\nACTION rotate key and scrub .env.local before pushing",
+        "rawOutput": "INFO  server listening on http://127.0.0.1:3000\nINFO  login user=ada@example.com session=8f2c\nWARN  env dump contained OPENAI_API_KEY=FAKE_TEST_KEY_DO_NOT_USE\nACTION rotate key and scrub .env.local before pushing",
         "requiredFacts": [
-          "OPENAI_API_KEY=sk-live-1234567890abcdef",
+          "OPENAI_API_KEY=FAKE_TEST_KEY_DO_NOT_USE",
           "rotate key and scrub .env.local"
         ],
         "irrelevantFacts": [
@@ -258,6 +355,13 @@ tests:
     input:
       - role: user
         content: "Find the first event and the failed one."
+    metadata:
+      category: "Structured JSON"
+      tool_id: "tool.events.list"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "tau-bench"
+      related_benchmark_url: "https://github.com/sierra-research/tau-bench"
     expected_output: |
       {
         "prompt": "Find the first event and the failed one.",
@@ -286,6 +390,13 @@ tests:
     input:
       - role: user
         content: "Return the first user and the pagination cursor."
+    metadata:
+      category: "Structured JSON"
+      tool_id: "tool.users.page"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "tau-bench"
+      related_benchmark_url: "https://github.com/sierra-research/tau-bench"
     expected_output: |
       {
         "prompt": "Return the first user and the pagination cursor.",
@@ -314,6 +425,13 @@ tests:
     input:
       - role: user
         content: "List the open PR and its branch."
+    metadata:
+      category: "GitHub CLI"
+      tool_id: "shell.gh.pr.list"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "terminal-bench"
+      related_benchmark_url: "https://www.tbench.ai/"
     expected_output: |
       {
         "prompt": "List the open PR and its branch.",

@@ -1,38 +1,62 @@
 {
   "benchmark": "tool-output",
-  "competitors": [
+  "cases": 12,
+  "leaderboard": [
     {
+      "technique": "Baseline (raw tool output)",
+      "competitor": "baseline",
+      "tokens": 1297,
+      "changePct": 0,
+      "factsKept": "12/12",
+      "avgComposite": 0.334
+    },
+    {
+      "technique": "LeanCTX (context runtime)",
+      "competitor": "leanctx",
+      "tokens": 1143,
+      "changePct": -12,
+      "factsKept": "12/12",
+      "avgComposite": 0.446
+    },
+    {
+      "technique": "RTK (rust-token-killer)",
       "competitor": "rtk",
-      "label": "RTK (rust-token-killer)",
-      "cases": 12,
-      "baselineTokens": 1297,
-      "competitorTokens": 1123,
-      "utkTokens": 324,
-      "utkFactsKept": "12/12",
-      "utkAvgComposite": 0.841,
-      "competitorAvgComposite": 0.471
+      "tokens": 1123,
+      "changePct": -13,
+      "factsKept": "12/12",
+      "avgComposite": 0.471
     },
     {
+      "technique": "Compresr (query-aware)",
       "competitor": "compresr",
-      "label": "Compresr (query-aware)",
-      "cases": 12,
-      "baselineTokens": 1297,
-      "competitorTokens": 1122,
-      "utkTokens": 324,
-      "utkFactsKept": "12/12",
-      "utkAvgComposite": 0.841,
-      "competitorAvgComposite": 0.462
+      "tokens": 1122,
+      "changePct": -13,
+      "factsKept": "12/12",
+      "avgComposite": 0.462
     },
     {
+      "technique": "Caveman (terse register)",
       "competitor": "caveman",
-      "label": "Caveman (terse register)",
-      "cases": 12,
-      "baselineTokens": 1297,
-      "competitorTokens": 1083,
-      "utkTokens": 324,
-      "utkFactsKept": "12/12",
-      "utkAvgComposite": 0.841,
-      "competitorAvgComposite": 0.454
+      "tokens": 1083,
+      "changePct": -16,
+      "factsKept": "11/12",
+      "avgComposite": 0.454
+    },
+    {
+      "technique": "Ponytail (minimum emission)",
+      "competitor": "ponytail",
+      "tokens": 977,
+      "changePct": -25,
+      "factsKept": "11/12",
+      "avgComposite": 0.54
+    },
+    {
+      "technique": "UTK (mediated compaction)",
+      "competitor": "utk",
+      "tokens": 324,
+      "changePct": -75,
+      "factsKept": "12/12",
+      "avgComposite": 0.841
     }
   ]
 }

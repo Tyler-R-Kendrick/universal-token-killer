@@ -1,6 +1,11 @@
 import type { BenchmarkCase } from '../data.js';
-import type { Technique } from '../harness.js';
+import type { Middleware, SessionConfig, Technique } from '../harness.js';
 import type { ArmOutput } from '../graders/shared.js';
+
+/** Middleware that tags an arm's session with a provider skill (records how the arm was configured). */
+export function addSkill(skill: string): Middleware {
+  return (config: SessionConfig): SessionConfig => ({ ...config, skills: [...config.skills, skill] });
+}
 
 /**
  * Config knobs shared by every competitor arm. Providers differ only in these

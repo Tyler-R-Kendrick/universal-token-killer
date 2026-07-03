@@ -18,5 +18,8 @@ function resolvePackageRoot(moduleUrl: string): string {
   while (path.basename(dir) !== 'evals' && dir !== path.dirname(dir)) {
     dir = path.dirname(dir);
   }
+  if (path.basename(dir) !== 'evals') {
+    throw new Error(`Could not locate the @utk/evals package root from ${moduleUrl}`);
+  }
   return dir;
 }

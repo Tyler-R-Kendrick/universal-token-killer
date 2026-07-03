@@ -32,15 +32,19 @@ Full comparison: `docs/internal/benchmark-summary.md`. Regenerate everything wit
 
 > Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run — and token counts are coarse `ceil(len/4)` estimates. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
 
-The tool-output benchmark runs three concurrent arms over the same 12 cases: **baseline** (raw output), **competitor** (a configured rival technique), and **utk** (raw persisted off-context, recoverable handle in chat). Model-visible tokens, lower is better:
+The tool-output benchmark runs baseline, every competitor, and UTK as sibling arms over the same 12 cases. Model-visible tokens (lower is better); change is vs the baseline row; each arm is gated on fact retention:
 
-| Competitor | Baseline tok | Competitor tok | UTK tok | UTK vs competitor | UTK facts kept |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| RTK (rust-token-killer) | 1,297 | 1,123 | 324 | 71% fewer | 12/12 |
-| Compresr (query-aware) | 1,297 | 1,122 | 324 | 71% fewer | 12/12 |
-| Caveman (terse register) | 1,297 | 1,083 | 324 | 70% fewer | 12/12 |
+| Technique | Tokens | Change | Facts |
+| --- | ---: | ---: | ---: |
+| Baseline (raw tool output) | 1,297 | 0% | 12/12 |
+| LeanCTX (context runtime) | 1,143 | −12% | 12/12 |
+| RTK (rust-token-killer) | 1,123 | −13% | 12/12 |
+| Compresr (query-aware) | 1,122 | −13% | 12/12 |
+| Caveman (terse register) | 1,083 | −16% | 11/12 |
+| Ponytail (minimum emission) | 977 | −25% | 11/12 |
+| UTK (mediated compaction) | 324 | −75% | 12/12 |
 
-UTK keeps every required fact recoverable while spending ~70% fewer model-visible tokens than the competitor arms — it moves the payload off-context instead of compressing it in place. Harness, graders, and data format: `docs/evals.md`.
+In-context compactors bottom out around −25% and the aggressive ones start dropping required facts (11/12). UTK spends −75% at full retention because it moves the payload off-context instead of compressing it in place. Harness, graders, provenance, and data format: `docs/evals.md`; full report: `docs/internal/benchmark-summary.md`.
 
 ## LeanCTX Copilot Benchmark
 
