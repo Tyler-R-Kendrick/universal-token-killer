@@ -19,7 +19,7 @@ export default defineConfig({
       '@utk/constrained-decoder': path.resolve(import.meta.dirname, 'packages/constrained-decoder/src/index.ts'),
       '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
       '@utk/codegen': path.resolve(import.meta.dirname, 'packages/codegen/src/index.ts'),
-      '@utk/lang-typescript': path.resolve(import.meta.dirname, 'packages/plugins/languages/typescript/src/index.ts')
+      '@utk-lang/typescript': path.resolve(import.meta.dirname, 'packages/plugins/languages/typescript/src/index.ts')
     }
   },
   test: {

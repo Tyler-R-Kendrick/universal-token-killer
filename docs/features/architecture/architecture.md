@@ -53,7 +53,7 @@ UTK currently exposes several surfaces with different constraints:
 | Surface | Purpose | Public CLI? |
 |---|---|---:|
 | `@utk/core` | Mediation, artifacts, serializers, config, bash-like templates, tracing, session agent/skill generation. | No |
-| `@utk/copilot-hook` | GitHub Copilot hook payload adapters and the internal `preToolUse` detok runner, maintained under `packages/plugins/agents/copilot`. | No |
+| `@utk-agent/copilot` | GitHub Copilot hook payload adapters and the internal `preToolUse` detok runner, maintained under `packages/plugins/agents/copilot`. | No |
 | `@utk/constrained-decoder` | `guidance-ts` grammar helpers for constrained route fallback (carries a `tracer?` DI seam to avoid a core cycle). | No |
 | `@utk/detok-mcp` | Private local MCP server exposing LLMLingua-2 rewriting as `detok`. | MCP only |
 | `@utk/evals` | Comparison harness (baseline vs competitor vs UTK) and agentevals.io evaluators / baselines. | No |
@@ -61,7 +61,7 @@ UTK currently exposes several surfaces with different constraints:
 ## Runtime Packages
 
 - `@utk/core` owns mediation, config, persistence, serializers, schemas, routing, recovery artifacts, and the tracing module.
-- `@utk/copilot-hook` adapts Copilot hook JSON to core mediation from the Copilot agent plugin folder.
+- `@utk-agent/copilot` adapts Copilot hook JSON to core mediation from the Copilot agent plugin folder.
 - `@utk/constrained-decoder` owns `guidance-ts` route grammar helpers.
 - `@utk/detok-mcp` owns the private local stdio MCP server for the `detok` tool.
 - `@utk/evals` owns the comparison harness, agentevals.io evaluators, and the baseline store.

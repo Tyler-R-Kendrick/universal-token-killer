@@ -3,7 +3,7 @@ import type { LanguageAdapter } from './adapter.js';
 /**
  * A pluggable language pack: everything the emission core needs to plan,
  * constrain, and expand emissions for one language. Packs live outside the
- * core (reference implementation: `@utk/lang-typescript` under
+ * core (reference implementation: `@utk-lang/typescript` under
  * `packages/plugins/languages/typescript`, with future languages as sibling
  * folders) and register themselves here.
  */

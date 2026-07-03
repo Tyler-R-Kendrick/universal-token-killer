@@ -1,5 +1,5 @@
 {
-  "name": "@utk/copilot-hook",
+  "name": "@utk-agent/copilot",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

@@ -68,7 +68,7 @@ GitHub's hook contract allows `preToolUse.modifiedArgs` to replace tool argument
 ## Example
 
 ```ts
-import { processCopilotToolHookPayload } from '@utk/copilot-hook';
+import { processCopilotToolHookPayload } from '@utk-agent/copilot';
 
 const mediated = await processCopilotToolHookPayload(JSON.stringify({
   tool_name: 'shell.git.status',

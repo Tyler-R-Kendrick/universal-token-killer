@@ -60,6 +60,25 @@ describe('package layering fitness', () => {
     }
   });
 
+  it('namespaces plugin packages by kind (langpacks @utk-lang/*, agent providers @utk-agent/*)', async () => {
+    const expectations: Array<[string, RegExp]> = [
+      [path.join('plugins', 'languages'), /^@utk-lang\//],
+      [path.join('plugins', 'agents'), /^@utk-agent\//]
+    ];
+    for (const [relRoot, pattern] of expectations) {
+      const root = path.join(packagesRoot, relRoot);
+      for (const dir of await readdir(root)) {
+        let pkg: { name?: string };
+        try {
+          pkg = JSON.parse(await readFile(path.join(root, dir, 'package.json'), 'utf8')) as { name?: string };
+        } catch {
+          continue; // pack-only plugin dir (e.g. opencode/windsurf) with no npm package.json
+        }
+        expect(pkg.name, `${relRoot}/${dir}`).toMatch(pattern);
+      }
+    }
+  });
+
   it('keeps guidance-ts the single responsibility of @utk/constrained-decoder', async () => {
     const files = await collectSourceTs(packagesRoot);
     const declarations = files

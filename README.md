@@ -215,7 +215,7 @@ Full payload was written to disk and omitted from chat context.
 ### Process A Copilot Hook Payload
 
 ```ts
-import { processCopilotToolHookPayload } from '@utk/copilot-hook';
+import { processCopilotToolHookPayload } from '@utk-agent/copilot';
 
 const output = await processCopilotToolHookPayload(JSON.stringify({
   tool_name: 'read_file',
@@ -309,13 +309,13 @@ UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the 
 - `@utk/tool-invocation`: grammar-backed bash-like and structured tool-invocation completion, plus the Copilot tool hook.
 - `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/codegen`.
 - `@utk/codegen`: language-agnostic grammar-grounded code generation — macro expansion, the formalized decision-ladder planner, constrained codegen with honest fallback, and the language-pack registry. Consumes `@utk/grammar`, `@utk/minmap`, and `@utk/templates`.
-- `@utk/lang-typescript`: the reference codegen language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, codegen-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
+- `@utk-lang/typescript`: the reference codegen language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, codegen-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
 
 **Apps and adapters:**
 
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs, plus `detoks-prompt`.
 - `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
-- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
+- `@utk-agent/copilot`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool (depends on `@utk/detok`).
 - `@utk/evals`: the comparison harness (baseline vs competitor vs UTK), jsonl benchmark data, code/LLM/composite graders, generated AgentV suites, and the agentevals.io evaluator protocol.
 
