@@ -38,4 +38,4 @@ fewest tokens of correct code, and refusing to emit when a change is not warrant
   SWE-Pruner, and [Serena](/competition/serena/research.md)'s multi-language LSP are the bar.
 - Nearest product competitor: [Ponytail](/competition/ponytail/research.md)
   ("write less code"); UTK formalizes its prose ruleset as a deterministic ladder
-  (see [parity benchmark](/competition/ponytail/parity-benchmark.md)).
+  (see [benchmark leaderboard](/features/evals/benchmark-summary.md)).

@@ -1,0 +1,50 @@
+{
+  "name": "long-context",
+  "version": "0.1.0",
+  "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
+  "tags": ["long-context", "compression", "context-compaction", "utk"],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer",
+  "generated_by": "packages/evals/scripts/run-evals.ts",
+  "description": "Hand-authored long documents where a specific answer is buried in filler, used to measure whether a compaction technique keeps the answer recoverable while cutting model-visible tokens.",
+  "disclaimer": "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.",
+  "related_benchmarks": [
+    {
+      "id": "longbench-v2",
+      "name": "LongBench v2",
+      "org": "THUDM (Tsinghua)",
+      "url": "https://longbench2.github.io/",
+      "relation": "task-category-analog",
+      "note": "Long-context understanding across single-/multi-doc QA and summarization — the answer-in-a-long-document shape our document cases mirror."
+    },
+    {
+      "id": "ruler",
+      "name": "RULER",
+      "org": "NVIDIA",
+      "url": "https://github.com/NVIDIA/RULER",
+      "relation": "task-category-analog",
+      "note": "Synthetic long-context stress tests (retrieval, aggregation, tracing) that vary context length while a target fact must survive, like our answer-bearing lines."
+    },
+    {
+      "id": "loong",
+      "name": "LooGLE / ∞Bench-style long QA",
+      "org": "community",
+      "url": "https://github.com/bigai-nlco/LooGLE",
+      "relation": "task-category-analog",
+      "note": "Long-dependency QA over documents; anchors the single-answer-in-a-long-context task category our cases model."
+    }
+  ],
+  "category_benchmark": {
+    "Meeting notes": "longbench-v2",
+    "Specification": "longbench-v2",
+    "Changelog": "longbench-v2",
+    "Postmortem": "longbench-v2",
+    "API reference": "longbench-v2",
+    "Legal terms": "longbench-v2",
+    "Research abstract": "loong",
+    "Config dump": "ruler",
+    "Chat thread": "longbench-v2",
+    "Survey results": "loong"
+  }
+}

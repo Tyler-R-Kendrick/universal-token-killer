@@ -28,75 +28,23 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 ## Benchmark Snapshot
 
-Current aggregate comparison: `docs/features/evals/benchmark-summary.md`.
+Five benchmarks — tool-output, long-context, needle-in-a-haystack, tool-selection, agent-workflows — each run baseline, every competitor, and UTK as sibling arms over the same cases. Full comparison, Pareto charts, headline numbers, and regression gates: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
 
-> These are self-authored **parity fixtures**, not independent third-party benchmarks. UTK is measured against deterministic baselines checked into this repo — the competitors themselves are not installed, hosted, or run — and token counts are coarse `ceil(len/4)` estimates. Read the ratios as reproducible internal self-comparisons that also gate fact retention, recoverability, and correctness, rather than as head-to-head results against live competitor systems.
+> Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run. Token counts and fact retention are real (coarse `ceil(len/4)` token estimate); **cost and latency are modeled** by a deterministic reference cost model, not measured on a live endpoint. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
 
-| Benchmark | Baseline | Cases | Passed | UTK/baseline ratio | Savings | Quality gates |
-| --- | --- | ---: | ---: | ---: | ---: | --- |
-| RTK parity | RTK shell baselines | 61 | 61/61 | 0.271 on RTK-supported shell cases | 417 | Facts/autoevals/recovery 1.000 |
-| Caveman parity | Independent caveman terse prose plus lite/full/ultra/wenyan modes | 80 full; 320 mode evals | 80/80 full; 320/320 modes | 0.742 full; 0.642 mode avg | 404 full; 3,158 modes | Autoevals/edge gates 1.000 |
-| Compresr parity | Compresr deterministic SDK baselines | 39 | 39/39 | 0.452 | 527 | Autoevals/recovery 1.000 |
-| LeanCTX Copilot | LeanCTX context-runtime baseline | 50 unique; 1,500 evaluated | 1,500/1,500 | 0.663 | 55,230 | Relevance/correctness/groundedness 1.000 |
-| Ponytail parity | Ponytail lazy-dev code arms plus lite/full/ultra modes | 6 emission; 18 mode evals; 6 ladder | 6/6; 18/18; 6/6 | 0.811 full; 0.781 mode avg | 141 full; 527 modes | Round-trip/parse/leakage/facts/ladder 1.000 |
+Cross-benchmark summary — `token reduction / task success` at each technique's primary operating point; ★ marks the cost-vs-success Pareto frontier for that benchmark:
 
-## RTK Parity Stats
+| Technique | Tool output | Long-context | Needle | Tool selection | Agent workflows |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Baseline (raw context) | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% |
+| RTK (rust-token-killer) | −13% / 100% ★ | −65% / 50% | −89% / 60% | −36% / 80% | −30% / 80% |
+| LeanCTX (context runtime) | −12% / 100% | −56% / 90% | −87% / 100% ★ | −26% / 100% | −20% / 90% |
+| Compresr (query-aware) | −14% / 100% ★ | −58% / 90% ★ | −87% / 100% ★ | −30% / 100% ★ | −20% / 90% |
+| Caveman (terse register) | −17% / 92% | −76% / 50% | −90% / 40% | −96% / 10% | −37% / 70% |
+| Ponytail (minimum emission) | −25% / 92% ★ | −77% / 50% ★ | −90% / 30% | −96% / 10% | −43% / 50% |
+| UTK (mediated compaction) | −75% / 100% ★ | −83% / 100% ★ | −93% / 100% | −70% / 100% | −78% / 100% ★ |
 
-The fixture-backed parity suite currently verifies that UTK beats RTK baselines for CLI-related tool calls and exceeds RTK-style savings thresholds for generalized tool outputs:
-
-- Scenarios: `61`
-- RTK-supported shell scenarios: `29`
-- Generalized tool-output scenarios: `32`
-- Passed RTK/UTK thresholds: `61/61`
-- Average UTK/RTK token ratio for RTK-supported scenarios: `0.271`
-- Total estimated token savings vs RTK-supported baselines: `417`
-
-| Scenario | UTK tokens | RTK tokens | Delta | Ratio |
-| --- | ---: | ---: | ---: | ---: |
-| `shell-git-status` | 5 | 21 | +16 | 0.24 |
-| `shell-git-diff` | 5 | 23 | +18 | 0.22 |
-| `shell-gh-pr-list` | 6 | 19 | +13 | 0.32 |
-| `shell-rg` | 5 | 18 | +13 | 0.28 |
-| `shell-vitest` | 5 | 10 | +5 | 0.50 |
-| `shell-tsc` | 5 | 21 | +16 | 0.24 |
-| `shell-npm-audit` | 5 | 18 | +13 | 0.28 |
-| `shell-pytest-failure` | 5 | 21 | +16 | 0.24 |
-| `shell-docker-ps` | 5 | 13 | +8 | 0.38 |
-| `shell-kubectl-pods` | 5 | 18 | +13 | 0.28 |
-| `shell-curl-headers` | 5 | 16 | +11 | 0.31 |
-| `shell-du-sizes` | 5 | 13 | +8 | 0.38 |
-| `shell-rg-json-lines` | 5 | 19 | +14 | 0.26 |
-| `shell-git-log-oneline` | 5 | 20 | +15 | 0.25 |
-| `shell-terraform-plan` | 5 | 18 | +13 | 0.28 |
-| `shell-helm-status` | 5 | 21 | +16 | 0.24 |
-| `shell-ps-memory` | 5 | 17 | +12 | 0.29 |
-| `shell-netstat-listen` | 5 | 23 | +18 | 0.22 |
-| `shell-openssl-cert` | 5 | 23 | +18 | 0.22 |
-| `shell-pnpm-install` | 5 | 20 | +15 | 0.25 |
-| `shell-go-test-race` | 5 | 21 | +16 | 0.24 |
-| `shell-cargo-test` | 5 | 21 | +16 | 0.24 |
-| `shell-dotnet-test` | 5 | 23 | +18 | 0.22 |
-| `shell-powershell-error` | 5 | 25 | +20 | 0.20 |
-| `shell-azure-deployment` | 5 | 27 | +22 | 0.19 |
-| `shell-ffmpeg-progress` | 5 | 16 | +11 | 0.31 |
-| `shell-mysql-explain` | 5 | 22 | +17 | 0.23 |
-| `shell-windows-dir` | 5 | 20 | +15 | 0.25 |
-| `shell-jq-filter` | 5 | 16 | +11 | 0.31 |
-
-Each scenario also requires `factRetentionScore === 1`, `autoevalsFactScore === 1`, and `recoverabilityScore === 1`. Full report: `docs/features/evals/rtk-parity-benchmark.md`.
-
-## Compresr Parity Stats
-
-Compresr SDK `2.5.1` is installed for local verification and configured in `@utk/evals`. Live hosted compression is disabled unless `COMPRESR_API_KEY` is present; the benchmark uses deterministic installed-SDK model baselines so tool outputs stay local.
-
-- Scenarios: `39`
-- Passed Compresr/UTK thresholds: `39/39`
-- Average UTK/Compresr token ratio: `0.452`
-- Total estimated token savings vs Compresr baselines: `527`
-- Autoevals fact retention: `1.000`
-- Recoverability: `1.000`
-
-Full report: `docs/competition/compresr/parity-benchmark.md`.
+UTK holds **100% task success on every benchmark** while cutting 70–93% of visible tokens, and sits on the Pareto frontier in four of five. The honest exception is needle-in-a-haystack: query-aware extractors (LeanCTX/Compresr) reach the buried needle inline more cheaply than UTK's handle plus recovery round-trip, so they — not UTK — hold that frontier. Aggressive in-context compactors (Caveman/Ponytail) top the token-reduction column but fail the regression gate on most benchmarks by dropping required facts (task success collapses). Tool-selection is where compaction turns dangerous: dropping the needed tool can leave a destructive one as the surviving selection — an unsafe-tool error the gate is built to catch (it flags RTK's on that benchmark). Cutting the most tokens is not winning — the frontier is. Harness, metrics, graders, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
 
 ## LeanCTX Copilot Benchmark
 
@@ -111,19 +59,6 @@ The LeanCTX Copilot suite compares UTK against a context-runtime baseline across
 - Minimum relevance/correctness/groundedness: `1.000`
 
 Full report: `docs/competition/lean-ctx/parity-benchmark.md`.
-
-## Ponytail Parity Stats
-
-The ponytail parity suite measures the code-authoring axis: the UTK arm is a grammar-grounded **min emission** — a `@minmap` declare-before-use patch plus minified code constrained by the derived min-grammar — that expands deterministically into the pretty form users see. Token counts include the patch overhead.
-
-- Emission scenarios: `6` (plus `18` mode evaluations across independent lite/full/ultra arms)
-- Ladder scenarios: `6` (formalized YAGNI → reuse → stdlib → platform → dependency → macro → MVP decisions)
-- Passed: `6/6` emission, `18/18` modes, `6/6` ladder
-- Average UTK-min/ponytail token ratio: `0.811` full arm (`0.781` mode average)
-- Average UTK-min/verbose-assistant token ratio: `0.496`
-- Round-trip fidelity, parse validity, min leakage, fact retention, ladder correctness: `1.000`
-
-Full report: `docs/competition/ponytail/parity-benchmark.md`.
 
 ## Example Usage
 
@@ -358,7 +293,7 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 - `@utk/lang-typescript`: the reference emission language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, emission-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
 - `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
-- `@utk/evals`: RTK parity fixtures, metrics, assertions, and AgentV-style eval definitions.
+- `@utk/evals`: the comparison harness (baseline vs competitor vs UTK), jsonl benchmark data, code/LLM/composite graders, generated AgentV suites, and the agentevals.io evaluator protocol.
 
 ## Sharing Optimizations As Packs
 

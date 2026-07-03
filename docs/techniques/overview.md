@@ -48,7 +48,7 @@ Which lever attacks which sink, with pointers into this tree:
 | Sink | Best techniques | Where |
 |---|---|---|
 | Repeated system / tool / schema tokens | Provider prompt caching; tool/schema pruning; dynamic toolsets; **SkillReducer** | [watchlist §4, §14](/techniques/landscape-watchlist.md); [SkillReducer](/research/skillreducer/overview.md) |
-| Huge shell / log / tool output | **RTK**; **Headroom**; **Caveman Code**; snip-style filters | [Headroom](/competition/headroom/research.md); [Caveman Code](/competition/caveman/products/caveman-code/research.md); [rtk-parity](/features/evals/rtk-parity-benchmark.md) |
+| Huge shell / log / tool output | **RTK**; **Headroom**; **Caveman Code**; snip-style filters | [Headroom](/competition/headroom/research.md); [Caveman Code](/competition/caveman/products/caveman-code/research.md); [rtk-parity](/features/evals/rtk-parity.md) |
 | Overloaded repo context | Repo maps; code-graph pruning; SWE-Pruner; Serena-like symbol nav | [watchlist §1–3](/techniques/landscape-watchlist.md); [Serena](/competition/serena/research.md) |
 | Verbose model replies | **Caveman / CaveGemma**; Chain-of-Draft; output budgets | [caveman](/competition/caveman/research.md); [cavegemma](/competition/caveman/products/cavegemma/research.md); [watchlist §7](/techniques/landscape-watchlist.md) |
 | Bad model choice | **OpenRouter Auto / Pareto Code**; RouteLLM; **NotDiamond**; **Fugu** | [compound-and-productized-routers](/research/model-routing/compound-and-productized-routers/overview.md); [pre-call-routing](/research/model-routing/pre-call-routing/overview.md) |

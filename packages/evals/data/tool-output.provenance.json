@@ -1,0 +1,59 @@
+{
+  "name": "tool-output",
+  "version": "0.1.0",
+  "license": "MIT",
+  "timestamp": "2026-07-03T00:00:00Z",
+  "tags": ["tool-output", "context-compaction", "utk"],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer",
+  "generated_by": "packages/evals/scripts/run-evals.ts",
+  "description": "Hand-authored, representative tool outputs used to measure the model-visible token cost of compaction techniques (baseline vs competitor vs UTK).",
+  "disclaimer": "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.",
+  "related_benchmarks": [
+    {
+      "id": "terminal-bench",
+      "name": "Terminal-Bench 2.0",
+      "org": "Stanford + Laude Institute",
+      "url": "https://www.tbench.ai/",
+      "relation": "task-category-analog",
+      "note": "Containerized CLI/terminal agent tasks; the environments our shell.* cases (git, kubectl, docker, npm, terraform, rg, gh) mirror."
+    },
+    {
+      "id": "swe-bench",
+      "name": "SWE-bench Verified",
+      "org": "Princeton NLP",
+      "url": "https://www.swebench.com/",
+      "relation": "task-category-analog",
+      "note": "Real-repo software tasks whose test-runner output and tracebacks resemble our test/runtime-error cases."
+    },
+    {
+      "id": "tau-bench",
+      "name": "τ-bench (tau-bench)",
+      "org": "Sierra Research",
+      "url": "https://github.com/sierra-research/tau-bench",
+      "relation": "task-category-analog",
+      "note": "Tool-agent-user interaction loops that consume structured tool results like our tool.* JSON cases."
+    },
+    {
+      "id": "bfcl",
+      "name": "Berkeley Function-Calling Leaderboard",
+      "org": "UC Berkeley (Gorilla)",
+      "url": "https://gorilla.cs.berkeley.edu/leaderboard.html",
+      "relation": "task-category-analog",
+      "note": "Function/tool-calling whose responses feed back into the model context that UTK compacts."
+    }
+  ],
+  "category_benchmark": {
+    "Version control": "terminal-bench",
+    "Test output": "swe-bench",
+    "Kubernetes": "terminal-bench",
+    "Package install": "terminal-bench",
+    "Containers": "terminal-bench",
+    "Code search": "terminal-bench",
+    "Infrastructure": "terminal-bench",
+    "Runtime error": "swe-bench",
+    "Secret safety": "terminal-bench",
+    "Structured JSON": "tau-bench",
+    "GitHub CLI": "terminal-bench"
+  }
+}

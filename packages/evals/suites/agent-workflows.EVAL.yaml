@@ -1,0 +1,380 @@
+# Generated from packages/evals/data/agent-workflows.jsonl by packages/evals/scripts/generate-suite.ts.
+# Do not edit by hand — run `npm run evals:suites --workspace @utk/evals` to refresh.
+name: agent-workflows
+version: "0.1.0"
+license: "MIT"
+tags: ["agent-workflows", "coding", "multi-step", "utk"]
+# Provenance is informational — AgentV does not execute these fields.
+provenance:
+  origin: "synthetic"
+  authored_by: "universal-token-killer"
+  description: "Multi-step task contexts (failing tests, repo maps, profiler and bisect output, app/web task state) where the fix-relevant lines must survive compaction for the task to succeed."
+  disclaimer: "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the agent-workflow and coding task; these numbers are not scores on those benchmarks."
+  related_benchmarks:
+    - id: "swe-bench-verified"
+      name: "SWE-bench Verified"
+      org: "OpenAI / Princeton NLP"
+      url: "https://www.swebench.com/"
+      relation: "task-category-analog"
+      note: "Human-validated real-repo bug fixes; the failing-test-plus-traceback-plus-fix-location shape of our coding cases."
+    - id: "appworld"
+      name: "AppWorld"
+      org: "Stony Brook University"
+      url: "https://appworld.dev/"
+      relation: "task-category-analog"
+      note: "Interactive multi-app tasks over APIs and state (invoices, calendars); the app-task cases mirror its structured task context."
+    - id: "webarena"
+      name: "WebArena"
+      org: "CMU"
+      url: "https://webarena.dev/"
+      relation: "task-category-analog"
+      note: "Realistic web-navigation tasks where the answer sits in a noisy page context, like our order-history navigation case."
+tests:
+  - id: aw-null-check
+    input:
+      - role: user
+        content: "A test is failing. Which file and line hold the bug, and what is the fix?"
+    metadata:
+      category: "Bug fix"
+      tool_id: "workflow.swe.test-fail"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "A test is failing. Which file and line hold the bug, and what is the fix?",
+        "rawOutput": "$ pytest -q\n............F..........\n=================================== FAILURES ===================================\n____________________ test_apply_discount_handles_missing ______________________\n    def test_apply_discount_handles_missing():\n        cart = Cart(items=[])\n>       assert apply_discount(cart, None) == 0\nE       AttributeError: 'NoneType' object has no attribute 'rate'\nsrc/pricing/discount.py:47: AttributeError\n--------------------------------------------------------------------------------\nRoot cause: apply_discount dereferences coupon.rate without a None guard at src/pricing/discount.py:47\nSuggested fix: return 0 early when coupon is None before reading coupon.rate\n--------------------------------------------------------------------------------\n1 failed, 21 passed in 3.14s\nCoverage report written to htmlcov/index.html\nNote: 3 warnings about deprecated fixtures were emitted",
+        "requiredFacts": [
+          "src/pricing/discount.py:47",
+          "return 0 early when coupon is None before reading coupon.rate"
+        ],
+        "irrelevantFacts": [
+          "Coverage report written to htmlcov/index.html",
+          "Note: 3 warnings about deprecated fixtures were emitted"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-add-flag
+    input:
+      - role: user
+        content: "Add a --json flag to the CLI. Which file parses flags and where do options live?"
+    metadata:
+      category: "Feature"
+      tool_id: "workflow.swe.feature"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "Add a --json flag to the CLI. Which file parses flags and where do options live?",
+        "rawOutput": "Task: add a --json output flag to the export command.\nRepo map (relevant excerpt):\nsrc/cli/parser.py    — defines the argument parser (add new flags here)\nsrc/cli/commands/export.py — the export command implementation\nsrc/cli/commands/import.py — unrelated import command\ndocs/cli.md          — user-facing CLI docs\nRelevant code in src/cli/parser.py:\n    parser.add_argument(\"--verbose\", action=\"store_true\")\n    parser.add_argument(\"--output\", default=\"text\")   # add --json alongside this\ntests/test_parser.py covers flag parsing\nUnrelated: the CI config lives in .github/workflows/ci.yml\nUnrelated: the changelog is in CHANGELOG.md",
+        "requiredFacts": [
+          "src/cli/parser.py    — defines the argument parser (add new flags here)",
+          "parser.add_argument(\"--output\", default=\"text\")   # add --json alongside this"
+        ],
+        "irrelevantFacts": [
+          "Unrelated: the changelog is in CHANGELOG.md",
+          "src/cli/commands/import.py — unrelated import command"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-appworld-invoices
+    input:
+      - role: user
+        content: "Mark all of vendor Acme's open invoices as paid. What vendor id and which invoices?"
+    metadata:
+      category: "Multi-step task"
+      tool_id: "workflow.appworld.task"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "appworld"
+      related_benchmark_url: "https://appworld.dev/"
+    expected_output: |
+      {
+        "prompt": "Mark all of vendor Acme's open invoices as paid. What vendor id and which invoices?",
+        "rawOutput": "Task context (accounts app):\nVendors:\n  - Acme Supplies, vendor_id=V-1004\n  - Globex, vendor_id=V-1005\n  - Initech, vendor_id=V-1006\nOpen invoices for V-1004: INV-88, INV-90, INV-93\nOpen invoices for V-1005: INV-71\nPaid invoices (ignore): INV-40, INV-41, INV-42\nAction available: mark_invoice_paid(invoice_id)\nNote: the vendor directory also lists archived vendors you can ignore.\nNote: last sync ran at 03:00 and completed cleanly.",
+        "requiredFacts": [
+          "Acme Supplies, vendor_id=V-1004",
+          "Open invoices for V-1004: INV-88, INV-90, INV-93"
+        ],
+        "irrelevantFacts": [
+          "Note: last sync ran at 03:00 and completed cleanly.",
+          "Paid invoices (ignore): INV-40, INV-41, INV-42"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-webarena-order
+    input:
+      - role: user
+        content: "Find the total for order #10021 in the page context."
+    metadata:
+      category: "Web navigation"
+      tool_id: "workflow.webarena.dom"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "webarena"
+      related_benchmark_url: "https://webarena.dev/"
+    expected_output: |
+      {
+        "prompt": "Find the total for order #10021 in the page context.",
+        "rawOutput": "Page: Order history\nNavigation: Home > Account > Orders\nFilters: status=all, range=last-90-days\nOrder #10019  date 2026-05-01  total $42.10  status delivered\nOrder #10020  date 2026-05-04  total $18.75  status delivered\nOrder #10021  date 2026-05-09  total $126.40 status shipped\nOrder #10022  date 2026-05-12  total $9.99   status processing\nFooter: free returns within 30 days on eligible items\nPromo banner: summer sale ends soon, see terms",
+        "requiredFacts": [
+          "Order #10021  date 2026-05-09  total $126.40 status shipped"
+        ],
+        "irrelevantFacts": [
+          "Promo banner: summer sale ends soon, see terms",
+          "Footer: free returns within 30 days on eligible items"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-n-plus-one
+    input:
+      - role: user
+        content: "A page is slow from an N+1 query. Which file and function cause it?"
+    metadata:
+      category: "Performance"
+      tool_id: "workflow.swe.perf"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "A page is slow from an N+1 query. Which file and function cause it?",
+        "rawOutput": "Profiler summary for GET /dashboard (2.9s)\nSlowest span: database (2.6s across 412 queries)\nQuery pattern: SELECT * FROM comments WHERE post_id = ? repeated 400 times\nRoot cause: N+1 query in src/views/dashboard.py in build_feed(), which loops posts and loads comments per post\nFix hint: prefetch comments with a single IN query before the loop\nOther spans: template render 0.2s, serialization 0.1s\nNote: the profiler adds ~5% overhead\nNote: run captured on the staging dataset",
+        "requiredFacts": [
+          "N+1 query in src/views/dashboard.py in build_feed()",
+          "prefetch comments with a single IN query before the loop"
+        ],
+        "irrelevantFacts": [
+          "Note: the profiler adds ~5% overhead",
+          "Other spans: template render 0.2s, serialization 0.1s"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-flaky-race
+    input:
+      - role: user
+        content: "Which test is flaky and what race condition causes it?"
+    metadata:
+      category: "Flaky test"
+      tool_id: "workflow.swe.flaky"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "Which test is flaky and what race condition causes it?",
+        "rawOutput": "Flaky test report (last 50 CI runs)\ntest_upload_then_list ....... failed 7/50 (flaky)\ntest_login .................. passed 50/50\ntest_logout ................. passed 50/50\nAnalysis: test_upload_then_list asserts the file appears immediately, but the\nuploader writes asynchronously — a race between the write and the list call.\nRepro: the failure only happens when the CI worker is under load.\nFix hint: await the upload completion callback before listing in tests/test_files.py\nNote: retrying masks the bug and is discouraged\nNote: full logs archived in the CI artifacts bucket",
+        "requiredFacts": [
+          "test_upload_then_list ....... failed 7/50 (flaky)",
+          "await the upload completion callback before listing in tests/test_files.py"
+        ],
+        "irrelevantFacts": [
+          "Note: full logs archived in the CI artifacts bucket",
+          "test_logout ................. passed 50/50"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-dep-bump
+    input:
+      - role: user
+        content: "After bumping the HTTP client, which call broke and how do we fix it?"
+    metadata:
+      category: "Dependency upgrade"
+      tool_id: "workflow.swe.deps"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "After bumping the HTTP client, which call broke and how do we fix it?",
+        "rawOutput": "Upgrade report: httpclient 2.x -> 3.x\nChanged APIs:\n- httpclient.get(url, timeout=) removed; use httpclient.get(url, options={\"timeout\":})\n- httpclient.Session renamed to httpclient.Client\nBreak located: src/net/fetcher.py:63 calls httpclient.get(url, timeout=5)\nFix: httpclient.get(url, options={\"timeout\": 5}) at src/net/fetcher.py:63\nUnaffected: the retry helper in src/net/retry.py uses the new API already\nNote: the upgrade also improves TLS defaults\nNote: see the vendor migration guide for the full list",
+        "requiredFacts": [
+          "Break located: src/net/fetcher.py:63 calls httpclient.get(url, timeout=5)",
+          "Fix: httpclient.get(url, options={\"timeout\": 5}) at src/net/fetcher.py:63"
+        ],
+        "irrelevantFacts": [
+          "Note: the upgrade also improves TLS defaults",
+          "Unaffected: the retry helper in src/net/retry.py uses the new API already"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-calendar-slot
+    input:
+      - role: user
+        content: "Find a 30-minute slot on Thursday where everyone is free."
+    metadata:
+      category: "Scheduling task"
+      tool_id: "workflow.appworld.calendar"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "appworld"
+      related_benchmark_url: "https://appworld.dev/"
+    expected_output: |
+      {
+        "prompt": "Find a 30-minute slot on Thursday where everyone is free.",
+        "rawOutput": "Task: schedule a 30-minute review on Thursday for Ada, Ben, and Chandra.\nBusy blocks (Thursday):\nAda:     09:00-10:00, 13:00-13:30\nBen:     09:30-10:30, 15:00-16:00\nChandra: 11:00-12:00, 13:00-14:00\nFree-for-all window found: 10:30-11:00 on Thursday works for all three.\nAction available: create_event(title, start, end, attendees)\nNote: the office closes at 18:00\nNote: time zone is the team default",
+        "requiredFacts": [
+          "Free-for-all window found: 10:30-11:00 on Thursday works for all three."
+        ],
+        "irrelevantFacts": [
+          "Note: the office closes at 18:00",
+          "Note: time zone is the team default"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-bisect
+    input:
+      - role: user
+        content: "Which commit introduced the regression and which file did it touch?"
+    metadata:
+      category: "Regression"
+      tool_id: "workflow.swe.bisect"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "Which commit introduced the regression and which file did it touch?",
+        "rawOutput": "git bisect log (abbreviated)\ngit bisect start\ngit bisect good v1.8.0\ngit bisect bad v1.9.0\nBisecting: 6 revisions left to test\n...\na3f9c21 is the first bad commit\nAuthor: someone\nTitle: refactor: simplify the rounding helper\nOffending change: src/money/round.py switched from round-half-up to banker's rounding\nEffect: totals now differ by a cent on some carts\nNote: the commit message did not mention the behavior change\nNote: 42 commits were scanned in total",
+        "requiredFacts": [
+          "a3f9c21 is the first bad commit",
+          "src/money/round.py switched from round-half-up to banker's rounding"
+        ],
+        "irrelevantFacts": [
+          "Note: 42 commits were scanned in total",
+          "Bisecting: 6 revisions left to test"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+  - id: aw-type-error
+    input:
+      - role: user
+        content: "Where is the type error and what type is expected?"
+    metadata:
+      category: "Type error"
+      tool_id: "workflow.swe.types"
+      origin: "synthetic"
+      authored_by: "universal-token-killer"
+      related_benchmark: "swe-bench-verified"
+      related_benchmark_url: "https://www.swebench.com/"
+    expected_output: |
+      {
+        "prompt": "Where is the type error and what type is expected?",
+        "rawOutput": "$ mypy src\nsrc/api/handlers.py:120: error: Argument 1 to \"save_order\" has incompatible type \"str\"; expected \"Order\"\nsrc/api/handlers.py:120: note: the id string is being passed where an Order object is required\nsrc/util/format.py:12: note: unrelated style hint about line length\nFound 1 error in 1 file (checked 87 source files)\nFix: construct an Order from the id before calling save_order at src/api/handlers.py:120\nNote: mypy cache stored in .mypy_cache\nNote: run took 4.1 seconds",
+        "requiredFacts": [
+          "src/api/handlers.py:120: error: Argument 1 to \"save_order\" has incompatible type \"str\"; expected \"Order\"",
+          "construct an Order from the id before calling save_order at src/api/handlers.py:120"
+        ],
+        "irrelevantFacts": [
+          "Note: mypy cache stored in .mypy_cache",
+          "src/util/format.py:12: note: unrelated style hint about line length"
+        ]
+      }
+    assertions:
+      - name: composite
+        type: script
+        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
+        weight: 1
+      - name: tokens
+        type: script
+        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
+      - name: relevance
+        type: script
+        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
