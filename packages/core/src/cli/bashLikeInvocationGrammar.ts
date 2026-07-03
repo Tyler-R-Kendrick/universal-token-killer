@@ -1,4 +1,4 @@
-import { grm, select } from 'guidance-ts';
+import { grm, nonEmptyChoices, select } from '@utk/constrained-decoder';
 import type { BashLikeToolDefinition, GuidanceGrammarNode } from './bashLikeToolTypes.js';
 
 export function buildBashLikeInvocationGrammar(tools: BashLikeToolDefinition[]): GuidanceGrammarNode {
@@ -10,9 +10,4 @@ export function buildBashLikeInvocationGrammar(tools: BashLikeToolDefinition[]):
     )
   );
   return grm`invoke{tool:"${select(...toolChoices)}",command:"${select(...commandChoices)}",arg:"${select(...completionChoices)}"}`;
-}
-
-function nonEmptyChoices(values: string[]): [string, ...string[]] {
-  const unique = [...new Set(values.filter(Boolean))];
-  return unique.length === 0 ? [''] : (unique as [string, ...string[]]);
 }
