@@ -1,8 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 import { defineTemplate, extractSlotReferences, type GrammarRef, type Slot, type TemplateDescriptor } from './defineTemplate.js';
 

@@ -1,5 +1,5 @@
-import { contentHash } from '../artifact/canonical.js';
-import { estimateTokens } from '../tokens.js';
+import { contentHash } from '@utk/foundation';
+import { estimateTokens } from '@utk/foundation';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 
 export type RouteReason = 'shape_match' | 'input_match' | 'tool_match' | 'prior_match' | 'fallback' | 'unknown';

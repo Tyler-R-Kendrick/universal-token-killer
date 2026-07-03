@@ -1,7 +1,7 @@
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { discoverSessionAgentCandidates } from './sessionAgentDiscovery.js';
 import { buildSketchOfThoughtLexiconGrammar } from './sessionAgentGrammar.js';
 import {

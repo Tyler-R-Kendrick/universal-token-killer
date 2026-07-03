@@ -2,7 +2,7 @@ import { mkdtemp, readFile, stat, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { atomicWriteFile } from '../src/artifact/atomicWrite.js';
+import { atomicWriteFile } from '@utk/foundation';
 
 describe('atomicWriteFile', () => {
   it('writes the target file via a temp file and rename', async () => {

@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import {
   ensureInside,
   findArtifactRecord,

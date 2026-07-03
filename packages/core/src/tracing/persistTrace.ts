@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { canonicalJson } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { canonicalJson } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { toEvalSet, type EvalSet } from './evalSet.js';
 import type { JaegerProcess, JaegerTraceDocument } from './jaegerSpan.js';
 import type { RunContext } from './runContext.js';

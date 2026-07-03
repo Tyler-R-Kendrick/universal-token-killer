@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { normalizeToolId } from '../artifact/manifest.js';
+import { normalizeToolId } from '@utk/foundation';
 import { assertNoRawLeakage } from '../validation/leakage.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
 import { loadSerializationRegistry } from '../serialization/providers.js';

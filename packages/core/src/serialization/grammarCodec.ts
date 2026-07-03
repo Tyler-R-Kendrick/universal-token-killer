@@ -1,5 +1,5 @@
-import { canonicalJson } from '../artifact/canonical.js';
-import { estimateTokens as estimateTokenCount } from '../tokens.js';
+import { canonicalJson } from '@utk/foundation';
+import { estimateTokens as estimateTokenCount } from '@utk/foundation';
 import type {
   CompiledSerializationGrammar,
   GeneratedSerializationLinter,

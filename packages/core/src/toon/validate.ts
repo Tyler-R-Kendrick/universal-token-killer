@@ -1,4 +1,4 @@
-import { canonicalJson } from '../artifact/canonical.js';
+import { canonicalJson } from '@utk/foundation';
 import { schemaToToon } from './toon.js';
 import { decode } from '@toon-format/toon';
 

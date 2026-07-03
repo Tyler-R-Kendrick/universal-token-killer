@@ -1,8 +1,8 @@
 import { inspect } from 'node:util';
 import { readFile, writeFile } from 'node:fs/promises';
 import { Readable } from 'node:stream';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { persistStream } from '../stream/persistStream.js';
 import type { VersionedSchema } from '../schema/mergeSchema.js';
 

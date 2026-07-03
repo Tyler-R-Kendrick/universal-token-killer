@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { safeJoin } from '../security/pathSafety.js';
-import { estimateTokens } from '../tokens.js';
+import { safeJoin } from '@utk/foundation';
+import { estimateTokens } from '@utk/foundation';
 import { ensureInside, readArtifactRecords } from './artifactRecovery.js';
 import { idNumber, nextId, type SessionContextLedgerEvent } from './sessionLedger.js';
 

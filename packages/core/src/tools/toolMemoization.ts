@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 
 export type AsyncTool<I extends Record<string, unknown>, O> = (input: I) => Promise<O>;

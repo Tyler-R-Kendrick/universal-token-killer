@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
-import { estimateTokens } from '../tokens.js';
+import { contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
+import { estimateTokens } from '@utk/foundation';
 import type { PromptSurface } from '../promptOptimization/promptOptimizer.js';
 
 export async function optimizePromptAsset(params: {

@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile } from '../artifact/atomicWrite.js';
+import { atomicWriteFile } from '@utk/foundation';
 import { DEFAULT_CONFIG_TOML } from '../config/config.js';
 import type { PackToolDefinition } from './types.js';
 

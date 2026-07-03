@@ -1,5 +1,5 @@
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import { discoverSessionSkillCandidates } from './sessionSkillDiscovery.js';
 import { buildReferenceEntries } from './sessionSkillReferences.js';
 import { renderSessionSkill } from './sessionSkillRendering.js';

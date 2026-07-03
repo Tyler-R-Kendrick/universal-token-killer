@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { normalizeToolId } from '../artifact/manifest.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { normalizeToolId } from '@utk/foundation';
 import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
 import { loadSerializationRegistry, serializedExtension } from '../serialization/providers.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import { buildBashLikeInvocationGrammar } from './bashLikeInvocationGrammar.js';
 import { planBashLikeInvocation, selectBashLikeTool, type PlannedBashLikeInvocation } from './bashLikeInvocationPlanner.js';
 import type { BashLikeInvocationResult, BashLikeToolDefinition } from './bashLikeToolTypes.js';

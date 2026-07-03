@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { normalizeToolId } from '../artifact/manifest.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { normalizeToolId } from '@utk/foundation';
 import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../config/config.js';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import { recordFailure, type RunContext } from '../tracing/index.js';
 import { buildStructuredInvocationGrammar } from './structuredInvocationGrammar.js';
 import { planInvocation, selectTool, withConfigDefaults, type PlannedInvocation } from './structuredInvocationPlanner.js';

@@ -1,4 +1,4 @@
-import { sortValue } from '../artifact/canonical.js';
+import { sortValue } from '@utk/foundation';
 import { toSerializationAst, type SerializationAst } from './serializationAst.js';
 
 export type GrammarCodec = {

@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import type { PackPluginEntry } from './types.js';
 import type { LintFinding } from './lintPackTypes.js';
 import { pathExists } from './lintPackFiles.js';

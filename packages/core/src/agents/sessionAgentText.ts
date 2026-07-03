@@ -1,4 +1,4 @@
-import { normalizeToolId } from '../artifact/manifest.js';
+import { normalizeToolId } from '@utk/foundation';
 
 const MAX_DESCRIPTION_CHARS = 160;
 

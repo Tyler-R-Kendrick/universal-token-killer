@@ -1,4 +1,4 @@
-import { stableStringify } from '../artifact/canonical.js';
+import { stableStringify } from '@utk/foundation';
 import type { JaegerLog, JaegerSpan, JaegerTag } from './jaegerSpan.js';
 import { newSpanId, nowMicros, type RunContext } from './runContext.js';
 

@@ -1,6 +1,6 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
-import { safeJoin } from '../security/pathSafety.js';
-import { canonicalJson } from '../artifact/canonical.js';
+import { safeJoin } from '@utk/foundation';
+import { canonicalJson } from '@utk/foundation';
 import type { VersionedSchema } from '../schema/mergeSchema.js';
 
 export async function readSchemaHistory(toolBase: string): Promise<VersionedSchema[]> {

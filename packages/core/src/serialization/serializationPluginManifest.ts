@@ -1,4 +1,4 @@
-import { contentHash } from '../artifact/canonical.js';
+import { contentHash } from '@utk/foundation';
 import type { LoadedPack, PackSerializationPluginRecord } from '../pack/types.js';
 import type { SerializationPluginManifest, SerializerGrammar } from './serializationTypes.js';
 

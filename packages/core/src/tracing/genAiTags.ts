@@ -1,4 +1,4 @@
-import { stableStringify } from '../artifact/canonical.js';
+import { stableStringify } from '@utk/foundation';
 import type { JaegerTag } from './jaegerSpan.js';
 
 export type ToolCallTag = { name: string; id: string; arguments: unknown };

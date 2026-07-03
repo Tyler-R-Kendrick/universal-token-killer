@@ -1,8 +1,8 @@
 /* c8 ignore file -- deterministic prompt optimizer is covered through behavior tests and proxy integration. */
 import { mkdir, writeFile } from 'node:fs/promises';
-import { contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
-import { estimateTokens } from '../tokens.js';
+import { contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
+import { estimateTokens } from '@utk/foundation';
 
 export type PromptSurface =
   | 'system-prompt'

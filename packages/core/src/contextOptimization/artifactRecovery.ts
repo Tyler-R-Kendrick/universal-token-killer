@@ -1,7 +1,7 @@
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import type { ArtifactHandle } from './artifactExpansion.js';
 import {
   ensureInside,

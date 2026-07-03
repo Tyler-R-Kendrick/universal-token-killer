@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { estimateTokens } from '../tokens.js';
+import { estimateTokens } from '@utk/foundation';
 import { recordFailure, type JaegerSpan, type RunContext } from '../tracing/index.js';
 
 export type DetokOptions = {

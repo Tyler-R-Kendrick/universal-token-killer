@@ -1,4 +1,4 @@
-import { estimateTokens } from '../tokens.js';
+import { estimateTokens } from '@utk/foundation';
 
 export type CompressionProvider = {
   id: string;

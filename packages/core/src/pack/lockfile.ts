@@ -1,7 +1,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
-import { atomicWriteFile } from '../artifact/atomicWrite.js';
+import { atomicWriteFile } from '@utk/foundation';
 import type { InstalledPack } from './types.js';
 
 export const LOCKFILE_SPEC = '2';
