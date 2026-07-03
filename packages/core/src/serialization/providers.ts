@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { loadUtkConfig, type UtkConfig } from '../config/config.js';
+import { loadUtkConfig, type UtkConfig } from '@utk/config';
 import { createSerializationRegistry } from './serializationRegistry.js';
 import {
   builtInSerializationPluginDir,

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { parse } from 'smol-toml';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import { normalizeManifest } from './packManifest.js';
 import type { LintFinding } from './lintPackTypes.js';
 import type { UtkPackManifest } from './types.js';

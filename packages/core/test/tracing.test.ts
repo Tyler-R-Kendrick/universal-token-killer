@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { loadUtkConfig } from '../src/config/config.js';
+import { loadUtkConfig } from '@utk/config';
 import {
   TAGS,
   createRunContext,
@@ -14,7 +14,7 @@ import {
   startSpan,
   toEvalSet,
   type RunContext
-} from '../src/tracing/index.js';
+} from '@utk/tracing';
 
 async function workspaceWithTracingEnabled(): Promise<{ ctx: RunContext; root: string }> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'utk-tracing-'));

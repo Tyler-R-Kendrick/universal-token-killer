@@ -1,4 +1,4 @@
-import { Generation, Session, gen, grm, select, str, type GrammarNode } from 'guidance-ts';
+import { Generation, Session, gen, grm, select, str, type GrammarNode } from '@utk/grammar-dsl';
 
 export type ValidationResult = { valid: boolean; errors: string[] };
 

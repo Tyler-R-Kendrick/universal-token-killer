@@ -260,7 +260,7 @@ carve_outs = ["security", "trust-boundary", "data-loss", "diagnostics", "user-fa
 
 ## Package And Artifact Layout
 
-New workspace package `packages/emission` (`@utk/emission`), following the
+New workspace package `packages/emission` (`@utk/codegen`), following the
 `@utk/code-graph` precedent (own `src`/`test`, root `vitest.config.ts` alias).
 Dependencies: `@utk/core` (templates, config, artifacts, pack surface),
 `@utk/code-graph` (reuse resolution, TS adapter), `@utk/constrained-decoder`

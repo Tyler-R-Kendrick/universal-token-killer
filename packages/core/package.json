@@ -12,7 +12,14 @@
   },
   "dependencies": {
     "@toon-format/toon": "^2.2.0",
-    "guidance-ts": "github:guidance-ai/guidance-ts#4b7838dcaa1e0563f632f2ec4a27c7c8c41e6552",
+    "@utk/config": "0.1.0",
+    "@utk/context-optimization": "0.1.0",
+    "@utk/detok": "0.1.0",
+    "@utk/foundation": "0.1.0",
+    "@utk/prompt-optimization": "0.1.0",
+    "@utk/session-artifacts": "0.1.0",
+    "@utk/templates": "0.1.0",
+    "@utk/tracing": "0.1.0",
     "smol-toml": "^1.6.1"
   }
 }

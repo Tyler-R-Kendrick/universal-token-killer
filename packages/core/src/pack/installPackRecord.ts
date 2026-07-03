@@ -1,4 +1,4 @@
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
 import type { InstalledPack, LoadedPack, PackPluginRecord } from './types.js';
 
 export function createInstalledPackRecord(pack: LoadedPack, input: {

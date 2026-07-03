@@ -1,4 +1,4 @@
-import { schemaIdFor } from '../artifact/manifest.js';
+import { schemaIdFor } from '@utk/foundation';
 
 export type SchemaState = 'current' | 'candidate' | 'historical' | 'validated' | 'quarantined';
 

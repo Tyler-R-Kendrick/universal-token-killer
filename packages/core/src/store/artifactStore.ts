@@ -1,8 +1,8 @@
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { encode } from '@toon-format/toon';
-import { safeJoin } from '../security/pathSafety.js';
-import { canonicalJson } from '../artifact/canonical.js';
+import { safeJoin } from '@utk/foundation';
+import { canonicalJson } from '@utk/foundation';
 import { routeToToon } from '../toon/toon.js';
 import type { RouteDecision } from '../router/router.js';
 

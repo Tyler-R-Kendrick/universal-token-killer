@@ -1,0 +1,17 @@
+{
+  "name": "@utk/session-artifacts",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@utk/grammar-dsl": "0.1.0",
+    "@utk/foundation": "0.1.0"
+  }
+}

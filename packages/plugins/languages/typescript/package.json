@@ -1,5 +1,5 @@
 {
-  "name": "@utk/lang-typescript",
+  "name": "@utk-lang/typescript",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -17,7 +17,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@utk/emission": "0.1.0",
+    "@utk/codegen": "0.1.0",
+    "@utk/grammar": "0.1.0",
     "typescript": "^5.8.3"
   }
 }

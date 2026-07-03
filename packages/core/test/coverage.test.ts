@@ -4,6 +4,7 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { decode } from '@toon-format/toon';
 import { describe, expect, it } from 'vitest';
+import { registerUtkCopilotToolHook } from '@utk/tool-invocation';
 import {
   assertNoRawLeakage,
   buildCompactResponse,
@@ -29,7 +30,6 @@ import {
   quarantineInvalidArtifacts,
   readOutputFileForLlm,
   readSchemaHistory,
-  registerUtkCopilotToolHook,
   rebuildRouteIndex,
   refineSchemaWithCopilot,
   rewriteInputForLlm,

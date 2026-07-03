@@ -100,7 +100,7 @@ This differs from UTK's center:
   model-agnostic.
 
 The overlap is substantial and closest to UTK's code-authoring axis
-(`@utk/emission`): both emit a compact model-visible form that expands
+(`@utk/codegen`): both emit a compact model-visible form that expands
 deterministically into the pretty form users see, and both treat
 reversibility as a hard contract. Token Sugar is the trained-vocabulary
 version of that idea; UTK's is grammar-grounded and training-free.
@@ -109,7 +109,7 @@ version of that idea; UTK's is grammar-grounded and training-free.
 
 | Capability | What it does | How Token Sugar implements it | UTK relevance |
 |---|---|---|---|
-| Bijective shorthand | Guarantees lossless recovery of original code. | Formal `T⁻¹(T(c)) = c` contract; converter, not the language parser, performs both directions. | Identical discipline to UTK recoverability gates and `@utk/emission` round-trip tests. |
+| Bijective shorthand | Guarantees lossless recovery of original code. | Formal `T⁻¹(T(c)) = c` contract; converter, not the language parser, performs both directions. | Identical discipline to UTK recoverability gates and `@utk/codegen` round-trip tests. |
 | Statement-level format | Compact form for full statements. | `p0;…;px ⟨ID⟩ px+1;…;pn` — LHS (written vars) and RHS placeholders split by the pattern's special token; newlines bound the scope, saving a separator token. | Pattern for compact line-oriented artifact summaries with recoverable structure. |
 | Expression-level format | Compact form inside larger expressions. | `⟨ID⟩ p0;…;pn ⟨END⟩` wrapped format with explicit end token for unambiguous scope. | Mirrors UTK block markers (`[utk-block:<id>]`) that must be locatable in arbitrary context. |
 | Special-token vocabulary | Makes each pattern one atomic token. | Tokens like `<{id}_stmt_token>` / `<{id}_expr_token>` plus a shared expression end token added to the tokenizer; `--start_id` remaps them onto reserved vocab ids (TS-CODE, `modifier/pattern.py`, `llm_wrapper.py`). | UTK must NOT require vocab changes; this is the key structural difference to exploit. |
@@ -219,7 +219,7 @@ required — the central adoption cost of this technique.
 ## Competitive Implications For UTK
 
 Token Sugar competes on the "compact model-visible code with deterministic
-expansion" axis — the same shape as `@utk/emission` min emission — but pays
+expansion" axis — the same shape as `@utk/codegen` min emission — but pays
 for its savings with continual pretraining, tokenizer surgery, and per-model
 adoption. It does not touch tool-output mediation, artifact recovery, schema
 routing, or prompt/history compaction.
@@ -255,7 +255,7 @@ Where UTK stays stronger:
 3. Add Token-Sugar-style utilization metrics to UTK evals: how often each
    compaction rule fires per session, realized (not potential) savings, and a
    hard zero-failures gate on recovery/expansion.
-4. Keep `@utk/emission` shorthand at the grammar/prompt level (llguidance
+4. Keep `@utk/codegen` shorthand at the grammar/prompt level (llguidance
    min-grammar), never at the tokenizer level; document the GPT-4.1 negative
    result as the rationale.
 5. Use the LHS/RHS placeholder split idea for compact command/schema

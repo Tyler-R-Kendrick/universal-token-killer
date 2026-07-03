@@ -63,7 +63,7 @@ Compact index of what ships today, with the file that owns each behavior.
 |---|---|---|
 | 9 | Terse response modes (lite/full/ultra + wenyan classical-Chinese) | `.agents/skills/caveman*`, `AGENTS.md` |
 
-### Axis 3 — Code-authoring minification (`@utk/emission`)
+### Axis 3 — Code-authoring minification (`@utk/codegen`)
 
 | # | Technique | Owning file |
 |---|---|---|

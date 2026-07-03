@@ -1,4 +1,4 @@
-import { TAGS, endSpan, flushTrace, startSpan, type RunContext } from '../tracing/index.js';
+import { TAGS, endSpan, flushTrace, startSpan, type RunContext } from '@utk/tracing';
 
 export type ToolExecutor = (input: unknown) => Promise<unknown>;
 export type MediationSpan = ReturnType<typeof startSpan>;

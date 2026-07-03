@@ -1,4 +1,4 @@
-import { recordFailure } from '../tracing/index.js';
+import { recordFailure } from '@utk/tracing';
 import type { LintFinding, LintOptions, LintReport } from './lintPackTypes.js';
 
 export function recordLintFindings(packDir: string, findings: LintFinding[], options: LintOptions): void {

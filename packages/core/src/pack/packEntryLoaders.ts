@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
-import { contentHash } from '../artifact/canonical.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { contentHash } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import type {
   PackGrammarEntry,
   PackGrammarRecord,

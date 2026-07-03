@@ -1,0 +1,16 @@
+{
+  "name": "@utk/grammar-dsl",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "guidance-ts": "github:guidance-ai/guidance-ts#4b7838dcaa1e0563f632f2ec4a27c7c8c41e6552"
+  }
+}

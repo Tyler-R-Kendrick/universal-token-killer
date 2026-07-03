@@ -1,4 +1,4 @@
-import { sortValue } from '../artifact/canonical.js';
+import { sortValue } from '@utk/foundation';
 
 export type SerializationAst =
   | null

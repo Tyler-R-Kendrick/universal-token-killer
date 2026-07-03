@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'smol-toml';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import type { LintFinding } from './lintPackTypes.js';
 import type { PackToolEntry } from './types.js';
 

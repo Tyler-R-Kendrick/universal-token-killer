@@ -1,9 +1,9 @@
 import { cp, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicWriteFile } from '../artifact/atomicWrite.js';
-import { canonicalJson } from '../artifact/canonical.js';
-import { normalizeToolId } from '../artifact/manifest.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { atomicWriteFile } from '@utk/foundation';
+import { canonicalJson } from '@utk/foundation';
+import { normalizeToolId } from '@utk/foundation';
+import { safeJoin } from '@utk/foundation';
 import { addPackRegistryBlocks, removePackRegistryBlocks } from './registryRewrite.js';
 import type { InstalledPack, LoadedPack, PackGrammarRecord } from './types.js';
 

@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { canonicalJson, contentHash } from '../artifact/canonical.js';
-import { writeInputSchema, writeManifest } from '../artifact/manifest.js';
+import { canonicalJson, contentHash } from '@utk/foundation';
+import { writeInputSchema, writeManifest } from '@utk/foundation';
 import { deterministicRoute } from '../router/router.js';
 import { buildCompactResponse } from '../response/compactResponse.js';
 import { extractRules } from '../rules/ruleEngine.js';
 import { inferSchema, inferTextPseudoSchema, type JsonSchema } from '../schema/inferSchema.js';
 import { mergeSchema } from '../schema/mergeSchema.js';
-import { safeJoin } from '../security/pathSafety.js';
+import { safeJoin } from '@utk/foundation';
 import { upsertRouteIndex } from '../store/artifactStore.js';
 import { routeToToon, schemaToToon } from '../toon/toon.js';
 import { serializedExtension } from '../serialization/providers.js';

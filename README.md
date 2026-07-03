@@ -21,7 +21,7 @@ UTK's mediation surface is the Copilot tool-hook pipeline — not a public media
 UTK's core is **tool-output mediation** for the Copilot hook pipeline described above. Three adjacent axes extend that core rather than replace it, each sharing the same discipline — compact model-visible text, full-fidelity recoverable artifacts, and measured savings:
 
 - **Assistant-prose compression** — the `AGENTS.md` "Caveman" terse modes for human-facing summaries.
-- **Code-authoring minification** — `@utk/emission`, grammar-grounded min emission with deterministic pretty expansion at the user boundary.
+- **Code-authoring minification** — `@utk/codegen`, grammar-grounded min code generation with deterministic pretty expansion at the user boundary.
 - **Context-gateway proxy** — `@utk/model-proxy`, an OpenAI-compatible local proxy that compacts repeated history and tool schemas.
 
 Each axis is measured against a checked-in competitor baseline; see [Packages](#packages) for where the code lives.
@@ -215,7 +215,7 @@ Full payload was written to disk and omitted from chat context.
 ### Process A Copilot Hook Payload
 
 ```ts
-import { processCopilotToolHookPayload } from '@utk/copilot-hook';
+import { processCopilotToolHookPayload } from '@utk-agent/copilot';
 
 const output = await processCopilotToolHookPayload(JSON.stringify({
   tool_name: 'read_file',
@@ -284,15 +284,40 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 
 ## Packages
 
-- `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
-- `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
+UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the mediation core builds on them, and use-case packages and apps build on the core.
+
+**Reusable primitives** (no or few internal dependencies):
+
+- `@utk/foundation`: the shared kernel — token estimation, canonical hashing, atomic writes, tool-id normalization, and path-safety. Depended on by nearly everything, so it carries no upward edges.
+- `@utk/config`: `.utk/config.toml` loading and normalization.
+- `@utk/tracing`: run contexts, Jaeger-style spans, GenAI tags, failure recording, and trace persistence.
+- `@utk/grammar-dsl`: the single `guidance-ts` facade and the invocation-grammar builder DSL — `nonEmptyChoices` plus materialized `grm`/`gen`/`select`/`str`/`Session`/`Generation`. The only package that depends on `guidance-ts`.
+- `@utk/constrained-decoder`: the llguidance constrained-decoding runtime (`completeWithGrammar`, the llguidance adapter, and the route-grammar builder), built on `@utk/grammar-dsl`.
+- `@utk/grammar`: `.lark` grammar-file loading (`createGrammarReader`), the shared basis for llguidance constrained decoding against lark grammars.
+- `@utk/minmap`: the whole min-representation system — min maps (format/allocator/patch/journal), the declare-before-use patch grammars, and derivative token-optimized min-grammar generation (`deriveMinGrammar`).
+- `@utk/detok`: local LLMLingua-2 prompt/text compression with protected-span segmentation.
+- `@utk/templates`: the prompt-template DSL and its grammar-completion port.
+
+**Mediation core:**
+
+- `@utk/core`: the tool-output mediation engine — mediation pipeline, routing, rules, response compaction, schema inference/merge, the serialization registry + serializer grammar codec, artifact/workspace stores, stream persistence, schema history, and the pack format + installer. (Serialization and pack stay together in core: serialization loads serializer packs, so the two are mutually cohesive.) Re-exports the primitives above as a compatibility facade.
+
+**Use-case packages** (build on the core and primitives):
+
+- `@utk/context-optimization`: tool discovery/matching (exact/regex/lexical/embedding), session ledgers, context budget/policy, and artifact recovery/proof.
+- `@utk/prompt-optimization`: deterministic prompt-surface compaction.
+- `@utk/session-artifacts`: session-agent and session-skill generation (`.utk/session-agents`, `.utk/session-skills`).
+- `@utk/tool-invocation`: grammar-backed bash-like and structured tool-invocation completion, plus the Copilot tool hook.
+- `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/codegen`.
+- `@utk/codegen`: language-agnostic grammar-grounded code generation — macro expansion, the formalized decision-ladder planner, constrained codegen with honest fallback, and the language-pack registry. Consumes `@utk/grammar`, `@utk/minmap`, and `@utk/templates`.
+- `@utk-lang/typescript`: the reference codegen language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, codegen-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
+
+**Apps and adapters:**
+
+- `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs, plus `detoks-prompt`.
 - `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
-- `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
-- `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/emission`.
-- `@utk/emission`: language-agnostic grammar-grounded emission — min maps with declare-before-use patches, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, constrained emission with honest fallback, and the language-pack registry.
-- `@utk/lang-typescript`: the reference emission language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, emission-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
-- `@utk/cli`: `utk` binary for installing, removing, listing, and validating packs.
-- `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool.
+- `@utk-agent/copilot`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
+- `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool (depends on `@utk/detok`).
 - `@utk/evals`: the comparison harness (baseline vs competitor vs UTK), jsonl benchmark data, code/LLM/composite graders, generated AgentV suites, and the agentevals.io evaluator protocol.
 
 ## Sharing Optimizations As Packs

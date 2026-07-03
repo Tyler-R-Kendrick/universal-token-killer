@@ -195,7 +195,7 @@ describe('package boundary', () => {
 
     expect(agentFolders).toEqual(['copilot', 'opencode', 'windsurf']);
     expect(copilotPackage).toMatchObject({
-      name: '@utk/copilot-hook',
+      name: '@utk-agent/copilot',
       bin: {
         'utk-copilot-detok-pre-tool-use': 'dist/detokPreToolUseHook.js'
       }

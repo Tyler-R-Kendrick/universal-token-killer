@@ -9,7 +9,7 @@ timestamp: 2026-07-03T00:00:00Z
 
 Internal note. Keep public docs focused on shipped UTK behavior.
 
-Axis 3 in [gaps](/gaps.md), owned by `@utk/emission`. Where
+Axis 3 in [gaps](/gaps.md), owned by `@utk/codegen`. Where
 [tool-output mediation](/techniques/tool-output-mediation/overview.md) compresses
 what tools *return*, this axis compresses what the agent *writes* — emitting the
 fewest tokens of correct code, and refusing to emit when a change is not warranted.

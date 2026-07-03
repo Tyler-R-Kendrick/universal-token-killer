@@ -5,9 +5,22 @@ export default defineConfig({
   resolve: {
     alias: {
       '@utk/core': path.resolve(import.meta.dirname, 'packages/core/src/index.ts'),
+      '@utk/foundation': path.resolve(import.meta.dirname, 'packages/foundation/src/index.ts'),
+      '@utk/config': path.resolve(import.meta.dirname, 'packages/config/src/index.ts'),
+      '@utk/tracing': path.resolve(import.meta.dirname, 'packages/tracing/src/index.ts'),
+      '@utk/grammar': path.resolve(import.meta.dirname, 'packages/grammar/src/index.ts'),
+      '@utk/detok': path.resolve(import.meta.dirname, 'packages/detok/src/index.ts'),
+      '@utk/minmap': path.resolve(import.meta.dirname, 'packages/minmap/src/index.ts'),
+      '@utk/templates': path.resolve(import.meta.dirname, 'packages/templates/src/index.ts'),
+      '@utk/prompt-optimization': path.resolve(import.meta.dirname, 'packages/prompt-optimization/src/index.ts'),
+      '@utk/context-optimization': path.resolve(import.meta.dirname, 'packages/context-optimization/src/index.ts'),
+      '@utk/session-artifacts': path.resolve(import.meta.dirname, 'packages/session-artifacts/src/index.ts'),
+      '@utk/tool-invocation': path.resolve(import.meta.dirname, 'packages/tool-invocation/src/index.ts'),
+      '@utk/grammar-dsl': path.resolve(import.meta.dirname, 'packages/grammar-dsl/src/index.ts'),
+      '@utk/constrained-decoder': path.resolve(import.meta.dirname, 'packages/constrained-decoder/src/index.ts'),
       '@utk/code-graph': path.resolve(import.meta.dirname, 'packages/code-graph/src/index.ts'),
-      '@utk/emission': path.resolve(import.meta.dirname, 'packages/emission/src/index.ts'),
-      '@utk/lang-typescript': path.resolve(import.meta.dirname, 'packages/plugins/languages/typescript/src/index.ts')
+      '@utk/codegen': path.resolve(import.meta.dirname, 'packages/codegen/src/index.ts'),
+      '@utk-lang/typescript': path.resolve(import.meta.dirname, 'packages/plugins/languages/typescript/src/index.ts')
     }
   },
   test: {

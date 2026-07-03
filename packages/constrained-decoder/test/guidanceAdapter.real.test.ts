@@ -17,7 +17,8 @@ describe('guidance-ts constrained routing adapter', () => {
   it('does not import transformers-llguidance or fake missing server success', async () => {
     const source = await readFile(path.resolve(import.meta.dirname, '../src/llguidanceAdapter.ts'), 'utf8');
 
-    expect(source).toContain('guidance-ts');
+    // Guidance primitives now come through the @utk/grammar-dsl facade, not a direct guidance-ts import.
+    expect(source).toContain('@utk/grammar-dsl');
     expect(source).not.toContain('transformers-llguidance');
     await expect(generateConstrainedRoute({ grammar: buildRouteGrammar([]), prompt: 'route', sessionConfig: undefined })).resolves.toMatchObject({
       available: false,

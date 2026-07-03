@@ -1,6 +1,6 @@
 import { lstat, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { DEFAULT_CONFIG_TOML } from '../config/config.js';
+import { DEFAULT_CONFIG_TOML } from '@utk/config';
 
 export const DEFAULT_CONFIG = {
   version: 1,
