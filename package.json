@@ -13,8 +13,12 @@
   "scripts": {
     "build": "npm run -ws build",
     "postinstall": "node scripts/build-guidance-ts.mjs",
+    "prepare": "node scripts/install-git-hooks.mjs",
     "test": "npm run -ws test",
-    "lint": "npm run -ws lint",
+    "lint": "npm run lint:okf && npm run -ws lint",
+    "lint:okf": "node scripts/okf-lint.mjs",
+    "lint:okf:strict": "node scripts/okf-lint.mjs --strict",
+    "docs:index": "node scripts/gen-okf-index.mjs",
     "typecheck": "npm run -ws typecheck",
     "coverage": "vitest run --coverage"
   },

@@ -28,7 +28,7 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 ## Benchmark Snapshot
 
-Current aggregate comparison: `docs/internal/benchmark-summary.md`.
+Current aggregate comparison: `docs/features/evals/benchmark-summary.md`.
 
 > These are self-authored **parity fixtures**, not independent third-party benchmarks. UTK is measured against deterministic baselines checked into this repo — the competitors themselves are not installed, hosted, or run — and token counts are coarse `ceil(len/4)` estimates. Read the ratios as reproducible internal self-comparisons that also gate fact retention, recoverability, and correctness, rather than as head-to-head results against live competitor systems.
 
@@ -83,7 +83,7 @@ The fixture-backed parity suite currently verifies that UTK beats RTK baselines 
 | `shell-windows-dir` | 5 | 20 | +15 | 0.25 |
 | `shell-jq-filter` | 5 | 16 | +11 | 0.31 |
 
-Each scenario also requires `factRetentionScore === 1`, `autoevalsFactScore === 1`, and `recoverabilityScore === 1`. Full report: `docs/internal/rtk-parity-benchmark-results.md`.
+Each scenario also requires `factRetentionScore === 1`, `autoevalsFactScore === 1`, and `recoverabilityScore === 1`. Full report: `docs/features/evals/rtk-parity-benchmark.md`.
 
 ## Compresr Parity Stats
 
@@ -96,7 +96,7 @@ Compresr SDK `2.5.1` is installed for local verification and configured in `@utk
 - Autoevals fact retention: `1.000`
 - Recoverability: `1.000`
 
-Full report: `docs/internal/compresr-parity-benchmark-results.md`.
+Full report: `docs/competition/compresr/parity-benchmark.md`.
 
 ## LeanCTX Copilot Benchmark
 
@@ -110,7 +110,7 @@ The LeanCTX Copilot suite compares UTK against a context-runtime baseline across
 - Savings vs LeanCTX: `33.68%`
 - Minimum relevance/correctness/groundedness: `1.000`
 
-Full report: `docs/internal/leanctx-copilot-benchmark-results.md`.
+Full report: `docs/competition/lean-ctx/parity-benchmark.md`.
 
 ## Ponytail Parity Stats
 
@@ -123,7 +123,7 @@ The ponytail parity suite measures the code-authoring axis: the UTK arm is a gra
 - Average UTK-min/verbose-assistant token ratio: `0.496`
 - Round-trip fidelity, parse validity, min leakage, fact retention, ladder correctness: `1.000`
 
-Full report: `docs/internal/ponytail-parity-benchmark-results.md`.
+Full report: `docs/competition/ponytail/parity-benchmark.md`.
 
 ## Example Usage
 
@@ -351,7 +351,7 @@ Built-in serializers are `toon`, `json-compact`, and `tron`. Maintained serializ
 
 - `@utk/core`: mediation, persistence, schema/rule/routing artifacts, config, serializers, detok helpers, bash-like templates, pack format + installer, prompt-template DSL, and session artifact helpers.
 - `@utk/copilot-hook`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
-- `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/model-proxy.md).
+- `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
 - `@utk/constrained-decoder`: `guidance-ts` constrained routing helpers and per-slot grammar completion.
 - `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/emission`.
 - `@utk/emission`: language-agnostic grammar-grounded emission — min maps with declare-before-use patches, derived token-optimized min-grammars, macro expansion, the formalized decision-ladder planner, constrained emission with honest fallback, and the language-pack registry.
@@ -401,29 +401,29 @@ my-pack/
 
 ## Reference Docs
 
-- [Quickstart](docs/quickstart.md)
-- [Architecture](docs/architecture.md)
-- [Agent Skills](docs/agent-skills.md)
-- [Bash-Like Tool Templates](docs/bash-like-tool.md)
-- [Copilot Hook Integration](docs/copilot-hook.md)
-- [Configuration](docs/configuration.md)
-- [Detok MCP](docs/detok-mcp.md)
-- [Session Agents And Skills](docs/session-artifacts.md)
-- [Serialization Providers](docs/serialization.md)
-- [Artifacts And Recovery](docs/artifacts.md)
-- [Security And Privacy](docs/security-and-privacy.md)
-- [Schema Routing](docs/schema-routing.md)
-- [Constrained Decoding](docs/constrained-decoding.md)
-- [RTK Parity](docs/rtk-parity.md)
-- [Evals](docs/evals.md)
-- [Tracing](docs/tracing.md)
-- [Evals-Driven Iteration](docs/evals-driven-iteration.md)
-- [Spec Reference: agentevals.io](docs/refs/agentevals-spec.md)
-- [Reference: Tracing Failure Codes](docs/refs/tracing-failure-codes.md)
-- [Reference: Evaluator Config Keys](docs/refs/evaluator-config.md)
-- [Reference: Baseline Store](docs/refs/baseline-store.md)
-- [Implementation Guide](docs/implementation-guide.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- [Quickstart](docs/features/getting-started/quickstart.md)
+- [Architecture](docs/features/architecture/architecture.md)
+- [Agent Skills](docs/features/skills/agent-skills.md)
+- [Bash-Like Tool Templates](docs/features/serialization/bash-like-tool.md)
+- [Copilot Hook Integration](docs/features/copilot-hook/copilot-hook.md)
+- [Configuration](docs/features/getting-started/configuration.md)
+- [Detok MCP](docs/features/detok/detok-mcp.md)
+- [Session Agents And Skills](docs/features/skills/session-artifacts.md)
+- [Serialization Providers](docs/features/serialization/serialization.md)
+- [Artifacts And Recovery](docs/features/architecture/artifacts.md)
+- [Security And Privacy](docs/features/architecture/security-and-privacy.md)
+- [Schema Routing](docs/features/serialization/schema-routing.md)
+- [Constrained Decoding](docs/features/serialization/constrained-decoding.md)
+- [RTK Parity](docs/features/evals/rtk-parity.md)
+- [Evals](docs/features/evals/evals.md)
+- [Tracing](docs/features/evals/tracing.md)
+- [Evals-Driven Iteration](docs/features/evals/evals-driven-iteration.md)
+- [Spec Reference: agentevals.io](docs/features/evals/references/agentevals-spec.md)
+- [Reference: Tracing Failure Codes](docs/features/evals/references/tracing-failure-codes.md)
+- [Reference: Evaluator Config Keys](docs/features/evals/references/evaluator-config.md)
+- [Reference: Baseline Store](docs/features/evals/references/baseline-store.md)
+- [Implementation Guide](docs/features/getting-started/implementation-guide.md)
+- [Troubleshooting](docs/features/getting-started/troubleshooting.md)
 
 ## Development
 

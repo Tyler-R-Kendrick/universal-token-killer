@@ -153,10 +153,20 @@ function average(values: number[]): number {
 async function main(): Promise<void> {
   const { markdown } = await buildRtkParityReport();
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-  const outPath = path.join(root, 'docs', 'internal', 'rtk-parity-benchmark-results.md');
+  const outPath = path.join(root, 'docs', 'features', 'evals', 'rtk-parity-benchmark.md');
   const evalPath = path.join(root, 'packages', 'evals', 'evals', 'rtk-parity.EVAL.yaml');
+  const frontmatter = [
+    '---',
+    'type: benchmark',
+    'title: RTK Parity Benchmark Results',
+    'description: Fixture-backed results comparing UTK tool-output mediation against RTK parity baselines.',
+    'tags: [evals, rtk, benchmark]',
+    'timestamp: 2026-07-03T00:00:00Z',
+    '---',
+    '',
+  ].join('\n');
   await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, markdown, 'utf8');
+  await writeFile(outPath, frontmatter + markdown, 'utf8');
   await writeFile(evalPath, renderRtkParityEvalYaml(), 'utf8');
   process.stdout.write(markdown);
 }
