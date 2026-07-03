@@ -5,6 +5,10 @@
   "license": "MIT",
   "description": "UTK — Universal Token Killer",
   "type": "module",
+  "packageManager": "npm@10.9.7",
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "packages/*",
     "packages/plugins/agents/*",

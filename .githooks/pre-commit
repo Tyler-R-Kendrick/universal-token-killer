@@ -1,7 +1,13 @@
 #!/bin/sh
-# OKF conformance check on staged docs/ Markdown before commit.
-# Bypass with `git commit --no-verify` if you must.
+# Local pre-commit gate. Bypass with `git commit --no-verify` if you must.
 
+# Whitespace / merge-conflict-marker hygiene on all staged content.
+if ! git diff --cached --check; then
+  echo "Whitespace errors or merge-conflict markers in staged changes."
+  exit 1
+fi
+
+# OKF conformance check on staged docs/ Markdown.
 staged=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^docs/.*\.md$' || true)
 [ -z "$staged" ] && exit 0
 
