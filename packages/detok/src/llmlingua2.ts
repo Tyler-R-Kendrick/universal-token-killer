@@ -119,7 +119,7 @@ async function runLlmlingua2(text: string, options: DetokOptions & { rate: numbe
 }
 
 function repoRoot(): string {
-  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 }
 
 /* c8 ignore start */

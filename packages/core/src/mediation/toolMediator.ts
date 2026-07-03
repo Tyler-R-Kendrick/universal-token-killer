@@ -3,7 +3,7 @@ import { normalizeToolId } from '@utk/foundation';
 import { assertNoRawLeakage } from '../validation/leakage.js';
 import { loadUtkConfig, resolveSerializerProviderId } from '@utk/config';
 import { loadSerializationRegistry } from '../serialization/providers.js';
-import { compressTextWithLlmlingua2, rewriteInputForLlm } from '../detok/llmlingua2.js';
+import { compressTextWithLlmlingua2, rewriteInputForLlm } from '@utk/detok';
 import type { RunContext } from '@utk/tracing';
 import {
   compactSerializableValue,

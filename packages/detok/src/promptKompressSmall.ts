@@ -58,7 +58,7 @@ function fakeKompressSmallResult(text: string, rate: number): DetokResult {
 }
 
 function repoRoot(): string {
-  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 }
 
 function parseKompressOutput(output: string): Partial<DetokResult> & { error?: string } {

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { compressPromptForLlm, compressTextWithLlmlingua2, type DetokResult, type PromptCompressionResult } from '@utk/core';
+import { compressPromptForLlm, compressTextWithLlmlingua2, type DetokResult, type PromptCompressionResult } from '@utk/detok';
 import { z } from 'zod';
 
 const detokInputSchema = {
