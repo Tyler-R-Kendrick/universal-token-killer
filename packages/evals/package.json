@@ -25,6 +25,7 @@
     "@toon-format/toon": "^2.2.0",
     "@utk/emission": "0.1.0",
     "@utk/lang-typescript": "0.1.0",
+    "@utk/tool-invocation": "0.1.0",
     "autoevals": "^0.0.132"
   }
 }

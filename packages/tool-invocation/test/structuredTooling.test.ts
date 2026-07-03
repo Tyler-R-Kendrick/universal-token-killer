@@ -2,11 +2,10 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { canonicalJson, contentHash } from '@utk/foundation';
 import {
-  canonicalJson,
   buildStructuredInvocationGrammar,
   completeStructuredToolInvocation,
-  contentHash,
   curryTool,
   memoizeTool
 } from '../src/index.js';
@@ -211,7 +210,8 @@ describe('structured tooling', () => {
   });
 
   it('emits planner-miss, guidance-unavailable, and cache-write events into the injected tracer', async () => {
-    const { createRunContext, loadUtkConfig } = await import('../src/index.js');
+    const { createRunContext } = await import('@utk/tracing');
+    const { loadUtkConfig } = await import('@utk/config');
     const root = await mkdtemp(path.join(os.tmpdir(), 'utk-structured-tracer-'));
     await import('node:fs/promises').then((fs) => fs.mkdir(path.join(root, '.utk'), { recursive: true }));
     await import('node:fs/promises').then((fs) =>

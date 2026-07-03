@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { completeBashLikeToolInvocation } from '@utk/core';
+import { completeBashLikeToolInvocation } from '@utk/tool-invocation';
 import { BASH_REWRITE_FIXTURES } from '../fixtures/bashRewriteFixtures.js';
 import { assertBashRewrite, measureBashRewrite } from '../metrics/bashRewriteMetrics.js';
 

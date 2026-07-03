@@ -1,6 +1,5 @@
 export * from '@utk/foundation';
 export * from '@utk/session-artifacts';
-export * from './cli/bashLikeTool.js';
 export * from './copilot/refinement.js';
 export * from '@utk/config';
 export * from '@utk/context-optimization';
@@ -20,8 +19,6 @@ export * from './store/artifactStore.js';
 export * from './store/workspaceStore.js';
 export * from './stream/persistStream.js';
 export * from '@utk/templates';
-export * from './tools/copilotToolHook.js';
-export * from './tools/structuredTooling.js';
 export * from '@utk/tracing';
 export * from './toon/toon.js';
 export * from './toon/validate.js';

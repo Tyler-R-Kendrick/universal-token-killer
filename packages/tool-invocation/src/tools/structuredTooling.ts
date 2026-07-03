@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { canonicalJson, contentHash } from '@utk/foundation';
 import { normalizeToolId } from '@utk/foundation';
 import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '@utk/config';
-import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
+import { getSerializationProvider, serializedExtension } from '@utk/core';
 import { safeJoin } from '@utk/foundation';
 import { recordFailure, type RunContext } from '@utk/tracing';
 import { buildStructuredInvocationGrammar } from './structuredInvocationGrammar.js';

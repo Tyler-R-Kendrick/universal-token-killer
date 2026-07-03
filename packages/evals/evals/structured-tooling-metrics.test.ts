@@ -2,7 +2,7 @@ import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { completeStructuredToolInvocation } from '@utk/core';
+import { completeStructuredToolInvocation } from '@utk/tool-invocation';
 
 describe('structured tooling comparative coverage', () => {
   it('handles varied registered tool inputs with deterministic completions', async () => {

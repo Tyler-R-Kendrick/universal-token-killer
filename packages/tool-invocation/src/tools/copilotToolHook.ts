@@ -1,4 +1,4 @@
-import { mediateToolExecution, type MediatedResult, type ToolExecutor } from '../mediation/toolMediator.js';
+import { mediateToolExecution, type MediatedResult, type ToolExecutor } from '@utk/core';
 
 export type CopilotToolHookSurface = {
   registerToolHook(handler: (toolId: string, input: unknown, executeOriginal: ToolExecutor) => Promise<string>): void;
