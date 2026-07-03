@@ -1,4 +1,4 @@
-import type { ToolMatchingLevel } from '../config/config.js';
+import type { ToolMatchingLevel } from '@utk/config';
 
 const LEVEL_RANK: Record<ToolMatchingLevel, number> = {
   'slash-commands': 0,

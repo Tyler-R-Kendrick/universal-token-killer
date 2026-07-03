@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../src/config/config.js';
+import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '@utk/config';
 import {
   createSerializationRegistry,
   getSerializationProvider,

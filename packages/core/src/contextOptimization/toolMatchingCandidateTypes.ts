@@ -1,4 +1,4 @@
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 import type { ToolRegex } from './toolMatchingRegexes.js';
 
 export type ToolCandidate = {

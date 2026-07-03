@@ -1,4 +1,4 @@
-import { loadUtkConfig, type UtkConfig } from '../config/config.js';
+import { loadUtkConfig, type UtkConfig } from '@utk/config';
 import type { LocalToolEmbeddingProvider, LocalToolEmbeddingProviderAdapterEntry } from './toolEmbedding.js';
 import { buildToolArgs } from './toolArgumentExtraction.js';
 import { buildToolCandidates, findSlashCandidate, type ToolCandidate } from './toolMatchingCandidates.js';

@@ -1,4 +1,4 @@
-import { loadUtkConfig, type UtkConfig } from '../config/config.js';
+import { loadUtkConfig, type UtkConfig } from '@utk/config';
 
 export type ModelProxyPolicy = UtkConfig['model_proxy'];
 

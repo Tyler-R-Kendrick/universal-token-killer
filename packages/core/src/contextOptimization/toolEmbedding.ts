@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { contentHash } from '@utk/foundation';
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 import { safeJoin } from '@utk/foundation';
 import { DEFAULT_LOCAL_TOOL_EMBEDDING_PROVIDER_ADAPTERS } from './openAiCompatibleToolEmbedding.js';
 import type {

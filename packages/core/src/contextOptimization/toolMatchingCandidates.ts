@@ -1,4 +1,4 @@
-import { resolveRegisteredTool, type UtkConfig } from '../config/config.js';
+import { resolveRegisteredTool, type UtkConfig } from '@utk/config';
 import {
   defaultAliases,
   generatedRegexes,

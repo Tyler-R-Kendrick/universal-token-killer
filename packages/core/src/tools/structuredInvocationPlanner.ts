@@ -1,4 +1,4 @@
-import { resolveRegisteredTool } from '../config/config.js';
+import { resolveRegisteredTool } from '@utk/config';
 import type {
   StructuredToolDefinition,
   StructuredToolInvocation,

@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { loadUtkConfig } from '../src/config/config.js';
+import { loadUtkConfig } from '@utk/config';
 import {
   TAGS,
   createRunContext,

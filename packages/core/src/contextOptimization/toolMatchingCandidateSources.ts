@@ -1,4 +1,4 @@
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 
 export function collectToolDefinitions(tools: unknown, config: UtkConfig): Array<[string, Record<string, unknown>]> {
   const byName = new Map<string, Record<string, unknown>>();

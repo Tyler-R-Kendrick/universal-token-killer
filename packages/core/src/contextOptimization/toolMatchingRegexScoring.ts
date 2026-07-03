@@ -1,4 +1,4 @@
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 import type { ToolCandidate } from './toolMatchingCandidates.js';
 import { selectExactCandidate } from './toolMatchingExactScoring.js';
 import { hasUrl, isFileOperationRequest, isPublicSearchRequest } from './toolLexicalScoring.js';

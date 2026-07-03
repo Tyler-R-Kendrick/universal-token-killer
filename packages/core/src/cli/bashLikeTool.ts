@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { canonicalJson, contentHash } from '@utk/foundation';
 import { normalizeToolId } from '@utk/foundation';
-import { loadUtkConfig, resolveSerializerProviderId } from '../config/config.js';
+import { loadUtkConfig, resolveSerializerProviderId } from '@utk/config';
 import { loadSerializationRegistry, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '@utk/foundation';
 import { buildBashLikeInvocationGrammar } from './bashLikeInvocationGrammar.js';

@@ -1,7 +1,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { atomicWriteFile } from '@utk/foundation';
-import { DEFAULT_CONFIG_TOML } from '../config/config.js';
+import { DEFAULT_CONFIG_TOML } from '@utk/config';
 import type { PackToolDefinition } from './types.js';
 
 export const PACK_BEGIN_PREFIX = '# utk-pack-begin:';

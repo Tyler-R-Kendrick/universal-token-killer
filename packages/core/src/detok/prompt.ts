@@ -1,4 +1,4 @@
-import { loadUtkConfig } from '../config/config.js';
+import { loadUtkConfig } from '@utk/config';
 import { compressNaturalLanguageSegment, resolvePromptCompressionModel } from './promptCompressionModels.js';
 import { hasNaturalLanguage, estimateTokens } from './promptCompressionUtils.js';
 import type { PromptCompressionOptions, PromptCompressionResult, PromptCompressionSegment } from './promptCompressionTypes.js';

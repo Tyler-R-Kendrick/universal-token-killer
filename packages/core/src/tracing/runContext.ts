@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 import type { JaegerSpan } from './jaegerSpan.js';
 
 export type RunContext = {

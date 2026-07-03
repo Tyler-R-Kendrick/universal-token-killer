@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { canonicalJson, contentHash } from '@utk/foundation';
 import { normalizeToolId } from '@utk/foundation';
-import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '../config/config.js';
+import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '@utk/config';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '@utk/foundation';
 import { recordFailure, type RunContext } from '../tracing/index.js';

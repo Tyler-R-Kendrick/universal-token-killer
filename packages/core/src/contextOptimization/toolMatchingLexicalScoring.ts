@@ -1,4 +1,4 @@
-import type { UtkConfig } from '../config/config.js';
+import type { UtkConfig } from '@utk/config';
 import type { ToolCandidate } from './toolMatchingCandidates.js';
 import type { CandidateScore } from './toolMatchingScoreTypes.js';
 import { inferCommandTail, uniqueWinner } from './toolMatchingSelection.js';

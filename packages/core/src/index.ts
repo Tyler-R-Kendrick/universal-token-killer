@@ -2,7 +2,7 @@ export * from '@utk/foundation';
 export * from './agents/sessionAgents.js';
 export * from './cli/bashLikeTool.js';
 export * from './copilot/refinement.js';
-export * from './config/config.js';
+export * from '@utk/config';
 export * from './contextOptimization/contextOptimization.js';
 export * from './contextOptimization/toolEmbedding.js';
 export * from './contextOptimization/toolMatching.js';
