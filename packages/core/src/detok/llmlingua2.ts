@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { estimateTokens } from '@utk/foundation';
-import { recordFailure, type JaegerSpan, type RunContext } from '../tracing/index.js';
+import { recordFailure, type JaegerSpan, type RunContext } from '@utk/tracing';
 
 export type DetokOptions = {
   rate?: number;

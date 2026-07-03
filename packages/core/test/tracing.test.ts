@@ -14,7 +14,7 @@ import {
   startSpan,
   toEvalSet,
   type RunContext
-} from '../src/tracing/index.js';
+} from '@utk/tracing';
 
 async function workspaceWithTracingEnabled(): Promise<{ ctx: RunContext; root: string }> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'utk-tracing-'));

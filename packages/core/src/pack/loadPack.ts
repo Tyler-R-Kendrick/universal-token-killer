@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { parse } from 'smol-toml';
 import { safeJoin } from '@utk/foundation';
-import { recordFailure, type RunContext } from '../tracing/index.js';
+import { recordFailure, type RunContext } from '@utk/tracing';
 import type { LoadedPack, UtkPackManifest } from './types.js';
 import { normalizeManifest } from './packManifest.js';
 import {

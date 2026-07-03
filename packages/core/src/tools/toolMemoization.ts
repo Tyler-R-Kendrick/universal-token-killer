@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { canonicalJson, contentHash } from '@utk/foundation';
 import { safeJoin } from '@utk/foundation';
-import { recordFailure, type RunContext } from '../tracing/index.js';
+import { recordFailure, type RunContext } from '@utk/tracing';
 
 export type AsyncTool<I extends Record<string, unknown>, O> = (input: I) => Promise<O>;
 

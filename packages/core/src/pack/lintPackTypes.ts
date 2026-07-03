@@ -1,4 +1,4 @@
-import type { RunContext } from '../tracing/index.js';
+import type { RunContext } from '@utk/tracing';
 
 export type LintSeverity = 'error' | 'warning' | 'info';
 

@@ -4,7 +4,7 @@ import { normalizeToolId } from '@utk/foundation';
 import { loadUtkConfig, resolveRegisteredTool, resolveSerializerProviderId } from '@utk/config';
 import { getSerializationProvider, serializedExtension } from '../serialization/providers.js';
 import { safeJoin } from '@utk/foundation';
-import { recordFailure, type RunContext } from '../tracing/index.js';
+import { recordFailure, type RunContext } from '@utk/tracing';
 import { buildStructuredInvocationGrammar } from './structuredInvocationGrammar.js';
 import { planInvocation, selectTool, withConfigDefaults, type PlannedInvocation } from './structuredInvocationPlanner.js';
 import { curryTool, memoizeTool } from './toolMemoization.js';

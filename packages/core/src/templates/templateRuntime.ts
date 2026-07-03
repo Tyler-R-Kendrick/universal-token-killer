@@ -3,7 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { canonicalJson, contentHash } from '@utk/foundation';
 import { safeJoin } from '@utk/foundation';
-import { recordFailure, type RunContext } from '../tracing/index.js';
+import { recordFailure, type RunContext } from '@utk/tracing';
 import { defineTemplate, extractSlotReferences, type GrammarRef, type Slot, type TemplateDescriptor } from './defineTemplate.js';
 
 export type GrammarCompletion = (params: { prompt: string; lark: string; slotName: string; maxTokens?: number }) => Promise<string>;
