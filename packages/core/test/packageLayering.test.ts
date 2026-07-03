@@ -76,6 +76,12 @@ describe('package layering fitness', () => {
     expect(guidanceDependents).toEqual(['constrained-decoder']);
   });
 
+  it('has eliminated the hand-written utk-core.d.ts ambient shims', async () => {
+    const files = await collectSourceTs(packagesRoot);
+    const shims = files.filter((file) => file.endsWith('utk-core.d.ts')).map((file) => path.relative(repoRoot, file));
+    expect(shims).toEqual([]);
+  });
+
   it('consolidates the nonEmptyChoices helper into one definition', async () => {
     const files = await collectSourceTs(packagesRoot);
     const definitions: string[] = [];
