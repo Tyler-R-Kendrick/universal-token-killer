@@ -96,6 +96,8 @@ function renderMarkdown(rows: CompresrParityReportRow[]): string {
     '',
     'Generated from `packages/evals/fixtures/compresrParityFixtures.ts`.',
     '',
+    'Aggregate benchmark table: `docs/features/evals/benchmark-summary.md`.',
+    '',
     '## Installation',
     '',
     `- Installed package: \`${COMPRESR_INSTALL_CONFIG.pythonPackage}@${COMPRESR_INSTALL_CONFIG.installedVersion}\``,

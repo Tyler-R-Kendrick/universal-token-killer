@@ -13,7 +13,7 @@ Research date: 2026-07-02
 Layer: Agent-native token economy
 Source: [`JuliusBrussee/caveman-code`](https://github.com/JuliusBrussee/caveman-code) (664★, MIT, TypeScript; created 2026-04-08); site `caveman.so` / `getcaveman.dev`
 Verification: ✅ repo + site live. **Distinct from the base Caveman skill** (documented
-at [`../caveman-competitive-research.md`](/competition/caveman/research.md)) — same
+at [Caveman research](/competition/caveman/research.md)) — same
 author/ecosystem (JuliusBrussee), but this is the *terminal coding agent*, not the
 skill.
 

@@ -58,7 +58,7 @@ how UTK should structure them — a terse always-loaded routing line, with the b
 **loaded on demand**. Pairs with the tool/schema-reduction work in the
 [watchlist §4](/techniques/landscape-watchlist.md) (same "fixed
 per-turn cost" target) and with the Sketch-of-Thought router pattern
-([`../sketch-of-thought-competitive-research.md`](/research/sketch-of-thought/overview.md)).
+([Sketch-of-Thought](/research/sketch-of-thought/overview.md)).
 The 2.8% quality *gain* at ~half the tokens is the "less-is-more" evidence UTK can
 cite for aggressive skill trimming — gated on UTK's faithfulness evals.
 

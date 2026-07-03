@@ -635,8 +635,8 @@ Generated from `packages/evals/fixtures/cavemanParityFixtures.ts`.
 - Test strategy: Exact Git warning phrase retention.
 - Caveman good at: Keeps warning text exact.
 - UTK attempt: Warning phrase only.
-- Caveman: Git warning: `LF will be replaced by CRLF`; file `docs/features/evals/evals.md`.
-- UTK: `LF will be replaced by CRLF`; `docs/features/evals/evals.md`.
+- Caveman: Git warning: `LF will be replaced by CRLF`; file `docs/evals.md`.
+- UTK: `LF will be replaced by CRLF`; `docs/evals.md`.
 
 ### escaped-json-string
 

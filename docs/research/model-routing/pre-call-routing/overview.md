@@ -14,7 +14,7 @@ Research date: 2026-07-02
 **Layer definition:** choose the cheapest capable model *before* generation, from
 a **fixed** (or, for UniRoute, dynamic) pool, using a router that scores the
 query. One-shot model choice — no escalation loop (that is
-[`../cascade-routing/`](/research/model-routing/cascade-routing/overview.md)).
+[cascade routing](/research/model-routing/cascade-routing/overview.md)).
 
 **Scope:** all four techniques here are **COST-REDUCTION** — they cut expected
 `$/task` by sending each query to a cheaper model, not by reducing token count.

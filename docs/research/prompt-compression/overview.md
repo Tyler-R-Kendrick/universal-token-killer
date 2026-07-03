@@ -13,8 +13,8 @@ Research date: 2026-07-02
 
 Academic and general **prompt (input) compression** — reduce the tokens of the
 prompt/context *before* the call. This is a distinct axis from **output** compression
-([`../assistant-prose-compression/`](/techniques/assistant-prose-compression/overview.md)) and **model routing**
-([`../models/`](/research/model-routing/overview.md)). The LLMLingua family is the real academic baseline here
+([assistant-prose compression](/techniques/assistant-prose-compression/overview.md)) and **model routing**
+([model routing](/research/model-routing/overview.md)). The LLMLingua family is the real academic baseline here
 and was previously only a passing "seam" mention in UTK docs; this folder gives it and
 its competitors first-class coverage. Every arXiv ID in the source brief verified
 correct; **Selective Context's missing ID is 2310.06201**.

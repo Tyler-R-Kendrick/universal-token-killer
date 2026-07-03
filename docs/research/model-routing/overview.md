@@ -17,7 +17,7 @@ model(s) to call, *how many* samples to draw, *when* to escalate, and *how* to
 decode — as a distinct competitive-research axis from UTK's core
 **prompt/context token compression**. It is the deep-dive expansion of §15
 ("Local Triage / Draft-Review Routing") in
-[`../token-optimization-landscape-watchlist.md`](/techniques/landscape-watchlist.md),
+[landscape watchlist](/techniques/landscape-watchlist.md),
 extended to cover cascades, ensembling, test-time scaling, batch-aware routing,
 and speculative decoding.
 
@@ -119,7 +119,7 @@ Three traps, each of which turns a "savings" technique into a net loss:
    **cheap features**: prompt length, task type, file count, dependency-graph
    distance, historical success rate, test-failure class, required tool set,
    estimated output length. (Cf. SoT's 67M-param DistilBERT router in
-   [`../sketch-of-thought-competitive-research.md`](/research/sketch-of-thought/overview.md).)
+   [Sketch-of-Thought](/research/sketch-of-thought/overview.md).)
 2. **Double-paying on failures.** If the cheap model produces a bad patch and the
    strong model then redoes the whole task *with extra failure context*, the
    cascade can cost more than going straight to the strong model. Cascades need

@@ -15,8 +15,8 @@ Research date: 2026-07-02
 output, and skill/instruction text all get **re-read by the agent on later turns**,
 so every token saved is saved repeatedly. This bucket tracks the tools and evidence
 that attack those agent-native sinks specifically (distinct from academic prompt
-compression in [`../prompt-compression/`](/research/prompt-compression/overview.md) and model routing
-in [`../models/`](/research/model-routing/overview.md)).
+compression in [prompt compression](/research/prompt-compression/overview.md) and model routing
+in [model routing](/research/model-routing/overview.md)).
 
 ## The governing rule (from CAVEWOMAN)
 
@@ -29,7 +29,7 @@ Compress INPUT only when verifiably lossless → blind input compression is a "s
   lose-lose": models compensate with longer outputs and accuracy collapses.
 ```
 
-## New in this folder
+## Key sources (now in research/ + competition/)
 
 | Item | Source | Kind | Status |
 |---|---|---|---|
@@ -43,20 +43,20 @@ The caveman ecosystem is one vendor line (JuliusBrussee / caveman.so /
 getcaveman.dev). Two of its pieces already have internal deep-dives:
 
 - **Caveman** (base skill/plugin, `JuliusBrussee/caveman`) →
-  [`../caveman-competitive-research.md`](/competition/caveman/research.md). Same
+  [Caveman research](/competition/caveman/research.md). Same
   project; the flagship output-style skill (~80.8k stars, MIT, lite/full/ultra/wenyan
   levels, "65% tokens cut" tagline).
 - **CaveGemma** (Gemma fine-tune that bakes caveman style into weights) →
-  [`../cavegemma-competitive-research.md`](/competition/caveman/products/cavegemma/research.md).
+  [CaveGemma](/competition/caveman/products/cavegemma/research.md).
   Current site (getcaveman.dev) claims **65% compression vs base, no prompt needed;
   99% code-fence / 94% semantic** — vendor/project-side, unvalidated.
 
 Adjacent agent-context compressors (different vendors) also already covered:
 
 - **Headroom** (compress tool outputs/logs/context before the agent) →
-  [`../headroom-competitive-research.md`](/competition/headroom/research.md).
+  [Headroom](/competition/headroom/research.md).
 - **Ponytail** ("write less code" — reduce implementation surface, tokens as a side
-  effect) → [`../ponytail-competitive-research.md`](/competition/ponytail/research.md).
+  effect) → [Ponytail](/competition/ponytail/research.md).
 
 ## UTK Relevance
 

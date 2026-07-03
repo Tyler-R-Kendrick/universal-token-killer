@@ -96,6 +96,8 @@ function renderMarkdown(rows: RtkParityReportRow[]): string {
     '',
     'Generated from `packages/evals/fixtures/rtkParityFixtures.ts`.',
     '',
+    'Aggregate benchmark table: `docs/features/evals/benchmark-summary.md`.',
+    '',
     '## Summary',
     '',
     `- Scenarios: ${rows.length}`,

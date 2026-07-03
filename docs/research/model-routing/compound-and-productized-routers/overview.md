@@ -14,8 +14,8 @@ Research date: 2026-07-02
 **Layer definition:** shipped *products* (not research papers) that put model
 selection or multi-model coordination behind **one OpenAI-compatible endpoint**.
 This is the productized, buy-don't-build counterpart to the research in
-[`../pre-call-routing/`](/research/model-routing/pre-call-routing/overview.md) and
-[`../selective-ensembling/`](/research/model-routing/selective-ensembling/overview.md). All are verified against
+[pre-call routing](/research/model-routing/pre-call-routing/overview.md) and
+[selective ensembling](/research/model-routing/selective-ensembling/overview.md). All are verified against
 vendor docs/sites; every metric is a **vendor claim** unless a named independent
 benchmark is cited.
 

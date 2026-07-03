@@ -583,3 +583,4 @@ Aggregate benchmark table: `docs/features/evals/benchmark-summary.md`.
 - RTK good at: RTK summarizes diffs but can omit rename metadata.
 - UTK attempt: Persist full patch and expose compact text envelope.
 - Result: pass
+

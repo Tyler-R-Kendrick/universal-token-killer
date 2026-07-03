@@ -12,7 +12,7 @@ Internal note. Do not link from the public README.
 Research date: 2026-07-02
 
 **Layer definition:** newer routing research on the **failure modes and controls**
-that first-generation routers ([`../pre-call-routing/`](/research/model-routing/pre-call-routing/overview.md)) miss —
+that first-generation routers ([pre-call routing](/research/model-routing/pre-call-routing/overview.md)) miss —
 budget-ceiling enforcement under non-stationarity, **routing collapse** (systematic
 small-model under-use), router **evaluation**, and joint **model + output-length**
 routing. These are the traps and extra levers once you *have* a router.
