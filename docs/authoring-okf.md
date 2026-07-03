@@ -77,7 +77,7 @@ category's prose), `<technique>.md` for technique leaves.
 
 ## Classification rules (enforced)
 
-The linter binds each `type` to a top-level area — misfiling fails CI:
+The linter binds each `type` to a top-level area — misfiling fails the local lint:
 
 | `type` | Must live under |
 |---|---|
@@ -93,12 +93,11 @@ that vendor's `competition/<vendor>/products/`, not its own top-level competitor
 
 ## Enforcement
 
-OKF conformance is checked in four places:
+OKF conformance is enforced **locally** (not in CI):
 
 - **npm** — `npm run lint:okf` (report) / `npm run lint:okf:strict` (warnings fail too).
 - **git pre-commit** — `.githooks/pre-commit` lints staged `docs/**` (wired by
   `npm run prepare` → `git config core.hooksPath .githooks`).
-- **CI** — `.github/workflows/okf-lint.yml` runs `--strict` on every PR touching docs.
 - **agent hook** — `.claude/settings.json` runs the linter after any docs edit and
   feeds failures back to the agent.
 
