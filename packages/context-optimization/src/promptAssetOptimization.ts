@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { contentHash } from '@utk/foundation';
 import { safeJoin } from '@utk/foundation';
 import { estimateTokens } from '@utk/foundation';
-import type { PromptSurface } from '../promptOptimization/promptOptimizer.js';
+import type { PromptSurface } from '@utk/prompt-optimization';
 
 export async function optimizePromptAsset(params: {
   text: string;
