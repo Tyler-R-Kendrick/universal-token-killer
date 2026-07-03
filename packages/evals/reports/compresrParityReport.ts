@@ -96,6 +96,8 @@ function renderMarkdown(rows: CompresrParityReportRow[]): string {
     '',
     'Generated from `packages/evals/fixtures/compresrParityFixtures.ts`.',
     '',
+    'Aggregate benchmark table: `docs/features/evals/benchmark-summary.md`.',
+    '',
     '## Installation',
     '',
     `- Installed package: \`${COMPRESR_INSTALL_CONFIG.pythonPackage}@${COMPRESR_INSTALL_CONFIG.installedVersion}\``,
@@ -155,10 +157,20 @@ function average(values: number[]): number {
 async function main(): Promise<void> {
   const { markdown } = await buildCompresrParityReport();
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-  const outPath = path.join(root, 'docs', 'internal', 'compresr-parity-benchmark-results.md');
+  const outPath = path.join(root, 'docs', 'competition', 'compresr', 'parity-benchmark.md');
   const evalPath = path.join(root, 'packages', 'evals', 'evals', 'compresr-parity.EVAL.yaml');
+  const frontmatter = [
+    '---',
+    'type: benchmark',
+    'title: Compresr Parity Benchmark Results',
+    'description: Fixture-backed parity results comparing UTK against the Compresr history-compaction baseline.',
+    'tags: [competitive, benchmark, internal]',
+    'timestamp: 2026-07-03T00:00:00Z',
+    '---',
+    '',
+  ].join('\n');
   await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, markdown, 'utf8');
+  await writeFile(outPath, frontmatter + markdown, 'utf8');
   await writeFile(evalPath, renderCompresrParityEvalYaml(), 'utf8');
   process.stdout.write(markdown);
 }

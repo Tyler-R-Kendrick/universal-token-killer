@@ -4,10 +4,11 @@ When benchmark performance changes, update docs in same change.
 
 ## Benchmark Documentation
 
-- Keep standalone benchmark reports under `docs/internal/*-benchmark-results.md`.
-- Keep LeanCTX Copilot run performance in `docs/internal/leanctx-copilot-benchmark-results.md`.
-- Keep aggregate comparison table in `docs/internal/benchmark-summary.md`.
+- Keep standalone competitor benchmark reports as `parity-benchmark.md` under the relevant `docs/competition/<competitor>/` (framework benchmarks live under `docs/features/evals/`).
+- Keep LeanCTX Copilot run performance in `docs/competition/lean-ctx/parity-benchmark.md`.
+- Keep aggregate comparison table in `docs/features/evals/benchmark-summary.md`.
 - Do not bury benchmark metrics only in PR text, terminal output, or test logs.
+- Benchmark docs are OKF concepts: preserve their `type: benchmark` frontmatter block. The `report:*` generators emit it; run `npm run lint:okf` after regenerating.
 
 ## Required Metrics
 
@@ -29,7 +30,7 @@ When rerunning LeanCTX Copilot benchmarks:
 
 - run at least `npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose`;
 - when doing repeated improvement loops, record loop count, rounds per loop, total evaluated cases, per-surface totals, and minimum relevance/correctness/groundedness;
-- update both `docs/internal/leanctx-copilot-benchmark-results.md` and `docs/internal/benchmark-summary.md`;
+- update both `docs/competition/lean-ctx/parity-benchmark.md` and `docs/features/evals/benchmark-summary.md`;
 - keep detailed per-loop results in the LeanCTX-specific report, not the aggregate summary.
 
 ## Quality Rule

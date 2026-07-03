@@ -209,10 +209,20 @@ function edgeGateScore(metrics: CavemanParityMetrics): number {
 async function main(): Promise<void> {
   const { markdown } = await buildCavemanParityReport();
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-  const outPath = path.join(root, 'docs', 'internal', 'caveman-parity-benchmark-results.md');
+  const outPath = path.join(root, 'docs', 'competition', 'caveman', 'parity-benchmark.md');
   const evalPath = path.join(root, 'packages', 'evals', 'evals', 'caveman-parity.EVAL.yaml');
+  const frontmatter = [
+    '---',
+    'type: benchmark',
+    'title: Caveman Parity Benchmark Results',
+    'description: Fixture-backed parity results comparing UTK terse-output modes against the Caveman baseline.',
+    'tags: [competitive, benchmark, internal]',
+    'timestamp: 2026-07-03T00:00:00Z',
+    '---',
+    '',
+  ].join('\n');
   await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, markdown, 'utf8');
+  await writeFile(outPath, frontmatter + markdown, 'utf8');
   await writeFile(evalPath, renderCavemanParityEvalYaml(), 'utf8');
   process.stdout.write(markdown);
 }

@@ -87,10 +87,20 @@ function countBy<T extends string>(fixtures: ToolCallingBypassFixture[], read: (
 async function main(): Promise<void> {
   const { markdown } = await buildToolCallingBypassReport();
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-  const outPath = path.join(root, 'docs', 'internal', 'tool-calling-bypass-eval-scenarios.md');
+  const outPath = path.join(root, 'docs', 'features', 'evals', 'tool-calling-bypass-scenarios.md');
   const evalPath = path.join(root, 'packages', 'evals', 'evals', 'tool-calling-bypass.EVAL.yaml');
+  const frontmatter = [
+    '---',
+    'type: benchmark',
+    'title: Tool-Calling Bypass Eval Scenarios',
+    'description: Fixture-backed eval scenarios that verify UTK safely bypasses tool calls without losing recoverable facts.',
+    'tags: [evals, benchmark]',
+    'timestamp: 2026-07-03T00:00:00Z',
+    '---',
+    '',
+  ].join('\n');
   await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, markdown, 'utf8');
+  await writeFile(outPath, frontmatter + markdown, 'utf8');
   await writeFile(evalPath, renderToolCallingBypassEvalYaml(), 'utf8');
   process.stdout.write(markdown);
 }

@@ -210,8 +210,8 @@ function renderMarkdown(
     '',
     '## Maintenance Notes',
     '',
-    '- Keep this report, `docs/internal/benchmark-summary.md`, and `docs/evals.md` in sync per `packages/evals/AGENTS.md`.',
-    '- The ponytail arms are hand-authored deterministic baselines modeled on the published Ponytail rung examples; Ponytail itself was not installed (see `docs/internal/ponytail-competitive-research.md`).'
+    '- Keep this report, `docs/features/evals/benchmark-summary.md`, and `docs/features/evals/evals.md` in sync per `packages/evals/AGENTS.md`.',
+    '- The ponytail arms are hand-authored deterministic baselines modeled on the published Ponytail rung examples; Ponytail itself was not installed (see `docs/competition/ponytail/research.md`).'
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -262,10 +262,20 @@ function qualityGateScore(metrics: PonytailParityMetrics): number {
 async function main(): Promise<void> {
   const { markdown } = await buildPonytailParityReport();
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-  const outPath = path.join(root, 'docs', 'internal', 'ponytail-parity-benchmark-results.md');
+  const outPath = path.join(root, 'docs', 'competition', 'ponytail', 'parity-benchmark.md');
   const evalPath = path.join(root, 'packages', 'evals', 'evals', 'ponytail-parity.EVAL.yaml');
+  const frontmatter = [
+    '---',
+    'type: benchmark',
+    'title: Ponytail Parity Benchmark Results',
+    'description: Fixture-backed parity results comparing UTK code emission against the Ponytail write-less-code baseline.',
+    'tags: [competitive, benchmark, internal]',
+    'timestamp: 2026-07-03T00:00:00Z',
+    '---',
+    '',
+  ].join('\n');
   await mkdir(path.dirname(outPath), { recursive: true });
-  await writeFile(outPath, markdown, 'utf8');
+  await writeFile(outPath, frontmatter + markdown, 'utf8');
   await writeFile(evalPath, renderPonytailParityEvalYaml(), 'utf8');
   process.stdout.write(markdown);
 }
