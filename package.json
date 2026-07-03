@@ -11,7 +11,7 @@
     "packages/plugins/languages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @utk/foundation -w @utk/config -w @utk/constrained-decoder -w @utk/tracing -w @utk/grammar -w @utk/detok -w @utk/minmap -w @utk/templates -w @utk/prompt-optimization -w @utk/context-optimization -w @utk/session-artifacts -w @utk/core -w @utk/tool-invocation -w @utk/code-graph -w @utk/emission -w @utk/lang-typescript -w @utk/cli -w @utk/detok-mcp -w @utk/model-proxy -w @utk/copilot-hook -w @utk/evals",
+    "build": "npm run build -w @utk/foundation -w @utk/config -w @utk/constrained-decoder -w @utk/tracing -w @utk/grammar -w @utk/detok -w @utk/minmap -w @utk/templates -w @utk/prompt-optimization -w @utk/context-optimization -w @utk/session-artifacts -w @utk/core -w @utk/tool-invocation -w @utk/code-graph -w @utk/codegen -w @utk/lang-typescript -w @utk/cli -w @utk/detok-mcp -w @utk/model-proxy -w @utk/copilot-hook -w @utk/evals",
     "postinstall": "node scripts/build-guidance-ts.mjs",
     "prepare": "node scripts/install-git-hooks.mjs",
     "test": "npm run -ws test",

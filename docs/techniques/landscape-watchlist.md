@@ -252,7 +252,7 @@ against TOON inside `@utk/evals`.
 ## 6. Patch / Edit Formats
 
 Full-file rewrites waste output tokens; structure-aware diffs preserve edit
-quality at lower cost. UTK's `@utk/emission` is the sibling here.
+quality at lower cost. UTK's `@utk/codegen` is the sibling here.
 
 - **AdaEdit / BlockDiff / FuncDiff** (arXiv 2604.27296, "To Diff or Not to
   Diff?"). BlockDiff and FuncDiff represent changes as **block-level rewrites of
@@ -266,7 +266,7 @@ quality at lower cost. UTK's `@utk/emission` is the sibling here.
   to avoid index-shift errors. Verified: **31% token reduction while staying within
   5% of full-regeneration edit quality**, with gains on complex/list edits.
 
-UTK relevance: strong external validation of `@utk/emission`'s min-emission /
+UTK relevance: strong external validation of `@utk/codegen`'s min-emission /
 declare-before-use approach. AdaEdit's **adaptive format choice** (diff vs full,
 by measured token cost) is the key idea to adopt: UTK should pick the cheapest
 recoverable output format per edit rather than committing to one. Common baselines
@@ -533,7 +533,7 @@ Ranked by fit with UTK's hook-first, training-free, Copilot-centric core:
 4. **Code-agent context pruning + repo maps (§1–3)** — SWE-Pruner goal-conditioned
    line pruning, token-budgeted PageRank repo maps, index-time speculation.
 5. **Patch/edit formats (§6)** — AdaEdit adaptive format choice validates and
-   extends `@utk/emission`.
+   extends `@utk/codegen`.
 6. **Structured-data notation (§5)** — already shipped; the actionable finding is
    the multi-turn accuracy caveat and TRON as a safer default to evaluate.
 7. **RAG-time compression (§10)** — adaptive-rate + attention-thresholded

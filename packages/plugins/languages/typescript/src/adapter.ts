@@ -8,7 +8,7 @@ import {
   type MinMapPatchOp,
   type ScannedToken,
   type ScannedTokenKind
-} from '@utk/emission';
+} from '@utk/codegen';
 
 export type BuildSourceMinMapOptions = {
   baseMap?: MinMap;

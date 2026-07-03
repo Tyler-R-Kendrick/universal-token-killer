@@ -21,7 +21,7 @@ UTK's mediation surface is the Copilot tool-hook pipeline — not a public media
 UTK's core is **tool-output mediation** for the Copilot hook pipeline described above. Three adjacent axes extend that core rather than replace it, each sharing the same discipline — compact model-visible text, full-fidelity recoverable artifacts, and measured savings:
 
 - **Assistant-prose compression** — the `AGENTS.md` "Caveman" terse modes for human-facing summaries.
-- **Code-authoring minification** — `@utk/emission`, grammar-grounded min emission with deterministic pretty expansion at the user boundary.
+- **Code-authoring minification** — `@utk/codegen`, grammar-grounded min code generation with deterministic pretty expansion at the user boundary.
 - **Context-gateway proxy** — `@utk/model-proxy`, an OpenAI-compatible local proxy that compacts repeated history and tool schemas.
 
 Each axis is measured against a checked-in competitor baseline; see [Packages](#packages) for where the code lives.
@@ -307,9 +307,9 @@ UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the 
 - `@utk/prompt-optimization`: deterministic prompt-surface compaction.
 - `@utk/session-artifacts`: session-agent and session-skill generation (`.utk/session-agents`, `.utk/session-skills`).
 - `@utk/tool-invocation`: grammar-backed bash-like and structured tool-invocation completion, plus the Copilot tool hook.
-- `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/emission`.
-- `@utk/emission`: language-agnostic grammar-grounded emission — macro expansion, the formalized decision-ladder planner, constrained emission with honest fallback, and the language-pack registry. Consumes `@utk/grammar`, `@utk/minmap`, and `@utk/templates`.
-- `@utk/lang-typescript`: the reference emission language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, emission-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
+- `@utk/code-graph`: TypeScript-compiler-API code-graph SDK for reuse detection and RAG; underpins `@utk/codegen`.
+- `@utk/codegen`: language-agnostic grammar-grounded code generation — macro expansion, the formalized decision-ladder planner, constrained codegen with honest fallback, and the language-pack registry. Consumes `@utk/grammar`, `@utk/minmap`, and `@utk/templates`.
+- `@utk/lang-typescript`: the reference codegen language pack (`packages/plugins/languages/typescript`) — TypeScript adapter, codegen-profile grammars, and capability indexes. Future languages (python, java, kotlin, cpp, csharp, rust, ...) land as sibling folders under `packages/plugins/languages/`.
 
 **Apps and adapters:**
 

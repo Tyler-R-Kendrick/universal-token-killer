@@ -7,7 +7,7 @@ import type { LanguageAdapter } from './adapter.js';
  * `packages/plugins/languages/typescript`, with future languages as sibling
  * folders) and register themselves here.
  */
-export type LanguageEmissionPack = {
+export type LanguageCodegenPack = {
   language: string;
   adapter: LanguageAdapter;
   /** Base emission-profile grammar (.lark source shipped by the pack). */
@@ -18,9 +18,9 @@ export type LanguageEmissionPack = {
   platformCapabilities?: Record<string, string>;
 };
 
-const packs = new Map<string, LanguageEmissionPack>();
+const packs = new Map<string, LanguageCodegenPack>();
 
-export function registerLanguagePack(pack: LanguageEmissionPack): LanguageEmissionPack {
+export function registerLanguagePack(pack: LanguageCodegenPack): LanguageCodegenPack {
   if (typeof pack.language !== 'string' || pack.language.length === 0) {
     throw new Error('Language pack requires a non-empty language id');
   }
@@ -34,11 +34,11 @@ export function registerLanguagePack(pack: LanguageEmissionPack): LanguageEmissi
   return pack;
 }
 
-export function maybeResolveLanguagePack(language: string): LanguageEmissionPack | undefined {
+export function maybeResolveLanguagePack(language: string): LanguageCodegenPack | undefined {
   return packs.get(language);
 }
 
-export function resolveLanguagePack(language: string): LanguageEmissionPack {
+export function resolveLanguagePack(language: string): LanguageCodegenPack {
   const pack = packs.get(language);
   if (!pack) {
     throw new Error(`No language pack is registered for language '${language}'`);

@@ -1,6 +1,6 @@
 import type ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { addMinMapEntry, applyMinMapPatch, createMinMap } from '@utk/emission';
+import { addMinMapEntry, applyMinMapPatch, createMinMap } from '@utk/codegen';
 import { buildSourceMinMap, parseDiagnosticsAreClean, typescriptAdapter } from '../src/adapter.js';
 
 const PRETTY_CORPUS: Record<string, string> = {

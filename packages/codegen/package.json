@@ -1,5 +1,5 @@
 {
-  "name": "@utk/emission",
+  "name": "@utk/codegen",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

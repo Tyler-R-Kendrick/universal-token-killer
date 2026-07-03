@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { deriveMinGrammar, resolveLanguagePack } from '@utk/emission';
+import { deriveMinGrammar, resolveLanguagePack } from '@utk/codegen';
 import { TYPESCRIPT_EMIT_LARK, typescriptLanguagePack } from '../src/index.js';
 
 describe('typescript emission grammar profile', () => {
