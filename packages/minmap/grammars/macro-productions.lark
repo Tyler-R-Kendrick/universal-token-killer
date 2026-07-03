@@ -1,0 +1,2 @@
+macro_call: MACRO_ID "(" macro_args? ")"
+macro_args: PRETTY ("," PRETTY)*

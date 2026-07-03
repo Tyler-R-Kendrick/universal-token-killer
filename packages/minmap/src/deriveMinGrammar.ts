@@ -6,7 +6,7 @@ export type DeriveMinGrammarOptions = {
   macroIds?: string[];
 };
 
-const MIN_IDENT_TERMINAL = 'IDENT: /[A-Za-z][A-Za-z0-9]{0,2}/';
+const MIN_IDENT_TERMINAL = readPackagedGrammar('min-ident.lark').trim();
 
 const PATCH_PRODUCTIONS = readPackagedGrammar('minmap-patch-block.lark')
   .split('\n')
@@ -63,9 +63,14 @@ function macroProductions(macroIds: string[]): string[] {
       throw new Error(`Emission grammar macro id '${macroId}' must match ${MIN_ID_PATTERN}`);
     }
   }
+  const productions = readPackagedGrammar('macro-productions.lark')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
   return [
-    'macro_call: MACRO_ID "(" macro_args? ")"',
-    'macro_args: PRETTY ("," PRETTY)*',
+    ...productions,
+    // MACRO_ID alternatives are data-derived from the supplied macro ids, so this
+    // one production is generated rather than read from a committed .lark file.
     `MACRO_ID: ${macroIds.map((macroId) => `"${macroId}"`).join(' | ')}`
   ];
 }
