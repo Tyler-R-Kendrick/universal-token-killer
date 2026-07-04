@@ -1,2 +1,0 @@
-@[user]:
-{"name":"shell-vitest","category":"Test output","toolId":"shell.vitest","prompt":"Report the pass counts for the vitest run.","rawOutput":"RUN  v4.1.6 /repo/packages/evals\n\nstdout | packages/evals/harness.test.ts\nwarming up the reference judge\n\n Test Files  2 passed (2)\n      Tests  23 passed (23)\n   Start at  09:14:22\n   Duration  889ms (transform 44ms, setup 0ms, collect 120ms)","requiredFacts":["2 passed (2)","23 passed (23)"],"irrelevantFacts":["warming up the reference judge","Duration  889ms (transform 44ms, setup 0ms, collect 120ms)"]}

@@ -1,9 +1,0 @@
-{
-  "arm": "utk",
-  "visible": "utk://tool.notes.dump · schema tool-notes-dump.v1 · 382→382 tok · 1 facts recoverable via utk_expand_context",
-  "recoverable": "Heartbeat ok, everything nominal on the primary node (log line 1)\nHeartbeat ok, everything nominal on the primary node (log line 2)\nHeartbeat ok, everything nominal on the primary node (log line 3)\nHeartbeat ok, everything nominal on the primary node (log line 4)\nHeartbeat ok, everything nominal on the primary node (log line 5)\nHeartbeat ok, everything nominal on the primary node (log line 6)\nHeartbeat ok, everything nominal on the primary node (log line 7)\nHeartbeat ok, everything nominal on the primary node (log line 8)\nHeartbeat ok, everything nominal on the primary node (log line 9)\nHeartbeat ok, everything nominal on the primary node (log line 10)\nHeartbeat ok, everything nominal on the primary node (log line 11)\nHeartbeat ok, everything nominal on the primary node (log line 12)\nHeartbeat ok, everything nominal on the primary node (log line 13)\nHeartbeat ok, everything nominal on the primary node (log line 14)\nHeartbeat ok, everything nominal on the primary node (log line 15)\nUse the magic number 8675309 as the checksum seed for this run.\nHeartbeat ok, everything nominal on the primary node (log line 16)\nHeartbeat ok, everything nominal on the primary node (log line 17)\nHeartbeat ok, everything nominal on the primary node (log line 18)\nHeartbeat ok, everything nominal on the primary node (log line 19)\nHeartbeat ok, everything nominal on the primary node (log line 20)\nHeartbeat ok, everything nominal on the primary node (log line 21)\nHeartbeat ok, everything nominal on the primary node (log line 22)",
-  "visible_tokens": 27,
-  "recovery_tokens": 16,
-  "raw_tokens": 382,
-  "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
-}

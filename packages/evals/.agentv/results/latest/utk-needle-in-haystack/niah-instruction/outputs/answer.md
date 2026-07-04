@@ -1,9 +1,0 @@
-{
-  "arm": "utk",
-  "visible": "utk://tool.notes.dump · schema tool-notes-dump.v1 · 409→409 tok · 1 facts recoverable via utk_expand_context",
-  "recoverable": "Observation: queue depth stable and workers idle as expected (log line 1)\nObservation: queue depth stable and workers idle as expected (log line 2)\nObservation: queue depth stable and workers idle as expected (log line 3)\nObservation: queue depth stable and workers idle as expected (log line 4)\nObservation: queue depth stable and workers idle as expected (log line 5)\nObservation: queue depth stable and workers idle as expected (log line 6)\nObservation: queue depth stable and workers idle as expected (log line 7)\nObservation: queue depth stable and workers idle as expected (log line 8)\nObservation: queue depth stable and workers idle as expected (log line 9)\nObservation: queue depth stable and workers idle as expected (log line 10)\nObservation: queue depth stable and workers idle as expected (log line 11)\nObservation: queue depth stable and workers idle as expected (log line 12)\nObservation: queue depth stable and workers idle as expected (log line 13)\nObservation: queue depth stable and workers idle as expected (log line 14)\nOperator note: do not restart node-3 before the snapshot completes.\nObservation: queue depth stable and workers idle as expected (log line 15)\nObservation: queue depth stable and workers idle as expected (log line 16)\nObservation: queue depth stable and workers idle as expected (log line 17)\nObservation: queue depth stable and workers idle as expected (log line 18)\nObservation: queue depth stable and workers idle as expected (log line 19)\nObservation: queue depth stable and workers idle as expected (log line 20)\nObservation: queue depth stable and workers idle as expected (log line 21)",
-  "visible_tokens": 27,
-  "recovery_tokens": 17,
-  "raw_tokens": 409,
-  "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
-}

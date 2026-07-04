@@ -1,4 +1,0 @@
-targets:
-  - name: arm-utk
-    provider: cli
-    command: npx --no-install utk-evals-arm --arm utk --prompt {PROMPT} --output {OUTPUT_FILE}
