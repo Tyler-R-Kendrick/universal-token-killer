@@ -20,8 +20,10 @@ export function renderSuiteYaml(benchmark: string): string {
     `# Generated from packages/evals/data/${benchmark}.jsonl by packages/evals/scripts/generate-suite.ts\n` +
     '# (AgentV SDK `serializeEvalYaml` over agentv/suiteBuilder.ts — same definition as evals/*.eval.ts).\n' +
     '# Do not edit by hand — run `npm run evals:suites --workspace @utk/evals` to refresh.\n';
+  // Explicit runs pin: committed YAML must not vary with a developer's
+  // UTK_EVAL_RUNS environment (runtime .eval.ts loading still honors it).
   const suite = benchmark === 'tool-calling-efficiency'
-    ? buildToolCallingSuite({ root: PACKAGE_ROOT })
+    ? buildToolCallingSuite({ root: PACKAGE_ROOT, runs: 5 })
     : buildArmSuiteFromRoot(PACKAGE_ROOT, benchmark);
   return header + serializeEvalYaml(suite);
 }

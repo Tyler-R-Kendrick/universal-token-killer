@@ -159,6 +159,7 @@ export async function runToolCallingEpisode(params: {
   runs: number;
 }): Promise<ToolCallingEpisodeReport> {
   const { workspaceRoot, testCase, arm } = params;
+  if (!Number.isFinite(params.runs)) throw new Error(`runs must be a finite number, got ${params.runs}`);
   const runCount = Math.max(1, Math.floor(params.runs));
   const openAiDefs = toOpenAiToolDefs(testCase.tools);
   const fullCatalogTokens = estimateTokens(JSON.stringify(openAiDefs));

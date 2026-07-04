@@ -15,6 +15,10 @@
 #     Harbor owns the runtime contract (Docker adapters, verifiers); this
 #     workflow stays at the orchestration boundary per the AgentV benchmark
 #     provenance guide — it launches the Harbor job and uploads the results.
+#
+# Security: free-form dispatch inputs are passed to run scripts ONLY via env
+# (never inline ${{ }} template expansion inside `run:`) to prevent template
+# injection, and checkouts do not persist credentials.
 name: benchmark
 
 on:
@@ -84,8 +88,18 @@ jobs:
     runs-on: ubuntu-latest
     # Benchmarks can take a very long time; 360 is the GitHub-hosted maximum.
     timeout-minutes: 360
+    env:
+      # `benchmark` is a constrained choice input; the rest are free-form and
+      # must only reach shell scripts through env to prevent template injection.
+      BENCHMARK: ${{ inputs.benchmark }}
+      BENCHMARK_TARGETS: ${{ inputs.targets }}
+      COMPARE_BASELINE: ${{ inputs.compare_baseline }}
+      COMPARE_CANDIDATE: ${{ inputs.compare_candidate }}
+      COMPARE_THRESHOLD: ${{ inputs.compare_threshold }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -109,16 +123,16 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           set -euo pipefail
-          TARGET_FLAGS=""
-          IFS=',' read -ra TARGETS <<< "${{ inputs.targets }}"
+          TARGET_FLAGS=()
+          IFS=',' read -ra TARGETS <<< "$BENCHMARK_TARGETS"
           for target in "${TARGETS[@]}"; do
-            TARGET_FLAGS+=" --target ${target}"
+            TARGET_FLAGS+=(--target "${target}")
           done
           # threshold 0: per-arm pass/fail gating is not meaningful in a
           # comparison matrix; regressions are judged by `agentv compare`.
-          npx agentv eval "packages/evals/evals/${{ inputs.benchmark }}.eval.ts" \
-            ${TARGET_FLAGS} \
-            --output ".agentv/results/${{ inputs.benchmark }}" \
+          npx agentv eval "packages/evals/evals/${BENCHMARK}.eval.ts" \
+            "${TARGET_FLAGS[@]}" \
+            --output ".agentv/results/${BENCHMARK}" \
             --threshold 0
 
       - name: Compare baseline vs candidate (agentv compare)
@@ -126,13 +140,13 @@ jobs:
         run: |
           set -euo pipefail
           {
-            echo '## `agentv compare` — ${{ inputs.benchmark }}'
-            echo '`${{ inputs.compare_baseline }}` → `${{ inputs.compare_candidate }}` (threshold ${{ inputs.compare_threshold }})'
+            echo "## \`agentv compare\` — ${BENCHMARK}"
+            echo "\`${COMPARE_BASELINE}\` → \`${COMPARE_CANDIDATE}\` (threshold ${COMPARE_THRESHOLD})"
             echo '```'
-            npx agentv compare ".agentv/results/${{ inputs.benchmark }}" \
-              --baseline "${{ inputs.compare_baseline }}" \
-              --candidate "${{ inputs.compare_candidate }}" \
-              --threshold "${{ inputs.compare_threshold }}" | tee compare.txt
+            npx agentv compare ".agentv/results/${BENCHMARK}" \
+              --baseline "$COMPARE_BASELINE" \
+              --candidate "$COMPARE_CANDIDATE" \
+              --threshold "$COMPARE_THRESHOLD" | tee compare.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -151,15 +165,22 @@ jobs:
     if: ${{ startsWith(inputs.benchmark, 'harbor-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    env:
+      BENCHMARK: ${{ inputs.benchmark }}
+      HARBOR_MODEL: ${{ inputs.harbor_model }}
+      HARBOR_AGENT: ${{ inputs.harbor_agent }}
+      HARBOR_TRIALS: ${{ inputs.harbor_trials }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Require a model and provider secret
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [ -z "${{ inputs.harbor_model }}" ]; then
+          if [ -z "$HARBOR_MODEL" ]; then
             echo "::error::harbor_model is required for harbor-* benchmarks (e.g. anthropic/claude-sonnet-5)."
             exit 1
           fi
@@ -180,7 +201,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           set -euo pipefail
-          case "${{ inputs.benchmark }}" in
+          case "$BENCHMARK" in
             harbor-terminal-bench-2) DATASET="terminal-bench/terminal-bench-2" ;;
             harbor-swe-bench-verified) DATASET="swe-bench/swe-bench-verified" ;;
             *) echo "::error::Unknown harbor benchmark"; exit 1 ;;
@@ -188,13 +209,13 @@ jobs:
           mkdir -p harbor-results
           harbor run \
             -d "$DATASET" \
-            -m "${{ inputs.harbor_model }}" \
-            -a "${{ inputs.harbor_agent }}" \
-            -n "${{ inputs.harbor_trials }}" \
+            -m "$HARBOR_MODEL" \
+            -a "$HARBOR_AGENT" \
+            -n "$HARBOR_TRIALS" \
             --jobs-dir harbor-results 2>&1 | tee harbor-run.log
           {
-            echo '## Harbor run — ${{ inputs.benchmark }}'
-            echo "Dataset: \`$DATASET\` · model: \`${{ inputs.harbor_model }}\` · agent: \`${{ inputs.harbor_agent }}\` · trials: ${{ inputs.harbor_trials }}"
+            echo "## Harbor run — ${BENCHMARK}"
+            echo "Dataset: \`$DATASET\` · model: \`$HARBOR_MODEL\` · agent: \`$HARBOR_AGENT\` · trials: $HARBOR_TRIALS"
             echo '```'
             tail -n 40 harbor-run.log
             echo '```'

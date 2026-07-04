@@ -2,8 +2,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { realpathSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from './cliUtils.js';
 import { parseToolCallingCase, runToolCallingEpisode, type ToolCallingArm } from './toolCallingEfficiency.js';
 
 /**
@@ -19,8 +18,8 @@ import { parseToolCallingCase, runToolCallingEpisode, type ToolCallingArm } from
  */
 export async function runCli(argv: string[]): Promise<void> {
   const args = parseArgs(argv);
-  const payload = JSON.parse(args.prompt) as { runs?: number } & Record<string, unknown>;
-  const testCase = parseToolCallingCase(JSON.stringify(payload));
+  const testCase = parseToolCallingCase(args.prompt);
+  const payload = JSON.parse(args.prompt) as { runs?: number };
   const runs = typeof payload.runs === 'number' ? payload.runs : args.runs;
 
   const workspaceRoot = await mkdtemp(path.join(tmpdir(), 'utk-toolcalling-'));
@@ -60,19 +59,9 @@ function parseArgs(argv: string[]): { arm: ToolCallingArm; prompt: string; outpu
   return { arm, prompt, ...(output ? { output } : {}), runs };
 }
 
-if (isMainModule()) {
+if (isMainModule(import.meta.url)) {
   runCli(process.argv.slice(2)).catch((error: unknown) => {
     process.stderr.write(`${(error as Error).message}\n`);
     process.exitCode = 1;
   });
-}
-
-function isMainModule(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return realpathSync(entry) === fileURLToPath(import.meta.url);
-  } catch {
-    return false;
-  }
 }

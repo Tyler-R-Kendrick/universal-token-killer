@@ -7,16 +7,17 @@ import { defineAssertion } from '@agentv/sdk';
  * `{ arm, visible, recoverable, ... }`. Required facts come from the test's
  * `metadata.required_facts` (verbatim substrings of the raw tool output).
  *
- * HONESTY NOTE: an arm that persists the raw payload (the `utk` arm does)
- * retains 100% by construction — the report's `details.by_construction` flag
- * marks that so downstream readers do not mistake it for a measured result.
+ * HONESTY NOTE: arms whose recoverable surface is the raw payload retain 100%
+ * by construction — `utk` (persists raw off-context) and `baseline` (reads raw
+ * verbatim) both are. The report's `details.by_construction` flag marks those
+ * arms so downstream readers do not mistake the score for a measured result.
  */
 export default defineAssertion(({ output, metadata }) => {
   const report = parseReport(output);
   if (!report) {
     return { pass: false, score: 0, assertions: [{ text: 'Target output is not an ArmSurfaceReport JSON', passed: false }] };
   }
-  const requiredFacts = asStringArray((metadata as Record<string, unknown> | undefined)?.required_facts);
+  const requiredFacts = metaList(metadata, 'required_facts', 'requiredFacts');
   if (requiredFacts.length === 0) {
     return { pass: true, assertions: [{ text: 'No required facts declared for this case', passed: true }] };
   }
@@ -47,6 +48,14 @@ function parseReport(output: string | null): ArmSurfaceReport | null {
   } catch {
     return null;
   }
+}
+
+
+/** SDK deep-converts stdin keys to camelCase, so user metadata arrives as
+ * camelCase too; accept both forms to stay robust across SDK versions. */
+function metaList(meta: unknown, snake: string, camel: string): string[] {
+  const record = (meta ?? {}) as Record<string, unknown>;
+  return asStringArray(record[camel] ?? record[snake]);
 }
 
 function asStringArray(value: unknown): string[] {

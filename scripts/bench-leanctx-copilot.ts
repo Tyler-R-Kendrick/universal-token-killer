@@ -1,19 +1,13 @@
 /**
- * LeanCTX-STYLE FIXTURE REGRESSION SUITE — NOT A COMPETITIVE BENCHMARK.
- *
- * Integrity notes (see docs/features/evals/benchmark-integrity.md):
- * - The "LeanCTX baseline" below ({@link renderLeanCtxBaseline}) is a reference
- *   rendering authored in this repo; the lean-ctx product is never installed or
- *   executed. Token "savings" vs it are a property of how verbose that template
- *   is, and must not be quoted as a head-to-head result against LeanCTX.
- * - The rendered UTK surfaces echo each fixture's `requiredFacts` back into the
- *   graded text, so relevance/correctness are 1.0 by construction whenever the
- *   underlying code path succeeds. The scores are a regression gate on UTK's
- *   prompt-surface/tool-output/tool-schema code paths, not a quality measure.
- * - No LLM is invoked; scoring is substring/regex matching and tokens are a
- *   ceil(len/4) character estimate.
- * - The suite is deterministic: repeated rounds reproduce identical numbers, so
- *   only the count of UNIQUE fixtures (50) is meaningful when reporting results.
+ * LeanCTX-style fixture regression suite — NOT competitive benchmark.
+ * Integrity notes (full detail: docs/features/evals/benchmark-integrity.md):
+ * - "LeanCTX baseline" ({@link renderLeanCtxBaseline}) = repo-authored reference
+ *   rendering; lean-ctx never executed. Token savings vs it reflect template
+ *   verbosity — never quote as head-to-head LeanCTX result.
+ * - UTK surfaces echo fixture `requiredFacts` into graded text →
+ *   relevance/correctness 1.0 by construction; scores gate UTK code paths only.
+ * - No LLM invoked; substring/regex scoring; ceil(len/4) token estimate.
+ * - Deterministic: only UNIQUE fixture count (50) meaningful in reports.
  */
 import { filterToolDefinitionsForIntent, optimizePromptSurface, type PromptSurface } from '@utk/core';
 import { leanCtxCopilotFixtures, type LeanCtxCopilotFixture } from '../packages/evals/fixtures/leanCtxCopilotFixtures.js';

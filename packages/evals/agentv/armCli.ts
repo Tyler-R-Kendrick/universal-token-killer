@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import { writeFile } from 'node:fs/promises';
-import { realpathSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { estimateTokens } from '@utk/foundation';
+import { isMainModule } from './cliUtils.js';
 import type { BenchmarkCase } from '../data.js';
 import { recoverySlice } from '../benchmarks.js';
 import { baselineTechnique, utkTechnique, type ArmTechnique } from '../harness.js';
@@ -87,19 +86,9 @@ export async function runCli(argv: string[]): Promise<void> {
   else process.stdout.write(serialized);
 }
 
-if (isMainModule()) {
+if (isMainModule(import.meta.url)) {
   runCli(process.argv.slice(2)).catch((error: unknown) => {
     process.stderr.write(`${(error as Error).message}\n`);
     process.exitCode = 1;
   });
-}
-
-function isMainModule(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  try {
-    return realpathSync(entry) === fileURLToPath(import.meta.url);
-  } catch {
-    return false;
-  }
 }

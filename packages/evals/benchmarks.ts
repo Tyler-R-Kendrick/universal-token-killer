@@ -58,8 +58,8 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
   // lower bound (a real recovery tool may return far more); charging nothing —
   // as this harness previously did — inflated recovery-based token reductions.
   const factsVisible = retentionRatio(testCase.requiredFacts, output.visibleText) === 1;
-  const needsRecovery = !factsVisible && testCase.requiredFacts.length > 0
-    && retentionRatio(testCase.requiredFacts, output.recoverableText) === 1;
+  const recoverableRetention = retentionRatio(testCase.requiredFacts, output.recoverableText);
+  const needsRecovery = !factsVisible && testCase.requiredFacts.length > 0 && recoverableRetention === 1;
   const recoveredContextTokens = needsRecovery ? estimateTokens(recoverySlice(testCase)) : 0;
   // The visible payload is charged to exactly one bucket: for tool selection it is
   // the tool catalog (tool-schema tokens); for every other kind it is compacted
@@ -74,9 +74,9 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
     compresses: armKind !== 'baseline'
   };
 
-  const factsRetained = retentionRatio(testCase.requiredFacts, output.recoverableText) === 1;
+  const factsRetained = recoverableRetention === 1;
   const relevance = exclusionRatio(testCase.irrelevantFacts, output.visibleText);
-  const accuracy = retentionRatio(testCase.requiredFacts, output.recoverableText);
+  const accuracy = recoverableRetention;
   // Weight accuracy (fact retention) twice against relevance: dropping a required
   // fact is a correctness failure and matters more than leaving some noise visible.
   const quality = round((relevance + accuracy + accuracy) / 3);

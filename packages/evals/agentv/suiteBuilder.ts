@@ -51,13 +51,13 @@ export function packageRootFrom(evalFileUrl: string): string {
   throw new Error(`Could not locate @utk/evals package root from ${evalFileUrl}`);
 }
 
-export function loadCases(root: string, benchmark: string): JsonlCase[] {
+export function loadCases<T = JsonlCase>(root: string, benchmark: string): T[] {
   const jsonl = readFileSync(path.join(root, 'data', `${benchmark}.jsonl`), 'utf8');
   return jsonl
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
-    .map((line) => JSON.parse(line) as JsonlCase);
+    .map((line) => JSON.parse(line) as T);
 }
 
 export function loadProvenanceManifest(root: string, benchmark: string): ProvenanceManifest {
@@ -108,23 +108,33 @@ export function buildArmSuiteFromRoot(root: string, benchmark: string): ReturnTy
       // The target (an arm CLI) receives the full case as JSON and returns an
       // ArmSurfaceReport JSON; assertions grade that surface.
       input: JSON.stringify(testCase),
-      metadata: {
+      metadata: buildCaseMetadata(provenance, testCase.category, {
         category: testCase.category,
         tool_id: testCase.toolId,
         required_facts: testCase.requiredFacts,
         irrelevant_facts: testCase.irrelevantFacts,
-        ...(testCase.unsafeTools ? { unsafe_tools: testCase.unsafeTools } : {}),
-        // Provenance (informational, per the benchmark-provenance guide).
-        origin: provenance.origin,
-        authored_by: provenance.authored_by,
-        disclaimer: provenance.disclaimer,
-        ...(provenance.category_benchmark[testCase.category]
-          ? { related_benchmark: provenance.category_benchmark[testCase.category] }
-          : {})
-      }
+        ...(testCase.unsafeTools ? { unsafe_tools: testCase.unsafeTools } : {})
+      })
     }))
   };
   return defineEval(definition);
+}
+
+/** Shared per-test provenance metadata (informational, per the benchmark-provenance guide). */
+function buildCaseMetadata(
+  provenance: ProvenanceManifest,
+  category: string,
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    ...extra,
+    origin: provenance.origin,
+    authored_by: provenance.authored_by,
+    disclaimer: provenance.disclaimer,
+    ...(provenance.category_benchmark[category]
+      ? { related_benchmark: provenance.category_benchmark[category] }
+      : {})
+  };
 }
 
 type ToolCallingJsonlCase = {
@@ -145,8 +155,11 @@ type ToolCallingJsonlCase = {
 export function buildToolCallingSuite(options: { evalFileUrl?: string; root?: string; runs?: number }): ReturnType<typeof defineEval> {
   const root = options.root ?? packageRootFrom(options.evalFileUrl ?? import.meta.url);
   const provenance = loadProvenanceManifest(root, 'tool-calling-efficiency');
-  const runs = options.runs ?? (Number.parseInt(process.env.UTK_EVAL_RUNS ?? '', 10) || 5);
-  const cases = loadCases(root, 'tool-calling-efficiency') as unknown as ToolCallingJsonlCase[];
+  // Only positive finite integers are accepted from the environment — `|| 5`
+  // would mask "0" and let negatives/NaN through to the episode loop.
+  const parsedRuns = Number.parseInt(process.env.UTK_EVAL_RUNS ?? '', 10);
+  const runs = options.runs ?? (Number.isFinite(parsedRuns) && parsedRuns > 0 ? parsedRuns : 5);
+  const cases = loadCases<ToolCallingJsonlCase>(root, 'tool-calling-efficiency');
 
   return defineEval({
     name: 'utk-tool-calling-efficiency',
@@ -163,17 +176,11 @@ export function buildToolCallingSuite(options: { evalFileUrl?: string; root?: st
       id: testCase.name,
       criteria: testCase.request,
       input: JSON.stringify({ ...testCase, runs }),
-      metadata: {
+      metadata: buildCaseMetadata(provenance, testCase.category, {
         category: testCase.category,
         target_tool: testCase.targetTool,
-        runs,
-        origin: provenance.origin,
-        authored_by: provenance.authored_by,
-        disclaimer: provenance.disclaimer,
-        ...(provenance.category_benchmark[testCase.category]
-          ? { related_benchmark: provenance.category_benchmark[testCase.category] }
-          : {})
-      }
+        runs
+      })
     }))
   });
 }

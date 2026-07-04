@@ -11,7 +11,7 @@ export default defineAssertion(({ output, metadata }) => {
   if (!report) {
     return { pass: false, score: 0, assertions: [{ text: 'Target output is not an ArmSurfaceReport JSON', passed: false }] };
   }
-  const irrelevant = asStringArray((metadata as Record<string, unknown> | undefined)?.irrelevant_facts);
+  const irrelevant = metaList(metadata, 'irrelevant_facts', 'irrelevantFacts');
   if (irrelevant.length === 0) {
     return { pass: true, assertions: [{ text: 'No irrelevant facts declared for this case', passed: true }] };
   }
@@ -33,6 +33,14 @@ function parseReport(output: string | null): { visible: string } | null {
   } catch {
     return null;
   }
+}
+
+
+/** SDK deep-converts stdin keys to camelCase, so user metadata arrives as
+ * camelCase too; accept both forms to stay robust across SDK versions. */
+function metaList(meta: unknown, snake: string, camel: string): string[] {
+  const record = (meta ?? {}) as Record<string, unknown>;
+  return asStringArray(record[camel] ?? record[snake]);
 }
 
 function asStringArray(value: unknown): string[] {
