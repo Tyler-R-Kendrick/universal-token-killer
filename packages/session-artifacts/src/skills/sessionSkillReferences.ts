@@ -68,7 +68,10 @@ export function buildReferenceEntries(
 }
 
 function normalizeReferenceName(fileName: string): string {
-  const parsed = path.parse(fileName);
+  // Strip directory components using both POSIX and Windows separators so untrusted
+  // names like `..\\..\\escape.md` are reduced to their basename regardless of host OS.
+  const lastSegment = fileName.split(/[\\/]/).pop() ?? '';
+  const parsed = path.parse(lastSegment);
   const baseName = parsed.name.startsWith('.') ? '' : parsed.name;
   let base = normalizeSkillSlug(baseName || 'procedure');
   if (WINDOWS_RESERVED_BASENAMES.has(base)) base = `${base}-ref`;
