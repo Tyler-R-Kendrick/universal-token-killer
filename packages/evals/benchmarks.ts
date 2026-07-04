@@ -39,11 +39,28 @@ const OUTPUT_TOKENS: Record<BenchmarkKind, number> = {
  * cost/latency model needs. Facts/selection are checked against the RECOVERABLE
  * surface (what the agent can still reach, possibly via a recovery round-trip);
  * relevance / unsafe-tool exposure is checked against the VISIBLE chat surface.
+ *
+ * HONESTY NOTE: "task success" here is deterministic verbatim-substring fact
+ * retention, not a model completing a task — no LLM is invoked anywhere in this
+ * suite. An arm that persists the raw payload (the UTK arm does) retains 100% of
+ * facts BY CONSTRUCTION; what the comparison actually measures for such an arm is
+ * the token/cost/latency price of keeping facts recoverable, which is why the
+ * recovery round-trip is charged both a tool call AND the tokens it returns.
  */
 export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, armKind: ArmKind, output: ArmOutput): { context: RunContext; outcome: RunOutcome } {
   const retrievedContextTokens = estimateTokens(testCase.rawOutput);
   const visibleTokens = estimateTokens(output.visibleText);
   const isToolSelection = benchmark.kind === 'tool-selection';
+  // An arm whose facts are NOT in its visible surface only reaches them through a
+  // recovery round-trip, and the payload that round-trip returns re-enters the
+  // model context. Charge the minimal slice a selective recovery could return:
+  // the raw-output lines containing the required facts. This is an OPTIMISTIC
+  // lower bound (a real recovery tool may return far more); charging nothing —
+  // as this harness previously did — inflated recovery-based token reductions.
+  const factsVisible = retentionRatio(testCase.requiredFacts, output.visibleText) === 1;
+  const needsRecovery = !factsVisible && testCase.requiredFacts.length > 0
+    && retentionRatio(testCase.requiredFacts, output.recoverableText) === 1;
+  const recoveredContextTokens = needsRecovery ? estimateTokens(recoverySlice(testCase)) : 0;
   // The visible payload is charged to exactly one bucket: for tool selection it is
   // the tool catalog (tool-schema tokens); for every other kind it is compacted
   // context. Keeping them disjoint avoids double-counting in input_tokens.
@@ -53,6 +70,7 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
     promptTokens: estimateTokens(testCase.prompt),
     outputTokens: OUTPUT_TOKENS[benchmark.kind],
     toolSchemaTokens: isToolSelection ? visibleTokens : 0,
+    recoveredContextTokens,
     compresses: armKind !== 'baseline'
   };
 
@@ -62,7 +80,7 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
   // Weight accuracy (fact retention) twice against relevance: dropping a required
   // fact is a correctness failure and matters more than leaving some noise visible.
   const quality = round((relevance + accuracy + accuracy) / 3);
-  const recoveryToolCalls = armKind === 'utk' ? 1 : 0;
+  const recoveryToolCalls = needsRecovery ? 1 : 0;
 
   if (isToolSelection) {
     const unsafeVisible = (testCase.unsafeTools ?? []).some((tool) => output.visibleText.includes(tool));
@@ -95,6 +113,22 @@ export function scoreArmOutput(benchmark: Benchmark, testCase: BenchmarkCase, ar
       invalidToolCallCount: 0
     }
   };
+}
+
+/**
+ * The minimal recovery payload for a case: the deduplicated raw-output lines
+ * containing each required fact (falling back to the fact itself when it spans
+ * lines). This is what an ideal, perfectly selective recovery tool would return.
+ */
+export function recoverySlice(testCase: BenchmarkCase): string {
+  const lines = testCase.rawOutput.split('\n');
+  const slice = new Set<string>();
+  for (const fact of testCase.requiredFacts) {
+    const matches = lines.filter((line) => line.includes(fact));
+    if (matches.length > 0) slice.add(matches[0]!);
+    else slice.add(fact);
+  }
+  return [...slice].join('\n');
 }
 
 function round(value: number, digits = 3): number {

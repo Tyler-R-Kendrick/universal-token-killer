@@ -6,6 +6,7 @@
 
 ## Documents
 
+* [Benchmark Integrity And Limitations](/features/evals/benchmark-integrity.md) - What the UTK benchmarks actually measure, which results hold by construction rather than by measurement, which comparisons are like-for-like, and what models are (not) used.
 * [UTK Comparison Benchmarks](/features/evals/benchmark-summary.md) - Multi-benchmark leaderboard (compression, needle-in-a-haystack, tool selection, agent workflows) comparing UTK, baseline, and competitor compaction techniques on tokens, quality, modeled cost, and modeled latency.
 * [Evals-Driven Iteration](/features/evals/evals-driven-iteration.md) - UTK's tracing artifacts feed a TDD harness so prompt, template, schema, and grammar changes are gated by tool-usage evaluators against frozen baselines.
 * [Evals](/features/evals/evals.md) - The @utk/evals harness measures token-compaction techniques across multiple benchmarks on tokens, quality, modeled cost, and modeled latency, with regression gates and a Pareto frontier.

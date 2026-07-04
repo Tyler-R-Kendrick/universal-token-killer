@@ -1,68 +1,44 @@
 ---
 type: benchmark
-title: LeanCTX Copilot Benchmark Results
-description: Fixture-backed parity results comparing UTK Copilot context reduction against the lean-ctx baseline over a 50-case suite.
-tags: [competitive, benchmark, internal]
-timestamp: 2026-07-03T00:00:00Z
+title: LeanCTX-Style Fixture Regression Suite
+description: "Deterministic 50-fixture regression suite exercising UTK's Copilot prompt-surface, tool-output, and tool-schema code paths against a self-authored LeanCTX-style reference rendering. Not a competitive benchmark: the lean-ctx product is never executed."
+tags: [competitive, benchmark, internal, regression]
+timestamp: 2026-07-04T00:00:00Z
 ---
-# LeanCTX Copilot Benchmark Results
+# LeanCTX-Style Fixture Regression Suite
 
 Generated from `packages/evals/fixtures/leanCtxCopilotFixtures.ts` and `scripts/bench-leanctx-copilot.ts`.
 
+> **Integrity note — read before quoting any number here.** This suite is a **regression harness for UTK's own Copilot code paths, not a benchmark of LeanCTX.** The "LeanCTX baseline" is a reference rendering **authored in this repository** (`renderLeanCtxBaseline()` — a fixed template string); the lean-ctx product is never installed or executed (see `docs/competition/lean-ctx/research.md`). The token-savings percentage is therefore a property of how verbose we wrote that template. The relevance/correctness/groundedness scores are **1.000 by construction**: fixtures plant required facts as separable lines and the rendered UTK surfaces echo the fixtures' required facts back into the graded text. No LLM is invoked; tokens are a `ceil(len/4)` character estimate. Full methodology limits: `docs/features/evals/benchmark-integrity.md`.
+
+## What the suite actually verifies
+
+Each run pushes 50 unique fixtures through real UTK code paths — `optimizePromptSurface` (prompt surfaces), `compactCopilotToolOutput` (tool-output routing), and `filterToolDefinitionsForIntent` (deferred tool-schema discovery) — and asserts, per fixture, that the compact UTK surface:
+
+1. costs no more estimated tokens than the reference rendering,
+2. keeps every required fact present in the surface,
+3. carries a recovery marker (`utk-ref`/`utk-prompt-ref`/`utk_expand_context`/`utk_find_tool`).
+
+A failure on any criterion fails the suite. That makes it a useful tripwire against regressions in the surface renderers and routing — and nothing more.
+
 ## Summary
 
-- Unique scenarios: 50
-- Benchmark loops: 10
-- Rounds per loop: 3
-- Total evaluated cases: 1,500
-- Failed comparisons: 0
-- Minimum relevance: 1.000
-- Minimum correctness: 1.000
-- Minimum groundedness: 1.000
-- UTK tokens: 108,750
-- LeanCTX baseline tokens: 163,980
-- Total estimated token savings vs LeanCTX: 55,230
-- Average UTK/LeanCTX token ratio: 0.663
-- Savings vs LeanCTX: 33.68%
+- Unique scenarios: `50`
+- Failed comparisons: `0`
+- UTK compact surfaces: `3,625` estimated tokens
+- Self-authored reference rendering: `5,466` estimated tokens
+- Difference: `1,841` estimated tokens (`33.68%` fewer than the reference rendering)
+- Relevance/correctness/groundedness: `1.000` (by construction — see integrity note)
 
-## Findings
-
-- LeanCTX is strongest at governed context-runtime behavior: Copilot hook wiring, shell-output patterns, Context IR, archive recovery, proof hashes, and broad MCP-style discovery.
-- UTK wins these Copilot fixtures by staying hook-first, preserving required facts in compact `facts=` lines, storing raw artifacts locally, and exposing recovery through `utk_expand_context` or `utk_find_tool`.
-- Token savings are not accepted alone. Every case must meet or beat LeanCTX on relevance, correctness, and groundedness before token savings count.
+The suite is fully deterministic: re-running it any number of times reproduces these numbers byte-for-byte, so repeated rounds or loops add no information. (Earlier versions of this report multiplied the 50 fixtures by 30 deterministic replays and headlined "1,500 evaluated cases" with a table of 10 identical "improvement loops"; that framing overstated the evidence and has been removed.)
 
 ## Aggregate By Surface
 
-| Surface | Evaluated cases | UTK tokens | LeanCTX tokens | Saved | Savings | Failures |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Prompt surface | 750 | 53,340 | 81,930 | 28,590 | 34.90% | 0 |
-| Tool output | 600 | 48,870 | 65,760 | 16,890 | 25.68% | 0 |
-| Tool schema | 150 | 6,540 | 16,290 | 9,750 | 59.85% | 0 |
-
-## Loop Results
-
-Each loop ran the full 50-case suite for 3 internal rounds.
-
-| Loop | Evaluated cases | UTK tokens | LeanCTX tokens | Saved | Savings | Min relevance | Min correctness | Min groundedness | Failures |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 2 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 3 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 4 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 5 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 6 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 7 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 8 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 9 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-| 10 | 150 | 10,875 | 16,398 | 5,523 | 33.68% | 1.000 | 1.000 | 1.000 | 0 |
-
-## Validation Commands
-
-```bash
-npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose
-npm run typecheck
-npm test
-```
+| Surface | Unique cases | UTK tokens | Reference tokens | Saved | Savings |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Prompt surface | 25 | 1,778 | 2,731 | 953 | 34.90% |
+| Tool output | 20 | 1,629 | 2,192 | 563 | 25.68% |
+| Tool schema | 5 | 218 | 543 | 325 | 59.85% |
 
 ## Fixture Coverage
 
@@ -72,8 +48,22 @@ npm test
 | Tool output | 20 | git, search, test failures, package managers, Docker, kubectl, Terraform, Cargo, Python, file reads, edits, GitHub CLI, PowerShell, Node stacks, security scans |
 | Tool schema | 5 | deferred tool discovery, required recovery tools, schema filtering |
 
+All fixtures are template-generated in-repo; required facts are planted as cleanly separable single lines, so "fact retention" here measures that the renderers do not drop planted lines, not compaction quality on real payloads.
+
+## Validation Commands
+
+```bash
+npx vitest run scripts/bench-leanctx-copilot.test.ts --reporter=verbose
+npm run typecheck
+npm test
+```
+
+## What a real LeanCTX comparison would require
+
+Installing and running the lean-ctx product on the same inputs, measuring its actual output surfaces with a real tokenizer, and grading fact retention with criteria not embedded in the graded text. Until that exists, do not cite this suite as evidence that UTK beats LeanCTX.
+
 ## Maintenance Notes
 
-- Keep this file as the standalone LeanCTX Copilot benchmark report.
-- Update the aggregate table in `docs/features/evals/benchmark-summary.md` whenever these numbers change.
-- Follow `packages/evals/AGENTS.md` when rerunning or documenting benchmark performance.
+- Keep this file as the standalone report for the fixture suite.
+- Update `README.md`'s "LeanCTX-Style Fixture Regression Suite" section whenever these numbers change.
+- Follow `packages/evals/AGENTS.md` and `docs/features/evals/benchmark-integrity.md` when rerunning or documenting benchmark performance.

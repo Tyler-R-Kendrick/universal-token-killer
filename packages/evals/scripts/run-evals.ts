@@ -11,8 +11,10 @@ import { generateSuite } from './generate-suite.js';
 export { RESULTS_DIR };
 const DOCS_DIR = path.join(REPO_ROOT, 'docs', 'features', 'evals');
 const CHARTS_DIR = path.join(DOCS_DIR, 'charts');
-// Deterministic stamp so re-running does not churn the committed artifact.
-const SUITE_TIMESTAMP = '2026-07-03T00:00:00Z';
+// Data-version stamp, NOT a run timestamp: it is pinned so re-running the fully
+// deterministic suite does not churn the committed artifact, and bumped manually
+// whenever the datasets, arms, or scoring change (which changes the numbers).
+const SUITE_TIMESTAMP = '2026-07-04T00:00:00Z';
 
 /** Run the whole suite (every benchmark × baseline + competitors + UTK). */
 export async function runAll(): Promise<SuiteResult> {
@@ -30,7 +32,7 @@ export async function runAndPersist(): Promise<SuiteResult> {
 
   for (const report of suite.benchmarks) {
     provenance[report.benchmark] = await loadProvenance(report.benchmark);
-    // Per-benchmark results carry the full 18-field per-case logs for every arm.
+    // Per-benchmark results carry the full 19-field per-case logs for every arm.
     await writeFile(path.join(RESULTS_DIR, `${report.benchmark}.json`), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
     const chartFile = `${report.benchmark}-pareto.svg`;
     await writeFile(path.join(CHARTS_DIR, chartFile), renderParetoSvg(report), 'utf8');

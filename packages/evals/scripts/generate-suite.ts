@@ -56,12 +56,16 @@ export function renderSuiteYaml(benchmark: string, cases: BenchmarkCase[], prove
   lines.push('tests:');
 
   for (const testCase of cases) {
+    // Carry unsafeTools through so the safety axis the harness scores is not
+    // silently dropped from the formalized suite (script graders currently score
+    // retention/relevance only; the harness scores unsafe-tool exposure).
     const expected = JSON.stringify(
       {
         prompt: testCase.prompt,
         rawOutput: testCase.rawOutput,
         requiredFacts: testCase.requiredFacts,
-        irrelevantFacts: testCase.irrelevantFacts
+        irrelevantFacts: testCase.irrelevantFacts,
+        ...(testCase.unsafeTools ? { unsafeTools: testCase.unsafeTools } : {})
       },
       null,
       2
