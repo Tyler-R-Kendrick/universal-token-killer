@@ -30,6 +30,8 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 Five benchmarks — tool-output, long-context, needle-in-a-haystack, tool-selection, agent-workflows — each run baseline, every competitor, and UTK as sibling arms over the same cases. Full comparison, Pareto charts, headline numbers, and regression gates: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
 
+All suites are also authored as **AgentV SDK evals** (`packages/evals/evals/*.eval.ts`) graded by custom SDK assertions (`.agentv/assertions/`), runnable through the `agentv` CLI against configurable targets (`.agentv/targets.yaml`) with A/B deltas from the built-in `agentv compare` — plus a measured **n-run tool-calling token-efficiency benchmark** that exercises UTK's real discovery/grammar/cache/mediation code paths, and an on-demand GitHub workflow (`benchmark`) that dispatches one benchmark per run, including the Harbor-backed trusted suites (Terminal-Bench 2, SWE-Bench Verified). See [AgentV Benchmarks](docs/features/evals/agentv-benchmarks.md).
+
 > **What these numbers are — and are not.** This is a self-authored, fully deterministic self-comparison: **no LLM is invoked anywhere in the suite.** "Fact retention" is a verbatim-substring check by deterministic code, not a model completing a task. Competitor arms are configured models of each technique (one shared extractive heuristic at different aggressiveness settings) — the vendors' live systems are not installed or run. The UTK arm is likewise a configured model of UTK's handle-plus-recovery strategy, not the shipped mediation pipeline, and because it persists the raw payload its fact retention is **100% by construction** — its rows measure the modeled *price* of that strategy, not whether the implementation retains facts. Token counts are a coarse `ceil(len/4)` estimate; recovery round-trips are charged a tool call plus the minimal recovered-slice tokens (an optimistic lower bound); **cost and latency are modeled** by a deterministic reference cost table, not measured on a live endpoint. Full limitations: `docs/features/evals/benchmark-integrity.md`.
 
 Cross-benchmark summary — `token reduction / fact retention` at each technique's primary operating point; ★ marks the modeled cost-vs-retention Pareto frontier for that benchmark. Token reduction counts everything the model would see, including recovery-round-trip payloads:
@@ -314,7 +316,7 @@ UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the 
 - `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
 - `@utk-agent/copilot`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool (depends on `@utk/detok`).
-- `@utk/evals`: the comparison harness (baseline vs competitor vs UTK), jsonl benchmark data, code/LLM/composite graders, generated AgentV suites, and the agentevals.io evaluator protocol.
+- `@utk/evals`: the AgentV SDK eval suites and graders (comparison arms + the n-run tool-calling token-efficiency benchmark), jsonl benchmark data with provenance, the modeled comparison harness and report pipeline, and the agentevals.io evaluator protocol.
 
 ## Sharing Optimizations As Packs
 
@@ -372,6 +374,7 @@ my-pack/
 - [Constrained Decoding](docs/features/serialization/constrained-decoding.md)
 - [RTK Parity](docs/features/evals/rtk-parity.md)
 - [Evals](docs/features/evals/evals.md)
+- [AgentV Benchmarks](docs/features/evals/agentv-benchmarks.md)
 - [Benchmark Integrity And Limitations](docs/features/evals/benchmark-integrity.md)
 - [Tracing](docs/features/evals/tracing.md)
 - [Evals-Driven Iteration](docs/features/evals/evals-driven-iteration.md)

@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-37096be922c8c333cc2d",
+  "created_at": "2026-07-04T14:01:23.661Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-output.eval.ts",
+    "suite": "utk-tool-output",
+    "test_id": "shell-docker-ps",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-0ab674b86d231af8ce2f75635f11f47b",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-tool-output|eval_path=packages%2Fevals%2Fevals%2Ftool-output.eval.ts|test_id=shell-docker-ps|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-37096be922c8c333cc2d|trace_id=6ed94da46b93e349f8d2452f03cdd565|root_span_id=0be2f0f0ff3179a9",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-tool-output",
+      "eval_path": "packages/evals/evals/tool-output.eval.ts",
+      "test_id": "shell-docker-ps",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-37096be922c8c333cc2d",
+      "trace_id": "6ed94da46b93e349f8d2452f03cdd565",
+      "root_span_id": "0be2f0f0ff3179a9",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "6ed94da46b93e349f8d2452f03cdd565",
+    "root_span_id": "0be2f0f0ff3179a9",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "6ed94da46b93e349f8d2452f03cdd565",
+        "span_id": "0be2f0f0ff3179a9",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173670570000000",
+        "end_time_unix_nano": "1783173672288000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "shell-docker-ps",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-tool-output",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-output.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1718
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"shell-docker-ps\",\"category\":\"Containers\",\"toolId\":\"shell.docker.ps\",\"prompt\":\"Flag any unhealthy container.\",\"rawOutput\":\"CONTAINER ID   IMAGE        STATUS                      NAMES\\na1b2c3d4e5f6   utk-web      Up 2 hours (healthy)        utk-web-1\\nf6e5d4c3b2a1   utk-worker   Up 5 minutes (unhealthy)    utk-worker-1\\nbb11cc22dd33   utk-cache    Up 2 hours (healthy)        utk-cache-1\",\"requiredFacts\":[\"utk-worker-1\",\"unhealthy\"],\"irrelevantFacts\":[\"a1b2c3d4e5f6   utk-web      Up 2 hours (healthy)        utk-web-1\",\"bb11cc22dd33   utk-cache    Up 2 hours (healthy)        utk-cache-1\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://shell.docker.ps · schema shell-docker-ps.v1 · 66→66 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"CONTAINER ID   IMAGE        STATUS                      NAMES\\na1b2c3d4e5f6   utk-web      Up 2 hours (healthy)        utk-web-1\\nf6e5d4c3b2a1   utk-worker   Up 5 minutes (unhealthy)    utk-worker-1\\nbb11cc22dd33   utk-cache    Up 2 hours (healthy)        utk-cache-1\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 17,\n  \"raw_tokens\": 66,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "6ed94da46b93e349f8d2452f03cdd565",
+        "span_id": "be4f7e1a8187cce6",
+        "parent_span_id": "0be2f0f0ff3179a9",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173670570000000",
+        "end_time_unix_nano": "1783173672288000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://shell.docker.ps · schema shell-docker-ps.v1 · 66→66 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"CONTAINER ID   IMAGE        STATUS                      NAMES\\na1b2c3d4e5f6   utk-web      Up 2 hours (healthy)        utk-web-1\\nf6e5d4c3b2a1   utk-worker   Up 5 minutes (unhealthy)    utk-worker-1\\nbb11cc22dd33   utk-cache    Up 2 hours (healthy)        utk-cache-1\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 17,\n  \"raw_tokens\": 66,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "shell-docker-ps"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:10.214Z",
+      "target_span_id": "0be2f0f0ff3179a9",
+      "evidence": {
+        "span_ids": [
+          "0be2f0f0ff3179a9"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:10.376Z",
+      "target_span_id": "0be2f0f0ff3179a9",
+      "evidence": {
+        "span_ids": [
+          "0be2f0f0ff3179a9"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.33333333333333337,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:10.570Z",
+      "target_span_id": "0be2f0f0ff3179a9",
+      "evidence": {
+        "span_ids": [
+          "0be2f0f0ff3179a9"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 17) do not exceed raw 66",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 17,
+          "raw_tokens": 66,
+          "reduction": 0.333
+        }
+      }
+    }
+  ]
+}

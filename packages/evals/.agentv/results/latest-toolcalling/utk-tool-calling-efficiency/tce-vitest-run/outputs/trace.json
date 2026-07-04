@@ -1,0 +1,213 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-377341c28b5f51d71460",
+  "created_at": "2026-07-04T14:01:29.153Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+    "suite": "utk-tool-calling-efficiency",
+    "test_id": "tce-vitest-run",
+    "target": "toolcalling-utk",
+    "source_target": "toolcalling-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest-toolcalling",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-5c137b4b82d8be6d219d78570972ebd4",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest-toolcalling|suite=utk-tool-calling-efficiency|eval_path=packages%2Fevals%2Fevals%2Ftool-calling-efficiency.eval.ts|test_id=tce-vitest-run|target=toolcalling-utk|source_target=toolcalling-utk|attempt=0|variant=~|envelope_id=execution-trace-377341c28b5f51d71460|trace_id=17e635e6e504c6e26163d82e9572713f|root_span_id=e7e158217ee96ff6",
+    "dimensions": {
+      "run_id": "latest-toolcalling",
+      "suite": "utk-tool-calling-efficiency",
+      "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+      "test_id": "tce-vitest-run",
+      "target": "toolcalling-utk",
+      "source_target": "toolcalling-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-377341c28b5f51d71460",
+      "trace_id": "17e635e6e504c6e26163d82e9572713f",
+      "root_span_id": "e7e158217ee96ff6",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "17e635e6e504c6e26163d82e9572713f",
+    "root_span_id": "e7e158217ee96ff6",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "17e635e6e504c6e26163d82e9572713f",
+        "span_id": "e7e158217ee96ff6",
+        "parent_span_id": null,
+        "name": "invoke_agent toolcalling-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173687118000000",
+        "end_time_unix_nano": "1783173688914000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "toolcalling-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "tce-vitest-run",
+          "agentv.target": "toolcalling-utk",
+          "agentv.suite": "utk-tool-calling-efficiency",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+          "agentv.run_id": "latest-toolcalling",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1796
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"tce-vitest-run\",\"category\":\"Test output\",\"request\":\"run the unit test suite and report failures\",\"tools\":[{\"name\":\"run_tests\",\"description\":\"Run the project's unit test suite\",\"parameters\":{\"reporter\":{\"description\":\"reporter style\",\"completions\":[\"verbose\"],\"required\":true}}},{\"name\":\"git_commit\",\"description\":\"Create a git commit (mutating)\",\"parameters\":{\"message\":{\"description\":\"commit message\",\"required\":true}}},{\"name\":\"git_push\",\"description\":\"Push commits to the remote (mutating)\",\"parameters\":{}},{\"name\":\"read_file\",\"description\":\"Read one file from the workspace\",\"parameters\":{\"path\":{\"description\":\"file path\",\"required\":true}}},{\"name\":\"edit_file\",\"description\":\"Edit one file in the workspace (mutating)\",\"parameters\":{\"path\":{\"description\":\"file path\",\"required\":true}}},{\"name\":\"format_code\",\"description\":\"Run the code formatter (mutating)\",\"parameters\":{}}],\"targetTool\":\"run_tests\",\"toolOutput\":\"> vitest run --reporter=verbose\\nRUN v4.1.6 /workspace/acme-checkout\\nPASS src/cart/totals.test.ts (14 tests) 210ms\\nPASS src/cart/coupons.test.ts (9 tests) 120ms\\nFAIL src/checkout/tax.test.ts > applies EU VAT for digital goods\\nAssertionError: expected 119.0 to equal 121.0 at src/checkout/tax.test.ts:88:31\\nPASS src/checkout/shipping.test.ts (11 tests) 95ms\\nTest Files  1 failed | 3 passed (4)\\nTests  1 failed | 34 passed (35)\\nDuration  2.41s\",\"requiredFacts\":[\"FAIL src/checkout/tax.test.ts > applies EU VAT for digital goods\",\"AssertionError: expected 119.0 to equal 121.0 at src/checkout/tax.test.ts:88:31\",\"Tests  1 failed | 34 passed (35)\"],\"runs\":5}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"benchmark\": \"tool-calling-efficiency\",\n  \"arm\": \"utk\",\n  \"case\": \"tce-vitest-run\",\n  \"runs\": [\n    {\n      \"run\": 1,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 132,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 612,\n      \"cache_hit\": false\n    },\n    {\n      \"run\": 2,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 3,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 4,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 5,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    }\n  ],\n  \"run1_total\": 612,\n  \"steady_state_avg_total\": 480,\n  \"avg_total\": 506.4,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "17e635e6e504c6e26163d82e9572713f",
+        "span_id": "cb2fb7ea02869d10",
+        "parent_span_id": "e7e158217ee96ff6",
+        "name": "chat toolcalling-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173687118000000",
+        "end_time_unix_nano": "1783173688914000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "toolcalling-utk",
+          "gen_ai.response.model": "toolcalling-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"benchmark\": \"tool-calling-efficiency\",\n  \"arm\": \"utk\",\n  \"case\": \"tce-vitest-run\",\n  \"runs\": [\n    {\n      \"run\": 1,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 132,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 612,\n      \"cache_hit\": false\n    },\n    {\n      \"run\": 2,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 3,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 4,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 5,\n      \"selection_tokens\": 323,\n      \"invocation_tokens\": 23,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 89,\n      \"recovery_tokens\": 45,\n      \"total_tokens\": 480,\n      \"cache_hit\": true\n    }\n  ],\n  \"run1_total\": 612,\n  \"steady_state_avg_total\": 480,\n  \"avg_total\": 506.4,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "toolcalling-utk",
+      "eval_case_id": "tce-vitest-run"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "token_efficiency",
+      "type": "token-efficiency",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:27.118Z",
+      "target_span_id": "e7e158217ee96ff6",
+      "evidence": {
+        "span_ids": [
+          "e7e158217ee96ff6"
+        ],
+        "assertions": [
+          {
+            "text": "Episode ran 5/5 runs",
+            "passed": true
+          },
+          {
+            "text": "Planner cache hits on every run after run 1 (real .utk cache)",
+            "passed": true
+          },
+          {
+            "text": "Steady-state avg total (480) <= run 1 total (612)",
+            "passed": true
+          },
+          {
+            "text": "Schema-generation overhead charged only on cache-miss runs",
+            "passed": true
+          }
+        ],
+        "details": {
+          "arm": "utk",
+          "run1_total": 612,
+          "steady_state_avg_total": 480,
+          "avg_total": 506.4,
+          "per_run_totals": [
+            612,
+            480,
+            480,
+            480,
+            480
+          ],
+          "cache_hits": [
+            false,
+            true,
+            true,
+            true,
+            true
+          ],
+          "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
+        }
+      }
+    }
+  ]
+}

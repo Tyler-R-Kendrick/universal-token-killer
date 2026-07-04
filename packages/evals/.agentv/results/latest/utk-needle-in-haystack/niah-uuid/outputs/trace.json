@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-666a06a66a5fdbe3b0b8",
+  "created_at": "2026-07-04T14:01:23.659Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+    "suite": "utk-needle-in-haystack",
+    "test_id": "niah-uuid",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-0158d57d04d3189c3df0649015f2f27e",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-needle-in-haystack|eval_path=packages%2Fevals%2Fevals%2Fneedle-in-haystack.eval.ts|test_id=niah-uuid|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-666a06a66a5fdbe3b0b8|trace_id=c5d0773b456dabf53be63c9101514d50|root_span_id=42a1c8187a3ae308",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-needle-in-haystack",
+      "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+      "test_id": "niah-uuid",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-666a06a66a5fdbe3b0b8",
+      "trace_id": "c5d0773b456dabf53be63c9101514d50",
+      "root_span_id": "42a1c8187a3ae308",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "c5d0773b456dabf53be63c9101514d50",
+    "root_span_id": "42a1c8187a3ae308",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "c5d0773b456dabf53be63c9101514d50",
+        "span_id": "42a1c8187a3ae308",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173662353000000",
+        "end_time_unix_nano": "1783173663785000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "niah-uuid",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-needle-in-haystack",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1432
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"niah-uuid\",\"category\":\"Identifier\",\"toolId\":\"tool.notes.dump\",\"prompt\":\"What is the tenant UUID to migrate?\",\"rawOutput\":\"Sync tick observed, no drift detected between replicas (log line 1)\\nSync tick observed, no drift detected between replicas (log line 2)\\nSync tick observed, no drift detected between replicas (log line 3)\\nSync tick observed, no drift detected between replicas (log line 4)\\nSync tick observed, no drift detected between replicas (log line 5)\\nSync tick observed, no drift detected between replicas (log line 6)\\nSync tick observed, no drift detected between replicas (log line 7)\\nSync tick observed, no drift detected between replicas (log line 8)\\nSync tick observed, no drift detected between replicas (log line 9)\\nSync tick observed, no drift detected between replicas (log line 10)\\nSync tick observed, no drift detected between replicas (log line 11)\\nMigrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\\nSync tick observed, no drift detected between replicas (log line 12)\\nSync tick observed, no drift detected between replicas (log line 13)\\nSync tick observed, no drift detected between replicas (log line 14)\\nSync tick observed, no drift detected between replicas (log line 15)\\nSync tick observed, no drift detected between replicas (log line 16)\\nSync tick observed, no drift detected between replicas (log line 17)\\nSync tick observed, no drift detected between replicas (log line 18)\\nSync tick observed, no drift detected between replicas (log line 19)\",\"requiredFacts\":[\"Migrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\"],\"irrelevantFacts\":[\"Sync tick observed, no drift detected between replicas (log line 1)\",\"Sync tick observed, no drift detected between replicas (log line 19)\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 344→344 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Sync tick observed, no drift detected between replicas (log line 1)\\nSync tick observed, no drift detected between replicas (log line 2)\\nSync tick observed, no drift detected between replicas (log line 3)\\nSync tick observed, no drift detected between replicas (log line 4)\\nSync tick observed, no drift detected between replicas (log line 5)\\nSync tick observed, no drift detected between replicas (log line 6)\\nSync tick observed, no drift detected between replicas (log line 7)\\nSync tick observed, no drift detected between replicas (log line 8)\\nSync tick observed, no drift detected between replicas (log line 9)\\nSync tick observed, no drift detected between replicas (log line 10)\\nSync tick observed, no drift detected between replicas (log line 11)\\nMigrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\\nSync tick observed, no drift detected between replicas (log line 12)\\nSync tick observed, no drift detected between replicas (log line 13)\\nSync tick observed, no drift detected between replicas (log line 14)\\nSync tick observed, no drift detected between replicas (log line 15)\\nSync tick observed, no drift detected between replicas (log line 16)\\nSync tick observed, no drift detected between replicas (log line 17)\\nSync tick observed, no drift detected between replicas (log line 18)\\nSync tick observed, no drift detected between replicas (log line 19)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 344,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "c5d0773b456dabf53be63c9101514d50",
+        "span_id": "d1d7240b8e4d918a",
+        "parent_span_id": "42a1c8187a3ae308",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173662353000000",
+        "end_time_unix_nano": "1783173663785000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 344→344 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Sync tick observed, no drift detected between replicas (log line 1)\\nSync tick observed, no drift detected between replicas (log line 2)\\nSync tick observed, no drift detected between replicas (log line 3)\\nSync tick observed, no drift detected between replicas (log line 4)\\nSync tick observed, no drift detected between replicas (log line 5)\\nSync tick observed, no drift detected between replicas (log line 6)\\nSync tick observed, no drift detected between replicas (log line 7)\\nSync tick observed, no drift detected between replicas (log line 8)\\nSync tick observed, no drift detected between replicas (log line 9)\\nSync tick observed, no drift detected between replicas (log line 10)\\nSync tick observed, no drift detected between replicas (log line 11)\\nMigrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\\nSync tick observed, no drift detected between replicas (log line 12)\\nSync tick observed, no drift detected between replicas (log line 13)\\nSync tick observed, no drift detected between replicas (log line 14)\\nSync tick observed, no drift detected between replicas (log line 15)\\nSync tick observed, no drift detected between replicas (log line 16)\\nSync tick observed, no drift detected between replicas (log line 17)\\nSync tick observed, no drift detected between replicas (log line 18)\\nSync tick observed, no drift detected between replicas (log line 19)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 344,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "niah-uuid"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:01.977Z",
+      "target_span_id": "42a1c8187a3ae308",
+      "evidence": {
+        "span_ids": [
+          "42a1c8187a3ae308"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:02.157Z",
+      "target_span_id": "42a1c8187a3ae308",
+      "evidence": {
+        "span_ids": [
+          "42a1c8187a3ae308"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.8691860465116279,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:02.353Z",
+      "target_span_id": "42a1c8187a3ae308",
+      "evidence": {
+        "span_ids": [
+          "42a1c8187a3ae308"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 18) do not exceed raw 344",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 18,
+          "raw_tokens": 344,
+          "reduction": 0.869
+        }
+      }
+    }
+  ]
+}

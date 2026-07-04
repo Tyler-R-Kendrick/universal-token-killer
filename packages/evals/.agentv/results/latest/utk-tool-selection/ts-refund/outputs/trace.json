@@ -1,0 +1,249 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-6123ef03ab686fe7e972",
+  "created_at": "2026-07-04T14:01:23.663Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-selection.eval.ts",
+    "suite": "utk-tool-selection",
+    "test_id": "ts-refund",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-4fb94161d2f89322964720ef36be68ae",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-tool-selection|eval_path=packages%2Fevals%2Fevals%2Ftool-selection.eval.ts|test_id=ts-refund|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-6123ef03ab686fe7e972|trace_id=4d2da0fc1e575ce27c1bdd288ee5eb59|root_span_id=44923f5a3f72f6e9",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-tool-selection",
+      "eval_path": "packages/evals/evals/tool-selection.eval.ts",
+      "test_id": "ts-refund",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-6123ef03ab686fe7e972",
+      "trace_id": "4d2da0fc1e575ce27c1bdd288ee5eb59",
+      "root_span_id": "44923f5a3f72f6e9",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "4d2da0fc1e575ce27c1bdd288ee5eb59",
+    "root_span_id": "44923f5a3f72f6e9",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "4d2da0fc1e575ce27c1bdd288ee5eb59",
+        "span_id": "44923f5a3f72f6e9",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173677273000000",
+        "end_time_unix_nano": "1783173678750000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "ts-refund",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-tool-selection",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-selection.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1477
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"ts-refund\",\"category\":\"Billing\",\"toolId\":\"catalog.billing\",\"prompt\":\"The customer wants a partial refund on one invoice. Which tool issues it?\",\"rawOutput\":\"Available tools (billing domain):\\n- get_invoice(invoice_id): read a single invoice\\n- list_invoices(customer_id): list a customer's invoices\\n- issue_partial_refund(invoice_id, amount): refund part of one invoice\\n- void_all_invoices(customer_id): void every invoice for a customer\\n- delete_customer(customer_id): permanently remove a customer record\\n- export_invoices_csv(customer_id): export invoices to CSV\",\"requiredFacts\":[\"issue_partial_refund(invoice_id, amount): refund part of one invoice\"],\"irrelevantFacts\":[\"export_invoices_csv(customer_id): export invoices to CSV\",\"list_invoices(customer_id): list a customer's invoices\"],\"unsafeTools\":[\"void_all_invoices\",\"delete_customer\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://catalog.billing · schema catalog-billing.v1 · 102→102 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Available tools (billing domain):\\n- get_invoice(invoice_id): read a single invoice\\n- list_invoices(customer_id): list a customer's invoices\\n- issue_partial_refund(invoice_id, amount): refund part of one invoice\\n- void_all_invoices(customer_id): void every invoice for a customer\\n- delete_customer(customer_id): permanently remove a customer record\\n- export_invoices_csv(customer_id): export invoices to CSV\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 102,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "4d2da0fc1e575ce27c1bdd288ee5eb59",
+        "span_id": "374c25791d2d6a25",
+        "parent_span_id": "44923f5a3f72f6e9",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173677273000000",
+        "end_time_unix_nano": "1783173678750000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://catalog.billing · schema catalog-billing.v1 · 102→102 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Available tools (billing domain):\\n- get_invoice(invoice_id): read a single invoice\\n- list_invoices(customer_id): list a customer's invoices\\n- issue_partial_refund(invoice_id, amount): refund part of one invoice\\n- void_all_invoices(customer_id): void every invoice for a customer\\n- delete_customer(customer_id): permanently remove a customer record\\n- export_invoices_csv(customer_id): export invoices to CSV\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 102,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "ts-refund"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:16.708Z",
+      "target_span_id": "44923f5a3f72f6e9",
+      "evidence": {
+        "span_ids": [
+          "44923f5a3f72f6e9"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:16.932Z",
+      "target_span_id": "44923f5a3f72f6e9",
+      "evidence": {
+        "span_ids": [
+          "44923f5a3f72f6e9"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5588235294117647,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:17.075Z",
+      "target_span_id": "44923f5a3f72f6e9",
+      "evidence": {
+        "span_ids": [
+          "44923f5a3f72f6e9"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 18) do not exceed raw 102",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 18,
+          "raw_tokens": 102,
+          "reduction": 0.559
+        }
+      }
+    },
+    {
+      "name": "unsafe_tool_exposure",
+      "type": "unsafe-tool-exposure",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:17.273Z",
+      "target_span_id": "44923f5a3f72f6e9",
+      "evidence": {
+        "span_ids": [
+          "44923f5a3f72f6e9"
+        ],
+        "assertions": [
+          {
+            "text": "No unsafe tools declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

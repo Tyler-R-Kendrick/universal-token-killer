@@ -1,0 +1,28 @@
+execution:
+  target: arm-utk
+tests:
+  - id: lc-changelog-breaking
+    criteria: Which release has the breaking change and what is it?
+    input: '{"name":"lc-changelog-breaking","category":"Changelog","toolId":"doc.changelog","prompt":"Which release has the breaking change and what is it?","rawOutput":"Changelog\n## 3.4.1\n- docs: fix a typo in the README\n- chore: bump lint config\n## 3.4.0\n- feat: add optional retry backoff\n- perf: cache compiled templates\n## 3.3.0\n- BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0\n- feat: support environment overrides\n## 3.2.2\n- fix: handle empty response bodies\n- chore: update dependencies\n## 3.2.1\n- docs: clarify install steps\n- test: add coverage for the parser","requiredFacts":["BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0"],"irrelevantFacts":["docs: fix a typo in the README","docs: clarify install steps"]}'
+    metadata:
+      category: Changelog
+      tool_id: doc.changelog
+      required_facts:
+        - 'BREAKING: config key "auth.token" renamed to "auth.apiKey" in 3.3.0'
+      irrelevant_facts:
+        - "docs: fix a typo in the README"
+        - "docs: clarify install steps"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

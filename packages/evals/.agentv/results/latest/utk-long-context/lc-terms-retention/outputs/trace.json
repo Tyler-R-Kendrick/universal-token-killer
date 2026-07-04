@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-27538a66bf02a11e8646",
+  "created_at": "2026-07-04T14:01:23.657Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/long-context.eval.ts",
+    "suite": "utk-long-context",
+    "test_id": "lc-terms-retention",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-1de13cc756ec4b956566213809196376",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-long-context|eval_path=packages%2Fevals%2Fevals%2Flong-context.eval.ts|test_id=lc-terms-retention|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-27538a66bf02a11e8646|trace_id=a75bd5cf9195fe65f62a301b9ec2661b|root_span_id=c3adc7f56bc19aa5",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-long-context",
+      "eval_path": "packages/evals/evals/long-context.eval.ts",
+      "test_id": "lc-terms-retention",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-27538a66bf02a11e8646",
+      "trace_id": "a75bd5cf9195fe65f62a301b9ec2661b",
+      "root_span_id": "c3adc7f56bc19aa5",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "a75bd5cf9195fe65f62a301b9ec2661b",
+    "root_span_id": "c3adc7f56bc19aa5",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "a75bd5cf9195fe65f62a301b9ec2661b",
+        "span_id": "c3adc7f56bc19aa5",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173655261000000",
+        "end_time_unix_nano": "1783173656642000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "lc-terms-retention",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-long-context",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/long-context.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1381
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"lc-terms-retention\",\"category\":\"Legal terms\",\"toolId\":\"doc.legal.terms\",\"prompt\":\"How long is customer data retained after account closure?\",\"rawOutput\":\"Terms of Service (excerpt)\\n1. Acceptance\\nBy using the service you agree to these terms, which may change over time.\\n2. Accounts\\nYou are responsible for keeping your credentials safe.\\n3. Acceptable use\\nDo not abuse the service or attempt to disrupt it for other users.\\n4. Data retention\\nAfter account closure, customer data is retained for 30 days and then permanently deleted.\\n5. Payments\\nFees are billed monthly and are non-refundable except where required by law.\\n6. Liability\\nThe service is provided as is, without warranties of any kind.\\n7. Governing law\\nThese terms are governed by the laws of the stated jurisdiction.\\n8. Contact\\nQuestions about these terms can be sent to the support address.\",\"requiredFacts\":[\"customer data is retained for 30 days and then permanently deleted\"],\"irrelevantFacts\":[\"Fees are billed monthly and are non-refundable except where required by law.\",\"By using the service you agree to these terms, which may change over time.\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.legal.terms · schema doc-legal-terms.v1 · 175→175 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Terms of Service (excerpt)\\n1. Acceptance\\nBy using the service you agree to these terms, which may change over time.\\n2. Accounts\\nYou are responsible for keeping your credentials safe.\\n3. Acceptable use\\nDo not abuse the service or attempt to disrupt it for other users.\\n4. Data retention\\nAfter account closure, customer data is retained for 30 days and then permanently deleted.\\n5. Payments\\nFees are billed monthly and are non-refundable except where required by law.\\n6. Liability\\nThe service is provided as is, without warranties of any kind.\\n7. Governing law\\nThese terms are governed by the laws of the stated jurisdiction.\\n8. Contact\\nQuestions about these terms can be sent to the support address.\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 23,\n  \"raw_tokens\": 175,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "a75bd5cf9195fe65f62a301b9ec2661b",
+        "span_id": "e83ad0a4c27d00d9",
+        "parent_span_id": "c3adc7f56bc19aa5",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173655261000000",
+        "end_time_unix_nano": "1783173656642000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.legal.terms · schema doc-legal-terms.v1 · 175→175 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Terms of Service (excerpt)\\n1. Acceptance\\nBy using the service you agree to these terms, which may change over time.\\n2. Accounts\\nYou are responsible for keeping your credentials safe.\\n3. Acceptable use\\nDo not abuse the service or attempt to disrupt it for other users.\\n4. Data retention\\nAfter account closure, customer data is retained for 30 days and then permanently deleted.\\n5. Payments\\nFees are billed monthly and are non-refundable except where required by law.\\n6. Liability\\nThe service is provided as is, without warranties of any kind.\\n7. Governing law\\nThese terms are governed by the laws of the stated jurisdiction.\\n8. Contact\\nQuestions about these terms can be sent to the support address.\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 23,\n  \"raw_tokens\": 175,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "lc-terms-retention"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:54.817Z",
+      "target_span_id": "c3adc7f56bc19aa5",
+      "evidence": {
+        "span_ids": [
+          "c3adc7f56bc19aa5"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:55.092Z",
+      "target_span_id": "c3adc7f56bc19aa5",
+      "evidence": {
+        "span_ids": [
+          "c3adc7f56bc19aa5"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.7142857142857143,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:55.261Z",
+      "target_span_id": "c3adc7f56bc19aa5",
+      "evidence": {
+        "span_ids": [
+          "c3adc7f56bc19aa5"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 23) do not exceed raw 175",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 23,
+          "raw_tokens": 175,
+          "reduction": 0.714
+        }
+      }
+    }
+  ]
+}

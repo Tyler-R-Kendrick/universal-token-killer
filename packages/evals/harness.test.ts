@@ -333,14 +333,22 @@ describe('report + chart', () => {
   });
 });
 
-describe('AgentV suite generation', () => {
-  it('formalizes a dataset into a provenance-tagged suite that references the composite grader', async () => {
-    const [cases, provenance] = await Promise.all([loadBenchmark('tool-selection'), loadProvenance('tool-selection')]);
-    const yaml = renderSuiteYaml('tool-selection', cases, provenance);
-    expect(yaml).toContain('name: tool-selection');
-    expect(yaml).toContain('provenance:');
-    expect(yaml).toContain('packages/evals/dist/graders/compositeGrader.js');
-    for (const testCase of cases) expect(yaml).toContain(`- id: ${testCase.name}`);
+describe('AgentV suite generation (SDK serializeEvalYaml)', () => {
+  it('serializes the SDK arm suite with custom assertions and provenance metadata', async () => {
+    const cases = await loadBenchmark('tool-selection');
+    const yaml = renderSuiteYaml('tool-selection');
+    expect(yaml).toContain('name: utk-tool-selection');
+    expect(yaml).toContain('type: fact-retention');
+    expect(yaml).toContain('type: unsafe-tool-exposure');
+    expect(yaml).toContain('origin: synthetic');
+    for (const testCase of cases) expect(yaml).toContain(`id: ${testCase.name}`);
+  });
+
+  it('serializes the tool-calling-efficiency suite with the token-efficiency assertion', () => {
+    const yaml = renderSuiteYaml('tool-calling-efficiency');
+    expect(yaml).toContain('name: utk-tool-calling-efficiency');
+    expect(yaml).toContain('type: token-efficiency');
+    expect(yaml).toContain('tce-github-issue-search');
   });
 });
 

@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: aw-type-error
+    criteria: Where is the type error and what type is expected?
+    input: '{"name":"aw-type-error","category":"Type error","toolId":"workflow.swe.types","prompt":"Where is the type error and what type is expected?","rawOutput":"$ mypy src\nsrc/api/handlers.py:120: error: Argument 1 to \"save_order\" has incompatible type \"str\"; expected \"Order\"\nsrc/api/handlers.py:120: note: the id string is being passed where an Order object is required\nsrc/util/format.py:12: note: unrelated style hint about line length\nFound 1 error in 1 file (checked 87 source files)\nFix: construct an Order from the id before calling save_order at src/api/handlers.py:120\nNote: mypy cache stored in .mypy_cache\nNote: run took 4.1 seconds","requiredFacts":["src/api/handlers.py:120: error: Argument 1 to \"save_order\" has incompatible type \"str\"; expected \"Order\"","construct an Order from the id before calling save_order at src/api/handlers.py:120"],"irrelevantFacts":["Note: mypy cache stored in .mypy_cache","src/util/format.py:12: note: unrelated style hint about line length"]}'
+    metadata:
+      category: Type error
+      tool_id: workflow.swe.types
+      required_facts:
+        - 'src/api/handlers.py:120: error: Argument 1 to "save_order" has incompatible type "str"; expected "Order"'
+        - construct an Order from the id before calling save_order at src/api/handlers.py:120
+      irrelevant_facts:
+        - "Note: mypy cache stored in .mypy_cache"
+        - "src/util/format.py:12: note: unrelated style hint about line length"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the agent-workflow and coding task; these numbers are not scores on those benchmarks.
+      related_benchmark: swe-bench-verified
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

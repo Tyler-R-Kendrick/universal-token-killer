@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: shell-node-stack
+    criteria: What threw and where?
+    input: "{\"name\":\"shell-node-stack\",\"category\":\"Runtime error\",\"toolId\":\"shell.node\",\"prompt\":\"What threw and where?\",\"rawOutput\":\"node:internal/process/promises:288\\n            triggerUncaughtException(err, true /* fromPromise */);\\nTypeError: Cannot read properties of undefined (reading 'policy')\\n    at applyModelProxyPolicy (packages/model-proxy/src/contextGateway.ts:88:24)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\\n    at async run (node:internal/main/run_main_module:23:47)\",\"requiredFacts\":[\"TypeError: Cannot read properties of undefined\",\"packages/model-proxy/src/contextGateway.ts:88:24\"],\"irrelevantFacts\":[\"at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\",\"at async run (node:internal/main/run_main_module:23:47)\"]}"
+    metadata:
+      category: Runtime error
+      tool_id: shell.node
+      required_facts:
+        - "TypeError: Cannot read properties of undefined"
+        - packages/model-proxy/src/contextGateway.ts:88:24
+      irrelevant_facts:
+        - at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+        - at async run (node:internal/main/run_main_module:23:47)
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
+      related_benchmark: swe-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

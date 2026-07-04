@@ -1,0 +1,18 @@
+execution:
+  target: arm-utk
+tests:
+  - id: tce-kubectl-get-pods
+    criteria: list pods in the payments namespace and find crashing ones
+    input: '{"name":"tce-kubectl-get-pods","category":"Kubernetes","request":"list pods in the payments namespace and find crashing ones","tools":[{"name":"kubectl_get_pods","description":"List pods in a namespace with status","parameters":{"namespace":{"description":"kubernetes namespace","completions":["payments"],"required":true}}},{"name":"kubectl_delete_pod","description":"Delete a pod (mutating)","parameters":{"pod":{"description":"pod name","required":true}}},{"name":"kubectl_describe_pod","description":"Describe one pod in detail","parameters":{"pod":{"description":"pod name","required":true}}},{"name":"kubectl_drain_node","description":"Drain a node for maintenance (mutating)","parameters":{"node":{"description":"node name","required":true}}},{"name":"helm_upgrade_release","description":"Upgrade a helm release (mutating)","parameters":{"release":{"description":"release name"}}}],"targetTool":"kubectl_get_pods","toolOutput":"NAME                          READY   STATUS             RESTARTS   AGE\napi-gateway-7d9f8b6c4-2xkzq   1/1     Running            0          14d\napi-gateway-7d9f8b6c4-9plmt   1/1     Running            0          14d\nbilling-worker-5f6d7c8-qw2rt  0/1     CrashLoopBackOff   37         2d\nbilling-worker-5f6d7c8-zzv8n  1/1     Running            2          2d\nredis-cache-0                 1/1     Running            0          30d\npostgres-primary-0            1/1     Running            0          30d\nEvents: billing-worker-5f6d7c8-qw2rt  Back-off restarting failed container","requiredFacts":["billing-worker-5f6d7c8-qw2rt  0/1     CrashLoopBackOff   37         2d","Back-off restarting failed container"],"runs":5}'
+    metadata:
+      category: Kubernetes
+      target_tool: kubectl_get_pods
+      runs: 5
+      origin: synthetic
+      authored_by: universal-token-killer maintainers
+      disclaimer: Synthetic self-authored cases; offline runs invoke no LLM and use a ceil(len/4) token estimate over real code-produced surfaces. Baseline vs UTK comparison happens via `agentv compare` across targets, never inside a grader. Run 1 is expected to carry real schema/template generation overhead; later runs exercise the real .utk cache.
+      related_benchmark: bfcl
+    assertions:
+      - name: token_efficiency
+        type: token-efficiency
+        weight: 1

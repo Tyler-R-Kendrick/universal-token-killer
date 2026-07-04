@@ -1,0 +1,28 @@
+execution:
+  target: arm-utk
+tests:
+  - id: niah-uuid
+    criteria: What is the tenant UUID to migrate?
+    input: '{"name":"niah-uuid","category":"Identifier","toolId":"tool.notes.dump","prompt":"What is the tenant UUID to migrate?","rawOutput":"Sync tick observed, no drift detected between replicas (log line 1)\nSync tick observed, no drift detected between replicas (log line 2)\nSync tick observed, no drift detected between replicas (log line 3)\nSync tick observed, no drift detected between replicas (log line 4)\nSync tick observed, no drift detected between replicas (log line 5)\nSync tick observed, no drift detected between replicas (log line 6)\nSync tick observed, no drift detected between replicas (log line 7)\nSync tick observed, no drift detected between replicas (log line 8)\nSync tick observed, no drift detected between replicas (log line 9)\nSync tick observed, no drift detected between replicas (log line 10)\nSync tick observed, no drift detected between replicas (log line 11)\nMigrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.\nSync tick observed, no drift detected between replicas (log line 12)\nSync tick observed, no drift detected between replicas (log line 13)\nSync tick observed, no drift detected between replicas (log line 14)\nSync tick observed, no drift detected between replicas (log line 15)\nSync tick observed, no drift detected between replicas (log line 16)\nSync tick observed, no drift detected between replicas (log line 17)\nSync tick observed, no drift detected between replicas (log line 18)\nSync tick observed, no drift detected between replicas (log line 19)","requiredFacts":["Migrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first."],"irrelevantFacts":["Sync tick observed, no drift detected between replicas (log line 1)","Sync tick observed, no drift detected between replicas (log line 19)"]}'
+    metadata:
+      category: Identifier
+      tool_id: tool.notes.dump
+      required_facts:
+        - Migrate the tenant with UUID 550e8400-e29b-41d4-a716-446655440000 first.
+      irrelevant_facts:
+        - Sync tick observed, no drift detected between replicas (log line 1)
+        - Sync tick observed, no drift detected between replicas (log line 19)
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the needle-in-a-haystack retrieval task; these numbers are not scores on those benchmarks.
+      related_benchmark: ruler-niah
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

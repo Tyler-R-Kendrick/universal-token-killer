@@ -1,0 +1,99 @@
+{
+  "assertions": [
+    {
+      "text": "No required facts declared for this case",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "No irrelevant facts declared for this case",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Charged tokens (visible 24 + recovery 11) do not exceed raw 75",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "No unsafe tools declared for this case",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "errors_encountered": 0
+  },
+  "graders": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "reasoning": "",
+      "weight": 2,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "No required facts declared for this case",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "No irrelevant facts declared for this case",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5333333333333333,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "fail",
+      "assertions": [
+        {
+          "text": "Charged tokens (visible 24 + recovery 11) do not exceed raw 75",
+          "passed": true
+        }
+      ],
+      "details": {
+        "visible_tokens": 24,
+        "recovery_tokens": 11,
+        "raw_tokens": 75,
+        "reduction": 0.533
+      }
+    },
+    {
+      "name": "unsafe_tool_exposure",
+      "type": "unsafe-tool-exposure",
+      "score": 1,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "No unsafe tools declared for this case",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-662c42b191dd9cb21c3a",
+  "created_at": "2026-07-04T14:01:23.655Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+    "suite": "utk-agent-workflows",
+    "test_id": "aw-type-error",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-ce878c0eb22ab9e44a78735abcb803f5",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-agent-workflows|eval_path=packages%2Fevals%2Fevals%2Fagent-workflows.eval.ts|test_id=aw-type-error|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-662c42b191dd9cb21c3a|trace_id=35466985cc1bbdb56573f47a53f75186|root_span_id=cfde5f032b8338e1",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-agent-workflows",
+      "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+      "test_id": "aw-type-error",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-662c42b191dd9cb21c3a",
+      "trace_id": "35466985cc1bbdb56573f47a53f75186",
+      "root_span_id": "cfde5f032b8338e1",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "35466985cc1bbdb56573f47a53f75186",
+    "root_span_id": "cfde5f032b8338e1",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "35466985cc1bbdb56573f47a53f75186",
+        "span_id": "cfde5f032b8338e1",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173650926000000",
+        "end_time_unix_nano": "1783173652323000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "aw-type-error",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-agent-workflows",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1397
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"aw-type-error\",\"category\":\"Type error\",\"toolId\":\"workflow.swe.types\",\"prompt\":\"Where is the type error and what type is expected?\",\"rawOutput\":\"$ mypy src\\nsrc/api/handlers.py:120: error: Argument 1 to \\\"save_order\\\" has incompatible type \\\"str\\\"; expected \\\"Order\\\"\\nsrc/api/handlers.py:120: note: the id string is being passed where an Order object is required\\nsrc/util/format.py:12: note: unrelated style hint about line length\\nFound 1 error in 1 file (checked 87 source files)\\nFix: construct an Order from the id before calling save_order at src/api/handlers.py:120\\nNote: mypy cache stored in .mypy_cache\\nNote: run took 4.1 seconds\",\"requiredFacts\":[\"src/api/handlers.py:120: error: Argument 1 to \\\"save_order\\\" has incompatible type \\\"str\\\"; expected \\\"Order\\\"\",\"construct an Order from the id before calling save_order at src/api/handlers.py:120\"],\"irrelevantFacts\":[\"Note: mypy cache stored in .mypy_cache\",\"src/util/format.py:12: note: unrelated style hint about line length\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.swe.types · schema workflow-swe-types.v1 · 121→121 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"$ mypy src\\nsrc/api/handlers.py:120: error: Argument 1 to \\\"save_order\\\" has incompatible type \\\"str\\\"; expected \\\"Order\\\"\\nsrc/api/handlers.py:120: note: the id string is being passed where an Order object is required\\nsrc/util/format.py:12: note: unrelated style hint about line length\\nFound 1 error in 1 file (checked 87 source files)\\nFix: construct an Order from the id before calling save_order at src/api/handlers.py:120\\nNote: mypy cache stored in .mypy_cache\\nNote: run took 4.1 seconds\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 49,\n  \"raw_tokens\": 121,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "35466985cc1bbdb56573f47a53f75186",
+        "span_id": "484749c6970ee506",
+        "parent_span_id": "cfde5f032b8338e1",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173650926000000",
+        "end_time_unix_nano": "1783173652323000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.swe.types · schema workflow-swe-types.v1 · 121→121 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"$ mypy src\\nsrc/api/handlers.py:120: error: Argument 1 to \\\"save_order\\\" has incompatible type \\\"str\\\"; expected \\\"Order\\\"\\nsrc/api/handlers.py:120: note: the id string is being passed where an Order object is required\\nsrc/util/format.py:12: note: unrelated style hint about line length\\nFound 1 error in 1 file (checked 87 source files)\\nFix: construct an Order from the id before calling save_order at src/api/handlers.py:120\\nNote: mypy cache stored in .mypy_cache\\nNote: run took 4.1 seconds\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 49,\n  \"raw_tokens\": 121,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "aw-type-error"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:50.729Z",
+      "target_span_id": "cfde5f032b8338e1",
+      "evidence": {
+        "span_ids": [
+          "cfde5f032b8338e1"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:50.829Z",
+      "target_span_id": "cfde5f032b8338e1",
+      "evidence": {
+        "span_ids": [
+          "cfde5f032b8338e1"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.3553719008264463,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:50.926Z",
+      "target_span_id": "cfde5f032b8338e1",
+      "evidence": {
+        "span_ids": [
+          "cfde5f032b8338e1"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 29 + recovery 49) do not exceed raw 121",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 29,
+          "recovery_tokens": 49,
+          "raw_tokens": 121,
+          "reduction": 0.355
+        }
+      }
+    }
+  ]
+}

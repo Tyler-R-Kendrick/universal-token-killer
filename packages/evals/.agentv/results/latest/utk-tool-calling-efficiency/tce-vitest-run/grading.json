@@ -1,0 +1,20 @@
+{
+  "assertions": [
+    {
+      "text": "Error: Cannot read properties of undefined (reading 'trim') (exit code 1)",
+      "passed": false,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 1,
+    "total": 1,
+    "pass_rate": 0
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "errors_encountered": 1
+  }
+}

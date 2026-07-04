@@ -1,0 +1,9 @@
+{
+  "arm": "utk",
+  "visible": "utk://doc.survey.results · schema doc-survey-results.v1 · 152→152 tok · 2 facts recoverable via utk_expand_context",
+  "recoverable": "Developer Survey — Q2 results\nMethodology\nWe emailed the survey to active users and collected responses over two weeks.\nResponse volume\nWe received 1240 completed responses out of about 5000 invited.\nDemographics\nRespondents span many regions and experience levels, as in prior quarters.\nKey finding\nThe top request, from 58% of respondents, was faster cold-start times.\nSecondary findings\nDocumentation quality and error messages were the next most cited themes.\nVerbatims\nMany respondents left kind notes about the support team.\nNext steps\nWe will share a prioritized roadmap in the following newsletter.",
+  "visible_tokens": 29,
+  "recovery_tokens": 34,
+  "raw_tokens": 152,
+  "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
+}

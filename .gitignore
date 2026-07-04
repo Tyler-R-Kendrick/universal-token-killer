@@ -5,3 +5,9 @@ packages/plugins/*/*/dist/
 coverage/
 packages/*/coverage/
 *.tsbuildinfo
+
+# AgentV local run artifacts and secrets
+.agentv/results/
+.agentv/logs/
+.env
+.agentv/cache.json

@@ -1,0 +1,28 @@
+execution:
+  target: arm-utk
+tests:
+  - id: niah-coupon
+    criteria: What is the promo code for the campaign?
+    input: '{"name":"niah-coupon","category":"Coupon code","toolId":"tool.notes.dump","prompt":"What is the promo code for the campaign?","rawOutput":"CRM note: contact preferences unchanged for this segment (log line 1)\nCRM note: contact preferences unchanged for this segment (log line 2)\nCRM note: contact preferences unchanged for this segment (log line 3)\nCRM note: contact preferences unchanged for this segment (log line 4)\nCRM note: contact preferences unchanged for this segment (log line 5)\nCRM note: contact preferences unchanged for this segment (log line 6)\nCRM note: contact preferences unchanged for this segment (log line 7)\nCRM note: contact preferences unchanged for this segment (log line 8)\nCRM note: contact preferences unchanged for this segment (log line 9)\nCRM note: contact preferences unchanged for this segment (log line 10)\nThe promo code for the spring campaign is SPRINGWIDGET25 exactly.\nCRM note: contact preferences unchanged for this segment (log line 11)\nCRM note: contact preferences unchanged for this segment (log line 12)\nCRM note: contact preferences unchanged for this segment (log line 13)\nCRM note: contact preferences unchanged for this segment (log line 14)\nCRM note: contact preferences unchanged for this segment (log line 15)\nCRM note: contact preferences unchanged for this segment (log line 16)\nCRM note: contact preferences unchanged for this segment (log line 17)\nCRM note: contact preferences unchanged for this segment (log line 18)","requiredFacts":["The promo code for the spring campaign is SPRINGWIDGET25 exactly."],"irrelevantFacts":["CRM note: contact preferences unchanged for this segment (log line 1)","CRM note: contact preferences unchanged for this segment (log line 18)"]}'
+    metadata:
+      category: Coupon code
+      tool_id: tool.notes.dump
+      required_facts:
+        - The promo code for the spring campaign is SPRINGWIDGET25 exactly.
+      irrelevant_facts:
+        - "CRM note: contact preferences unchanged for this segment (log line 1)"
+        - "CRM note: contact preferences unchanged for this segment (log line 18)"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the needle-in-a-haystack retrieval task; these numbers are not scores on those benchmarks.
+      related_benchmark: niah
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

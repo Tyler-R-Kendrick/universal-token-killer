@@ -1,0 +1,165 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-8d27cb73be2a7d65d83c",
+  "created_at": "2026-07-04T13:59:59.064Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+    "suite": "utk-tool-calling-efficiency",
+    "test_id": "tce-github-issue-search",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-7d1c54e463214a8887f05cc714b9914b",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-tool-calling-efficiency|eval_path=packages%2Fevals%2Fevals%2Ftool-calling-efficiency.eval.ts|test_id=tce-github-issue-search|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-8d27cb73be2a7d65d83c|trace_id=ffd768b5f86d54ffe997a388f44ef46c|root_span_id=76b33738fc4229fb",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-tool-calling-efficiency",
+      "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+      "test_id": "tce-github-issue-search",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-8d27cb73be2a7d65d83c",
+      "trace_id": "ffd768b5f86d54ffe997a388f44ef46c",
+      "root_span_id": "76b33738fc4229fb",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "ffd768b5f86d54ffe997a388f44ef46c",
+    "root_span_id": "76b33738fc4229fb",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "ffd768b5f86d54ffe997a388f44ef46c",
+        "span_id": "76b33738fc4229fb",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173574722000000",
+        "end_time_unix_nano": "1783173574722000000",
+        "status": {
+          "code": "ERROR",
+          "message": "Cannot read properties of undefined (reading 'trim') (exit code 1)"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "tce-github-issue-search",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-tool-calling-efficiency",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "execution_error",
+          "agentv.failure_stage": "agent",
+          "agentv.failure_reason_code": "provider_error"
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"tce-github-issue-search\",\"category\":\"GitHub\",\"request\":\"search open bug issues in the api gateway repo\",\"tools\":[{\"name\":\"github_search_issues\",\"description\":\"Search issues in a GitHub repository by query\",\"parameters\":{\"query\":{\"description\":\"search query\",\"completions\":[\"is:issue is:open label:bug\"],\"required\":true},\"repo\":{\"description\":\"owner/repo slug\",\"completions\":[\"acme/api-gateway\"]}}},{\"name\":\"github_create_issue\",\"description\":\"Create a new issue in a repository\",\"parameters\":{\"title\":{\"description\":\"issue title\",\"required\":true},\"body\":{\"description\":\"issue body\"}}},{\"name\":\"github_close_issue\",\"description\":\"Close an existing issue\",\"parameters\":{\"number\":{\"description\":\"issue number\",\"required\":true}}},{\"name\":\"github_merge_pull_request\",\"description\":\"Merge a pull request (mutating)\",\"parameters\":{\"number\":{\"description\":\"PR number\",\"required\":true}}},{\"name\":\"slack_post_message\",\"description\":\"Post a message to a Slack channel\",\"parameters\":{\"channel\":{\"description\":\"channel name\"},\"text\":{\"description\":\"message text\"}}},{\"name\":\"jira_create_ticket\",\"description\":\"Create a Jira ticket\",\"parameters\":{\"summary\":{\"description\":\"ticket summary\"}}}],\"targetTool\":\"github_search_issues\",\"toolOutput\":\"Searching issues in repo acme/api-gateway...\\nRate limit: 4998/5000 remaining\\n#482 [open] label:bug  Timeout on POST /v1/payments when idempotency key reused\\n#479 [open] label:bug  Retry storm after 502 from upstream billing service\\n#455 [open] label:docs Update pagination examples\\n#431 [closed] label:bug  Null pointer in webhook signature check\\nTotal open issues matching query: 3\\nQuery executed in 0.42s\",\"requiredFacts\":[\"#482 [open] label:bug  Timeout on POST /v1/payments when idempotency key reused\",\"#479 [open] label:bug  Retry storm after 502 from upstream billing service\",\"Total open issues matching query: 3\"],\"runs\":5}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "Error occurred: Cannot read properties of undefined (reading 'trim') (exit code 1)"
+              }
+            }
+          },
+          {
+            "name": "exception",
+            "time_unix_nano": "1783173574722000000",
+            "attributes": {
+              "exception.message": "Cannot read properties of undefined (reading 'trim') (exit code 1)"
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "ffd768b5f86d54ffe997a388f44ef46c",
+        "span_id": "82d52028bc3d37dd",
+        "parent_span_id": "76b33738fc4229fb",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173574722000000",
+        "end_time_unix_nano": "1783173574722000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "arm-utk",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "Error occurred: Cannot read properties of undefined (reading 'trim') (exit code 1)"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "arm-utk",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "target": "arm-utk",
+      "eval_case_id": "tce-github-issue-search"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  }
+}

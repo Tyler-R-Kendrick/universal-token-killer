@@ -41,6 +41,10 @@ export async function runAndPersist(): Promise<SuiteResult> {
     await generateSuite(report.benchmark);
   }
 
+  // The AgentV-native tool-calling-efficiency suite has no modeled-harness arm;
+  // keep its committed YAML in sync alongside the benchmark suites.
+  await generateSuite('tool-calling-efficiency');
+
   await writeFile(path.join(RESULTS_DIR, 'summary.json'), `${JSON.stringify(summarize(suite), null, 2)}\n`, 'utf8');
   await mkdir(DOCS_DIR, { recursive: true });
   await writeFile(path.join(DOCS_DIR, 'benchmark-summary.md'), renderSuiteMarkdown(suite, { provenance, charts, timestamp: SUITE_TIMESTAMP }), 'utf8');

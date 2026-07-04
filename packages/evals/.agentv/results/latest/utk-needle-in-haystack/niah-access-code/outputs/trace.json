@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-a0e410ae648c4c56d74e",
+  "created_at": "2026-07-04T14:01:23.658Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+    "suite": "utk-needle-in-haystack",
+    "test_id": "niah-access-code",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-719d6209633b582e214c62f9bb8b0141",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-needle-in-haystack|eval_path=packages%2Fevals%2Fevals%2Fneedle-in-haystack.eval.ts|test_id=niah-access-code|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-a0e410ae648c4c56d74e|trace_id=b85d9e13742970a8023b38ccdb0ead99|root_span_id=75ed66c6a1e66831",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-needle-in-haystack",
+      "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+      "test_id": "niah-access-code",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-a0e410ae648c4c56d74e",
+      "trace_id": "b85d9e13742970a8023b38ccdb0ead99",
+      "root_span_id": "75ed66c6a1e66831",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "b85d9e13742970a8023b38ccdb0ead99",
+    "root_span_id": "75ed66c6a1e66831",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "b85d9e13742970a8023b38ccdb0ead99",
+        "span_id": "75ed66c6a1e66831",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173660500000000",
+        "end_time_unix_nano": "1783173662123000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "niah-access-code",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-needle-in-haystack",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1623
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"niah-access-code\",\"category\":\"Access code\",\"toolId\":\"tool.notes.dump\",\"prompt\":\"What is the access code for building 7?\",\"rawOutput\":\"Routine note: the hallway lights were checked and are fine (log line 1)\\nRoutine note: the hallway lights were checked and are fine (log line 2)\\nRoutine note: the hallway lights were checked and are fine (log line 3)\\nRoutine note: the hallway lights were checked and are fine (log line 4)\\nRoutine note: the hallway lights were checked and are fine (log line 5)\\nRoutine note: the hallway lights were checked and are fine (log line 6)\\nRoutine note: the hallway lights were checked and are fine (log line 7)\\nRoutine note: the hallway lights were checked and are fine (log line 8)\\nRoutine note: the hallway lights were checked and are fine (log line 9)\\nReminder: the access code for building 7 is 4471 this month.\\nRoutine note: the hallway lights were checked and are fine (log line 10)\\nRoutine note: the hallway lights were checked and are fine (log line 11)\\nRoutine note: the hallway lights were checked and are fine (log line 12)\\nRoutine note: the hallway lights were checked and are fine (log line 13)\\nRoutine note: the hallway lights were checked and are fine (log line 14)\\nRoutine note: the hallway lights were checked and are fine (log line 15)\\nRoutine note: the hallway lights were checked and are fine (log line 16)\\nRoutine note: the hallway lights were checked and are fine (log line 17)\\nRoutine note: the hallway lights were checked and are fine (log line 18)\",\"requiredFacts\":[\"the access code for building 7 is 4471 this month.\"],\"irrelevantFacts\":[\"Routine note: the hallway lights were checked and are fine (log line 1)\",\"Routine note: the hallway lights were checked and are fine (log line 18)\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 342→342 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Routine note: the hallway lights were checked and are fine (log line 1)\\nRoutine note: the hallway lights were checked and are fine (log line 2)\\nRoutine note: the hallway lights were checked and are fine (log line 3)\\nRoutine note: the hallway lights were checked and are fine (log line 4)\\nRoutine note: the hallway lights were checked and are fine (log line 5)\\nRoutine note: the hallway lights were checked and are fine (log line 6)\\nRoutine note: the hallway lights were checked and are fine (log line 7)\\nRoutine note: the hallway lights were checked and are fine (log line 8)\\nRoutine note: the hallway lights were checked and are fine (log line 9)\\nReminder: the access code for building 7 is 4471 this month.\\nRoutine note: the hallway lights were checked and are fine (log line 10)\\nRoutine note: the hallway lights were checked and are fine (log line 11)\\nRoutine note: the hallway lights were checked and are fine (log line 12)\\nRoutine note: the hallway lights were checked and are fine (log line 13)\\nRoutine note: the hallway lights were checked and are fine (log line 14)\\nRoutine note: the hallway lights were checked and are fine (log line 15)\\nRoutine note: the hallway lights were checked and are fine (log line 16)\\nRoutine note: the hallway lights were checked and are fine (log line 17)\\nRoutine note: the hallway lights were checked and are fine (log line 18)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 15,\n  \"raw_tokens\": 342,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "b85d9e13742970a8023b38ccdb0ead99",
+        "span_id": "0f3224108a8c8aa8",
+        "parent_span_id": "75ed66c6a1e66831",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173660500000000",
+        "end_time_unix_nano": "1783173662123000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 342→342 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Routine note: the hallway lights were checked and are fine (log line 1)\\nRoutine note: the hallway lights were checked and are fine (log line 2)\\nRoutine note: the hallway lights were checked and are fine (log line 3)\\nRoutine note: the hallway lights were checked and are fine (log line 4)\\nRoutine note: the hallway lights were checked and are fine (log line 5)\\nRoutine note: the hallway lights were checked and are fine (log line 6)\\nRoutine note: the hallway lights were checked and are fine (log line 7)\\nRoutine note: the hallway lights were checked and are fine (log line 8)\\nRoutine note: the hallway lights were checked and are fine (log line 9)\\nReminder: the access code for building 7 is 4471 this month.\\nRoutine note: the hallway lights were checked and are fine (log line 10)\\nRoutine note: the hallway lights were checked and are fine (log line 11)\\nRoutine note: the hallway lights were checked and are fine (log line 12)\\nRoutine note: the hallway lights were checked and are fine (log line 13)\\nRoutine note: the hallway lights were checked and are fine (log line 14)\\nRoutine note: the hallway lights were checked and are fine (log line 15)\\nRoutine note: the hallway lights were checked and are fine (log line 16)\\nRoutine note: the hallway lights were checked and are fine (log line 17)\\nRoutine note: the hallway lights were checked and are fine (log line 18)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 15,\n  \"raw_tokens\": 342,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "niah-access-code"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:00.223Z",
+      "target_span_id": "75ed66c6a1e66831",
+      "evidence": {
+        "span_ids": [
+          "75ed66c6a1e66831"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:00.347Z",
+      "target_span_id": "75ed66c6a1e66831",
+      "evidence": {
+        "span_ids": [
+          "75ed66c6a1e66831"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.8771929824561404,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:00.500Z",
+      "target_span_id": "75ed66c6a1e66831",
+      "evidence": {
+        "span_ids": [
+          "75ed66c6a1e66831"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 15) do not exceed raw 342",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 15,
+          "raw_tokens": 342,
+          "reduction": 0.877
+        }
+      }
+    }
+  ]
+}

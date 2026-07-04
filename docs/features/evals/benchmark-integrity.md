@@ -41,6 +41,10 @@ If a future run ever uses a real model (as a judge, or as a live arm), that run'
 - **The regression gate is real and UTK is allowed to fail it.** Committed results show UTK failing the cost-per-success gate on tool-output and tool-selection. Tests must never assert that UTK beats competitors (`packages/evals/harness.test.ts` deliberately checks structure, not outcomes).
 - The suite timestamp in generated reports is a pinned **data-version stamp**, not a run time; the pipeline is deterministic, so reruns reproduce committed artifacts byte-for-byte (verify with `npm run evals --workspace @utk/evals && git status`).
 
+## What IS measured through real code
+
+The `tool-calling-efficiency` benchmark (see [AgentV Benchmarks](agentv-benchmarks.md)) is the exception to "arms are configured models": its UTK arm runs the **shipped** `filterToolDefinitionsForIntent`, `completeStructuredToolInvocation` (guidance-ts grammar, template persistence, memoized planner cache), and `mediateToolExecution` implementations over n runs against one workspace. Cache hits, schema-generation overhead, and every surface are real code artifacts; token counts remain `ceil(len/4)` estimates, and no LLM is invoked offline. Its grader checks the caching *property* (run-1 overhead amortizes) — cross-arm comparison stays in `agentv compare`.
+
 ## Known gaps
 
 - `scripts/verify-no-special-cases.ts` only matches five literal English phrases in a string passed to it and is not wired into CI — it does **not** detect benchmark-specific special-casing in product code. Do not cite it as an integrity guarantee.

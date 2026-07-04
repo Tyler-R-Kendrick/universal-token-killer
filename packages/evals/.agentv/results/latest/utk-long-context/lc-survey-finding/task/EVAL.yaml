@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: lc-survey-finding
+    criteria: What is the top finding and the sample size?
+    input: '{"name":"lc-survey-finding","category":"Survey results","toolId":"doc.survey.results","prompt":"What is the top finding and the sample size?","rawOutput":"Developer Survey — Q2 results\nMethodology\nWe emailed the survey to active users and collected responses over two weeks.\nResponse volume\nWe received 1240 completed responses out of about 5000 invited.\nDemographics\nRespondents span many regions and experience levels, as in prior quarters.\nKey finding\nThe top request, from 58% of respondents, was faster cold-start times.\nSecondary findings\nDocumentation quality and error messages were the next most cited themes.\nVerbatims\nMany respondents left kind notes about the support team.\nNext steps\nWe will share a prioritized roadmap in the following newsletter.","requiredFacts":["top request, from 58% of respondents, was faster cold-start times","received 1240 completed responses"],"irrelevantFacts":["Many respondents left kind notes about the support team.","Respondents span many regions and experience levels, as in prior quarters."]}'
+    metadata:
+      category: Survey results
+      tool_id: doc.survey.results
+      required_facts:
+        - top request, from 58% of respondents, was faster cold-start times
+        - received 1240 completed responses
+      irrelevant_facts:
+        - Many respondents left kind notes about the support team.
+        - Respondents span many regions and experience levels, as in prior quarters.
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: loong
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

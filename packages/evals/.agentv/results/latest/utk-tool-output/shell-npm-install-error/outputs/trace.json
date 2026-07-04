@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-24f27ad3412ada8e0621",
+  "created_at": "2026-07-04T14:01:23.661Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-output.eval.ts",
+    "suite": "utk-tool-output",
+    "test_id": "shell-npm-install-error",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-cadbb17a820ffc537d5e65018480c7a1",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-tool-output|eval_path=packages%2Fevals%2Fevals%2Ftool-output.eval.ts|test_id=shell-npm-install-error|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-24f27ad3412ada8e0621|trace_id=826e04be5320c847a1d8436fd933b870|root_span_id=aa8323d5a0f19186",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-tool-output",
+      "eval_path": "packages/evals/evals/tool-output.eval.ts",
+      "test_id": "shell-npm-install-error",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-24f27ad3412ada8e0621",
+      "trace_id": "826e04be5320c847a1d8436fd933b870",
+      "root_span_id": "aa8323d5a0f19186",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "826e04be5320c847a1d8436fd933b870",
+    "root_span_id": "aa8323d5a0f19186",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "826e04be5320c847a1d8436fd933b870",
+        "span_id": "aa8323d5a0f19186",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173670103000000",
+        "end_time_unix_nano": "1783173671638000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "shell-npm-install-error",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-tool-output",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-output.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1535
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"shell-npm-install-error\",\"category\":\"Package install\",\"toolId\":\"shell.npm.install\",\"prompt\":\"Explain why the install failed.\",\"rawOutput\":\"npm warn deprecated inflight@1.0.6: This module is not supported\\nnpm notice\\nnpm notice New major version of npm available! 10.2.4 -> 11.0.0\\nnpm error code ERESOLVE\\nnpm error ERESOLVE unable to resolve dependency tree\\nnpm error While resolving: @utk/evals@0.1.0\\nnpm error Conflicting peer dependency: zod@3.25.0\\nnpm error Fix the upstream dependency conflict, or retry\\nnpm error A complete log is in: /root/.npm/_logs/2026-07-03.log\",\"requiredFacts\":[\"code ERESOLVE\",\"Conflicting peer dependency: zod@3.25.0\"],\"irrelevantFacts\":[\"npm warn deprecated inflight@1.0.6: This module is not supported\",\"npm notice New major version of npm available! 10.2.4 -> 11.0.0\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://shell.npm.install · schema shell-npm-install.v1 · 108→108 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"npm warn deprecated inflight@1.0.6: This module is not supported\\nnpm notice\\nnpm notice New major version of npm available! 10.2.4 -> 11.0.0\\nnpm error code ERESOLVE\\nnpm error ERESOLVE unable to resolve dependency tree\\nnpm error While resolving: @utk/evals@0.1.0\\nnpm error Conflicting peer dependency: zod@3.25.0\\nnpm error Fix the upstream dependency conflict, or retry\\nnpm error A complete log is in: /root/.npm/_logs/2026-07-03.log\",\n  \"visible_tokens\": 28,\n  \"recovery_tokens\": 19,\n  \"raw_tokens\": 108,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "826e04be5320c847a1d8436fd933b870",
+        "span_id": "c93b6c479cf6f23d",
+        "parent_span_id": "aa8323d5a0f19186",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173670103000000",
+        "end_time_unix_nano": "1783173671638000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://shell.npm.install · schema shell-npm-install.v1 · 108→108 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"npm warn deprecated inflight@1.0.6: This module is not supported\\nnpm notice\\nnpm notice New major version of npm available! 10.2.4 -> 11.0.0\\nnpm error code ERESOLVE\\nnpm error ERESOLVE unable to resolve dependency tree\\nnpm error While resolving: @utk/evals@0.1.0\\nnpm error Conflicting peer dependency: zod@3.25.0\\nnpm error Fix the upstream dependency conflict, or retry\\nnpm error A complete log is in: /root/.npm/_logs/2026-07-03.log\",\n  \"visible_tokens\": 28,\n  \"recovery_tokens\": 19,\n  \"raw_tokens\": 108,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "shell-npm-install-error"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:09.830Z",
+      "target_span_id": "aa8323d5a0f19186",
+      "evidence": {
+        "span_ids": [
+          "aa8323d5a0f19186"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:09.960Z",
+      "target_span_id": "aa8323d5a0f19186",
+      "evidence": {
+        "span_ids": [
+          "aa8323d5a0f19186"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5648148148148149,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:10.103Z",
+      "target_span_id": "aa8323d5a0f19186",
+      "evidence": {
+        "span_ids": [
+          "aa8323d5a0f19186"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 28 + recovery 19) do not exceed raw 108",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 28,
+          "recovery_tokens": 19,
+          "raw_tokens": 108,
+          "reduction": 0.565
+        }
+      }
+    }
+  ]
+}

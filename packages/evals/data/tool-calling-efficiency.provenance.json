@@ -1,0 +1,40 @@
+{
+  "name": "tool-calling-efficiency",
+  "version": "1.0.0",
+  "license": "MIT",
+  "tags": [
+    "tool-calling",
+    "token-efficiency",
+    "n-run",
+    "cache",
+    "synthetic"
+  ],
+  "origin": "synthetic",
+  "authored_by": "universal-token-killer maintainers",
+  "description": "N-run tool-calling episodes measuring token cost across tool selection, invocation-input generation, and output consumption, exercised through UTK's real discovery/grammar/cache/mediation code paths.",
+  "disclaimer": "Synthetic self-authored cases; offline runs invoke no LLM and use a ceil(len/4) token estimate over real code-produced surfaces. Baseline vs UTK comparison happens via `agentv compare` across targets, never inside a grader. Run 1 is expected to carry real schema/template generation overhead; later runs exercise the real .utk cache.",
+  "related_benchmarks": [
+    {
+      "id": "bfcl",
+      "name": "Berkeley Function-Calling Leaderboard",
+      "org": "UC Berkeley (Gorilla)",
+      "url": "https://gorilla.cs.berkeley.edu/leaderboard.html",
+      "relation": "task-category analog for tool selection and invocation, not a data source"
+    },
+    {
+      "id": "tau-bench",
+      "name": "\u03c4-bench",
+      "org": "Sierra Research",
+      "url": "https://github.com/sierra-research/tau-bench",
+      "relation": "task-category analog for multi-turn tool-agent loops, not a data source"
+    }
+  ],
+  "category_benchmark": {
+    "GitHub": "bfcl",
+    "Kubernetes": "bfcl",
+    "Test output": "tau-bench",
+    "Terraform": "bfcl",
+    "Package managers": "bfcl",
+    "Payments API": "tau-bench"
+  }
+}

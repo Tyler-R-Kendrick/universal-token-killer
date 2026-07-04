@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-1b2c7be9c8a4cfcd0c56",
+  "created_at": "2026-07-04T14:01:23.655Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+    "suite": "utk-agent-workflows",
+    "test_id": "aw-flaky-race",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-001d5eca8e988b408bffae183136ce38",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-agent-workflows|eval_path=packages%2Fevals%2Fevals%2Fagent-workflows.eval.ts|test_id=aw-flaky-race|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-1b2c7be9c8a4cfcd0c56|trace_id=bf9ef3a2afeba1eacd0f0b9f25b4ccb9|root_span_id=75a30c0f2eb8d209",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-agent-workflows",
+      "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+      "test_id": "aw-flaky-race",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-1b2c7be9c8a4cfcd0c56",
+      "trace_id": "bf9ef3a2afeba1eacd0f0b9f25b4ccb9",
+      "root_span_id": "75a30c0f2eb8d209",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "bf9ef3a2afeba1eacd0f0b9f25b4ccb9",
+    "root_span_id": "75a30c0f2eb8d209",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "bf9ef3a2afeba1eacd0f0b9f25b4ccb9",
+        "span_id": "75a30c0f2eb8d209",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173647547000000",
+        "end_time_unix_nano": "1783173648864000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "aw-flaky-race",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-agent-workflows",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1317
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"aw-flaky-race\",\"category\":\"Flaky test\",\"toolId\":\"workflow.swe.flaky\",\"prompt\":\"Which test is flaky and what race condition causes it?\",\"rawOutput\":\"Flaky test report (last 50 CI runs)\\ntest_upload_then_list ....... failed 7/50 (flaky)\\ntest_login .................. passed 50/50\\ntest_logout ................. passed 50/50\\nAnalysis: test_upload_then_list asserts the file appears immediately, but the\\nuploader writes asynchronously — a race between the write and the list call.\\nRepro: the failure only happens when the CI worker is under load.\\nFix hint: await the upload completion callback before listing in tests/test_files.py\\nNote: retrying masks the bug and is discouraged\\nNote: full logs archived in the CI artifacts bucket\",\"requiredFacts\":[\"test_upload_then_list ....... failed 7/50 (flaky)\",\"await the upload completion callback before listing in tests/test_files.py\"],\"irrelevantFacts\":[\"Note: full logs archived in the CI artifacts bucket\",\"test_logout ................. passed 50/50\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.swe.flaky · schema workflow-swe-flaky.v1 · 145→145 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Flaky test report (last 50 CI runs)\\ntest_upload_then_list ....... failed 7/50 (flaky)\\ntest_login .................. passed 50/50\\ntest_logout ................. passed 50/50\\nAnalysis: test_upload_then_list asserts the file appears immediately, but the\\nuploader writes asynchronously — a race between the write and the list call.\\nRepro: the failure only happens when the CI worker is under load.\\nFix hint: await the upload completion callback before listing in tests/test_files.py\\nNote: retrying masks the bug and is discouraged\\nNote: full logs archived in the CI artifacts bucket\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 34,\n  \"raw_tokens\": 145,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "bf9ef3a2afeba1eacd0f0b9f25b4ccb9",
+        "span_id": "59bd6a644140d2c3",
+        "parent_span_id": "75a30c0f2eb8d209",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173647547000000",
+        "end_time_unix_nano": "1783173648864000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.swe.flaky · schema workflow-swe-flaky.v1 · 145→145 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Flaky test report (last 50 CI runs)\\ntest_upload_then_list ....... failed 7/50 (flaky)\\ntest_login .................. passed 50/50\\ntest_logout ................. passed 50/50\\nAnalysis: test_upload_then_list asserts the file appears immediately, but the\\nuploader writes asynchronously — a race between the write and the list call.\\nRepro: the failure only happens when the CI worker is under load.\\nFix hint: await the upload completion callback before listing in tests/test_files.py\\nNote: retrying masks the bug and is discouraged\\nNote: full logs archived in the CI artifacts bucket\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 34,\n  \"raw_tokens\": 145,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "aw-flaky-race"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:47.149Z",
+      "target_span_id": "75a30c0f2eb8d209",
+      "evidence": {
+        "span_ids": [
+          "75a30c0f2eb8d209"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:47.341Z",
+      "target_span_id": "75a30c0f2eb8d209",
+      "evidence": {
+        "span_ids": [
+          "75a30c0f2eb8d209"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5655172413793104,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:47.547Z",
+      "target_span_id": "75a30c0f2eb8d209",
+      "evidence": {
+        "span_ids": [
+          "75a30c0f2eb8d209"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 29 + recovery 34) do not exceed raw 145",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 29,
+          "recovery_tokens": 34,
+          "raw_tokens": 145,
+          "reduction": 0.566
+        }
+      }
+    }
+  ]
+}

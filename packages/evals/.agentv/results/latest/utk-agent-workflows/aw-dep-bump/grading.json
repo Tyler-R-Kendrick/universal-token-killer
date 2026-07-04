@@ -1,0 +1,80 @@
+{
+  "assertions": [
+    {
+      "text": "No required facts declared for this case",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "No irrelevant facts declared for this case",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Charged tokens (visible 28 + recovery 37) do not exceed raw 128",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "errors_encountered": 0
+  },
+  "graders": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "reasoning": "",
+      "weight": 2,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "No required facts declared for this case",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "No irrelevant facts declared for this case",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.4921875,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "fail",
+      "assertions": [
+        {
+          "text": "Charged tokens (visible 28 + recovery 37) do not exceed raw 128",
+          "passed": true
+        }
+      ],
+      "details": {
+        "visible_tokens": 28,
+        "recovery_tokens": 37,
+        "raw_tokens": 128,
+        "reduction": 0.492
+      }
+    }
+  ]
+}

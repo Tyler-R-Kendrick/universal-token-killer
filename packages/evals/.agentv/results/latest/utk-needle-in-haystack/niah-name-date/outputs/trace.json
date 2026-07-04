@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-85d4a4da5db79427c038",
+  "created_at": "2026-07-04T14:01:23.659Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+    "suite": "utk-needle-in-haystack",
+    "test_id": "niah-name-date",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-525c256584c72288e1bc9c714fd7272c",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-needle-in-haystack|eval_path=packages%2Fevals%2Fevals%2Fneedle-in-haystack.eval.ts|test_id=niah-name-date|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-85d4a4da5db79427c038|trace_id=f383e535a6eb1e5e354177c0c1c4faef|root_span_id=363aabb020379f26",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-needle-in-haystack",
+      "eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+      "test_id": "niah-name-date",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-85d4a4da5db79427c038",
+      "trace_id": "f383e535a6eb1e5e354177c0c1c4faef",
+      "root_span_id": "363aabb020379f26",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "f383e535a6eb1e5e354177c0c1c4faef",
+    "root_span_id": "363aabb020379f26",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "f383e535a6eb1e5e354177c0c1c4faef",
+        "span_id": "363aabb020379f26",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173665253000000",
+        "end_time_unix_nano": "1783173666888000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "niah-name-date",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-needle-in-haystack",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/needle-in-haystack.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1635
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"niah-name-date\",\"category\":\"Owner and date\",\"toolId\":\"tool.notes.dump\",\"prompt\":\"Who is the on-call owner and until when?\",\"rawOutput\":\"Roster note: shift coverage looks balanced this cycle (log line 1)\\nRoster note: shift coverage looks balanced this cycle (log line 2)\\nRoster note: shift coverage looks balanced this cycle (log line 3)\\nRoster note: shift coverage looks balanced this cycle (log line 4)\\nRoster note: shift coverage looks balanced this cycle (log line 5)\\nRoster note: shift coverage looks balanced this cycle (log line 6)\\nRoster note: shift coverage looks balanced this cycle (log line 7)\\nRoster note: shift coverage looks balanced this cycle (log line 8)\\nRoster note: shift coverage looks balanced this cycle (log line 9)\\nRoster note: shift coverage looks balanced this cycle (log line 10)\\nRoster note: shift coverage looks balanced this cycle (log line 11)\\nRoster note: shift coverage looks balanced this cycle (log line 12)\\nOn-call owner is Priya Nandakumar until 2026-07-15, then it rotates.\\nRoster note: shift coverage looks balanced this cycle (log line 13)\\nRoster note: shift coverage looks balanced this cycle (log line 14)\\nRoster note: shift coverage looks balanced this cycle (log line 15)\\nRoster note: shift coverage looks balanced this cycle (log line 16)\\nRoster note: shift coverage looks balanced this cycle (log line 17)\\nRoster note: shift coverage looks balanced this cycle (log line 18)\\nRoster note: shift coverage looks balanced this cycle (log line 19)\\nRoster note: shift coverage looks balanced this cycle (log line 20)\",\"requiredFacts\":[\"On-call owner is Priya Nandakumar until 2026-07-15, then it rotates.\"],\"irrelevantFacts\":[\"Roster note: shift coverage looks balanced this cycle (log line 1)\",\"Roster note: shift coverage looks balanced this cycle (log line 20)\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 355→355 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Roster note: shift coverage looks balanced this cycle (log line 1)\\nRoster note: shift coverage looks balanced this cycle (log line 2)\\nRoster note: shift coverage looks balanced this cycle (log line 3)\\nRoster note: shift coverage looks balanced this cycle (log line 4)\\nRoster note: shift coverage looks balanced this cycle (log line 5)\\nRoster note: shift coverage looks balanced this cycle (log line 6)\\nRoster note: shift coverage looks balanced this cycle (log line 7)\\nRoster note: shift coverage looks balanced this cycle (log line 8)\\nRoster note: shift coverage looks balanced this cycle (log line 9)\\nRoster note: shift coverage looks balanced this cycle (log line 10)\\nRoster note: shift coverage looks balanced this cycle (log line 11)\\nRoster note: shift coverage looks balanced this cycle (log line 12)\\nOn-call owner is Priya Nandakumar until 2026-07-15, then it rotates.\\nRoster note: shift coverage looks balanced this cycle (log line 13)\\nRoster note: shift coverage looks balanced this cycle (log line 14)\\nRoster note: shift coverage looks balanced this cycle (log line 15)\\nRoster note: shift coverage looks balanced this cycle (log line 16)\\nRoster note: shift coverage looks balanced this cycle (log line 17)\\nRoster note: shift coverage looks balanced this cycle (log line 18)\\nRoster note: shift coverage looks balanced this cycle (log line 19)\\nRoster note: shift coverage looks balanced this cycle (log line 20)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 17,\n  \"raw_tokens\": 355,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "f383e535a6eb1e5e354177c0c1c4faef",
+        "span_id": "fed3746e58dc015b",
+        "parent_span_id": "363aabb020379f26",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173665253000000",
+        "end_time_unix_nano": "1783173666888000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://tool.notes.dump · schema tool-notes-dump.v1 · 355→355 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Roster note: shift coverage looks balanced this cycle (log line 1)\\nRoster note: shift coverage looks balanced this cycle (log line 2)\\nRoster note: shift coverage looks balanced this cycle (log line 3)\\nRoster note: shift coverage looks balanced this cycle (log line 4)\\nRoster note: shift coverage looks balanced this cycle (log line 5)\\nRoster note: shift coverage looks balanced this cycle (log line 6)\\nRoster note: shift coverage looks balanced this cycle (log line 7)\\nRoster note: shift coverage looks balanced this cycle (log line 8)\\nRoster note: shift coverage looks balanced this cycle (log line 9)\\nRoster note: shift coverage looks balanced this cycle (log line 10)\\nRoster note: shift coverage looks balanced this cycle (log line 11)\\nRoster note: shift coverage looks balanced this cycle (log line 12)\\nOn-call owner is Priya Nandakumar until 2026-07-15, then it rotates.\\nRoster note: shift coverage looks balanced this cycle (log line 13)\\nRoster note: shift coverage looks balanced this cycle (log line 14)\\nRoster note: shift coverage looks balanced this cycle (log line 15)\\nRoster note: shift coverage looks balanced this cycle (log line 16)\\nRoster note: shift coverage looks balanced this cycle (log line 17)\\nRoster note: shift coverage looks balanced this cycle (log line 18)\\nRoster note: shift coverage looks balanced this cycle (log line 19)\\nRoster note: shift coverage looks balanced this cycle (log line 20)\",\n  \"visible_tokens\": 27,\n  \"recovery_tokens\": 17,\n  \"raw_tokens\": 355,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "niah-name-date"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:04.969Z",
+      "target_span_id": "363aabb020379f26",
+      "evidence": {
+        "span_ids": [
+          "363aabb020379f26"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:05.108Z",
+      "target_span_id": "363aabb020379f26",
+      "evidence": {
+        "span_ids": [
+          "363aabb020379f26"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.876056338028169,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:05.252Z",
+      "target_span_id": "363aabb020379f26",
+      "evidence": {
+        "span_ids": [
+          "363aabb020379f26"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 27 + recovery 17) do not exceed raw 355",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 27,
+          "recovery_tokens": 17,
+          "raw_tokens": 355,
+          "reduction": 0.876
+        }
+      }
+    }
+  ]
+}

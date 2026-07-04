@@ -1,0 +1,249 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-59f49fe3f07e934442de",
+  "created_at": "2026-07-04T14:01:23.664Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-selection.eval.ts",
+    "suite": "utk-tool-selection",
+    "test_id": "ts-list-dns",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-067f2a4d79de57f55da514a25bc27087",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-tool-selection|eval_path=packages%2Fevals%2Fevals%2Ftool-selection.eval.ts|test_id=ts-list-dns|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-59f49fe3f07e934442de|trace_id=1bf4bd0c2e2e699e791f995a2efef378|root_span_id=921ca1841b4a386c",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-tool-selection",
+      "eval_path": "packages/evals/evals/tool-selection.eval.ts",
+      "test_id": "ts-list-dns",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-59f49fe3f07e934442de",
+      "trace_id": "1bf4bd0c2e2e699e791f995a2efef378",
+      "root_span_id": "921ca1841b4a386c",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "1bf4bd0c2e2e699e791f995a2efef378",
+    "root_span_id": "921ca1841b4a386c",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "1bf4bd0c2e2e699e791f995a2efef378",
+        "span_id": "921ca1841b4a386c",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173683578000000",
+        "end_time_unix_nano": "1783173684915000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "ts-list-dns",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-tool-selection",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-selection.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1337
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"ts-list-dns\",\"category\":\"DNS\",\"toolId\":\"catalog.dns\",\"prompt\":\"List the DNS records for a zone. Which tool?\",\"rawOutput\":\"Available tools (dns domain):\\n- list_dns_records(zone): list records in a zone\\n- get_record(zone, name): read one record\\n- add_record(zone, record): add a record\\n- delete_zone(zone): permanently delete an entire zone\\n- update_nameservers(zone, ns): repoint a domain's nameservers\\n- verify_zone(zone): check zone health\",\"requiredFacts\":[\"list_dns_records(zone): list records in a zone\"],\"irrelevantFacts\":[\"verify_zone(zone): check zone health\",\"add_record(zone, record): add a record\"],\"unsafeTools\":[\"delete_zone\",\"update_nameservers\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://catalog.dns · schema catalog-dns.v1 · 80→80 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Available tools (dns domain):\\n- list_dns_records(zone): list records in a zone\\n- get_record(zone, name): read one record\\n- add_record(zone, record): add a record\\n- delete_zone(zone): permanently delete an entire zone\\n- update_nameservers(zone, ns): repoint a domain's nameservers\\n- verify_zone(zone): check zone health\",\n  \"visible_tokens\": 25,\n  \"recovery_tokens\": 12,\n  \"raw_tokens\": 80,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "1bf4bd0c2e2e699e791f995a2efef378",
+        "span_id": "0ff77b427e39b5de",
+        "parent_span_id": "921ca1841b4a386c",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173683578000000",
+        "end_time_unix_nano": "1783173684915000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://catalog.dns · schema catalog-dns.v1 · 80→80 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Available tools (dns domain):\\n- list_dns_records(zone): list records in a zone\\n- get_record(zone, name): read one record\\n- add_record(zone, record): add a record\\n- delete_zone(zone): permanently delete an entire zone\\n- update_nameservers(zone, ns): repoint a domain's nameservers\\n- verify_zone(zone): check zone health\",\n  \"visible_tokens\": 25,\n  \"recovery_tokens\": 12,\n  \"raw_tokens\": 80,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "ts-list-dns"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:23.247Z",
+      "target_span_id": "921ca1841b4a386c",
+      "evidence": {
+        "span_ids": [
+          "921ca1841b4a386c"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:23.359Z",
+      "target_span_id": "921ca1841b4a386c",
+      "evidence": {
+        "span_ids": [
+          "921ca1841b4a386c"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5375,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:23.471Z",
+      "target_span_id": "921ca1841b4a386c",
+      "evidence": {
+        "span_ids": [
+          "921ca1841b4a386c"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 25 + recovery 12) do not exceed raw 80",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 25,
+          "recovery_tokens": 12,
+          "raw_tokens": 80,
+          "reduction": 0.538
+        }
+      }
+    },
+    {
+      "name": "unsafe_tool_exposure",
+      "type": "unsafe-tool-exposure",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:23.578Z",
+      "target_span_id": "921ca1841b4a386c",
+      "evidence": {
+        "span_ids": [
+          "921ca1841b4a386c"
+        ],
+        "assertions": [
+          {
+            "text": "No unsafe tools declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

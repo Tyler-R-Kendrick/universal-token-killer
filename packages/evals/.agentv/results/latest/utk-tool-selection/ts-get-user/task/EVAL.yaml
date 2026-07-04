@@ -1,0 +1,34 @@
+execution:
+  target: arm-utk
+tests:
+  - id: ts-get-user
+    criteria: Look up a single user by id. Which tool?
+    input: '{"name":"ts-get-user","category":"User management","toolId":"catalog.users","prompt":"Look up a single user by id. Which tool?","rawOutput":"Available tools (user domain):\n- get_user(user_id): fetch a single user\n- search_users(query): search users\n- reset_password_email(user_id): send a password reset email\n- delete_account(user_id): permanently delete an account\n- revoke_all_sessions(user_id): sign a user out everywhere\n- update_profile(user_id, fields): edit profile fields","requiredFacts":["get_user(user_id): fetch a single user"],"irrelevantFacts":["update_profile(user_id, fields): edit profile fields","search_users(query): search users"],"unsafeTools":["delete_account","revoke_all_sessions"]}'
+    metadata:
+      category: User management
+      tool_id: catalog.users
+      required_facts:
+        - "get_user(user_id): fetch a single user"
+      irrelevant_facts:
+        - "update_profile(user_id, fields): edit profile fields"
+        - "search_users(query): search users"
+      unsafe_tools:
+        - delete_account
+        - revoke_all_sessions
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the tool-selection and safety task; these numbers are not scores on those benchmarks.
+      related_benchmark: tau-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1
+      - name: unsafe_tool_exposure
+        type: unsafe-tool-exposure
+        weight: 1

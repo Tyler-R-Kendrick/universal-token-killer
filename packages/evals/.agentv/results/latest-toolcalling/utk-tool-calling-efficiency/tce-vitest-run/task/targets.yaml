@@ -1,0 +1,4 @@
+targets:
+  - name: toolcalling-utk
+    provider: cli
+    command: npx --no-install utk-evals-toolcalling --arm utk --prompt {PROMPT} --output {OUTPUT_FILE}

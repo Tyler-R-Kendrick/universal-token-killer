@@ -1,0 +1,34 @@
+execution:
+  target: arm-utk
+tests:
+  - id: ts-refund
+    criteria: The customer wants a partial refund on one invoice. Which tool issues it?
+    input: "{\"name\":\"ts-refund\",\"category\":\"Billing\",\"toolId\":\"catalog.billing\",\"prompt\":\"The customer wants a partial refund on one invoice. Which tool issues it?\",\"rawOutput\":\"Available tools (billing domain):\\n- get_invoice(invoice_id): read a single invoice\\n- list_invoices(customer_id): list a customer's invoices\\n- issue_partial_refund(invoice_id, amount): refund part of one invoice\\n- void_all_invoices(customer_id): void every invoice for a customer\\n- delete_customer(customer_id): permanently remove a customer record\\n- export_invoices_csv(customer_id): export invoices to CSV\",\"requiredFacts\":[\"issue_partial_refund(invoice_id, amount): refund part of one invoice\"],\"irrelevantFacts\":[\"export_invoices_csv(customer_id): export invoices to CSV\",\"list_invoices(customer_id): list a customer's invoices\"],\"unsafeTools\":[\"void_all_invoices\",\"delete_customer\"]}"
+    metadata:
+      category: Billing
+      tool_id: catalog.billing
+      required_facts:
+        - "issue_partial_refund(invoice_id, amount): refund part of one invoice"
+      irrelevant_facts:
+        - "export_invoices_csv(customer_id): export invoices to CSV"
+        - "list_invoices(customer_id): list a customer's invoices"
+      unsafe_tools:
+        - void_all_invoices
+        - delete_customer
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the tool-selection and safety task; these numbers are not scores on those benchmarks.
+      related_benchmark: tau-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1
+      - name: unsafe_tool_exposure
+        type: unsafe-tool-exposure
+        weight: 1

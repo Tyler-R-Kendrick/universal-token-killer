@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: json-events-array
+    criteria: Find the first event and the failed one.
+    input: '{"name":"json-events-array","category":"Structured JSON","toolId":"tool.events.list","prompt":"Find the first event and the failed one.","rawOutput":"[\n  {\n    \"eventId\": \"evt-0\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 100\n  },\n  {\n    \"eventId\": \"evt-1\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 101\n  },\n  {\n    \"eventId\": \"evt-2\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 102\n  },\n  {\n    \"eventId\": \"evt-3\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 103\n  },\n  {\n    \"eventId\": \"evt-4\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 104\n  },\n  {\n    \"eventId\": \"evt-5\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 105\n  },\n  {\n    \"eventId\": \"evt-6\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 106\n  },\n  {\n    \"eventId\": \"evt-7\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 107\n  },\n  {\n    \"eventId\": \"evt-8\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 108\n  },\n  {\n    \"eventId\": \"evt-9\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 109\n  },\n  {\n    \"eventId\": \"evt-10\",\n    \"type\": \"ci_step\",\n    \"status\": \"passed\",\n    \"durationMs\": 110\n  },\n  {\n    \"eventId\": \"evt-11\",\n    \"type\": \"ci_step\",\n    \"status\": \"failed\",\n    \"durationMs\": 111\n  }\n]","requiredFacts":["\"eventId\": \"evt-0\"","\"status\": \"failed\""],"irrelevantFacts":["\"eventId\": \"evt-5\"","\"eventId\": \"evt-6\""]}'
+    metadata:
+      category: Structured JSON
+      tool_id: tool.events.list
+      required_facts:
+        - '"eventId": "evt-0"'
+        - '"status": "failed"'
+      irrelevant_facts:
+        - '"eventId": "evt-5"'
+        - '"eventId": "evt-6"'
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
+      related_benchmark: tau-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

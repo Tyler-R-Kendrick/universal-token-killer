@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "eval_file": "/home/user/universal-token-killer/packages/evals/evals/tool-calling-efficiency.eval.ts",
+    "timestamp": "2026-07-04T14:01:27.062Z",
+    "targets": [
+      "toolcalling-baseline",
+      "toolcalling-utk"
+    ],
+    "tests_run": [
+      "tce-github-issue-search",
+      "tce-kubectl-get-pods",
+      "tce-npm-audit",
+      "tce-stripe-refund-lookup",
+      "tce-terraform-plan",
+      "tce-vitest-run"
+    ],
+    "experiment": "default",
+    "planned_test_count": 12
+  },
+  "run_summary": {
+    "toolcalling-baseline": {
+      "pass_rate": {
+        "mean": 1,
+        "stddev": 0
+      },
+      "time_seconds": {
+        "mean": 1.679,
+        "stddev": 0.179
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0
+      }
+    },
+    "toolcalling-utk": {
+      "pass_rate": {
+        "mean": 1,
+        "stddev": 0
+      },
+      "time_seconds": {
+        "mean": 1.843,
+        "stddev": 0.173
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0
+      }
+    }
+  },
+  "per_grader_summary": {
+    "token_efficiency:token-efficiency": {
+      "mean": 1,
+      "stddev": 0
+    }
+  },
+  "notes": []
+}

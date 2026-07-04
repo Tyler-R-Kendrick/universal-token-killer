@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-aade4f09f4e616ada55c",
+  "created_at": "2026-07-04T14:01:23.657Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/long-context.eval.ts",
+    "suite": "utk-long-context",
+    "test_id": "lc-paper-result",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-7329b5a0bea710c8c43e35532ef22000",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-long-context|eval_path=packages%2Fevals%2Fevals%2Flong-context.eval.ts|test_id=lc-paper-result|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-aade4f09f4e616ada55c|trace_id=a5630c3b2ced84873015ddba06f48a7a|root_span_id=b94df9295f81de77",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-long-context",
+      "eval_path": "packages/evals/evals/long-context.eval.ts",
+      "test_id": "lc-paper-result",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-aade4f09f4e616ada55c",
+      "trace_id": "a5630c3b2ced84873015ddba06f48a7a",
+      "root_span_id": "b94df9295f81de77",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "a5630c3b2ced84873015ddba06f48a7a",
+    "root_span_id": "b94df9295f81de77",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "a5630c3b2ced84873015ddba06f48a7a",
+        "span_id": "b94df9295f81de77",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173656865000000",
+        "end_time_unix_nano": "1783173658450000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "lc-paper-result",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-long-context",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/long-context.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1585
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"lc-paper-result\",\"category\":\"Research abstract\",\"toolId\":\"doc.paper.abstract\",\"prompt\":\"What is the headline result and the method used?\",\"rawOutput\":\"Title: Efficient Context Pruning for Long-Horizon Agents\\nAbstract\\nLarge language model agents accumulate context that inflates cost and latency.\\nPrior work explores summarization, retrieval, and caching in isolation.\\nWe introduce a gated pruning method that keeps only verifiably recoverable spans.\\nResult: on our benchmark the method reduces context tokens by 63% with no measurable\\nloss in task success. We analyze failure cases and ablate each component.\\nRelated work covers a broad range of compression techniques from 2021 onward.\\nWe thank our reviewers and the compute-grant program for their support.\\nLimitations: the method assumes access to the original tool outputs.\",\"requiredFacts\":[\"reduces context tokens by 63% with no measurable\",\"a gated pruning method that keeps only verifiably recoverable spans\"],\"irrelevantFacts\":[\"We thank our reviewers and the compute-grant program for their support.\",\"Related work covers a broad range of compression techniques from 2021 onward.\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.paper.abstract · schema doc-paper-abstract.v1 · 169→169 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Title: Efficient Context Pruning for Long-Horizon Agents\\nAbstract\\nLarge language model agents accumulate context that inflates cost and latency.\\nPrior work explores summarization, retrieval, and caching in isolation.\\nWe introduce a gated pruning method that keeps only verifiably recoverable spans.\\nResult: on our benchmark the method reduces context tokens by 63% with no measurable\\nloss in task success. We analyze failure cases and ablate each component.\\nRelated work covers a broad range of compression techniques from 2021 onward.\\nWe thank our reviewers and the compute-grant program for their support.\\nLimitations: the method assumes access to the original tool outputs.\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 42,\n  \"raw_tokens\": 169,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "a5630c3b2ced84873015ddba06f48a7a",
+        "span_id": "f57a638fdbe59576",
+        "parent_span_id": "b94df9295f81de77",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173656865000000",
+        "end_time_unix_nano": "1783173658450000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.paper.abstract · schema doc-paper-abstract.v1 · 169→169 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Title: Efficient Context Pruning for Long-Horizon Agents\\nAbstract\\nLarge language model agents accumulate context that inflates cost and latency.\\nPrior work explores summarization, retrieval, and caching in isolation.\\nWe introduce a gated pruning method that keeps only verifiably recoverable spans.\\nResult: on our benchmark the method reduces context tokens by 63% with no measurable\\nloss in task success. We analyze failure cases and ablate each component.\\nRelated work covers a broad range of compression techniques from 2021 onward.\\nWe thank our reviewers and the compute-grant program for their support.\\nLimitations: the method assumes access to the original tool outputs.\",\n  \"visible_tokens\": 29,\n  \"recovery_tokens\": 42,\n  \"raw_tokens\": 169,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "lc-paper-result"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:56.562Z",
+      "target_span_id": "b94df9295f81de77",
+      "evidence": {
+        "span_ids": [
+          "b94df9295f81de77"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:56.696Z",
+      "target_span_id": "b94df9295f81de77",
+      "evidence": {
+        "span_ids": [
+          "b94df9295f81de77"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.5798816568047338,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:56.865Z",
+      "target_span_id": "b94df9295f81de77",
+      "evidence": {
+        "span_ids": [
+          "b94df9295f81de77"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 29 + recovery 42) do not exceed raw 169",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 29,
+          "recovery_tokens": 42,
+          "raw_tokens": 169,
+          "reduction": 0.58
+        }
+      }
+    }
+  ]
+}

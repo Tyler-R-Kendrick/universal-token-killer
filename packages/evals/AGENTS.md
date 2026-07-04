@@ -2,8 +2,19 @@
 
 The evals are data-driven. Benchmark cases live in `data/<benchmark>.jsonl`; everything
 else (results, charts, suite YAML, docs) is generated from them. Never hand-edit generated
-numbers — change the data or the harness, then regenerate. There are five benchmarks:
-`tool-output`, `long-context`, `needle-in-haystack`, `tool-selection`, `agent-workflows`.
+numbers — change the data or the harness, then regenerate. There are five comparison
+benchmarks (`tool-output`, `long-context`, `needle-in-haystack`, `tool-selection`,
+`agent-workflows`) plus the measured `tool-calling-efficiency` benchmark.
+
+## AgentV is the eval interface
+
+All suites are authored with the AgentV SDK (`evals/*.eval.ts` over `agentv/suiteBuilder.ts`,
+lowered to `suites/*.EVAL.yaml` via `serializeEvalYaml`), graded by the custom SDK assertions in
+`.agentv/assertions/`, and run through the `agentv` CLI against the configurable targets in
+`.agentv/targets.yaml`. Cross-arm judgment (baseline vs UTK, wins/losses) happens ONLY in
+`agentv compare` — never inside a grader. New evals MUST follow this shape; see
+`docs/features/evals/agentv-benchmarks.md`. Long benchmark runs are dispatched on demand through
+`.github/workflows/benchmark.yml` (one benchmark per dispatch).
 
 ## Regenerating
 

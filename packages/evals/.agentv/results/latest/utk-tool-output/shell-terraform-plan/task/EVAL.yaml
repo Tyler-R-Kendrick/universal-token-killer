@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: shell-terraform-plan
+    criteria: Give the add/change/destroy counts.
+    input: '{"name":"shell-terraform-plan","category":"Infrastructure","toolId":"shell.terraform.plan","prompt":"Give the add/change/destroy counts.","rawOutput":"Refreshing state... this may take a few moments\nNote: Objects have changed outside of Terraform\nTerraform will perform the following actions:\n  # aws_s3_bucket.logs will be updated in-place\n  # aws_lambda_function.worker will be created\n\nPlan: 1 to add, 1 to change, 0 to destroy.","requiredFacts":["Plan: 1 to add, 1 to change, 0 to destroy.","aws_lambda_function.worker will be created"],"irrelevantFacts":["Refreshing state... this may take a few moments","Note: Objects have changed outside of Terraform"]}'
+    metadata:
+      category: Infrastructure
+      tool_id: shell.terraform.plan
+      required_facts:
+        - "Plan: 1 to add, 1 to change, 0 to destroy."
+        - aws_lambda_function.worker will be created
+      irrelevant_facts:
+        - Refreshing state... this may take a few moments
+        - "Note: Objects have changed outside of Terraform"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
+      related_benchmark: terminal-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

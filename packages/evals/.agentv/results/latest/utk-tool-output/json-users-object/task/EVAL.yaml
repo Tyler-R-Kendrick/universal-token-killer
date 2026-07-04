@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: json-users-object
+    criteria: Return the first user and the pagination cursor.
+    input: '{"name":"json-users-object","category":"Structured JSON","toolId":"tool.users.page","prompt":"Return the first user and the pagination cursor.","rawOutput":"{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"name\": \"user-1\",\n      \"role\": \"admin\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"user-2\",\n      \"role\": \"reader\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"user-3\",\n      \"role\": \"admin\"\n    },\n    {\n      \"id\": 4,\n      \"name\": \"user-4\",\n      \"role\": \"reader\"\n    },\n    {\n      \"id\": 5,\n      \"name\": \"user-5\",\n      \"role\": \"admin\"\n    },\n    {\n      \"id\": 6,\n      \"name\": \"user-6\",\n      \"role\": \"reader\"\n    },\n    {\n      \"id\": 7,\n      \"name\": \"user-7\",\n      \"role\": \"admin\"\n    },\n    {\n      \"id\": 8,\n      \"name\": \"user-8\",\n      \"role\": \"reader\"\n    },\n    {\n      \"id\": 9,\n      \"name\": \"user-9\",\n      \"role\": \"admin\"\n    },\n    {\n      \"id\": 10,\n      \"name\": \"user-10\",\n      \"role\": \"reader\"\n    }\n  ],\n  \"nextCursor\": \"cursor-12\"\n}","requiredFacts":["\"name\": \"user-1\"","\"nextCursor\": \"cursor-12\""],"irrelevantFacts":["\"name\": \"user-5\"","\"name\": \"user-6\""]}'
+    metadata:
+      category: Structured JSON
+      tool_id: tool.users.page
+      required_facts:
+        - '"name": "user-1"'
+        - '"nextCursor": "cursor-12"'
+      irrelevant_facts:
+        - '"name": "user-5"'
+        - '"name": "user-6"'
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
+      related_benchmark: tau-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

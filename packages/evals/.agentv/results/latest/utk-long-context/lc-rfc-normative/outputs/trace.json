@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-c0085327926779345841",
+  "created_at": "2026-07-04T14:01:23.656Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/long-context.eval.ts",
+    "suite": "utk-long-context",
+    "test_id": "lc-rfc-normative",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-1e412e300b4889c4824b1ea067990638",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-long-context|eval_path=packages%2Fevals%2Fevals%2Flong-context.eval.ts|test_id=lc-rfc-normative|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-c0085327926779345841|trace_id=9e9a62310853ba962656f799a28f2c02|root_span_id=b1d70fdf5cb6bcda",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-long-context",
+      "eval_path": "packages/evals/evals/long-context.eval.ts",
+      "test_id": "lc-rfc-normative",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-c0085327926779345841",
+      "trace_id": "9e9a62310853ba962656f799a28f2c02",
+      "root_span_id": "b1d70fdf5cb6bcda",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "9e9a62310853ba962656f799a28f2c02",
+    "root_span_id": "b1d70fdf5cb6bcda",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "9e9a62310853ba962656f799a28f2c02",
+        "span_id": "b1d70fdf5cb6bcda",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173652752000000",
+        "end_time_unix_nano": "1783173654088000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "lc-rfc-normative",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-long-context",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/long-context.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1336
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"lc-rfc-normative\",\"category\":\"Specification\",\"toolId\":\"doc.rfc.spec\",\"prompt\":\"What is the single normative requirement and the default timeout?\",\"rawOutput\":\"RFC 0042 — Session Token Refresh\\nStatus: Draft\\nAuthors: platform-team\\n1. Introduction\\nThis document describes how clients refresh session tokens. Background context\\nabout why sessions exist is provided for readers new to the system.\\n2. Terminology\\nThe words used here follow common industry meaning. Nothing surprising.\\n3. Motivation\\nHistorically clients re-authenticated from scratch, which was wasteful.\\n4. Requirements\\nClients MUST refresh the token before it expires using the /refresh endpoint.\\nThe default refresh timeout is 900 seconds unless overridden by the server.\\n5. Non-goals\\nThis RFC does not cover token revocation, which is handled elsewhere.\\n6. Security considerations\\nStandard transport security applies; use TLS 1.2 or newer.\\n7. Acknowledgements\\nThanks to everyone who reviewed early drafts over lunch.\",\"requiredFacts\":[\"Clients MUST refresh the token before it expires\",\"default refresh timeout is 900 seconds\"],\"irrelevantFacts\":[\"Thanks to everyone who reviewed early drafts over lunch.\",\"The words used here follow common industry meaning.\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.rfc.spec · schema doc-rfc-spec.v1 · 206→206 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"RFC 0042 — Session Token Refresh\\nStatus: Draft\\nAuthors: platform-team\\n1. Introduction\\nThis document describes how clients refresh session tokens. Background context\\nabout why sessions exist is provided for readers new to the system.\\n2. Terminology\\nThe words used here follow common industry meaning. Nothing surprising.\\n3. Motivation\\nHistorically clients re-authenticated from scratch, which was wasteful.\\n4. Requirements\\nClients MUST refresh the token before it expires using the /refresh endpoint.\\nThe default refresh timeout is 900 seconds unless overridden by the server.\\n5. Non-goals\\nThis RFC does not cover token revocation, which is handled elsewhere.\\n6. Security considerations\\nStandard transport security applies; use TLS 1.2 or newer.\\n7. Acknowledgements\\nThanks to everyone who reviewed early drafts over lunch.\",\n  \"visible_tokens\": 26,\n  \"recovery_tokens\": 39,\n  \"raw_tokens\": 206,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "9e9a62310853ba962656f799a28f2c02",
+        "span_id": "0ee79fdaef0bcf29",
+        "parent_span_id": "b1d70fdf5cb6bcda",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173652752000000",
+        "end_time_unix_nano": "1783173654088000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.rfc.spec · schema doc-rfc-spec.v1 · 206→206 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"RFC 0042 — Session Token Refresh\\nStatus: Draft\\nAuthors: platform-team\\n1. Introduction\\nThis document describes how clients refresh session tokens. Background context\\nabout why sessions exist is provided for readers new to the system.\\n2. Terminology\\nThe words used here follow common industry meaning. Nothing surprising.\\n3. Motivation\\nHistorically clients re-authenticated from scratch, which was wasteful.\\n4. Requirements\\nClients MUST refresh the token before it expires using the /refresh endpoint.\\nThe default refresh timeout is 900 seconds unless overridden by the server.\\n5. Non-goals\\nThis RFC does not cover token revocation, which is handled elsewhere.\\n6. Security considerations\\nStandard transport security applies; use TLS 1.2 or newer.\\n7. Acknowledgements\\nThanks to everyone who reviewed early drafts over lunch.\",\n  \"visible_tokens\": 26,\n  \"recovery_tokens\": 39,\n  \"raw_tokens\": 206,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "lc-rfc-normative"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:52.432Z",
+      "target_span_id": "b1d70fdf5cb6bcda",
+      "evidence": {
+        "span_ids": [
+          "b1d70fdf5cb6bcda"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:52.586Z",
+      "target_span_id": "b1d70fdf5cb6bcda",
+      "evidence": {
+        "span_ids": [
+          "b1d70fdf5cb6bcda"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.6844660194174756,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:52.752Z",
+      "target_span_id": "b1d70fdf5cb6bcda",
+      "evidence": {
+        "span_ids": [
+          "b1d70fdf5cb6bcda"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 26 + recovery 39) do not exceed raw 206",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 26,
+          "recovery_tokens": 39,
+          "raw_tokens": 206,
+          "reduction": 0.684
+        }
+      }
+    }
+  ]
+}

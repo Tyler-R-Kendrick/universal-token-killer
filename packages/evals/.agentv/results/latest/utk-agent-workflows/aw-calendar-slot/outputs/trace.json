@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-28f4c61ad8737696f283",
+  "created_at": "2026-07-04T14:01:23.655Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+    "suite": "utk-agent-workflows",
+    "test_id": "aw-calendar-slot",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-d27cea94f8f95e17227ca46002d776a8",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-agent-workflows|eval_path=packages%2Fevals%2Fevals%2Fagent-workflows.eval.ts|test_id=aw-calendar-slot|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-28f4c61ad8737696f283|trace_id=b9a0fadd5bed886e934fd7e56d6637fc|root_span_id=b4ea5ec746fdb6cc",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-agent-workflows",
+      "eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+      "test_id": "aw-calendar-slot",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-28f4c61ad8737696f283",
+      "trace_id": "b9a0fadd5bed886e934fd7e56d6637fc",
+      "root_span_id": "b4ea5ec746fdb6cc",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "b9a0fadd5bed886e934fd7e56d6637fc",
+    "root_span_id": "b4ea5ec746fdb6cc",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "b9a0fadd5bed886e934fd7e56d6637fc",
+        "span_id": "b4ea5ec746fdb6cc",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173649223000000",
+        "end_time_unix_nano": "1783173650503000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "aw-calendar-slot",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-agent-workflows",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/agent-workflows.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1280
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"aw-calendar-slot\",\"category\":\"Scheduling task\",\"toolId\":\"workflow.appworld.calendar\",\"prompt\":\"Find a 30-minute slot on Thursday where everyone is free.\",\"rawOutput\":\"Task: schedule a 30-minute review on Thursday for Ada, Ben, and Chandra.\\nBusy blocks (Thursday):\\nAda:     09:00-10:00, 13:00-13:30\\nBen:     09:30-10:30, 15:00-16:00\\nChandra: 11:00-12:00, 13:00-14:00\\nFree-for-all window found: 10:30-11:00 on Thursday works for all three.\\nAction available: create_event(title, start, end, attendees)\\nNote: the office closes at 18:00\\nNote: time zone is the team default\",\"requiredFacts\":[\"Free-for-all window found: 10:30-11:00 on Thursday works for all three.\"],\"irrelevantFacts\":[\"Note: the office closes at 18:00\",\"Note: time zone is the team default\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.appworld.calendar · schema workflow-appworld-calendar.v1 · 100→100 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Task: schedule a 30-minute review on Thursday for Ada, Ben, and Chandra.\\nBusy blocks (Thursday):\\nAda:     09:00-10:00, 13:00-13:30\\nBen:     09:30-10:30, 15:00-16:00\\nChandra: 11:00-12:00, 13:00-14:00\\nFree-for-all window found: 10:30-11:00 on Thursday works for all three.\\nAction available: create_event(title, start, end, attendees)\\nNote: the office closes at 18:00\\nNote: time zone is the team default\",\n  \"visible_tokens\": 33,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 100,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "b9a0fadd5bed886e934fd7e56d6637fc",
+        "span_id": "7e64f65aa4147eca",
+        "parent_span_id": "b4ea5ec746fdb6cc",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173649223000000",
+        "end_time_unix_nano": "1783173650503000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://workflow.appworld.calendar · schema workflow-appworld-calendar.v1 · 100→100 tok · 1 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Task: schedule a 30-minute review on Thursday for Ada, Ben, and Chandra.\\nBusy blocks (Thursday):\\nAda:     09:00-10:00, 13:00-13:30\\nBen:     09:30-10:30, 15:00-16:00\\nChandra: 11:00-12:00, 13:00-14:00\\nFree-for-all window found: 10:30-11:00 on Thursday works for all three.\\nAction available: create_event(title, start, end, attendees)\\nNote: the office closes at 18:00\\nNote: time zone is the team default\",\n  \"visible_tokens\": 33,\n  \"recovery_tokens\": 18,\n  \"raw_tokens\": 100,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "aw-calendar-slot"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:48.949Z",
+      "target_span_id": "b4ea5ec746fdb6cc",
+      "evidence": {
+        "span_ids": [
+          "b4ea5ec746fdb6cc"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:49.104Z",
+      "target_span_id": "b4ea5ec746fdb6cc",
+      "evidence": {
+        "span_ids": [
+          "b4ea5ec746fdb6cc"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.49,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:49.222Z",
+      "target_span_id": "b4ea5ec746fdb6cc",
+      "evidence": {
+        "span_ids": [
+          "b4ea5ec746fdb6cc"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 33 + recovery 18) do not exceed raw 100",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 33,
+          "recovery_tokens": 18,
+          "raw_tokens": 100,
+          "reduction": 0.49
+        }
+      }
+    }
+  ]
+}

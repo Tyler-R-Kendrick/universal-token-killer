@@ -1,0 +1,28 @@
+execution:
+  target: arm-utk
+tests:
+  - id: niah-version-pin
+    criteria: Which exact dependency version must be pinned?
+    input: '{"name":"niah-version-pin","category":"Version pin","toolId":"tool.notes.dump","prompt":"Which exact dependency version must be pinned?","rawOutput":"Build note: assets compiled and uploaded without incident (log line 1)\nBuild note: assets compiled and uploaded without incident (log line 2)\nBuild note: assets compiled and uploaded without incident (log line 3)\nBuild note: assets compiled and uploaded without incident (log line 4)\nBuild note: assets compiled and uploaded without incident (log line 5)\nBuild note: assets compiled and uploaded without incident (log line 6)\nBuild note: assets compiled and uploaded without incident (log line 7)\nBuild note: assets compiled and uploaded without incident (log line 8)\nBuild note: assets compiled and uploaded without incident (log line 9)\nBuild note: assets compiled and uploaded without incident (log line 10)\nBuild note: assets compiled and uploaded without incident (log line 11)\nBuild note: assets compiled and uploaded without incident (log line 12)\nBuild note: assets compiled and uploaded without incident (log line 13)\nBuild note: assets compiled and uploaded without incident (log line 14)\nBuild note: assets compiled and uploaded without incident (log line 15)\nBuild note: assets compiled and uploaded without incident (log line 16)\nPin the dependency to exactly libwidget 2.9.3 to avoid the regression.\nBuild note: assets compiled and uploaded without incident (log line 17)\nBuild note: assets compiled and uploaded without incident (log line 18)\nBuild note: assets compiled and uploaded without incident (log line 19)\nBuild note: assets compiled and uploaded without incident (log line 20)\nBuild note: assets compiled and uploaded without incident (log line 21)\nBuild note: assets compiled and uploaded without incident (log line 22)\nBuild note: assets compiled and uploaded without incident (log line 23)","requiredFacts":["Pin the dependency to exactly libwidget 2.9.3 to avoid the regression."],"irrelevantFacts":["Build note: assets compiled and uploaded without incident (log line 1)","Build note: assets compiled and uploaded without incident (log line 23)"]}'
+    metadata:
+      category: Version pin
+      tool_id: tool.notes.dump
+      required_facts:
+        - Pin the dependency to exactly libwidget 2.9.3 to avoid the regression.
+      irrelevant_facts:
+        - "Build note: assets compiled and uploaded without incident (log line 1)"
+        - "Build note: assets compiled and uploaded without incident (log line 23)"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the needle-in-a-haystack retrieval task; these numbers are not scores on those benchmarks.
+      related_benchmark: ruler-niah
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

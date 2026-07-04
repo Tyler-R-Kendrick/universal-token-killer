@@ -1,0 +1,228 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-039a30db343e3c298801",
+  "created_at": "2026-07-04T14:01:23.656Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/long-context.eval.ts",
+    "suite": "utk-long-context",
+    "test_id": "lc-meeting-decision",
+    "target": "arm-utk",
+    "source_target": "arm-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-dae9667ddef21acc2262bf81e095d905",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest|suite=utk-long-context|eval_path=packages%2Fevals%2Fevals%2Flong-context.eval.ts|test_id=lc-meeting-decision|target=arm-utk|source_target=arm-utk|attempt=0|variant=~|envelope_id=execution-trace-039a30db343e3c298801|trace_id=182fdcd9a1f14a05ed75ceffbaf5fbfe|root_span_id=5a7b97bc8d611a5f",
+    "dimensions": {
+      "run_id": "latest",
+      "suite": "utk-long-context",
+      "eval_path": "packages/evals/evals/long-context.eval.ts",
+      "test_id": "lc-meeting-decision",
+      "target": "arm-utk",
+      "source_target": "arm-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-039a30db343e3c298801",
+      "trace_id": "182fdcd9a1f14a05ed75ceffbaf5fbfe",
+      "root_span_id": "5a7b97bc8d611a5f",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "182fdcd9a1f14a05ed75ceffbaf5fbfe",
+    "root_span_id": "5a7b97bc8d611a5f",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "182fdcd9a1f14a05ed75ceffbaf5fbfe",
+        "span_id": "5a7b97bc8d611a5f",
+        "parent_span_id": null,
+        "name": "invoke_agent arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173653219000000",
+        "end_time_unix_nano": "1783173654948000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "arm-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "lc-meeting-decision",
+          "agentv.target": "arm-utk",
+          "agentv.suite": "utk-long-context",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/long-context.eval.ts",
+          "agentv.run_id": "latest",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1729
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"lc-meeting-decision\",\"category\":\"Meeting notes\",\"toolId\":\"doc.meeting.transcript\",\"prompt\":\"What did the team decide about the launch date and who owns it?\",\"rawOutput\":\"Weekly sync — 2026-06-18 (42 min)\\nAttendees: Ada, Ben, Chandra, Dev, Priya\\nBen: coffee machine on 3rd floor is broken again, facilities ticket filed.\\nAda: quick reminder the offsite is the week of the 4th, book travel.\\nChandra: I watched the new onboarding video, it is a bit long.\\nPriya: parking passes renew end of month, see the wiki.\\nDev: the staging cluster was flaky yesterday morning but recovered.\\n--- launch discussion ---\\nAda: we cannot slip past Q3, marketing already booked the announcement.\\nBen: engineering says the migration needs one more week of soak.\\nChandra: proposal — freeze scope now, ship the beta first.\\nDECISION: launch is set for 2026-08-11, and Priya owns the go/no-go call.\\nDev: I will send the updated timeline to the channel after this.\\nPriya: thanks, I will schedule the go/no-go review for the 8th.\\nAda: also the vending machine takes the new badges now, fyi.\\nBen: lunch orders close at noon, someone said tacos.\",\"requiredFacts\":[\"launch is set for 2026-08-11\",\"Priya owns the go/no-go call\"],\"irrelevantFacts\":[\"coffee machine on 3rd floor is broken again\",\"lunch orders close at noon, someone said tacos\"]}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.meeting.transcript · schema doc-meeting-transcript.v1 · 236→236 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Weekly sync — 2026-06-18 (42 min)\\nAttendees: Ada, Ben, Chandra, Dev, Priya\\nBen: coffee machine on 3rd floor is broken again, facilities ticket filed.\\nAda: quick reminder the offsite is the week of the 4th, book travel.\\nChandra: I watched the new onboarding video, it is a bit long.\\nPriya: parking passes renew end of month, see the wiki.\\nDev: the staging cluster was flaky yesterday morning but recovered.\\n--- launch discussion ---\\nAda: we cannot slip past Q3, marketing already booked the announcement.\\nBen: engineering says the migration needs one more week of soak.\\nChandra: proposal — freeze scope now, ship the beta first.\\nDECISION: launch is set for 2026-08-11, and Priya owns the go/no-go call.\\nDev: I will send the updated timeline to the channel after this.\\nPriya: thanks, I will schedule the go/no-go review for the 8th.\\nAda: also the vending machine takes the new badges now, fyi.\\nBen: lunch orders close at noon, someone said tacos.\",\n  \"visible_tokens\": 31,\n  \"recovery_tokens\": 19,\n  \"raw_tokens\": 236,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "182fdcd9a1f14a05ed75ceffbaf5fbfe",
+        "span_id": "c2b764c101e7e082",
+        "parent_span_id": "5a7b97bc8d611a5f",
+        "name": "chat arm-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173653219000000",
+        "end_time_unix_nano": "1783173654948000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "arm-utk",
+          "gen_ai.response.model": "arm-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"arm\": \"utk\",\n  \"visible\": \"utk://doc.meeting.transcript · schema doc-meeting-transcript.v1 · 236→236 tok · 2 facts recoverable via utk_expand_context\",\n  \"recoverable\": \"Weekly sync — 2026-06-18 (42 min)\\nAttendees: Ada, Ben, Chandra, Dev, Priya\\nBen: coffee machine on 3rd floor is broken again, facilities ticket filed.\\nAda: quick reminder the offsite is the week of the 4th, book travel.\\nChandra: I watched the new onboarding video, it is a bit long.\\nPriya: parking passes renew end of month, see the wiki.\\nDev: the staging cluster was flaky yesterday morning but recovered.\\n--- launch discussion ---\\nAda: we cannot slip past Q3, marketing already booked the announcement.\\nBen: engineering says the migration needs one more week of soak.\\nChandra: proposal — freeze scope now, ship the beta first.\\nDECISION: launch is set for 2026-08-11, and Priya owns the go/no-go call.\\nDev: I will send the updated timeline to the channel after this.\\nPriya: thanks, I will schedule the go/no-go review for the 8th.\\nAda: also the vending machine takes the new badges now, fyi.\\nBen: lunch orders close at noon, someone said tacos.\",\n  \"visible_tokens\": 31,\n  \"recovery_tokens\": 19,\n  \"raw_tokens\": 236,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "arm-utk",
+      "eval_case_id": "lc-meeting-decision"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "fact_retention",
+      "type": "fact-retention",
+      "score": 1,
+      "weight": 2,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:52.870Z",
+      "target_span_id": "5a7b97bc8d611a5f",
+      "evidence": {
+        "span_ids": [
+          "5a7b97bc8d611a5f"
+        ],
+        "assertions": [
+          {
+            "text": "No required facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "noise_exclusion",
+      "type": "noise-exclusion",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:53.060Z",
+      "target_span_id": "5a7b97bc8d611a5f",
+      "evidence": {
+        "span_ids": [
+          "5a7b97bc8d611a5f"
+        ],
+        "assertions": [
+          {
+            "text": "No irrelevant facts declared for this case",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "token_reduction",
+      "type": "token-reduction",
+      "score": 0.788135593220339,
+      "weight": 1,
+      "verdict": "fail",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:00:53.219Z",
+      "target_span_id": "5a7b97bc8d611a5f",
+      "evidence": {
+        "span_ids": [
+          "5a7b97bc8d611a5f"
+        ],
+        "assertions": [
+          {
+            "text": "Charged tokens (visible 31 + recovery 19) do not exceed raw 236",
+            "passed": true
+          }
+        ],
+        "details": {
+          "visible_tokens": 31,
+          "recovery_tokens": 19,
+          "raw_tokens": 236,
+          "reduction": 0.788
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "assertions": [
+    {
+      "text": "Episode ran 5/5 runs",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Planner cache hits on every run after run 1 (real .utk cache)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Steady-state avg total (366) <= run 1 total (500)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Schema-generation overhead charged only on cache-miss runs",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "errors_encountered": 0
+  },
+  "graders": [
+    {
+      "name": "token_efficiency",
+      "type": "token-efficiency",
+      "score": 1,
+      "reasoning": "",
+      "weight": 1,
+      "verdict": "pass",
+      "assertions": [
+        {
+          "text": "Episode ran 5/5 runs",
+          "passed": true
+        },
+        {
+          "text": "Planner cache hits on every run after run 1 (real .utk cache)",
+          "passed": true
+        },
+        {
+          "text": "Steady-state avg total (366) <= run 1 total (500)",
+          "passed": true
+        },
+        {
+          "text": "Schema-generation overhead charged only on cache-miss runs",
+          "passed": true
+        }
+      ],
+      "details": {
+        "arm": "utk",
+        "run1_total": 500,
+        "steady_state_avg_total": 366,
+        "avg_total": 392.8,
+        "per_run_totals": [
+          500,
+          366,
+          366,
+          366,
+          366
+        ],
+        "cache_hits": [
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
+      }
+    }
+  ]
+}

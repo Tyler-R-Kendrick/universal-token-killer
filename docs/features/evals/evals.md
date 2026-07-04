@@ -155,9 +155,13 @@ losing a required fact zeroes the score regardless of tokens. The relevance grad
 `Judge`, but no LLM judge ships in this repo and nothing wires one up automatically — the default
 `referenceJudge` is deterministic (fact retention + noise exclusion) and **every committed result
 used it**. Note the graders trust the arm's self-reported `recoverable` surface; nothing validates
-that a claimed-recoverable payload is actually recoverable. Each grader is also a standalone AgentV `type: script`
-grader — it reads the `{ input, expected_output, output }` stdin payload and writes
-`{ score, assertions, reasoning }`, which is how the generated suites call them.
+that a claimed-recoverable payload is actually recoverable.
+
+These modules power the modeled report pipeline. The **AgentV-facing grading** lives in the custom
+SDK assertions under `.agentv/assertions/` (`defineAssertion` handlers: `fact-retention`,
+`noise-exclusion`, `token-reduction`, `unsafe-tool-exposure`, `token-efficiency`), which is what the
+generated suites and the `agentv` CLI execute — see
+[AgentV Benchmarks](/features/evals/agentv-benchmarks.md).
 
 ## Running
 
@@ -177,16 +181,23 @@ leaderboards plus a cross-benchmark summary in
 [`benchmark-summary.md`](/features/evals/benchmark-summary.md), regenerated in lockstep by
 `npm run evals` so the numbers never drift from the data.
 
-## Formalized AgentV suite
+## Formalized AgentV suites
 
-`suites/<benchmark>.EVAL.yaml` is each jsonl expressed as a runnable AgentV suite: each case
-becomes a test whose assertions call the compiled graders. After building the package, AgentV
-can run it directly:
+All suites are authored with the AgentV SDK (`packages/evals/evals/*.eval.ts` over
+`packages/evals/agentv/suiteBuilder.ts`); `suites/<benchmark>.EVAL.yaml` is the canonical YAML the
+SDK's `serializeEvalYaml` lowers them to. Either form runs through the `agentv` CLI against the
+configurable targets in `.agentv/targets.yaml`:
 
 ```bash
-npm run build --workspace @utk/evals
-agentv run packages/evals/suites/tool-selection.EVAL.yaml
+npm run build
+npx agentv eval packages/evals/evals/tool-selection.eval.ts \
+  --target arm-baseline --target arm-utk --output .agentv/results/ts --threshold 0
+npx agentv compare .agentv/results/ts --baseline arm-baseline --candidate arm-utk
 ```
+
+Targets, custom assertions, the `agentv compare` A/B flow, the on-demand GitHub dispatch workflow,
+Harbor-backed trusted benchmarks, and the n-run tool-calling token-efficiency benchmark are
+documented in [AgentV Benchmarks](/features/evals/agentv-benchmarks.md).
 
 ## Provenance
 

@@ -1,0 +1,28 @@
+execution:
+  target: arm-utk
+tests:
+  - id: lc-config-nondefault
+    criteria: Which setting was changed from its default?
+    input: '{"name":"lc-config-nondefault","category":"Config dump","toolId":"doc.config.dump","prompt":"Which setting was changed from its default?","rawOutput":"Effective configuration (resolved)\nserver.host = 0.0.0.0            # default\nserver.port = 8080              # default\nserver.workers = 4             # default\ncache.enabled = true            # default\ncache.ttlSeconds = 300         # default\nlog.level = info               # default\nlog.format = json              # default\nretry.maxAttempts = 7          # OVERRIDDEN (default 3)\nretry.backoffMs = 200          # default\nmetrics.enabled = true          # default\ntracing.enabled = false         # default\nfeatureFlags.betaSearch = false # default","requiredFacts":["retry.maxAttempts = 7          # OVERRIDDEN (default 3)"],"irrelevantFacts":["server.host = 0.0.0.0            # default","log.format = json              # default"]}'
+    metadata:
+      category: Config dump
+      tool_id: doc.config.dump
+      required_facts:
+        - "retry.maxAttempts = 7          # OVERRIDDEN (default 3)"
+      irrelevant_facts:
+        - "server.host = 0.0.0.0            # default"
+        - "log.format = json              # default"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: ruler
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

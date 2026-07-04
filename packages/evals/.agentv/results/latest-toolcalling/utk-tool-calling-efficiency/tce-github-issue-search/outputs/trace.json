@@ -1,0 +1,213 @@
+{
+  "schema_version": "agentv.trace.v1",
+  "artifact_id": "execution-trace-df24945ce718d8fb9ea9",
+  "created_at": "2026-07-04T14:01:29.153Z",
+  "eval": {
+    "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+    "suite": "utk-tool-calling-efficiency",
+    "test_id": "tce-github-issue-search",
+    "target": "toolcalling-utk",
+    "source_target": "toolcalling-utk",
+    "attempt": 0,
+    "variant": null,
+    "run_id": "latest-toolcalling",
+    "category": "Uncategorized",
+    "experiment": "default"
+  },
+  "projection_identity": {
+    "schema_version": "agentv.projection_identity.v1",
+    "id": "agentv-prj-c8b08a8703c27dfc7ec5d497930e223d",
+    "key": "agentv.projection_identity.v1:projection_format=execution_trace|projection_version=agentv.trace.v1|run_id=latest-toolcalling|suite=utk-tool-calling-efficiency|eval_path=packages%2Fevals%2Fevals%2Ftool-calling-efficiency.eval.ts|test_id=tce-github-issue-search|target=toolcalling-utk|source_target=toolcalling-utk|attempt=0|variant=~|envelope_id=execution-trace-df24945ce718d8fb9ea9|trace_id=813079dab8aee9571d2ba36af4eb7fed|root_span_id=e9b886345f395edb",
+    "dimensions": {
+      "run_id": "latest-toolcalling",
+      "suite": "utk-tool-calling-efficiency",
+      "eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+      "test_id": "tce-github-issue-search",
+      "target": "toolcalling-utk",
+      "source_target": "toolcalling-utk",
+      "attempt": 0,
+      "variant": null,
+      "envelope_id": "execution-trace-df24945ce718d8fb9ea9",
+      "trace_id": "813079dab8aee9571d2ba36af4eb7fed",
+      "root_span_id": "e9b886345f395edb",
+      "projection_format": "execution_trace",
+      "projection_version": "agentv.trace.v1"
+    }
+  },
+  "export_metadata": {
+    "duplicate_policy": "update"
+  },
+  "trace": {
+    "format": "otlp_openinference_spans",
+    "trace_id": "813079dab8aee9571d2ba36af4eb7fed",
+    "root_span_id": "e9b886345f395edb",
+    "resource": {
+      "attributes": {
+        "service.name": "agentv"
+      }
+    },
+    "scope": {
+      "name": "agentv"
+    },
+    "spans": [
+      {
+        "trace_id": "813079dab8aee9571d2ba36af4eb7fed",
+        "span_id": "e9b886345f395edb",
+        "parent_span_id": null,
+        "name": "invoke_agent toolcalling-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173687301000000",
+        "end_time_unix_nano": "1783173689280000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "invoke_agent",
+          "gen_ai.provider.name": "agentv",
+          "gen_ai.agent.name": "toolcalling-utk",
+          "openinference.span.kind": "AGENT",
+          "agentv.test_id": "tce-github-issue-search",
+          "agentv.target": "toolcalling-utk",
+          "agentv.suite": "utk-tool-calling-efficiency",
+          "agentv.category": "Uncategorized",
+          "agentv.eval_path": "packages/evals/evals/tool-calling-efficiency.eval.ts",
+          "agentv.run_id": "latest-toolcalling",
+          "agentv.attempt": 0,
+          "agentv.execution_status": "ok",
+          "agentv.trace.duration_ms": 1979
+        },
+        "events": [
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 0,
+              "agentv.transcript.message": {
+                "role": "user",
+                "content": "{\"name\":\"tce-github-issue-search\",\"category\":\"GitHub\",\"request\":\"search open bug issues in the api gateway repo\",\"tools\":[{\"name\":\"github_search_issues\",\"description\":\"Search issues in a GitHub repository by query\",\"parameters\":{\"query\":{\"description\":\"search query\",\"completions\":[\"is:issue is:open label:bug\"],\"required\":true},\"repo\":{\"description\":\"owner/repo slug\",\"completions\":[\"acme/api-gateway\"]}}},{\"name\":\"github_create_issue\",\"description\":\"Create a new issue in a repository\",\"parameters\":{\"title\":{\"description\":\"issue title\",\"required\":true},\"body\":{\"description\":\"issue body\"}}},{\"name\":\"github_close_issue\",\"description\":\"Close an existing issue\",\"parameters\":{\"number\":{\"description\":\"issue number\",\"required\":true}}},{\"name\":\"github_merge_pull_request\",\"description\":\"Merge a pull request (mutating)\",\"parameters\":{\"number\":{\"description\":\"PR number\",\"required\":true}}},{\"name\":\"slack_post_message\",\"description\":\"Post a message to a Slack channel\",\"parameters\":{\"channel\":{\"description\":\"channel name\"},\"text\":{\"description\":\"message text\"}}},{\"name\":\"jira_create_ticket\",\"description\":\"Create a Jira ticket\",\"parameters\":{\"summary\":{\"description\":\"ticket summary\"}}}],\"targetTool\":\"github_search_issues\",\"toolOutput\":\"Searching issues in repo acme/api-gateway...\\nRate limit: 4998/5000 remaining\\n#482 [open] label:bug  Timeout on POST /v1/payments when idempotency key reused\\n#479 [open] label:bug  Retry storm after 502 from upstream billing service\\n#455 [open] label:docs Update pagination examples\\n#431 [closed] label:bug  Null pointer in webhook signature check\\nTotal open issues matching query: 3\\nQuery executed in 0.42s\",\"requiredFacts\":[\"#482 [open] label:bug  Timeout on POST /v1/payments when idempotency key reused\",\"#479 [open] label:bug  Retry storm after 502 from upstream billing service\",\"Total open issues matching query: 3\"],\"runs\":5}"
+              }
+            }
+          },
+          {
+            "name": "agentv.transcript.message",
+            "attributes": {
+              "agentv.transcript.message.index": 1,
+              "agentv.transcript.message": {
+                "role": "assistant",
+                "content": "{\n  \"benchmark\": \"tool-calling-efficiency\",\n  \"arm\": \"utk\",\n  \"case\": \"tce-github-issue-search\",\n  \"runs\": [\n    {\n      \"run\": 1,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 164,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 614,\n      \"cache_hit\": false\n    },\n    {\n      \"run\": 2,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 3,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 4,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 5,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    }\n  ],\n  \"run1_total\": 614,\n  \"steady_state_avg_total\": 450,\n  \"avg_total\": 482.8,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trace_id": "813079dab8aee9571d2ba36af4eb7fed",
+        "span_id": "6c2505ac9152817c",
+        "parent_span_id": "e9b886345f395edb",
+        "name": "chat toolcalling-utk",
+        "kind": "INTERNAL",
+        "start_time_unix_nano": "1783173687301000000",
+        "end_time_unix_nano": "1783173689280000000",
+        "status": {
+          "code": "OK"
+        },
+        "attributes": {
+          "gen_ai.operation.name": "chat",
+          "gen_ai.provider.name": "cli",
+          "gen_ai.request.model": "toolcalling-utk",
+          "gen_ai.response.model": "toolcalling-utk",
+          "openinference.span.kind": "LLM",
+          "agentv.message.index": 1,
+          "agentv.turn_index": 0,
+          "gen_ai.output.messages": "{\n  \"benchmark\": \"tool-calling-efficiency\",\n  \"arm\": \"utk\",\n  \"case\": \"tce-github-issue-search\",\n  \"runs\": [\n    {\n      \"run\": 1,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 164,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 614,\n      \"cache_hit\": false\n    },\n    {\n      \"run\": 2,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 3,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 4,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    },\n    {\n      \"run\": 5,\n      \"selection_tokens\": 275,\n      \"invocation_tokens\": 30,\n      \"schema_generation_tokens\": 0,\n      \"output_tokens\": 97,\n      \"recovery_tokens\": 48,\n      \"total_tokens\": 450,\n      \"cache_hit\": true\n    }\n  ],\n  \"run1_total\": 614,\n  \"steady_state_avg_total\": 450,\n  \"avg_total\": 482.8,\n  \"model\": \"none (offline deterministic surfaces; ceil(len/4) token estimate)\"\n}\n"
+        },
+        "events": []
+      }
+    ]
+  },
+  "source": {
+    "kind": "agentv_run",
+    "path": "index.jsonl",
+    "provider": "cli",
+    "format": "agentv_result",
+    "version": "1",
+    "metadata": {
+      "provider": "cli",
+      "target": "toolcalling-utk",
+      "eval_case_id": "tce-github-issue-search"
+    }
+  },
+  "capture": {
+    "content": "full",
+    "redaction_level": "none",
+    "redacted_fields": [],
+    "policy": {
+      "tool_arguments": "metadata",
+      "tool_results": "metadata",
+      "message_text": "metadata",
+      "screenshots": "none",
+      "thinking": "none"
+    }
+  },
+  "artifacts": {
+    "trace_path": "outputs/trace.json",
+    "answer_path": "outputs/answer.md",
+    "response_path": "outputs/response.md",
+    "transcript_path": "outputs/transcript.jsonl"
+  },
+  "scores": [
+    {
+      "name": "token_efficiency",
+      "type": "token-efficiency",
+      "score": 1,
+      "weight": 1,
+      "verdict": "pass",
+      "source": "agentv",
+      "evaluated_at": "2026-07-04T14:01:27.301Z",
+      "target_span_id": "e9b886345f395edb",
+      "evidence": {
+        "span_ids": [
+          "e9b886345f395edb"
+        ],
+        "assertions": [
+          {
+            "text": "Episode ran 5/5 runs",
+            "passed": true
+          },
+          {
+            "text": "Planner cache hits on every run after run 1 (real .utk cache)",
+            "passed": true
+          },
+          {
+            "text": "Steady-state avg total (450) <= run 1 total (614)",
+            "passed": true
+          },
+          {
+            "text": "Schema-generation overhead charged only on cache-miss runs",
+            "passed": true
+          }
+        ],
+        "details": {
+          "arm": "utk",
+          "run1_total": 614,
+          "steady_state_avg_total": 450,
+          "avg_total": 482.8,
+          "per_run_totals": [
+            614,
+            450,
+            450,
+            450,
+            450
+          ],
+          "cache_hits": [
+            false,
+            true,
+            true,
+            true,
+            true
+          ],
+          "model": "none (offline deterministic surfaces; ceil(len/4) token estimate)"
+        }
+      }
+    }
+  ]
+}

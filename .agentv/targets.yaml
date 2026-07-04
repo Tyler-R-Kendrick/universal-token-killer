@@ -1,0 +1,75 @@
+# AgentV Targets Configuration (https://agentv.dev/docs/targets/configuration/)
+#
+# Two families of targets:
+#
+# 1. Deterministic offline targets (`cli` provider) — run UTK's arm harnesses
+#    locally with NO LLM and no API keys. These are the CI-safe defaults and
+#    the ones `npm run evals:agentv --workspace @utk/evals` uses. Their token
+#    numbers are ceil(len/4) estimates of real surfaces (see
+#    docs/features/evals/benchmark-integrity.md for exactly what is and is not
+#    measured per arm).
+#
+# 2. Live provider targets — gated on environment variables; use these to
+#    measure real model behavior and real `token_usage`. Committed results
+#    never come from these unless the report names the exact model id and date.
+#
+# Run from the repository root (command paths are repo-root relative):
+#   npx agentv eval packages/evals/evals --target arm-baseline --target arm-utk --output .agentv/results/latest
+#   npx agentv compare .agentv/results/latest --baseline arm-baseline --candidate arm-utk
+
+targets:
+  # ── Modeled comparison arms (offline, deterministic, no LLM) ─────────────
+  - name: arm-baseline
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm baseline --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-utk
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm utk --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-rtk
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm rtk --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-leanctx
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm leanctx --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-compresr
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm compresr --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-caveman
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm caveman --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: arm-ponytail
+    provider: cli
+    command: npx --no-install utk-evals-arm --arm ponytail --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  # ── Tool-calling token-efficiency episodes (REAL UTK code paths) ─────────
+  # These exercise the shipped filterToolDefinitionsForIntent,
+  # completeStructuredToolInvocation (guidance-ts grammar + .utk cache), and
+  # mediateToolExecution implementations over n runs per case.
+  - name: toolcalling-baseline
+    provider: cli
+    command: npx --no-install utk-evals-toolcalling --arm baseline --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  - name: toolcalling-utk
+    provider: cli
+    command: npx --no-install utk-evals-toolcalling --arm utk --prompt {PROMPT} --output {OUTPUT_FILE}
+
+  # ── Live provider targets (env-gated; for real-model measurement) ────────
+  # - name: anthropic
+  #   provider: anthropic
+  #   api_key: ${{ ANTHROPIC_API_KEY }}
+  #   model: ${{ ANTHROPIC_MODEL }}
+  #
+  # - name: openai
+  #   provider: openai
+  #   api_key: ${{ OPENAI_API_KEY }}
+  #   model: ${{ OPENAI_MODEL }}
+  #
+  # - name: copilot
+  #   provider: copilot-cli
+  #   judge_target: anthropic

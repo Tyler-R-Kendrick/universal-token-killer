@@ -1,0 +1,30 @@
+execution:
+  target: arm-utk
+tests:
+  - id: shell-git-status
+    criteria: Summarize the dirty worktree without losing modified or untracked files.
+    input: "{\"name\":\"shell-git-status\",\"category\":\"Version control\",\"toolId\":\"shell.git.status\",\"prompt\":\"Summarize the dirty worktree without losing modified or untracked files.\",\"rawOutput\":\"On branch claude/evals-structure-redesign\\nYour branch is ahead of 'origin/main' by 2 commits.\\n  (use \\\"git push\\\" to publish your local commits)\\n\\nChanges not staged for commit:\\n  (use \\\"git add <file>...\\\" to update what will be committed)\\n\\t modified:   README.md\\n\\nUntracked files:\\n\\t packages/evals/harness.ts\\n\\t packages/evals/data/tool-output.jsonl\\n\\nno changes added to commit (use \\\"git add\\\" and/or \\\"git commit -a\\\")\",\"requiredFacts\":[\"modified:   README.md\",\"packages/evals/harness.ts\",\"packages/evals/data/tool-output.jsonl\"],\"irrelevantFacts\":[\"(use \\\"git push\\\" to publish your local commits)\",\"no changes added to commit (use \\\"git add\\\" and/or \\\"git commit -a\\\")\"]}"
+    metadata:
+      category: Version control
+      tool_id: shell.git.status
+      required_facts:
+        - "modified:   README.md"
+        - packages/evals/harness.ts
+        - packages/evals/data/tool-output.jsonl
+      irrelevant_facts:
+        - (use "git push" to publish your local commits)
+        - no changes added to commit (use "git add" and/or "git commit -a")
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kinds of tool output measured here; UTK compaction is an orthogonal context-cost layer and these numbers are not scores on those benchmarks.
+      related_benchmark: terminal-bench
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1

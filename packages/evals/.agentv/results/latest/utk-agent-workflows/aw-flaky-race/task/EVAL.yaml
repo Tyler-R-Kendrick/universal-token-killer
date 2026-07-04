@@ -1,0 +1,29 @@
+execution:
+  target: arm-utk
+tests:
+  - id: aw-flaky-race
+    criteria: Which test is flaky and what race condition causes it?
+    input: '{"name":"aw-flaky-race","category":"Flaky test","toolId":"workflow.swe.flaky","prompt":"Which test is flaky and what race condition causes it?","rawOutput":"Flaky test report (last 50 CI runs)\ntest_upload_then_list ....... failed 7/50 (flaky)\ntest_login .................. passed 50/50\ntest_logout ................. passed 50/50\nAnalysis: test_upload_then_list asserts the file appears immediately, but the\nuploader writes asynchronously — a race between the write and the list call.\nRepro: the failure only happens when the CI worker is under load.\nFix hint: await the upload completion callback before listing in tests/test_files.py\nNote: retrying masks the bug and is discouraged\nNote: full logs archived in the CI artifacts bucket","requiredFacts":["test_upload_then_list ....... failed 7/50 (flaky)","await the upload completion callback before listing in tests/test_files.py"],"irrelevantFacts":["Note: full logs archived in the CI artifacts bucket","test_logout ................. passed 50/50"]}'
+    metadata:
+      category: Flaky test
+      tool_id: workflow.swe.flaky
+      required_facts:
+        - test_upload_then_list ....... failed 7/50 (flaky)
+        - await the upload completion callback before listing in tests/test_files.py
+      irrelevant_facts:
+        - "Note: full logs archived in the CI artifacts bucket"
+        - test_logout ................. passed 50/50
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the agent-workflow and coding task; these numbers are not scores on those benchmarks.
+      related_benchmark: swe-bench-verified
+    assertions:
+      - name: fact_retention
+        type: fact-retention
+        weight: 2
+      - name: noise_exclusion
+        type: noise-exclusion
+        weight: 1
+      - name: token_reduction
+        type: token-reduction
+        weight: 1
