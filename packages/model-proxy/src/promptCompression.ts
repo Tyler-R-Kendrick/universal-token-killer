@@ -150,12 +150,15 @@ function promptCompressionRequest(
 }
 
 function promptCompressionApiKey(policy: PromptCompressionPolicy): string | undefined {
-  return process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY ??
+  // Explicit policy configuration takes precedence over ambient environment credentials so a
+  // configured compression key is never silently replaced by an unrelated env token (e.g. GITHUB_TOKEN).
+  const explicit = typeof policy.prompt_compression_api_key === 'string' ? policy.prompt_compression_api_key : undefined;
+  return explicit ??
+    process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY ??
     process.env.UTK_MODEL_PROXY_UPSTREAM_API_KEY ??
     process.env.GITHUB_TOKEN ??
     process.env.GH_TOKEN ??
-    process.env.OPENAI_API_KEY ??
-    (typeof policy.prompt_compression_api_key === 'string' ? policy.prompt_compression_api_key : undefined);
+    process.env.OPENAI_API_KEY;
 }
 
 function isLoopbackUrl(value: string): boolean {

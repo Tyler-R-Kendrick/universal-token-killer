@@ -118,14 +118,16 @@ describe('model proxy coverage paths', () => {
     expect(() => safeJoin(workspaceRoot, '..', 'escape')).toThrow('Path traversal blocked');
     expect(safeJoin(workspaceRoot, 'new', 'file.txt')).toContain('new');
 
+    const outsideRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-outside-'));
     try {
-      await symlink('C:\\', path.join(workspaceRoot, 'link'));
+      await symlink(outsideRoot, path.join(workspaceRoot, 'link'));
       expect(() => safeJoin(workspaceRoot, 'link', 'x')).toThrow('Symlink traversal blocked');
       const escaped = await expandEditRangesInRequest({
-        messages: [{ tool_calls: [{ function: { name: 'edit', arguments: JSON.stringify({ path: 'link\\Windows\\win.ini', oldString: '1' }) } }] }]
+        messages: [{ tool_calls: [{ function: { name: 'edit', arguments: JSON.stringify({ path: 'link/escape.txt', oldString: '1' }) } }] }]
       }, { workspaceRoot, enabled: true });
       expect(escaped.expansions).toEqual([]);
     } catch (error) {
+      // Windows test hosts gate symlink creation behind a privilege check.
       expect((error as NodeJS.ErrnoException).code).toBe('EPERM');
     }
   });
