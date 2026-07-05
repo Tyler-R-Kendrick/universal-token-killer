@@ -1,379 +1,184 @@
-# Generated from packages/evals/data/long-context.jsonl by packages/evals/scripts/generate-suite.ts.
+# Generated from packages/evals/data/long-context.jsonl by packages/evals/scripts/generate-suite.ts
+# (AgentV SDK `serializeEvalYaml` over agentv/suiteBuilder.ts — same definition as evals/*.eval.ts).
 # Do not edit by hand — run `npm run evals:suites --workspace @utk/evals` to refresh.
-name: long-context
-version: "0.1.0"
-license: "MIT"
-tags: ["long-context", "compression", "context-compaction", "utk"]
-# Provenance is informational — AgentV does not execute these fields.
-provenance:
-  origin: "synthetic"
-  authored_by: "universal-token-killer"
-  description: "Hand-authored long documents where a specific answer is buried in filler, used to measure whether a compaction technique keeps the answer recoverable while cutting model-visible tokens."
-  disclaimer: "Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks."
-  related_benchmarks:
-    - id: "longbench-v2"
-      name: "LongBench v2"
-      org: "THUDM (Tsinghua)"
-      url: "https://longbench2.github.io/"
-      relation: "task-category-analog"
-      note: "Long-context understanding across single-/multi-doc QA and summarization — the answer-in-a-long-document shape our document cases mirror."
-    - id: "ruler"
-      name: "RULER"
-      org: "NVIDIA"
-      url: "https://github.com/NVIDIA/RULER"
-      relation: "task-category-analog"
-      note: "Synthetic long-context stress tests (retrieval, aggregation, tracing) that vary context length while a target fact must survive, like our answer-bearing lines."
-    - id: "loong"
-      name: "LooGLE / ∞Bench-style long QA"
-      org: "community"
-      url: "https://github.com/bigai-nlco/LooGLE"
-      relation: "task-category-analog"
-      note: "Long-dependency QA over documents; anchors the single-answer-in-a-long-context task category our cases model."
+name: utk-long-context
+description: "Hand-authored long documents where a specific answer is buried in filler, used to measure whether a compaction technique keeps the answer recoverable while cutting model-visible tokens. Deterministic self-comparison: no LLM is invoked by the offline arm targets; see docs/features/evals/benchmark-integrity.md for what is and is not measured."
+version: 0.1.0
+license: MIT
+tags:
+  - long-context
+  - compression
+  - context-compaction
+  - utk
+  - agentv-sdk
+target: arm-utk
+execution:
+  threshold: 0
+assertions:
+  - type: fact-retention
+    name: fact_retention
+    weight: 2
+  - type: noise-exclusion
+    name: noise_exclusion
+    weight: 1
+  - type: token-reduction
+    name: token_reduction
+    weight: 1
 tests:
   - id: lc-meeting-decision
-    input:
-      - role: user
-        content: "What did the team decide about the launch date and who owns it?"
+    criteria: What did the team decide about the launch date and who owns it?
+    input: '{"name":"lc-meeting-decision","category":"Meeting notes","toolId":"doc.meeting.transcript","prompt":"What did the team decide about the launch date and who owns it?","rawOutput":"Weekly sync — 2026-06-18 (42 min)\nAttendees: Ada, Ben, Chandra, Dev, Priya\nBen: coffee machine on 3rd floor is broken again, facilities ticket filed.\nAda: quick reminder the offsite is the week of the 4th, book travel.\nChandra: I watched the new onboarding video, it is a bit long.\nPriya: parking passes renew end of month, see the wiki.\nDev: the staging cluster was flaky yesterday morning but recovered.\n--- launch discussion ---\nAda: we cannot slip past Q3, marketing already booked the announcement.\nBen: engineering says the migration needs one more week of soak.\nChandra: proposal — freeze scope now, ship the beta first.\nDECISION: launch is set for 2026-08-11, and Priya owns the go/no-go call.\nDev: I will send the updated timeline to the channel after this.\nPriya: thanks, I will schedule the go/no-go review for the 8th.\nAda: also the vending machine takes the new badges now, fyi.\nBen: lunch orders close at noon, someone said tacos.","requiredFacts":["launch is set for 2026-08-11","Priya owns the go/no-go call"],"irrelevantFacts":["coffee machine on 3rd floor is broken again","lunch orders close at noon, someone said tacos"]}'
     metadata:
-      category: "Meeting notes"
-      tool_id: "doc.meeting.transcript"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "What did the team decide about the launch date and who owns it?",
-        "rawOutput": "Weekly sync — 2026-06-18 (42 min)\nAttendees: Ada, Ben, Chandra, Dev, Priya\nBen: coffee machine on 3rd floor is broken again, facilities ticket filed.\nAda: quick reminder the offsite is the week of the 4th, book travel.\nChandra: I watched the new onboarding video, it is a bit long.\nPriya: parking passes renew end of month, see the wiki.\nDev: the staging cluster was flaky yesterday morning but recovered.\n--- launch discussion ---\nAda: we cannot slip past Q3, marketing already booked the announcement.\nBen: engineering says the migration needs one more week of soak.\nChandra: proposal — freeze scope now, ship the beta first.\nDECISION: launch is set for 2026-08-11, and Priya owns the go/no-go call.\nDev: I will send the updated timeline to the channel after this.\nPriya: thanks, I will schedule the go/no-go review for the 8th.\nAda: also the vending machine takes the new badges now, fyi.\nBen: lunch orders close at noon, someone said tacos.",
-        "requiredFacts": [
-          "launch is set for 2026-08-11",
-          "Priya owns the go/no-go call"
-        ],
-        "irrelevantFacts": [
-          "coffee machine on 3rd floor is broken again",
-          "lunch orders close at noon, someone said tacos"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Meeting notes
+      tool_id: doc.meeting.transcript
+      required_facts:
+        - launch is set for 2026-08-11
+        - Priya owns the go/no-go call
+      irrelevant_facts:
+        - coffee machine on 3rd floor is broken again
+        - lunch orders close at noon, someone said tacos
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-rfc-normative
-    input:
-      - role: user
-        content: "What is the single normative requirement and the default timeout?"
+    criteria: What is the single normative requirement and the default timeout?
+    input: '{"name":"lc-rfc-normative","category":"Specification","toolId":"doc.rfc.spec","prompt":"What is the single normative requirement and the default timeout?","rawOutput":"RFC 0042 — Session Token Refresh\nStatus: Draft\nAuthors: platform-team\n1. Introduction\nThis document describes how clients refresh session tokens. Background context\nabout why sessions exist is provided for readers new to the system.\n2. Terminology\nThe words used here follow common industry meaning. Nothing surprising.\n3. Motivation\nHistorically clients re-authenticated from scratch, which was wasteful.\n4. Requirements\nClients MUST refresh the token before it expires using the /refresh endpoint.\nThe default refresh timeout is 900 seconds unless overridden by the server.\n5. Non-goals\nThis RFC does not cover token revocation, which is handled elsewhere.\n6. Security considerations\nStandard transport security applies; use TLS 1.2 or newer.\n7. Acknowledgements\nThanks to everyone who reviewed early drafts over lunch.","requiredFacts":["Clients MUST refresh the token before it expires","default refresh timeout is 900 seconds"],"irrelevantFacts":["Thanks to everyone who reviewed early drafts over lunch.","The words used here follow common industry meaning."]}'
     metadata:
-      category: "Specification"
-      tool_id: "doc.rfc.spec"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "What is the single normative requirement and the default timeout?",
-        "rawOutput": "RFC 0042 — Session Token Refresh\nStatus: Draft\nAuthors: platform-team\n1. Introduction\nThis document describes how clients refresh session tokens. Background context\nabout why sessions exist is provided for readers new to the system.\n2. Terminology\nThe words used here follow common industry meaning. Nothing surprising.\n3. Motivation\nHistorically clients re-authenticated from scratch, which was wasteful.\n4. Requirements\nClients MUST refresh the token before it expires using the /refresh endpoint.\nThe default refresh timeout is 900 seconds unless overridden by the server.\n5. Non-goals\nThis RFC does not cover token revocation, which is handled elsewhere.\n6. Security considerations\nStandard transport security applies; use TLS 1.2 or newer.\n7. Acknowledgements\nThanks to everyone who reviewed early drafts over lunch.",
-        "requiredFacts": [
-          "Clients MUST refresh the token before it expires",
-          "default refresh timeout is 900 seconds"
-        ],
-        "irrelevantFacts": [
-          "Thanks to everyone who reviewed early drafts over lunch.",
-          "The words used here follow common industry meaning."
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Specification
+      tool_id: doc.rfc.spec
+      required_facts:
+        - Clients MUST refresh the token before it expires
+        - default refresh timeout is 900 seconds
+      irrelevant_facts:
+        - Thanks to everyone who reviewed early drafts over lunch.
+        - The words used here follow common industry meaning.
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-changelog-breaking
-    input:
-      - role: user
-        content: "Which release has the breaking change and what is it?"
+    criteria: Which release has the breaking change and what is it?
+    input: '{"name":"lc-changelog-breaking","category":"Changelog","toolId":"doc.changelog","prompt":"Which release has the breaking change and what is it?","rawOutput":"Changelog\n## 3.4.1\n- docs: fix a typo in the README\n- chore: bump lint config\n## 3.4.0\n- feat: add optional retry backoff\n- perf: cache compiled templates\n## 3.3.0\n- BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0\n- feat: support environment overrides\n## 3.2.2\n- fix: handle empty response bodies\n- chore: update dependencies\n## 3.2.1\n- docs: clarify install steps\n- test: add coverage for the parser","requiredFacts":["BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0"],"irrelevantFacts":["docs: fix a typo in the README","docs: clarify install steps"]}'
     metadata:
-      category: "Changelog"
-      tool_id: "doc.changelog"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "Which release has the breaking change and what is it?",
-        "rawOutput": "Changelog\n## 3.4.1\n- docs: fix a typo in the README\n- chore: bump lint config\n## 3.4.0\n- feat: add optional retry backoff\n- perf: cache compiled templates\n## 3.3.0\n- BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0\n- feat: support environment overrides\n## 3.2.2\n- fix: handle empty response bodies\n- chore: update dependencies\n## 3.2.1\n- docs: clarify install steps\n- test: add coverage for the parser",
-        "requiredFacts": [
-          "BREAKING: config key \"auth.token\" renamed to \"auth.apiKey\" in 3.3.0"
-        ],
-        "irrelevantFacts": [
-          "docs: fix a typo in the README",
-          "docs: clarify install steps"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Changelog
+      tool_id: doc.changelog
+      required_facts:
+        - 'BREAKING: config key "auth.token" renamed to "auth.apiKey" in 3.3.0'
+      irrelevant_facts:
+        - "docs: fix a typo in the README"
+        - "docs: clarify install steps"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-incident-rootcause
-    input:
-      - role: user
-        content: "What was the root cause and the mitigation?"
+    criteria: What was the root cause and the mitigation?
+    input: '{"name":"lc-incident-rootcause","category":"Postmortem","toolId":"doc.incident.postmortem","prompt":"What was the root cause and the mitigation?","rawOutput":"Incident 2026-05-30 — checkout latency\nSummary: checkout p99 latency spiked for 38 minutes.\nTimeline:\n09:02 alert fires for checkout latency\n09:05 on-call acknowledges, starts a call\n09:11 dashboards look normal for CPU and memory\n09:19 someone brings coffee to the war room\n09:24 traffic to the payments service looks elevated\n09:31 root cause: a missing index on the orders.customer_id column\n09:40 mitigation: added the index concurrently and latency recovered\n09:44 the call winds down, thanks everyone\nFollow-ups: add a linter to catch unindexed foreign keys.\nNote: the war room whiteboard needs new markers.","requiredFacts":["root cause: a missing index on the orders.customer_id column","mitigation: added the index concurrently and latency recovered"],"irrelevantFacts":["someone brings coffee to the war room","the war room whiteboard needs new markers"]}'
     metadata:
-      category: "Postmortem"
-      tool_id: "doc.incident.postmortem"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "What was the root cause and the mitigation?",
-        "rawOutput": "Incident 2026-05-30 — checkout latency\nSummary: checkout p99 latency spiked for 38 minutes.\nTimeline:\n09:02 alert fires for checkout latency\n09:05 on-call acknowledges, starts a call\n09:11 dashboards look normal for CPU and memory\n09:19 someone brings coffee to the war room\n09:24 traffic to the payments service looks elevated\n09:31 root cause: a missing index on the orders.customer_id column\n09:40 mitigation: added the index concurrently and latency recovered\n09:44 the call winds down, thanks everyone\nFollow-ups: add a linter to catch unindexed foreign keys.\nNote: the war room whiteboard needs new markers.",
-        "requiredFacts": [
-          "root cause: a missing index on the orders.customer_id column",
-          "mitigation: added the index concurrently and latency recovered"
-        ],
-        "irrelevantFacts": [
-          "someone brings coffee to the war room",
-          "the war room whiteboard needs new markers"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Postmortem
+      tool_id: doc.incident.postmortem
+      required_facts:
+        - "root cause: a missing index on the orders.customer_id column"
+        - "mitigation: added the index concurrently and latency recovered"
+      irrelevant_facts:
+        - someone brings coffee to the war room
+        - the war room whiteboard needs new markers
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-api-ratelimit
-    input:
-      - role: user
-        content: "What is the rate limit and the required auth header for the search endpoint?"
+    criteria: What is the rate limit and the required auth header for the search endpoint?
+    input: '{"name":"lc-api-ratelimit","category":"API reference","toolId":"doc.api.reference","prompt":"What is the rate limit and the required auth header for the search endpoint?","rawOutput":"Search API Reference\nOverview\nThe Search API lets you query the catalog. It is REST over HTTPS and returns JSON.\nEndpoints\nGET /v1/search — full text search across products\nGET /v1/categories — list the category tree\nGET /v1/suggest — typeahead suggestions\nAuthentication\nAll requests require the header Authorization: Bearer <token>.\nRate limits\nThe /v1/search endpoint is limited to 60 requests per minute per key.\nPagination\nUse the \"cursor\" query parameter to page through results.\nErrors\nThe API returns standard HTTP status codes and a JSON error body.\nSupport\nReach the team on the community forum for general questions.","requiredFacts":["limited to 60 requests per minute per key","Authorization: Bearer <token>"],"irrelevantFacts":["Reach the team on the community forum for general questions.","GET /v1/suggest — typeahead suggestions"]}'
     metadata:
-      category: "API reference"
-      tool_id: "doc.api.reference"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "What is the rate limit and the required auth header for the search endpoint?",
-        "rawOutput": "Search API Reference\nOverview\nThe Search API lets you query the catalog. It is REST over HTTPS and returns JSON.\nEndpoints\nGET /v1/search — full text search across products\nGET /v1/categories — list the category tree\nGET /v1/suggest — typeahead suggestions\nAuthentication\nAll requests require the header Authorization: Bearer <token>.\nRate limits\nThe /v1/search endpoint is limited to 60 requests per minute per key.\nPagination\nUse the \"cursor\" query parameter to page through results.\nErrors\nThe API returns standard HTTP status codes and a JSON error body.\nSupport\nReach the team on the community forum for general questions.",
-        "requiredFacts": [
-          "limited to 60 requests per minute per key",
-          "Authorization: Bearer <token>"
-        ],
-        "irrelevantFacts": [
-          "Reach the team on the community forum for general questions.",
-          "GET /v1/suggest — typeahead suggestions"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: API reference
+      tool_id: doc.api.reference
+      required_facts:
+        - limited to 60 requests per minute per key
+        - "Authorization: Bearer <token>"
+      irrelevant_facts:
+        - Reach the team on the community forum for general questions.
+        - GET /v1/suggest — typeahead suggestions
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-terms-retention
-    input:
-      - role: user
-        content: "How long is customer data retained after account closure?"
+    criteria: How long is customer data retained after account closure?
+    input: '{"name":"lc-terms-retention","category":"Legal terms","toolId":"doc.legal.terms","prompt":"How long is customer data retained after account closure?","rawOutput":"Terms of Service (excerpt)\n1. Acceptance\nBy using the service you agree to these terms, which may change over time.\n2. Accounts\nYou are responsible for keeping your credentials safe.\n3. Acceptable use\nDo not abuse the service or attempt to disrupt it for other users.\n4. Data retention\nAfter account closure, customer data is retained for 30 days and then permanently deleted.\n5. Payments\nFees are billed monthly and are non-refundable except where required by law.\n6. Liability\nThe service is provided as is, without warranties of any kind.\n7. Governing law\nThese terms are governed by the laws of the stated jurisdiction.\n8. Contact\nQuestions about these terms can be sent to the support address.","requiredFacts":["customer data is retained for 30 days and then permanently deleted"],"irrelevantFacts":["Fees are billed monthly and are non-refundable except where required by law.","By using the service you agree to these terms, which may change over time."]}'
     metadata:
-      category: "Legal terms"
-      tool_id: "doc.legal.terms"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "How long is customer data retained after account closure?",
-        "rawOutput": "Terms of Service (excerpt)\n1. Acceptance\nBy using the service you agree to these terms, which may change over time.\n2. Accounts\nYou are responsible for keeping your credentials safe.\n3. Acceptable use\nDo not abuse the service or attempt to disrupt it for other users.\n4. Data retention\nAfter account closure, customer data is retained for 30 days and then permanently deleted.\n5. Payments\nFees are billed monthly and are non-refundable except where required by law.\n6. Liability\nThe service is provided as is, without warranties of any kind.\n7. Governing law\nThese terms are governed by the laws of the stated jurisdiction.\n8. Contact\nQuestions about these terms can be sent to the support address.",
-        "requiredFacts": [
-          "customer data is retained for 30 days and then permanently deleted"
-        ],
-        "irrelevantFacts": [
-          "Fees are billed monthly and are non-refundable except where required by law.",
-          "By using the service you agree to these terms, which may change over time."
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Legal terms
+      tool_id: doc.legal.terms
+      required_facts:
+        - customer data is retained for 30 days and then permanently deleted
+      irrelevant_facts:
+        - Fees are billed monthly and are non-refundable except where required by law.
+        - By using the service you agree to these terms, which may change over time.
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-paper-result
-    input:
-      - role: user
-        content: "What is the headline result and the method used?"
+    criteria: What is the headline result and the method used?
+    input: '{"name":"lc-paper-result","category":"Research abstract","toolId":"doc.paper.abstract","prompt":"What is the headline result and the method used?","rawOutput":"Title: Efficient Context Pruning for Long-Horizon Agents\nAbstract\nLarge language model agents accumulate context that inflates cost and latency.\nPrior work explores summarization, retrieval, and caching in isolation.\nWe introduce a gated pruning method that keeps only verifiably recoverable spans.\nResult: on our benchmark the method reduces context tokens by 63% with no measurable\nloss in task success. We analyze failure cases and ablate each component.\nRelated work covers a broad range of compression techniques from 2021 onward.\nWe thank our reviewers and the compute-grant program for their support.\nLimitations: the method assumes access to the original tool outputs.","requiredFacts":["reduces context tokens by 63% with no measurable","a gated pruning method that keeps only verifiably recoverable spans"],"irrelevantFacts":["We thank our reviewers and the compute-grant program for their support.","Related work covers a broad range of compression techniques from 2021 onward."]}'
     metadata:
-      category: "Research abstract"
-      tool_id: "doc.paper.abstract"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "loong"
-      related_benchmark_url: "https://github.com/bigai-nlco/LooGLE"
-    expected_output: |
-      {
-        "prompt": "What is the headline result and the method used?",
-        "rawOutput": "Title: Efficient Context Pruning for Long-Horizon Agents\nAbstract\nLarge language model agents accumulate context that inflates cost and latency.\nPrior work explores summarization, retrieval, and caching in isolation.\nWe introduce a gated pruning method that keeps only verifiably recoverable spans.\nResult: on our benchmark the method reduces context tokens by 63% with no measurable\nloss in task success. We analyze failure cases and ablate each component.\nRelated work covers a broad range of compression techniques from 2021 onward.\nWe thank our reviewers and the compute-grant program for their support.\nLimitations: the method assumes access to the original tool outputs.",
-        "requiredFacts": [
-          "reduces context tokens by 63% with no measurable",
-          "a gated pruning method that keeps only verifiably recoverable spans"
-        ],
-        "irrelevantFacts": [
-          "We thank our reviewers and the compute-grant program for their support.",
-          "Related work covers a broad range of compression techniques from 2021 onward."
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Research abstract
+      tool_id: doc.paper.abstract
+      required_facts:
+        - reduces context tokens by 63% with no measurable
+        - a gated pruning method that keeps only verifiably recoverable spans
+      irrelevant_facts:
+        - We thank our reviewers and the compute-grant program for their support.
+        - Related work covers a broad range of compression techniques from 2021 onward.
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: loong
   - id: lc-config-nondefault
-    input:
-      - role: user
-        content: "Which setting was changed from its default?"
+    criteria: Which setting was changed from its default?
+    input: '{"name":"lc-config-nondefault","category":"Config dump","toolId":"doc.config.dump","prompt":"Which setting was changed from its default?","rawOutput":"Effective configuration (resolved)\nserver.host = 0.0.0.0            # default\nserver.port = 8080              # default\nserver.workers = 4             # default\ncache.enabled = true            # default\ncache.ttlSeconds = 300         # default\nlog.level = info               # default\nlog.format = json              # default\nretry.maxAttempts = 7          # OVERRIDDEN (default 3)\nretry.backoffMs = 200          # default\nmetrics.enabled = true          # default\ntracing.enabled = false         # default\nfeatureFlags.betaSearch = false # default","requiredFacts":["retry.maxAttempts = 7          # OVERRIDDEN (default 3)"],"irrelevantFacts":["server.host = 0.0.0.0            # default","log.format = json              # default"]}'
     metadata:
-      category: "Config dump"
-      tool_id: "doc.config.dump"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "ruler"
-      related_benchmark_url: "https://github.com/NVIDIA/RULER"
-    expected_output: |
-      {
-        "prompt": "Which setting was changed from its default?",
-        "rawOutput": "Effective configuration (resolved)\nserver.host = 0.0.0.0            # default\nserver.port = 8080              # default\nserver.workers = 4             # default\ncache.enabled = true            # default\ncache.ttlSeconds = 300         # default\nlog.level = info               # default\nlog.format = json              # default\nretry.maxAttempts = 7          # OVERRIDDEN (default 3)\nretry.backoffMs = 200          # default\nmetrics.enabled = true          # default\ntracing.enabled = false         # default\nfeatureFlags.betaSearch = false # default",
-        "requiredFacts": [
-          "retry.maxAttempts = 7          # OVERRIDDEN (default 3)"
-        ],
-        "irrelevantFacts": [
-          "server.host = 0.0.0.0            # default",
-          "log.format = json              # default"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Config dump
+      tool_id: doc.config.dump
+      required_facts:
+        - "retry.maxAttempts = 7          # OVERRIDDEN (default 3)"
+      irrelevant_facts:
+        - "server.host = 0.0.0.0            # default"
+        - "log.format = json              # default"
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: ruler
   - id: lc-thread-resolution
-    input:
-      - role: user
-        content: "What was the final resolution of the thread and who is following up?"
+    criteria: What was the final resolution of the thread and who is following up?
+    input: '{"name":"lc-thread-resolution","category":"Chat thread","toolId":"doc.chat.thread","prompt":"What was the final resolution of the thread and who is following up?","rawOutput":"#support thread (28 messages)\nuser-a: is anyone else seeing 500s on the export button?\nuser-b: works for me, maybe a cache thing\nuser-c: same here, only on the CSV export though\nuser-a: refreshed, still broken\nuser-d: nice weather today btw\nuser-b: lol yes going for a run later\nuser-c: it started around 10am I think\nuser-e: I can repro, looking now\nuser-e: found it, the export worker ran out of disk\nuser-e: RESOLUTION: cleared the temp files and the export worker is healthy again\nuser-e: I will add a disk alert so it does not recur, tracking in TICKET-771\nuser-a: thank you!\nuser-d: great, back to the run","requiredFacts":["RESOLUTION: cleared the temp files and the export worker is healthy again","tracking in TICKET-771"],"irrelevantFacts":["nice weather today btw","lol yes going for a run later"]}'
     metadata:
-      category: "Chat thread"
-      tool_id: "doc.chat.thread"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "longbench-v2"
-      related_benchmark_url: "https://longbench2.github.io/"
-    expected_output: |
-      {
-        "prompt": "What was the final resolution of the thread and who is following up?",
-        "rawOutput": "#support thread (28 messages)\nuser-a: is anyone else seeing 500s on the export button?\nuser-b: works for me, maybe a cache thing\nuser-c: same here, only on the CSV export though\nuser-a: refreshed, still broken\nuser-d: nice weather today btw\nuser-b: lol yes going for a run later\nuser-c: it started around 10am I think\nuser-e: I can repro, looking now\nuser-e: found it, the export worker ran out of disk\nuser-e: RESOLUTION: cleared the temp files and the export worker is healthy again\nuser-e: I will add a disk alert so it does not recur, tracking in TICKET-771\nuser-a: thank you!\nuser-d: great, back to the run",
-        "requiredFacts": [
-          "RESOLUTION: cleared the temp files and the export worker is healthy again",
-          "tracking in TICKET-771"
-        ],
-        "irrelevantFacts": [
-          "nice weather today btw",
-          "lol yes going for a run later"
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Chat thread
+      tool_id: doc.chat.thread
+      required_facts:
+        - "RESOLUTION: cleared the temp files and the export worker is healthy again"
+        - tracking in TICKET-771
+      irrelevant_facts:
+        - nice weather today btw
+        - lol yes going for a run later
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: longbench-v2
   - id: lc-survey-finding
-    input:
-      - role: user
-        content: "What is the top finding and the sample size?"
+    criteria: What is the top finding and the sample size?
+    input: '{"name":"lc-survey-finding","category":"Survey results","toolId":"doc.survey.results","prompt":"What is the top finding and the sample size?","rawOutput":"Developer Survey — Q2 results\nMethodology\nWe emailed the survey to active users and collected responses over two weeks.\nResponse volume\nWe received 1240 completed responses out of about 5000 invited.\nDemographics\nRespondents span many regions and experience levels, as in prior quarters.\nKey finding\nThe top request, from 58% of respondents, was faster cold-start times.\nSecondary findings\nDocumentation quality and error messages were the next most cited themes.\nVerbatims\nMany respondents left kind notes about the support team.\nNext steps\nWe will share a prioritized roadmap in the following newsletter.","requiredFacts":["top request, from 58% of respondents, was faster cold-start times","received 1240 completed responses"],"irrelevantFacts":["Many respondents left kind notes about the support team.","Respondents span many regions and experience levels, as in prior quarters."]}'
     metadata:
-      category: "Survey results"
-      tool_id: "doc.survey.results"
-      origin: "synthetic"
-      authored_by: "universal-token-killer"
-      related_benchmark: "loong"
-      related_benchmark_url: "https://github.com/bigai-nlco/LooGLE"
-    expected_output: |
-      {
-        "prompt": "What is the top finding and the sample size?",
-        "rawOutput": "Developer Survey — Q2 results\nMethodology\nWe emailed the survey to active users and collected responses over two weeks.\nResponse volume\nWe received 1240 completed responses out of about 5000 invited.\nDemographics\nRespondents span many regions and experience levels, as in prior quarters.\nKey finding\nThe top request, from 58% of respondents, was faster cold-start times.\nSecondary findings\nDocumentation quality and error messages were the next most cited themes.\nVerbatims\nMany respondents left kind notes about the support team.\nNext steps\nWe will share a prioritized roadmap in the following newsletter.",
-        "requiredFacts": [
-          "top request, from 58% of respondents, was faster cold-start times",
-          "received 1240 completed responses"
-        ],
-        "irrelevantFacts": [
-          "Many respondents left kind notes about the support team.",
-          "Respondents span many regions and experience levels, as in prior quarters."
-        ]
-      }
-    assertions:
-      - name: composite
-        type: script
-        command: ["node", "packages/evals/dist/graders/compositeGrader.js"]
-        weight: 1
-      - name: tokens
-        type: script
-        command: ["node", "packages/evals/dist/graders/tokenGrader.js"]
-      - name: relevance
-        type: script
-        command: ["node", "packages/evals/dist/graders/relevanceGrader.js"]
+      category: Survey results
+      tool_id: doc.survey.results
+      required_facts:
+        - top request, from 58% of respondents, was faster cold-start times
+        - received 1240 completed responses
+      irrelevant_facts:
+        - Many respondents left kind notes about the support team.
+        - Respondents span many regions and experience levels, as in prior quarters.
+      origin: synthetic
+      authored_by: universal-token-killer
+      disclaimer: Cases are synthetic and self-authored — not sampled from, or submitted to, any external benchmark. The public benchmarks below are referenced only as task-category analogs so readers can anchor the kind of long-context compression measured here; these numbers are not scores on those benchmarks.
+      related_benchmark: loong

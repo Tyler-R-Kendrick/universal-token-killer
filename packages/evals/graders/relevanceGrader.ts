@@ -25,10 +25,13 @@ export type RelevanceGradeInput = {
 };
 
 /**
- * **LLM grader**: scores relevance, accuracy, and groundedness of a compaction
- * via a pluggable {@link Judge}. The default judge is deterministic; a real model
- * is injected through the harness `configureModel` hook. Score is the mean of the
- * three dimensions; it passes only when every dimension clears `threshold`.
+ * Quality grader: scores relevance, accuracy, and groundedness of a compaction
+ * via a pluggable {@link Judge}. NOT an LLM grader by default — the default
+ * {@link referenceJudge} is deterministic substring bookkeeping, and every
+ * committed result was produced with it. A real model judge must be constructed
+ * by the caller and passed as `judge`; nothing in this repo does so. Score is the
+ * mean of the three dimensions; it passes only when every dimension clears
+ * `threshold`.
  */
 export async function gradeRelevance(input: RelevanceGradeInput): Promise<GraderResult> {
   const judge = input.judge ?? referenceJudge;

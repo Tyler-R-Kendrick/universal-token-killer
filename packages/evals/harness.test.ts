@@ -95,15 +95,22 @@ describe('data', () => {
 });
 
 describe('cost model + metrics', () => {
-  const ctx: RunContext = { retrievedContextTokens: 400, compressedContextTokens: 100, promptTokens: 20, outputTokens: 48, toolSchemaTokens: 0, compresses: true };
+  const ctx: RunContext = { retrievedContextTokens: 400, compressedContextTokens: 100, promptTokens: 20, outputTokens: 48, toolSchemaTokens: 0, recoveredContextTokens: 0, compresses: true };
   const outcome: RunOutcome = { taskSuccess: 1, qualityScore: 0.9, faithfulnessScore: 1, failureCategory: 'none', recoveryToolCalls: 0, fallbackCount: 0, retryCount: 0, invalidToolCallCount: 0 };
 
-  it('computes the 18 fields and keeps buckets disjoint', () => {
+  it('computes the 19 fields and keeps buckets disjoint', () => {
     const m = computeRunMetrics(ctx, outcome, REFERENCE_MODEL);
-    expect(m.input_tokens).toBe(120); // prompt + compressed + tool_schema (disjoint)
+    expect(m.input_tokens).toBe(120); // prompt + compressed + tool_schema + recovered (disjoint)
     expect(m.compression_latency_ms).toBeGreaterThan(0);
     expect(m.total_latency_ms).toBeCloseTo(m.model_latency_ms + m.tool_latency_ms + m.compression_latency_ms, 3);
-    expect(Object.keys(m)).toHaveLength(18);
+    expect(Object.keys(m)).toHaveLength(19);
+  });
+
+  it('charges recovered-payload tokens into input tokens', () => {
+    const withRecovery = computeRunMetrics({ ...ctx, recoveredContextTokens: 40 }, outcome, REFERENCE_MODEL);
+    expect(withRecovery.input_tokens).toBe(160);
+    expect(withRecovery.recovered_context_tokens).toBe(40);
+    expect(withRecovery.model_cost).toBeGreaterThan(computeRunMetrics(ctx, outcome, REFERENCE_MODEL).model_cost);
   });
 
   it('charges a tool round-trip when there are recovery/fallback/retry calls', () => {
@@ -157,10 +164,19 @@ describe('benchmarks + scoring', () => {
   it('scores fact retention on the recoverable surface and relevance on the visible surface', () => {
     const benchmark = getBenchmark('tool-output')!;
     const utk = scoreArmOutput(benchmark, sampleCase, 'utk', { visibleText: 'handle', recoverableText: sampleCase.rawOutput });
-    expect(utk.outcome.taskSuccess).toBe(1); // facts recoverable
-    expect(utk.outcome.recoveryToolCalls).toBe(1); // UTK pays a round-trip
+    expect(utk.outcome.taskSuccess).toBe(1); // facts recoverable — by construction when recoverable=raw
+    expect(utk.outcome.recoveryToolCalls).toBe(1); // the round-trip is charged...
+    expect(utk.context.recoveredContextTokens).toBeGreaterThan(0); // ...and so is its returned payload
     const dropped = scoreArmOutput(benchmark, sampleCase, 'competitor', { visibleText: 'INFO warming up', recoverableText: 'INFO warming up' });
     expect(dropped.outcome.taskSuccess).toBe(0); // required facts lost
+    expect(dropped.context.recoveredContextTokens).toBe(0); // nothing recoverable → nothing to recover
+  });
+
+  it('does not charge recovery when the facts are already visible', () => {
+    const benchmark = getBenchmark('tool-output')!;
+    const visible = scoreArmOutput(benchmark, sampleCase, 'competitor', { visibleText: sampleCase.rawOutput, recoverableText: sampleCase.rawOutput });
+    expect(visible.outcome.recoveryToolCalls).toBe(0);
+    expect(visible.context.recoveredContextTokens).toBe(0);
   });
 
   it('flags an unsafe-tool error when a mutating tool stays visible after the safe tool is dropped', () => {
@@ -244,19 +260,16 @@ describe('runSuite', () => {
     expect(suite.benchmarks).toHaveLength(BENCHMARKS.length);
     for (const report of suite.benchmarks) {
       expect(report.competitors).toHaveLength(COMPETITORS.length);
-      // Baseline reads everything (full success); UTK keeps everything recoverable.
+      // Baseline reads everything, so full retention. The UTK arm's retention is
+      // 1.0 BY CONSTRUCTION (it declares the raw output recoverable) — this
+      // assertion documents that construction, it is not a measured result.
       expect(report.baseline.primary.taskSuccessRate).toBe(1);
       expect(report.utk.primary.taskSuccessRate).toBe(1);
-      // UTK deeply cuts visible tokens vs the raw baseline at full fact retention.
-      expect(report.utk.primary.visibleTokens).toBeLessThan(report.baseline.primary.visibleTokens);
-      expect(report.utk.primary.tokenReduction).toBeGreaterThan(0.3);
-      // Any arm that undercuts UTK on visible tokens pays for it in task success
-      // (that trade-off is exactly what the Pareto frontier surfaces).
-      for (const arm of report.competitors) {
-        if (arm.primary.visibleTokens < report.utk.primary.visibleTokens) {
-          expect(arm.primary.taskSuccessRate).toBeLessThanOrEqual(report.utk.primary.taskSuccessRate);
-        }
-      }
+      // Structural sanity only — deliberately NOT asserting that UTK beats any
+      // competitor: outcome-shaped assertions would freeze the leaderboard into
+      // CI and block honest scoring changes.
+      expect(report.utk.primary.visibleTokens).toBeGreaterThan(0);
+      expect(report.utk.primary.tokenReduction).toBeLessThanOrEqual(1);
       // Every competitor is swept across aggressiveness.
       for (const competitor of report.competitors) {
         expect(competitor.sweep.length).toBeGreaterThan(1);
@@ -269,11 +282,11 @@ describe('runSuite', () => {
     }
   });
 
-  it('runs a single benchmark and logs 18 fields per case', async () => {
+  it('runs a single benchmark and logs 19 fields per case', async () => {
     const report = await runBenchmarkReport('needle-in-haystack');
     expect(report.kind).toBe('needle');
     expect(report.utk.runs.length).toBe(report.cases);
-    expect(Object.keys(report.utk.runs[0]!)).toHaveLength(18);
+    expect(Object.keys(report.utk.runs[0]!)).toHaveLength(19);
   });
 
   it('honours the sweep option and case overrides', async () => {
@@ -295,7 +308,7 @@ describe('report + chart', () => {
     const first = suite.benchmarks[0]!;
 
     const leaderboard = renderLeaderboard(first).join('\n');
-    expect(leaderboard).toContain('| Technique | Visible tokens | Token reduction | Task success | Avg quality | Cost/task | P95 latency |');
+    expect(leaderboard).toContain('| Technique | Model-visible tokens (incl. recovery) | Token reduction | Fact retention | Avg quality | Cost/task | P95 latency |');
     expect(leaderboard).toContain('UTK');
 
     expect(renderHeadlines(first).join('\n')).toContain('Quality retention @ 50% token reduction');
@@ -313,18 +326,29 @@ describe('report + chart', () => {
     expect(markdown).toContain('type: benchmark');
     expect(markdown).toContain('## Cross-benchmark summary');
     expect(markdown).toContain('SWE-bench Verified');
-    expect(markdown).toContain('failure_category'); // the 18-field methodology list
+    expect(markdown).toContain('failure_category'); // the 19-field methodology list
+    expect(markdown).toContain('recovered_context_tokens');
+    expect(markdown).toContain('### Models used');
+    expect(markdown).toContain('No LLM');
   });
 });
 
-describe('AgentV suite generation', () => {
-  it('formalizes a dataset into a provenance-tagged suite that references the composite grader', async () => {
-    const [cases, provenance] = await Promise.all([loadBenchmark('tool-selection'), loadProvenance('tool-selection')]);
-    const yaml = renderSuiteYaml('tool-selection', cases, provenance);
-    expect(yaml).toContain('name: tool-selection');
-    expect(yaml).toContain('provenance:');
-    expect(yaml).toContain('packages/evals/dist/graders/compositeGrader.js');
-    for (const testCase of cases) expect(yaml).toContain(`- id: ${testCase.name}`);
+describe('AgentV suite generation (SDK serializeEvalYaml)', () => {
+  it('serializes the SDK arm suite with custom assertions and provenance metadata', async () => {
+    const cases = await loadBenchmark('tool-selection');
+    const yaml = renderSuiteYaml('tool-selection');
+    expect(yaml).toContain('name: utk-tool-selection');
+    expect(yaml).toContain('type: fact-retention');
+    expect(yaml).toContain('type: unsafe-tool-exposure');
+    expect(yaml).toContain('origin: synthetic');
+    for (const testCase of cases) expect(yaml).toContain(`id: ${testCase.name}`);
+  });
+
+  it('serializes the tool-calling-efficiency suite with the token-efficiency assertion', () => {
+    const yaml = renderSuiteYaml('tool-calling-efficiency');
+    expect(yaml).toContain('name: utk-tool-calling-efficiency');
+    expect(yaml).toContain('type: token-efficiency');
+    expect(yaml).toContain('tce-github-issue-search');
   });
 });
 

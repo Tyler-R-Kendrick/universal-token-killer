@@ -214,5 +214,3 @@ honesty is a good model for UTK docs/evals.
 - Ponytail repository: https://github.com/DietrichGebert/ponytail
 - Ponytail README: https://github.com/DietrichGebert/ponytail/blob/main/README.md
 - Repository landing page (stars, structure, languages, license): https://github.com/DietrichGebert/ponytail
-</content>
-</invoke>

@@ -147,12 +147,10 @@ Both shapes are mediated when the output is observable. The compact response poi
 
 ## Benchmark Coverage
 
-Copilot-specific context behavior is covered by the LeanCTX Copilot benchmark:
+Copilot-specific context behavior is covered by the LeanCTX-style fixture regression suite — a deterministic, self-authored harness (the lean-ctx product is never executed; its "baseline" is a reference rendering written in this repo, and quality scores hold by construction):
 
-- 50 unique cases across prompt surfaces, tool output, and tool-schema discovery.
-- 10 repeated loops, 3 rounds per loop, 1,500 total evaluated cases.
+- 50 unique fixtures across prompt surfaces, tool output, and tool-schema discovery.
 - 0 failed comparisons.
-- UTK token savings vs LeanCTX baseline: 55,230 tokens, 33.68%.
-- Minimum relevance, correctness, and groundedness: 1.000.
+- UTK compact surfaces use 33.68% fewer estimated tokens than the self-authored reference rendering.
 
-Standalone report: [LeanCTX Copilot benchmark results](/competition/lean-ctx/parity-benchmark.md). Aggregate table: [benchmark summary](/features/evals/benchmark-summary.md).
+Standalone report with integrity notes: [LeanCTX-style fixture regression suite](/competition/lean-ctx/parity-benchmark.md). Aggregate table: [benchmark summary](/features/evals/benchmark-summary.md). Limitations: [benchmark integrity](/features/evals/benchmark-integrity.md).

@@ -58,9 +58,15 @@ export const baselineTechnique: ArmTechnique = (testCase) => ({
 
 /**
  * UTK arm: persist the raw output (fully recoverable) and surface only a compact,
- * schema-backed handle in chat. Facts stay recoverable via the raw artifact — at the
- * cost of a recovery round-trip, which the cost/latency model charges — while the
- * model-visible token cost collapses to the handle.
+ * schema-backed handle in chat.
+ *
+ * HONESTY NOTE: this is a configured model of UTK's strategy, not the shipped
+ * `@utk/core` mediation pipeline — and because it declares the full raw output
+ * recoverable, its fact retention is 100% BY CONSTRUCTION (required facts are
+ * defined as substrings of the raw output). The comparison therefore measures the
+ * price of the handle-plus-recovery strategy, not whether UTK's implementation
+ * retains facts. The scorer charges each needed recovery round-trip a tool call
+ * plus the tokens of the minimal recovered slice (see `scoreArmOutput`).
  */
 export const utkTechnique: ArmTechnique = (testCase) => {
   const compact = toonify(testCase.rawOutput);

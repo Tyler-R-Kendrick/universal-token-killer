@@ -15,7 +15,7 @@ sibling arms over the **same** cases through the **same** harness:
 - **competitor** — a configured model of a rival technique (RTK, LeanCTX, Compresr, Caveman, Ponytail);
 - **utk** — UTK persists the raw output off-context and surfaces a recoverable handle (at the cost of a recovery round-trip).
 
-Each arm is scored on token cost, task success, quality, **modeled** cost, and **modeled**
+Each arm is scored on token cost, fact retention (deterministic — no LLM), quality, **modeled** cost, and **modeled**
 latency, so a technique only "wins" when it keeps the facts *and* sits on the cost-vs-success
 Pareto frontier. This mirrors the AgentV
 [skill-improvement workflow](https://agentv.dev/docs/guides/skill-improvement-workflow/):
@@ -42,14 +42,14 @@ packages/evals/
   data/<benchmark>.provenance.json  # provenance manifest (origin + related benchmarks)
   benchmarks.ts                     # benchmark registry + per-kind scoring (scoreArmOutput)
   model.ts                          # deterministic reference cost/latency model (swappable)
-  metrics.ts                        # 18-field RunMetrics, aggregation, headlines, gates, Pareto
+  metrics.ts                        # 19-field RunMetrics, aggregation, headlines, gates, Pareto
   harness.ts                        # arms, hooks/middleware, aggressiveness sweeps (runSuite)
   comparison/<competitor>.ts        # per-competitor config (benchmark-agnostic)
   graders/                          # token (code), relevance (LLM), composite graders
   adapters.ts                       # real-dataset seam (LongBench/RULER/BFCL/... exports)
   report.ts + pareto.ts             # leaderboard tables + Pareto SVG
   suites/<benchmark>.EVAL.yaml      # formalized AgentV suite, generated from the jsonl
-  results/<benchmark>.json          # latest run artifacts, incl. 18-field per-case logs
+  results/<benchmark>.json          # latest run artifacts, incl. 19-field per-case logs
 ```
 
 Registered competitors: **RTK**, **LeanCTX**, **Compresr**, **Caveman**, **Ponytail**
@@ -101,19 +101,25 @@ recording how each arm was configured. The cost/latency model is separate and sw
 
 ## Metrics, cost, and latency
 
-Every run logs 18 fields (`metrics.ts`, full per-case logs in `results/<benchmark>.json`):
+Every run logs 19 fields (`metrics.ts`, full per-case logs in `results/<benchmark>.json`):
 
 `input_tokens`, `output_tokens`, `tool_schema_tokens`, `retrieved_context_tokens`,
-`compressed_context_tokens`, `compression_latency_ms`, `model_latency_ms`, `tool_latency_ms`,
-`total_latency_ms`, `model_cost`, `tool_cost`, `retry_count`, `fallback_count`,
-`invalid_tool_call_count`, `task_success`, `quality_score`, `faithfulness_score`, `failure_category`.
+`compressed_context_tokens`, `recovered_context_tokens`, `compression_latency_ms`,
+`model_latency_ms`, `tool_latency_ms`, `total_latency_ms`, `model_cost`, `tool_cost`, `retry_count`,
+`fallback_count`, `invalid_tool_call_count`, `task_success`, `quality_score`, `faithfulness_score`,
+`failure_category`.
 
-**Token counts and fact retention are real.** Cost and latency are **MODELED** from those token
-counts by a deterministic reference model (`model.ts`) — a mid-tier price sheet plus prefill/decode
-and tool-round-trip latencies — so committed numbers are reproducible offline. Swap `costModel` (or
-point the [real-dataset seam](#real-datasets) at a licensed export) to reproduce against a live target.
-UTK is charged a recovery round-trip on every case whose task needs a fact its handle does not
-surface (by construction, every case here), which is why UTK trades latency for tokens.
+**No LLM is invoked anywhere in this suite.** `task_success` is deterministic verbatim-substring
+fact retention (an arm that persists the raw payload — the UTK arm does — retains 100% by
+construction), and token counts are a coarse `ceil(len/4)` estimate. Cost and latency are
+**MODELED** from those token counts by a deterministic reference cost table (`model.ts`) — a
+mid-tier price sheet plus prefill/decode and tool-round-trip latencies — so committed numbers are
+reproducible offline. Swap `costModel` (or point the [real-dataset seam](#real-datasets) at a
+licensed export) to reproduce against a live target. Any arm whose facts are recoverable but not
+visible is charged a recovery round-trip **plus the tokens of the minimal recovered slice** (the
+raw-output lines containing the required facts — an optimistic lower bound), which is why the UTK
+arm trades cost and latency for visible-token savings. Full limitations:
+[Benchmark Integrity And Limitations](benchmark-integrity.md).
 
 ### Three headline numbers per technique
 
@@ -141,15 +147,21 @@ against "Method A is best because it saves the most tokens."
 | Grader | Kind | Scores |
 | --- | --- | --- |
 | `tokenGrader` | code (deterministic) | model-visible token savings vs the raw baseline |
-| `relevanceGrader` | LLM (pluggable judge) | relevance, accuracy, groundedness |
+| `relevanceGrader` | code (deterministic; pluggable judge seam) | relevance, accuracy, groundedness |
 | `compositeGrader` | composite | fact-retention gate + weighted blend of tokens & quality |
 
 The composite grader encodes the repo rule *"token savings do not count if quality drops"*:
-losing a required fact zeroes the score regardless of tokens. The LLM grader takes a pluggable
-`Judge`; the default `referenceJudge` is deterministic (fact retention + noise exclusion) so
-committed results are reproducible offline. Each grader is also a standalone AgentV `type: script`
-grader — it reads the `{ input, expected_output, output }` stdin payload and writes
-`{ score, assertions, reasoning }`, which is how the generated suites call them.
+losing a required fact zeroes the score regardless of tokens. The relevance grader takes a pluggable
+`Judge`, but no LLM judge ships in this repo and nothing wires one up automatically — the default
+`referenceJudge` is deterministic (fact retention + noise exclusion) and **every committed result
+used it**. Note the graders trust the arm's self-reported `recoverable` surface; nothing validates
+that a claimed-recoverable payload is actually recoverable.
+
+These modules power the modeled report pipeline. The **AgentV-facing grading** lives in the custom
+SDK assertions under `.agentv/assertions/` (`defineAssertion` handlers: `fact-retention`,
+`noise-exclusion`, `token-reduction`, `unsafe-tool-exposure`, `token-efficiency`), which is what the
+generated suites and the `agentv` CLI execute — see
+[AgentV Benchmarks](/features/evals/agentv-benchmarks.md).
 
 ## Running
 
@@ -169,16 +181,23 @@ leaderboards plus a cross-benchmark summary in
 [`benchmark-summary.md`](/features/evals/benchmark-summary.md), regenerated in lockstep by
 `npm run evals` so the numbers never drift from the data.
 
-## Formalized AgentV suite
+## Formalized AgentV suites
 
-`suites/<benchmark>.EVAL.yaml` is each jsonl expressed as a runnable AgentV suite: each case
-becomes a test whose assertions call the compiled graders. After building the package, AgentV
-can run it directly:
+All suites are authored with the AgentV SDK (`packages/evals/evals/*.eval.ts` over
+`packages/evals/agentv/suiteBuilder.ts`); `suites/<benchmark>.EVAL.yaml` is the canonical YAML the
+SDK's `serializeEvalYaml` lowers them to. Either form runs through the `agentv` CLI against the
+configurable targets in `.agentv/targets.yaml`:
 
 ```bash
-npm run build --workspace @utk/evals
-agentv run packages/evals/suites/tool-selection.EVAL.yaml
+npm run build
+npx agentv eval packages/evals/evals/tool-selection.eval.ts \
+  --target arm-baseline --target arm-utk --output .agentv/results/ts --threshold 0
+npx agentv compare .agentv/results/ts --baseline arm-baseline --candidate arm-utk
 ```
+
+Targets, custom assertions, the `agentv compare` A/B flow, the on-demand GitHub dispatch workflow,
+Harbor-backed trusted benchmarks, and the n-run tool-calling token-efficiency benchmark are
+documented in [AgentV Benchmarks](/features/evals/agentv-benchmarks.md).
 
 ## Provenance
 

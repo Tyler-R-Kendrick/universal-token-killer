@@ -7,12 +7,25 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
-    "lint": "tsc -p tsconfig.json --noEmit",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit && npm run build && tsc -p tsconfig.evals.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && npm run build && tsc -p tsconfig.evals.json",
     "evals": "npm run build && node dist/scripts/run-evals.js",
-    "evals:suites": "npm run build && node dist/scripts/generate-suite.js"
+    "evals:suites": "npm run build && node dist/scripts/generate-suite.js",
+    "evals:agentv": "npm run build && agentv eval evals/tool-output.eval.ts evals/long-context.eval.ts evals/needle-in-haystack.eval.ts evals/tool-selection.eval.ts evals/agent-workflows.eval.ts --target arm-baseline --target arm-utk --output .agentv/results/latest --threshold 0 && agentv eval evals/tool-calling-efficiency.eval.ts --target toolcalling-baseline --target toolcalling-utk --output .agentv/results/latest-toolcalling --threshold 0",
+    "evals:agentv:compare": "agentv compare .agentv/results/latest --baseline arm-baseline --candidate arm-utk; A=$?; agentv compare .agentv/results/latest-toolcalling --baseline toolcalling-baseline --candidate toolcalling-utk; B=$?; exit $((A > B ? A : B))"
   },
   "dependencies": {
-    "@toon-format/toon": "^2.2.0"
+    "@toon-format/toon": "^2.2.0",
+    "@utk/core": "0.1.0",
+    "@utk/foundation": "0.1.0",
+    "@utk/tool-invocation": "0.1.0"
+  },
+  "devDependencies": {
+    "@agentv/core": "^4.42.4",
+    "@agentv/sdk": "^4.42.4"
+  },
+  "bin": {
+    "utk-evals-arm": "dist/agentv/armCli.js",
+    "utk-evals-toolcalling": "dist/agentv/toolCallingEfficiencyCli.js"
   }
 }

@@ -1,3 +1,14 @@
+/**
+ * LeanCTX-style fixture regression suite — NOT competitive benchmark.
+ * Integrity notes (full detail: docs/features/evals/benchmark-integrity.md):
+ * - "LeanCTX baseline" ({@link renderLeanCtxBaseline}) = repo-authored reference
+ *   rendering; lean-ctx never executed. Token savings vs it reflect template
+ *   verbosity — never quote as head-to-head LeanCTX result.
+ * - UTK surfaces echo fixture `requiredFacts` into graded text →
+ *   relevance/correctness 1.0 by construction; scores gate UTK code paths only.
+ * - No LLM invoked; substring/regex scoring; ceil(len/4) token estimate.
+ * - Deterministic: only UNIQUE fixture count (50) meaningful in reports.
+ */
 import { filterToolDefinitionsForIntent, optimizePromptSurface, type PromptSurface } from '@utk/core';
 import { leanCtxCopilotFixtures, type LeanCtxCopilotFixture } from '../packages/evals/fixtures/leanCtxCopilotFixtures.js';
 import { compactCopilotToolOutput } from '../packages/model-proxy/src/contentRouter.js';

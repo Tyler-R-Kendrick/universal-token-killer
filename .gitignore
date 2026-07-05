@@ -5,3 +5,10 @@ packages/plugins/*/*/dist/
 coverage/
 packages/*/coverage/
 *.tsbuildinfo
+
+# AgentV local run artifacts and secrets (any level — npm workspace scripts
+# run with the package as cwd, so artifacts can land under packages/*/.agentv)
+**/.agentv/results/
+**/.agentv/logs/
+**/.agentv/cache.json
+.env

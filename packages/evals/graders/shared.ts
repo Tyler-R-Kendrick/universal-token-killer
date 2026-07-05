@@ -42,8 +42,10 @@ export type JudgeRequest = {
 
 /**
  * A judge scores the quality of a compaction. The default {@link referenceJudge}
- * is deterministic so committed results are reproducible offline; a real model
- * judge can be injected through the harness `configureModel` hook.
+ * is deterministic so committed results are reproducible offline. No model judge
+ * ships in this repo and no hook wires one up automatically — a caller that wants
+ * a real LLM judge must construct one and pass it as the `judge` option of
+ * `gradeRelevance`/`gradeComposite`. All committed results used `referenceJudge`.
  */
 export type Judge = (request: JudgeRequest) => JudgeScores | Promise<JudgeScores>;
 
@@ -98,6 +100,8 @@ export type ExpectedPayload = {
   rawOutput?: string;
   requiredFacts?: string[];
   irrelevantFacts?: string[];
+  /** Tool-selection only: destructive tool names (harness scores unsafe-tool exposure; script graders carry it for future use). */
+  unsafeTools?: string[];
 };
 
 export type ActualPayload = {

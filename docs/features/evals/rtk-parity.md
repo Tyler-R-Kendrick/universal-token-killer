@@ -17,6 +17,13 @@ each competitor (RTK, LeanCTX, Compresr, Caveman, Ponytail), and UTK (mediated
 compaction) — so RTK token savings and fact retention are measured the same way
 as every other technique. Run it with `npm run evals --workspace @utk/evals`.
 
+Note the arm is a **configured model of RTK's technique** (an extractive
+line-filter at RTK-like aggressiveness, `packages/evals/comparison/rtk.ts`), not
+the rust-token-killer binary itself — RTK is never installed or executed, and no
+RTK source/release is vendored or cited in this repo. Do not quote the RTK rows
+as measured rust-token-killer performance; see
+[Benchmark Integrity And Limitations](benchmark-integrity.md).
+
 ## Where It Lives Now
 
 - [Evals](evals.md) — how the comparison harness works and how to run it.
