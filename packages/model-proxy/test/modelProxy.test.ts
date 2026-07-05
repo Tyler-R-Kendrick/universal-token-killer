@@ -1333,6 +1333,50 @@ describe('OpenAI-compatible model proxy', () => {
     });
   });
 
+  it('falls back to environment credentials when the policy compression key is blank', async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-blank-key-'));
+    const compressionCalls: any[] = [];
+    const compressor = await startUpstream(async (req, res, body) => {
+      compressionCalls.push({ apiKey: req.headers['api-key'], body: JSON.parse(body) });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'COMPRESSED USER PROMPT' } }] }));
+    });
+    openedServers.push(compressor);
+    const upstream = await startUpstream(async (_req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ id: 'blank_key_ok', choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+    });
+    openedServers.push(upstream);
+
+    const previousEnv = process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY;
+    process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY = 'env-fallback-key';
+    try {
+      const response = await proxyOpenAiRequest(
+        '/v1/chat/completions',
+        { model: 'gpt-test', messages: [{ role: 'user', content: 'Blank key prompt ' + 'compress me '.repeat(20) }] },
+        {
+          workspaceRoot,
+          upstreamBaseUrl: upstream.url,
+          policyOverrides: {
+            prompt_compression_enabled: true,
+            prompt_compression_base_url: `${compressor.url}/models`,
+            prompt_compression_provider: 'azure-ai-inference',
+            prompt_compression_model: 'mistral-large',
+            // Whitespace-only key must be treated as unset so the env chain still applies.
+            prompt_compression_api_key: '   ',
+            prompt_compression_min_tokens: 1
+          }
+        }
+      );
+
+      expect(await response.json()).toMatchObject({ id: 'blank_key_ok' });
+      expect(compressionCalls[0]?.apiKey).toBe('env-fallback-key');
+    } finally {
+      if (previousEnv === undefined) delete process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY;
+      else process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY = previousEnv;
+    }
+  });
+
   it('fails open when prompt compression model times out', async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'utk-model-proxy-prompt-timeout-'));
     const compressor = await startUpstream(async (_req, res) => {

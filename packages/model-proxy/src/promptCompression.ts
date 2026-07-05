@@ -152,7 +152,10 @@ function promptCompressionRequest(
 function promptCompressionApiKey(policy: PromptCompressionPolicy): string | undefined {
   // Explicit policy configuration takes precedence over ambient environment credentials so a
   // configured compression key is never silently replaced by an unrelated env token (e.g. GITHUB_TOKEN).
-  const explicit = typeof policy.prompt_compression_api_key === 'string' ? policy.prompt_compression_api_key : undefined;
+  const explicit =
+    typeof policy.prompt_compression_api_key === 'string' && policy.prompt_compression_api_key.trim() !== ''
+      ? policy.prompt_compression_api_key
+      : undefined;
   return explicit ??
     process.env.UTK_MODEL_PROXY_PROMPT_COMPRESSION_API_KEY ??
     process.env.UTK_MODEL_PROXY_UPSTREAM_API_KEY ??
