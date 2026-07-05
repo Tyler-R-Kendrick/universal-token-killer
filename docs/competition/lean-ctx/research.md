@@ -205,12 +205,15 @@ UTK's comparative RTK metrics should preserve this rigor but use UTK-specific
 success criteria: fact retention, recoverability, no raw leakage, route
 confidence, and compact token count versus RTK baselines.
 
-Current UTK benchmark coverage now includes a LeanCTX Copilot suite. The
-standalone report is `docs/competition/lean-ctx/parity-benchmark.md`; the
-aggregate benchmark matrix is `docs/features/evals/benchmark-summary.md`. Current
-results: 50 unique Copilot cases, 1,500 evaluated cases across 10 loops, 0
-failures, 33.68% token savings vs LeanCTX baseline, and 1.000 minimum
-relevance/correctness/groundedness.
+Current UTK benchmark coverage now includes a LeanCTX-style fixture regression
+suite. The standalone report is `docs/competition/lean-ctx/parity-benchmark.md`;
+the aggregate benchmark matrix is `docs/features/evals/benchmark-summary.md`.
+Current results: 50 unique deterministic Copilot fixtures, 0 failures, 33.68%
+fewer estimated tokens than a **self-authored LeanCTX-style reference rendering**
+(lean-ctx itself is never executed — see the integrity note in the report), and
+1.000 relevance/correctness/groundedness **by construction** (the fixtures plant
+the graded facts). It is a regression harness for UTK's Copilot code paths, not
+a head-to-head result against LeanCTX.
 
 ## Competitive Opportunities For UTK
 

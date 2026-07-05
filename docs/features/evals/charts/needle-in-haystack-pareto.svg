@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
 <rect x="0" y="0" width="760" height="440" fill="#f6f8fa" stroke="#d0d7de" rx="8"/>
-<text x="76" y="28" font-size="16" font-weight="700" fill="#1f2328">Needle-in-a-haystack — cost vs. task success</text>
-<text x="76" y="44" font-size="11" fill="#656d76">x: cost per task (USD) · y: task success · bubble: p95 latency · filled = on Pareto frontier</text>
+<text x="76" y="28" font-size="16" font-weight="700" fill="#1f2328">Needle-in-a-haystack — cost vs. fact retention</text>
+<text x="76" y="44" font-size="11" fill="#656d76">x: cost per task (USD) · y: fact retention (deterministic, no LLM) · bubble: p95 latency · filled = on Pareto frontier</text>
 <line x1="76" y1="376" x2="610" y2="376" stroke="#8c959f" stroke-width="1"/>
 <line x1="76" y1="52" x2="76" y2="376" stroke="#8c959f" stroke-width="1"/>
 <line x1="76" y1="376" x2="76" y2="381" stroke="#8c959f"/>
@@ -30,13 +30,13 @@
 <line x1="71" y1="52" x2="76" y2="52" stroke="#8c959f"/>
 <text x="67" y="55" font-size="10" fill="#656d76" text-anchor="end">100%</text>
 <line x1="76" y1="52" x2="610" y2="52" stroke="#eaeef2" stroke-width="1"/>
-<text x="18" y="214" font-size="12" fill="#1f2328" text-anchor="middle" transform="rotate(-90 18 214)">task success — higher is better</text>
-<circle cx="287.5" cy="52.0" r="23.0" fill="#ffffff" fill-opacity="0.9" stroke="#1a7f37" stroke-width="2"/>
-<text x="314.5" y="25.0" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">UTK</text>
+<text x="18" y="214" font-size="12" fill="#1f2328" text-anchor="middle" transform="rotate(-90 18 214)">fact retention — higher is better</text>
+<circle cx="301.1" cy="52.0" r="23.0" fill="#ffffff" fill-opacity="0.9" stroke="#1a7f37" stroke-width="2"/>
+<text x="328.1" y="25.0" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">UTK</text>
 <circle cx="267.2" cy="214.0" r="23.0" fill="#ffffff" fill-opacity="0.9" stroke="#1a7f37" stroke-width="2"/>
 <text x="294.1" y="187.0" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">rtk</text>
 <circle cx="275.2" cy="295.0" r="23.0" fill="#ffffff" fill-opacity="0.9" stroke="#8250df" stroke-width="2"/>
-<text x="302.2" y="268.0" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">caveman</text>
+<text x="302.1" y="268.0" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">caveman</text>
 <circle cx="279.5" cy="335.5" r="23.0" fill="#ffffff" fill-opacity="0.9" stroke="#cf222e" stroke-width="2"/>
 <text x="306.4" y="308.5" font-size="10.5" font-weight="600" fill="#1f2328" text-anchor="start">ponytail</text>
 <circle cx="511.5" cy="52.0" r="8.1" fill="#ffffff" fill-opacity="0.9" stroke="#57606a" stroke-width="2"/>

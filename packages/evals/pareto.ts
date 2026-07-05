@@ -3,7 +3,7 @@ import type { BenchmarkReport, TechniqueReport } from './harness.js';
 /**
  * Pareto bubble chart for one benchmark, as a self-contained SVG string.
  *   x = total cost per task (USD, lower better)
- *   y = task success rate (higher better)
+ *   y = fact-retention rate (deterministic substring check; higher better)
  *   bubble size = p95 total latency (ms)
  *   label = technique
  * Techniques on the frontier (not dominated on cost ↓ / success ↑) are filled;
@@ -35,8 +35,8 @@ export function renderParetoSvg(report: BenchmarkReport): string {
   const parts: string[] = [];
   parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`);
   parts.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="#f6f8fa" stroke="#d0d7de" rx="8"/>`);
-  parts.push(`<text x="${M.left}" y="28" font-size="16" font-weight="700" fill="#1f2328">${escapeXml(report.title)} — cost vs. task success</text>`);
-  parts.push(`<text x="${M.left}" y="44" font-size="11" fill="#656d76">x: cost per task (USD) · y: task success · bubble: p95 latency · filled = on Pareto frontier</text>`);
+  parts.push(`<text x="${M.left}" y="28" font-size="16" font-weight="700" fill="#1f2328">${escapeXml(report.title)} — cost vs. fact retention</text>`);
+  parts.push(`<text x="${M.left}" y="44" font-size="11" fill="#656d76">x: cost per task (USD) · y: fact retention (deterministic, no LLM) · bubble: p95 latency · filled = on Pareto frontier</text>`);
 
   // Axes.
   const axisX0 = M.left;
@@ -61,7 +61,7 @@ export function renderParetoSvg(report: BenchmarkReport): string {
     parts.push(`<text x="${axisX0 - 9}" y="${y + 3}" font-size="10" fill="#656d76" text-anchor="end">${(success * 100).toFixed(0)}%</text>`);
     parts.push(`<line x1="${axisX0}" y1="${y}" x2="${M.left + plotW}" y2="${y}" stroke="#eaeef2" stroke-width="1"/>`);
   }
-  parts.push(`<text x="18" y="${M.top + plotH / 2}" font-size="12" fill="#1f2328" text-anchor="middle" transform="rotate(-90 18 ${M.top + plotH / 2})">task success — higher is better</text>`);
+  parts.push(`<text x="18" y="${M.top + plotH / 2}" font-size="12" fill="#1f2328" text-anchor="middle" transform="rotate(-90 18 ${M.top + plotH / 2})">fact retention — higher is better</text>`);
 
   // Bubbles (draw larger first so labels stay legible).
   const ordered = [...points].sort((a, b) => rOf(b.p95) - rOf(a.p95));

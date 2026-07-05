@@ -3,17 +3,24 @@ import type { BenchmarkReport, SuiteResult, TechniqueReport } from './harness.js
 import type { GateVerdict, HeadlineNumbers, TechniqueAggregate } from './metrics.js';
 
 const DEFAULT_DISCLAIMER =
-  'Self-authored deterministic self-comparison. Competitor arms are configured models of each ' +
-  "technique run against the same benchmark data, not the vendors' live systems. Token counts and " +
-  'fact retention are real (a coarse `ceil(len/4)` token estimate); cost and latency are MODELED from ' +
-  'those token counts by a deterministic reference cost model, not measured against a live endpoint. ' +
-  'Swap the cost model (or point the real-dataset seam at a licensed export) to reproduce against a real target.';
+  'Self-authored deterministic self-comparison — NO LLM is invoked anywhere in this suite. ' +
+  '"Fact retention" is a verbatim-substring check by deterministic code, not a model completing a task. ' +
+  'Competitor arms are configured models of each technique (one shared extractive heuristic at different ' +
+  "aggressiveness settings), not the vendors' live systems, and the UTK arm is a configured model of UTK's " +
+  'handle-plus-recovery strategy, not the shipped mediation pipeline — because it persists the raw payload, ' +
+  'its fact retention is 100% by construction, so read its rows as the modeled PRICE of that strategy, not as ' +
+  'evidence the implementation retains facts. Token counts are a coarse `ceil(len/4)` estimate (no tokenizer); ' +
+  'recovery round-trips are charged a tool call plus the minimal recovered-slice tokens (an optimistic lower ' +
+  'bound); cost and latency are MODELED from token counts by a deterministic reference cost model, not measured ' +
+  'against a live endpoint. Swap the cost model (or point the real-dataset seam at a licensed export) to ' +
+  'reproduce against a real target. Full limitations: `docs/features/evals/benchmark-integrity.md`.';
 
-/** The 18 per-run fields logged for every case, surfaced once in the methodology. */
+/** The 19 per-run fields logged for every case, surfaced once in the methodology. */
 const METRIC_FIELDS = [
   'input_tokens', 'output_tokens', 'tool_schema_tokens', 'retrieved_context_tokens', 'compressed_context_tokens',
-  'compression_latency_ms', 'model_latency_ms', 'tool_latency_ms', 'total_latency_ms', 'model_cost', 'tool_cost',
-  'retry_count', 'fallback_count', 'invalid_tool_call_count', 'task_success', 'quality_score', 'faithfulness_score', 'failure_category'
+  'recovered_context_tokens', 'compression_latency_ms', 'model_latency_ms', 'tool_latency_ms', 'total_latency_ms',
+  'model_cost', 'tool_cost', 'retry_count', 'fallback_count', 'invalid_tool_call_count', 'task_success',
+  'quality_score', 'faithfulness_score', 'failure_category'
 ];
 
 /* ---- formatting -------------------------------------------------------- */
@@ -57,7 +64,7 @@ export function renderLeaderboard(report: BenchmarkReport): string[] {
       return `| ${escapeCell(tech.label)}${tech.onFrontier ? ' ★' : ''} | ${p.visibleTokens} | ${signedTokenChange(p.tokenReduction)} | ${pct(p.taskSuccessRate)} | ${p.avgQuality.toFixed(2)} | ${usd(p.costPerTask)} | ${ms(p.p95LatencyMs)} |`;
     });
   return [
-    '| Technique | Visible tokens | Token reduction | Task success | Avg quality | Cost/task | P95 latency |',
+    '| Technique | Model-visible tokens (incl. recovery) | Token reduction | Fact retention | Avg quality | Cost/task | P95 latency |',
     '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
     ...rows
   ];
@@ -94,7 +101,7 @@ export function renderGates(report: BenchmarkReport): string[] {
     return `| ${escapeCell(tech.label)} | ${verdict} | ${signedPct(g.taskSuccessDelta)} | ${usd(g.costPerSuccessDelta)} | ${g.unsafeToolDelta > 0 ? `+${g.unsafeToolDelta}` : g.unsafeToolDelta} | ${escapeCell(notes)} |`;
   });
   return [
-    '| Technique | Gate | Δ task success | Δ cost/success | Δ unsafe-tool errors | Notes |',
+    '| Technique | Gate | Δ fact retention | Δ cost/success | Δ unsafe-tool errors | Notes |',
     '| --- | :---: | ---: | ---: | ---: | --- |',
     ...rows
   ];
@@ -130,13 +137,13 @@ export function renderBenchmarkSection(report: BenchmarkReport, provenance: Benc
     '',
     '### Regression gates',
     '',
-    'Gates: ≤2% absolute task-success loss, no increase in unsafe/mutating tool errors, and a positive cost-per-success improvement vs baseline.',
+    'Gates: ≤2% absolute fact-retention loss, no increase in unsafe/mutating tool errors, and a positive cost-per-success improvement vs baseline.',
     '',
     ...renderGates(report),
     '',
-    '### Cost vs. task success (Pareto)',
+    '### Cost vs. fact retention (Pareto)',
     '',
-    `![Pareto chart: ${escapeCell(report.title)} cost per task vs task success, bubble size p95 latency](${chartHref})`,
+    `![Pareto chart: ${escapeCell(report.title)} cost per task vs fact retention, bubble size p95 latency](${chartHref})`,
     ''
   ];
   if (provenance) lines.push(...renderRelatedBenchmarks(provenance), '');
@@ -205,13 +212,21 @@ export function renderSuiteMarkdown(suite: SuiteResult, options: SuiteDocOptions
     '',
     '## Reading the leaderboard',
     '',
-    "Cutting the most tokens does not make a technique best. The winner is a technique on the **Pareto frontier** of cost per task vs. task success for your workload. Three headline numbers per technique keep the axes separate: quality retention at a fixed token reduction, cost reduction at fixed quality, and p95 latency reduction at fixed quality.",
+    "Cutting the most tokens does not make a technique best. The winner is a technique on the **Pareto frontier** of cost per task vs. fact retention for your workload. Three headline numbers per technique keep the axes separate: quality retention at a fixed token reduction, cost reduction at fixed quality, and p95 latency reduction at fixed quality.",
     '',
     '## Cross-benchmark summary',
     '',
-    'Each cell is `token reduction / task success` at the primary operating point; ★ marks a technique on that benchmark\'s cost-vs-success Pareto frontier.',
+    'Each cell is `token reduction / fact retention` at the primary operating point; ★ marks a technique on that benchmark\'s cost-vs-retention Pareto frontier.',
     '',
     ...renderCrossBenchmark(suite),
+    '',
+    '**Capability-class caveat:** not every technique targets every column. Caveman and Ponytail are',
+    'assistant-prose / terse-register compaction techniques — running them over a tool catalog or a',
+    'needle haystack is an out-of-lane stress reference, not a like-for-like comparison, so read their',
+    'tool-selection and needle cells as "what happens if you misapply a prose compressor", not as those',
+    "products' performance. Likewise the benchmark names describe the DATA SHAPE, not an exercised",
+    'capability: every benchmark scores verbatim-substring retention under compaction — no arm ever',
+    'actually selects a tool, answers a question, or executes a workflow step.',
     ''
   ];
 
@@ -222,11 +237,28 @@ export function renderSuiteMarkdown(suite: SuiteResult, options: SuiteDocOptions
   lines.push(
     '## Methodology',
     '',
-    `Cost model: \`${suite.model}\` (modeled, deterministic). Token counts and fact retention are real; cost and latency are derived from token counts and modeled tool round-trips, not measured on a live endpoint.`,
+    '### Models used',
     '',
-    'Every run logs these 18 fields (full per-case logs in `packages/evals/results/<benchmark>.json`):',
+    '**None.** No LLM (local or hosted) is invoked at any point in producing these numbers. Every arm,',
+    'grader, and judge is deterministic TypeScript; "fact retention" is `String.includes` over required',
+    'substrings. `' + suite.model + '` is not a language model — it is a constants table of reference',
+    'prices and latencies (`packages/evals/model.ts`: $3/M input, $15/M output, 700 ms/tool call)',
+    'used to convert token counts into modeled cost and latency. Token counts come from a coarse',
+    '`ceil(len/4)` character estimate, not a tokenizer.',
+    '',
+    '### Accounting',
+    '',
+    'Recovery round-trips (an arm reaching facts that are recoverable but not visible) are charged one',
+    'tool call plus the tokens of the minimal recovered slice — the raw-output lines containing the',
+    'required facts. Real recovery tools may return more, so recovery-based reductions are an optimistic',
+    'lower bound on cost. "Model-visible tokens" includes compacted context, tool-schema tokens, and',
+    'recovered-slice tokens.',
+    '',
+    'Every run logs these 19 fields (full per-case logs in `packages/evals/results/<benchmark>.json`):',
     '',
     '`' + METRIC_FIELDS.join('`, `') + '`',
+    '',
+    'Known limitations and by-construction caveats: `docs/features/evals/benchmark-integrity.md`.',
     '',
     'Generated by `npm run evals --workspace @utk/evals`.'
   );

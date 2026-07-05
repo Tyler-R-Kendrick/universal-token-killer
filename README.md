@@ -14,7 +14,7 @@ UTK's mediation surface is the Copilot tool-hook pipeline — not a public media
 - **Stay configurable:** choose `toon` or `json-compact` globally or per tool in `.utk/config.toml`.
 - **Rewrite LLM-bound text locally:** `detok` uses LLMLingua-2 to simplify inputs and post-schema output text before it reaches a model.
 - **Reuse session-specific expertise:** `utk-init` can prepare `.utk/session-agents` and `.utk/session-skills` so repeated work becomes compact, discoverable project context.
-- **Stay measurable:** benchmark suites assert token savings plus fact retention, recoverability, relevance, correctness, groundedness, and strict wins over checked-in competitor baselines.
+- **Stay measurable:** deterministic benchmark suites compare token cost, fact retention, recoverability, and relevance against checked-in competitor-inspired reference arms (see the integrity notes below — these are internal self-comparisons, not head-to-head results against live systems).
 
 ## Scope
 
@@ -30,35 +30,33 @@ Each axis is measured against a checked-in competitor baseline; see [Packages](#
 
 Five benchmarks — tool-output, long-context, needle-in-a-haystack, tool-selection, agent-workflows — each run baseline, every competitor, and UTK as sibling arms over the same cases. Full comparison, Pareto charts, headline numbers, and regression gates: `docs/features/evals/benchmark-summary.md`. Regenerate everything with `npm run evals --workspace @utk/evals`.
 
-> Self-authored deterministic self-comparison: competitor arms are configured models of each technique run against the same benchmark data — the vendors' live systems are not installed or run. Token counts and fact retention are real (coarse `ceil(len/4)` token estimate); **cost and latency are modeled** by a deterministic reference cost model, not measured on a live endpoint. Read these as reproducible internal self-comparisons that gate fact retention, not head-to-head results against live systems.
+All suites are also authored as **AgentV SDK evals** (`packages/evals/evals/*.eval.ts`) graded by custom SDK assertions (`.agentv/assertions/`), runnable through the `agentv` CLI against configurable targets (`.agentv/targets.yaml`) with A/B deltas from the built-in `agentv compare` — plus a measured **n-run tool-calling token-efficiency benchmark** that exercises UTK's real discovery/grammar/cache/mediation code paths, and an on-demand GitHub workflow (`benchmark`) that dispatches one benchmark per run, including the Harbor-backed trusted suites (Terminal-Bench 2, SWE-Bench Verified). See [AgentV Benchmarks](docs/features/evals/agentv-benchmarks.md).
 
-Cross-benchmark summary — `token reduction / task success` at each technique's primary operating point; ★ marks the cost-vs-success Pareto frontier for that benchmark:
+> **What these numbers are — and are not.** This is a self-authored, fully deterministic self-comparison: **no LLM is invoked anywhere in the suite.** "Fact retention" is a verbatim-substring check by deterministic code, not a model completing a task. Competitor arms are configured models of each technique (one shared extractive heuristic at different aggressiveness settings) — the vendors' live systems are not installed or run. The UTK arm is likewise a configured model of UTK's handle-plus-recovery strategy, not the shipped mediation pipeline, and because it persists the raw payload its fact retention is **100% by construction** — its rows measure the modeled *price* of that strategy, not whether the implementation retains facts. Token counts are a coarse `ceil(len/4)` estimate; recovery round-trips are charged a tool call plus the minimal recovered-slice tokens (an optimistic lower bound); **cost and latency are modeled** by a deterministic reference cost table, not measured on a live endpoint. Full limitations: `docs/features/evals/benchmark-integrity.md`.
+
+Cross-benchmark summary — `token reduction / fact retention` at each technique's primary operating point; ★ marks the modeled cost-vs-retention Pareto frontier for that benchmark. Token reduction counts everything the model would see, including recovery-round-trip payloads:
 
 | Technique | Tool output | Long-context | Needle | Tool selection | Agent workflows |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Baseline (raw context) | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% | 0% / 100% |
-| RTK (rust-token-killer) | −13% / 100% ★ | −65% / 50% | −89% / 60% | −36% / 80% | −30% / 80% |
-| LeanCTX (context runtime) | −12% / 100% | −56% / 90% | −87% / 100% ★ | −26% / 100% | −20% / 90% |
-| Compresr (query-aware) | −14% / 100% ★ | −58% / 90% ★ | −87% / 100% ★ | −30% / 100% ★ | −20% / 90% |
-| Caveman (terse register) | −17% / 92% | −76% / 50% | −90% / 40% | −96% / 10% | −37% / 70% |
+| RTK (rust-token-killer) | −13% / 100% ★ | −65% / 50% | −89% / 60% | −36% / 80% | −30% / 80% ★ |
+| LeanCTX (context runtime) | −12% / 100% | −56% / 90% | −87% / 100% ★ | −26% / 100% | −20% / 90% ★ |
+| Compresr (query-aware) | −14% / 100% ★ | −58% / 90% ★ | −87% / 100% ★ | −30% / 100% ★ | −20% / 90% ★ |
+| Caveman (terse register) | −17% / 92% | −76% / 50% | −90% / 40% | −96% / 10% | −37% / 70% ★ |
 | Ponytail (minimum emission) | −25% / 92% ★ | −77% / 50% ★ | −90% / 30% | −96% / 10% | −43% / 50% |
-| UTK (mediated compaction) | −75% / 100% ★ | −83% / 100% ★ | −93% / 100% | −70% / 100% | −78% / 100% ★ |
+| UTK (mediated compaction) | −53% / 100% | −65% / 100% ★ | −88% / 100% | −53% / 100% | −54% / 100% ★ |
 
-UTK holds **100% task success on every benchmark** while cutting 70–93% of visible tokens, and sits on the Pareto frontier in four of five. The honest exception is needle-in-a-haystack: query-aware extractors (LeanCTX/Compresr) reach the buried needle inline more cheaply than UTK's handle plus recovery round-trip, so they — not UTK — hold that frontier. Aggressive in-context compactors (Caveman/Ponytail) top the token-reduction column but fail the regression gate on most benchmarks by dropping required facts (task success collapses). Tool-selection is where compaction turns dangerous: dropping the needed tool can leave a destructive one as the surviving selection — an unsafe-tool error the gate is built to catch (it flags RTK's on that benchmark). Cutting the most tokens is not winning — the frontier is. Harness, metrics, graders, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
+Reading it honestly: the UTK arm keeps 100% fact retention **by construction** (it persists the raw payload off-context) while cutting 53–88% of model-visible tokens, and sits on the modeled cost frontier in **two of five** benchmarks (long-context, agent-workflows). It **fails its own cost-per-success regression gate on tool-output and tool-selection** — on small payloads the recovery round-trip costs more than the token savings return — and on needle-in-a-haystack the query-aware extractors (LeanCTX/Compresr arms) reach the buried needle inline more cheaply, so they hold that frontier. Caveman/Ponytail are prose-register techniques; their tool-selection and needle cells show what happens when a prose compressor is misapplied to a tool catalog, not those products' intended performance. Cutting the most tokens is not winning — the frontier is. Harness, metrics, graders, and data format: `docs/features/evals/evals.md`; full report: `docs/features/evals/benchmark-summary.md`.
 
-## LeanCTX Copilot Benchmark
+## LeanCTX-Style Fixture Regression Suite
 
-The LeanCTX Copilot suite compares UTK against a context-runtime baseline across Copilot prompt surfaces, post-tool output, and deferred tool-schema discovery. It runs 50 unique cases across 10 repeated improvement loops and 3 internal rounds per loop.
+`scripts/bench-leanctx-copilot.ts` runs **50 unique, self-authored fixtures** (25 prompt-surface, 20 tool-output, 5 tool-schema) through UTK's prompt-surface, tool-output routing, and tool-filtering code paths and compares the compact surfaces against a **LeanCTX-style reference rendering that this repo wrote itself — the lean-ctx product is never installed or executed.** The suite is deterministic: repeated rounds reproduce identical numbers, so only the 50 unique cases carry information.
 
-- Total evaluated cases: `1,500`
-- Failed comparisons: `0`
-- UTK tokens: `108,750`
-- LeanCTX baseline tokens: `163,980`
-- Total estimated token savings vs LeanCTX: `55,230`
-- Savings vs LeanCTX: `33.68%`
-- Minimum relevance/correctness/groundedness: `1.000`
+- Unique cases: `50` · failed comparisons: `0`
+- UTK compact surfaces: `3,625` estimated tokens vs `5,466` for the reference rendering (**33.68% fewer**, `ceil(len/4)` estimate)
+- Relevance/correctness/groundedness: `1.000` — **by construction**: the fixtures plant required facts as separable lines and the UTK surfaces echo them back, so these scores are a regression gate on the code paths, not a quality measurement
 
-Full report: `docs/competition/lean-ctx/parity-benchmark.md`.
+Treat this as a regression fixture suite for UTK's Copilot surfaces, **not** a competitive benchmark against LeanCTX. Details and limitations: `docs/competition/lean-ctx/parity-benchmark.md`.
 
 ## Example Usage
 
@@ -318,7 +316,7 @@ UTK is a layered, acyclic workspace: reusable primitives sit at the bottom, the 
 - `@utk/model-proxy`: OpenAI-compatible local context gateway (`utk-model-proxy` binary) that compacts repeated history and tool schemas before forwarding upstream, with recoverable `.utk/model-proxy` artifacts. See [Model Proxy](docs/features/model-proxy/model-proxy.md).
 - `@utk-agent/copilot`: Copilot hook payload adapter for observable tool calls, maintained under `packages/plugins/agents/copilot`.
 - `@utk/detok-mcp`: private local stdio MCP server exposing the `detok` LLMLingua-2 tool (depends on `@utk/detok`).
-- `@utk/evals`: the comparison harness (baseline vs competitor vs UTK), jsonl benchmark data, code/LLM/composite graders, generated AgentV suites, and the agentevals.io evaluator protocol.
+- `@utk/evals`: the AgentV SDK eval suites and graders (comparison arms + the n-run tool-calling token-efficiency benchmark), jsonl benchmark data with provenance, the modeled comparison harness and report pipeline, and the agentevals.io evaluator protocol.
 
 ## Sharing Optimizations As Packs
 
@@ -376,6 +374,8 @@ my-pack/
 - [Constrained Decoding](docs/features/serialization/constrained-decoding.md)
 - [RTK Parity](docs/features/evals/rtk-parity.md)
 - [Evals](docs/features/evals/evals.md)
+- [AgentV Benchmarks](docs/features/evals/agentv-benchmarks.md)
+- [Benchmark Integrity And Limitations](docs/features/evals/benchmark-integrity.md)
 - [Tracing](docs/features/evals/tracing.md)
 - [Evals-Driven Iteration](docs/features/evals/evals-driven-iteration.md)
 - [Spec Reference: agentevals.io](docs/features/evals/references/agentevals-spec.md)

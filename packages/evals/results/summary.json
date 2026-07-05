@@ -8,8 +8,7 @@
       "frontier": [
         "rtk",
         "compresr",
-        "ponytail",
-        "utk"
+        "ponytail"
       ],
       "techniques": [
         {
@@ -129,21 +128,21 @@
         {
           "technique": "utk",
           "label": "UTK (mediated compaction)",
-          "onFrontier": true,
-          "visibleTokens": 324,
-          "tokenReduction": 0.75,
+          "onFrontier": false,
+          "visibleTokens": 604,
+          "tokenReduction": 0.534,
           "taskSuccessRate": 1,
           "avgQuality": 1,
-          "costPerTask": 0.001035,
-          "costPerSuccess": 0.001035,
-          "p95LatencyMs": 1210.88,
+          "costPerTask": 0.001105,
+          "costPerSuccess": 0.001105,
+          "p95LatencyMs": 1211.507,
           "unsafeToolErrors": 0,
           "headlines": {
             "qualityRetentionAt50PctReduction": 1,
-            "costReductionAt1PctQualityLoss": 0.041,
-            "p95LatencyReductionAt1PctQualityLoss": -1.342
+            "costReductionAt1PctQualityLoss": -0.024,
+            "p95LatencyReductionAt1PctQualityLoss": -1.344
           },
-          "gatePassed": true
+          "gatePassed": false
         }
       ]
     },
@@ -275,18 +274,18 @@
           "technique": "utk",
           "label": "UTK (mediated compaction)",
           "onFrontier": true,
-          "visibleTokens": 281,
-          "tokenReduction": 0.829,
+          "visibleTokens": 577,
+          "tokenReduction": 0.649,
           "taskSuccessRate": 1,
           "avgQuality": 1,
-          "costPerTask": 0.001047,
-          "costPerSuccess": 0.001047,
-          "p95LatencyMs": 1210.71,
+          "costPerTask": 0.001136,
+          "costPerSuccess": 0.001136,
+          "p95LatencyMs": 1212.13,
           "unsafeToolErrors": 0,
           "headlines": {
             "qualityRetentionAt50PctReduction": 1,
-            "costReductionAt1PctQualityLoss": 0.166,
-            "p95LatencyReductionAt1PctQualityLoss": -1.347
+            "costReductionAt1PctQualityLoss": 0.096,
+            "p95LatencyReductionAt1PctQualityLoss": -1.349
           },
           "gatePassed": true
         }
@@ -419,18 +418,18 @@
           "technique": "utk",
           "label": "UTK (mediated compaction)",
           "onFrontier": false,
-          "visibleTokens": 270,
-          "tokenReduction": 0.928,
+          "visibleTokens": 440,
+          "tokenReduction": 0.882,
           "taskSuccessRate": 1,
           "avgQuality": 1,
-          "costPerTask": 0.000792,
-          "costPerSuccess": 0.000792,
-          "p95LatencyMs": 1086.361,
+          "costPerTask": 0.000843,
+          "costPerSuccess": 0.000843,
+          "p95LatencyMs": 1087.239,
           "unsafeToolErrors": 0,
           "headlines": {
             "qualityRetentionAt50PctReduction": 1,
-            "costReductionAt1PctQualityLoss": 0.514,
-            "p95LatencyReductionAt1PctQualityLoss": -1.732
+            "costReductionAt1PctQualityLoss": 0.483,
+            "p95LatencyReductionAt1PctQualityLoss": -1.734
           },
           "gatePassed": true
         }
@@ -562,18 +561,18 @@
           "technique": "utk",
           "label": "UTK (mediated compaction)",
           "onFrontier": false,
-          "visibleTokens": 255,
-          "tokenReduction": 0.697,
+          "visibleTokens": 393,
+          "tokenReduction": 0.533,
           "taskSuccessRate": 1,
           "avgQuality": 1,
-          "costPerTask": 0.000679,
-          "costPerSuccess": 0.000679,
-          "p95LatencyMs": 1016.12,
+          "costPerTask": 0.00072,
+          "costPerSuccess": 0.00072,
+          "p95LatencyMs": 1016.93,
           "unsafeToolErrors": 0,
           "headlines": {
             "qualityRetentionAt50PctReduction": 1,
-            "costReductionAt1PctQualityLoss": -0.038,
-            "p95LatencyReductionAt1PctQualityLoss": -2.198
+            "costReductionAt1PctQualityLoss": -0.101,
+            "p95LatencyReductionAt1PctQualityLoss": -2.2
           },
           "gatePassed": false
         }
@@ -584,6 +583,10 @@
       "kind": "workflow",
       "cases": 10,
       "frontier": [
+        "rtk",
+        "leanctx",
+        "compresr",
+        "caveman",
         "utk"
       ],
       "techniques": [
@@ -609,7 +612,7 @@
         {
           "technique": "rtk",
           "label": "RTK (rust-token-killer)",
-          "onFrontier": false,
+          "onFrontier": true,
           "visibleTokens": 934,
           "tokenReduction": 0.299,
           "taskSuccessRate": 0.8,
@@ -628,7 +631,7 @@
         {
           "technique": "leanctx",
           "label": "LeanCTX (context runtime)",
-          "onFrontier": false,
+          "onFrontier": true,
           "visibleTokens": 1063,
           "tokenReduction": 0.203,
           "taskSuccessRate": 0.9,
@@ -647,7 +650,7 @@
         {
           "technique": "compresr",
           "label": "Compresr (query-aware)",
-          "onFrontier": false,
+          "onFrontier": true,
           "visibleTokens": 1063,
           "tokenReduction": 0.203,
           "taskSuccessRate": 0.9,
@@ -666,7 +669,7 @@
         {
           "technique": "caveman",
           "label": "Caveman (terse register)",
-          "onFrontier": false,
+          "onFrontier": true,
           "visibleTokens": 837,
           "tokenReduction": 0.372,
           "taskSuccessRate": 0.7,
@@ -705,18 +708,18 @@
           "technique": "utk",
           "label": "UTK (mediated compaction)",
           "onFrontier": true,
-          "visibleTokens": 298,
-          "tokenReduction": 0.776,
+          "visibleTokens": 616,
+          "tokenReduction": 0.538,
           "taskSuccessRate": 1,
           "avgQuality": 1,
-          "costPerTask": 0.0013,
-          "costPerSuccess": 0.0013,
-          "p95LatencyMs": 1338.417,
+          "costPerTask": 0.001395,
+          "costPerSuccess": 0.001395,
+          "p95LatencyMs": 1340.12,
           "unsafeToolErrors": 0,
           "headlines": {
             "qualityRetentionAt50PctReduction": 1,
-            "costReductionAt1PctQualityLoss": 0.078,
-            "p95LatencyReductionAt1PctQualityLoss": -1.082
+            "costReductionAt1PctQualityLoss": 0.011,
+            "p95LatencyReductionAt1PctQualityLoss": -1.085
           },
           "gatePassed": true
         }

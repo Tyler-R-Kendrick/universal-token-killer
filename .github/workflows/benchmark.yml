@@ -1,0 +1,232 @@
+# Manual, on-demand benchmark dispatch.
+#
+# Benchmarks are long-running, so this workflow:
+#   - runs exactly ONE selected benchmark per dispatch (the `benchmark` input);
+#   - raises the job timeout to the GitHub-hosted maximum (360 minutes);
+#   - never runs on push/PR — dispatch it from the Actions tab when needed.
+#
+# Two families:
+#   - Internal AgentV suites (packages/evals/evals/*.eval.ts): run through the
+#     `agentv` CLI against the configurable targets in .agentv/targets.yaml,
+#     then A/B-compared with the built-in `agentv compare` tool. The default
+#     targets are the offline deterministic arms (no LLM, no API keys); pass
+#     live target names to measure real models (requires provider secrets).
+#   - Harbor-backed trusted benchmarks (terminal-bench-2, swe-bench-verified):
+#     Harbor owns the runtime contract (Docker adapters, verifiers); this
+#     workflow stays at the orchestration boundary per the AgentV benchmark
+#     provenance guide — it launches the Harbor job and uploads the results.
+#
+# Security: free-form dispatch inputs are passed to run scripts ONLY via env
+# (never inline ${{ }} template expansion inside `run:`) to prevent template
+# injection, and checkouts do not persist credentials.
+name: benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark:
+        description: One benchmark per run
+        required: true
+        type: choice
+        options:
+          - tool-output
+          - long-context
+          - needle-in-haystack
+          - tool-selection
+          - agent-workflows
+          - tool-calling-efficiency
+          - harbor-terminal-bench-2
+          - harbor-swe-bench-verified
+      targets:
+        description: Comma-separated AgentV target names (see .agentv/targets.yaml). Ignored by harbor-* benchmarks.
+        required: false
+        type: string
+        default: arm-baseline,arm-utk
+      compare_baseline:
+        description: Target treated as baseline by `agentv compare` (must be in `targets`)
+        required: false
+        type: string
+        default: arm-baseline
+      compare_candidate:
+        description: Target treated as candidate by `agentv compare` (must be in `targets`)
+        required: false
+        type: string
+        default: arm-utk
+      compare_threshold:
+        description: Score delta threshold for win/loss classification in `agentv compare`
+        required: false
+        type: string
+        default: '0.1'
+      runs:
+        description: N runs per tool-calling-efficiency episode (UTK_EVAL_RUNS)
+        required: false
+        type: string
+        default: '5'
+      harbor_model:
+        description: Model id for harbor-* benchmarks (e.g. anthropic/claude-sonnet-5). Requires provider secret.
+        required: false
+        type: string
+        default: ''
+      harbor_agent:
+        description: Agent for harbor-* benchmarks (e.g. claude-code, codex)
+        required: false
+        type: string
+        default: claude-code
+      harbor_trials:
+        description: Concurrent trials for harbor run (-n)
+        required: false
+        type: string
+        default: '4'
+
+permissions:
+  contents: read
+
+jobs:
+  agentv:
+    name: AgentV suite (${{ inputs.benchmark }})
+    if: ${{ !startsWith(inputs.benchmark, 'harbor-') }}
+    runs-on: ubuntu-latest
+    # Benchmarks can take a very long time; 360 is the GitHub-hosted maximum.
+    timeout-minutes: 360
+    env:
+      # `benchmark` is a constrained choice input; the rest are free-form and
+      # must only reach shell scripts through env to prevent template injection.
+      BENCHMARK: ${{ inputs.benchmark }}
+      BENCHMARK_TARGETS: ${{ inputs.targets }}
+      COMPARE_BASELINE: ${{ inputs.compare_baseline }}
+      COMPARE_CANDIDATE: ${{ inputs.compare_candidate }}
+      COMPARE_THRESHOLD: ${{ inputs.compare_threshold }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Custom SDK assertions in .agentv/assertions/ are executed via bun.
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install and build
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Run the selected suite across targets
+        env:
+          UTK_EVAL_RUNS: ${{ inputs.runs }}
+          # Provider keys are only needed for live targets; offline arm-*/
+          # toolcalling-* targets run without them.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          TARGET_FLAGS=()
+          IFS=',' read -ra TARGETS <<< "$BENCHMARK_TARGETS"
+          for target in "${TARGETS[@]}"; do
+            TARGET_FLAGS+=(--target "${target}")
+          done
+          # threshold 0: per-arm pass/fail gating is not meaningful in a
+          # comparison matrix; regressions are judged by `agentv compare`.
+          npx agentv eval "packages/evals/evals/${BENCHMARK}.eval.ts" \
+            "${TARGET_FLAGS[@]}" \
+            --output ".agentv/results/${BENCHMARK}" \
+            --threshold 0
+
+      - name: Compare baseline vs candidate (agentv compare)
+        id: compare
+        run: |
+          set -euo pipefail
+          {
+            echo "## \`agentv compare\` — ${BENCHMARK}"
+            echo "\`${COMPARE_BASELINE}\` → \`${COMPARE_CANDIDATE}\` (threshold ${COMPARE_THRESHOLD})"
+            echo '```'
+            npx agentv compare ".agentv/results/${BENCHMARK}" \
+              --baseline "$COMPARE_BASELINE" \
+              --candidate "$COMPARE_CANDIDATE" \
+              --threshold "$COMPARE_THRESHOLD" | tee compare.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentv-results-${{ inputs.benchmark }}-${{ github.run_id }}
+          path: |
+            .agentv/results/${{ inputs.benchmark }}
+            compare.txt
+          if-no-files-found: warn
+
+  harbor:
+    name: Harbor benchmark (${{ inputs.benchmark }})
+    if: ${{ startsWith(inputs.benchmark, 'harbor-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      BENCHMARK: ${{ inputs.benchmark }}
+      HARBOR_MODEL: ${{ inputs.harbor_model }}
+      HARBOR_AGENT: ${{ inputs.harbor_agent }}
+      HARBOR_TRIALS: ${{ inputs.harbor_trials }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Require a model and provider secret
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$HARBOR_MODEL" ]; then
+            echo "::error::harbor_model is required for harbor-* benchmarks (e.g. anthropic/claude-sonnet-5)."
+            exit 1
+          fi
+          if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::No provider secret configured (ANTHROPIC_API_KEY / OPENAI_API_KEY). Harbor runs invoke a real model."
+            exit 1
+          fi
+
+      - name: Install Harbor
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/uv" tool install harbor
+
+      - name: Run the Harbor benchmark
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          case "$BENCHMARK" in
+            harbor-terminal-bench-2) DATASET="terminal-bench/terminal-bench-2" ;;
+            harbor-swe-bench-verified) DATASET="swe-bench/swe-bench-verified" ;;
+            *) echo "::error::Unknown harbor benchmark"; exit 1 ;;
+          esac
+          mkdir -p harbor-results
+          harbor run \
+            -d "$DATASET" \
+            -m "$HARBOR_MODEL" \
+            -a "$HARBOR_AGENT" \
+            -n "$HARBOR_TRIALS" \
+            --jobs-dir harbor-results 2>&1 | tee harbor-run.log
+          {
+            echo "## Harbor run — ${BENCHMARK}"
+            echo "Dataset: \`$DATASET\` · model: \`$HARBOR_MODEL\` · agent: \`$HARBOR_AGENT\` · trials: $HARBOR_TRIALS"
+            echo '```'
+            tail -n 40 harbor-run.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Harbor artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harbor-results-${{ inputs.benchmark }}-${{ github.run_id }}
+          path: |
+            harbor-results
+            harbor-run.log
+          if-no-files-found: warn
